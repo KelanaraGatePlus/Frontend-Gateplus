@@ -1,0 +1,95 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zain:ital,wght@0,200;0,300;0,400;0,700;0,800;0,900;1,300;1,400&display=swap");
+@import "tailwindcss";
+@plugin "flowbite-react/plugin/tailwindcss";
+@source "../../.flowbite-react/class-list.json";
+
+:root {
+  --foreground: #222222;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #222222;
+  }
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --background: #222222;
+  }
+}
+
+@theme {
+  --font-zain: "var(--font-zain)";
+}
+
+body {
+  background: var(--background);
+}
+
+.zeinFont {
+  font-family: "Zain", sans-serif;
+}
+
+.montserratFont {
+  font-family: "Montserrat", sans-serif;
+}
+
+@keyframes likePop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-like {
+  animation: likePop 0.3s ease-in-out;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.range-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: auto;
+  height: 4px;
+  background: linear-gradient(
+    to right,
+    #3b82f6 var(--progress),
+    rgba(255, 255, 255, 0.5) var(--progress)
+  );
+  border-radius: 9999px;
+  outline: none;
+  transition: background 150ms ease-in-out;
+}
+
+.noselect {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}

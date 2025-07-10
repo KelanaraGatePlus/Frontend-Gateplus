@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"],
+      "@@/logo/*": ["./public/images/logo/*"],
+      "@@/icons/*": ["./public/images/icons/*"],
+      "@@/poster/*": ["./public/images/poster/*"],
+      "@@/BannerPromo/*": ["./public/images/BannerPromo/*"],
+      "@@/AvatarIcons/*": ["./public/images/AvatarIcons/*"],
+      "@@/IconsEbook/*": ["./public/images/IconsEbook/*"],
+      "@@/Law/*": ["./public/images/Law/*"],
+      "@@/IconsButton/*": ["./public/images/IconsButton/*"],
+      "@@@/*": ["./*"]
+    }
+  }
+}
