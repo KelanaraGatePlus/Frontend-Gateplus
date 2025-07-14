@@ -1,6 +1,6 @@
 /* eslint-disable react/react-in-jsx-scope */
 import Picture404 from "@@/icons/error-page.svg";
-import Image from "next/legacy/image";
+import Image from "next/image";
 import Link from "next/link";
 import MiniFooter from "@/components/MiniFooter/page";
 
@@ -22,14 +22,15 @@ export default function PageNotFound() {
           </div>
         </section>
         <section className="-mt-4 flex flex-col items-center">
-          <div className="relative flex h-[200px] w-[550px] items-stretch justify-center">
+          <div className="relative flex h-[250px] w-[550px] items-stretch justify-center">
             <Image
-              priority
               src={Picture404}
               alt="icons 404"
-              className="object-cover object-center"
+              className="object-center object-contain"
               fill
+              priority
             />
+
           </div>
         </section>
 

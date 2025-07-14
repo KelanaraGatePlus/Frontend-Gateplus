@@ -9,7 +9,7 @@ import ProductDetailSection from "@/components/template/ProductDetailSection";
 import ProductEpisodeSection from "@/components/template/ProductEpisodeSection";
 import ProductDonationSection from "@/components/template/ProductDonationSection";
 import ProductCommentUnavailable from "@/components/template/ProductCommentUnavailable";
-import CarouselItemEookPage from "@/components/CarouselEbook/page";
+import CarouselItemEookPage from "@/components/Carousel/CarouselEbook/page";
 
 export default function MainTemplateLayout({
   productType,
@@ -26,7 +26,7 @@ export default function MainTemplateLayout({
             productType={productType}
             productID={productDetail.id}
             productBanner={productDetail.posterImageUrl}
-            productCover={productDetail.coverImageUrl}
+            productCover={productType === 'podcast' ? productDetail.coverPodcastImage : productDetail.coverImageUrl}
             productTitle={productDetail.title}
             productDescription={productDetail.description}
             productAgeRestriction={productDetail.ageRestriction}
@@ -37,7 +37,7 @@ export default function MainTemplateLayout({
             productIsSaved={productDetail.isSaved}
             productTotalViews={productDetail.totalViews}
             productTotalLikes={productDetail.totalLikes}
-            creatorDetail={productDetail.creators}
+            creatorDetail={productType === 'podcast' ? productDetail.Creator : productDetail.creators}
             creatorTotalSubscriber={productDetail.totalCount}
             creatorIsSubscribed={productDetail.isSubscribed}
           />

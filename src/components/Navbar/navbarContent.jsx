@@ -4,12 +4,18 @@ import Image from "next/legacy/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { usePathname } from 'next/navigation';
 
+/*[--- COMPONENT IMPORT ---]*/
 import SearchResult from "@/components/SearchResult/page.jsx";
 import SideBarMenu from "@/components/Navbar/SideBarMenu/page.jsx";
 import NotificationMenu from "@/components/Navbar/NotificationMenu/page.jsx";
 import ProfileMenu from "@/components/Navbar/ProfileMenu/page.jsx";
 
+/*[--- CONSTANTS IMPORT ---]*/
+import { navbarOptions } from '@/lib/constants/navbarOptions';
+
+/*[--- ASSETS IMPORT ---]*/
 import iconMenuBars from "@@/icons/icon-menubars.svg";
 import iconMenuClose from "@@/icons/icon-menuclose.svg";
 import logoHome from "@@/icons/logoHome.svg";
@@ -17,6 +23,7 @@ import logoSearch from "@@/logo/logoSearch/nav-search.svg";
 
 export default function NavbarContent() {
   const router = useRouter();
+  const pathname = usePathname();
   const [imageUrl, setImageUrl] = useState(null);
   const [isMenuBarsOpen, setIsMenuBarsOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -120,46 +127,22 @@ export default function NavbarContent() {
             </Link>
           </div>
           <div className="zeinFont mt-0.5 hidden w-fit justify-between gap-1 rounded-full p-2 text-xl leading-tight transition-all duration-300 ease-in-out md:flex md:bg-[#0881AB] lg:-mr-10">
-            <div className={`${isEditing && "hidden"}`}>
-              <div className="mt-0.5 flex flex-2 cursor-pointer justify-center rounded-full bg-linear-to-t from-[#0E5BA8] to-[#0395BC] p-2 text-center font-semibold text-white drop-shadow lg:px-5 xl:px-6">
-                <Link
-                  className="drop-shadow-[0_0_2px_rgba(255,255,255,0.3)]"
-                  href="/"
-                >
-                  Home
-                </Link>
-              </div>
-            </div>
-            <div className={`${isEditing && "hidden"}`}>
-              <div className="mt-0.5 flex flex-2 cursor-pointer justify-center rounded-full from-[#0E5BA8] to-[#0395BC] p-2 text-center font-semibold text-white hover:bg-linear-to-t lg:px-5 xl:px-6">
-                <Link
-                  className="drop-shadow-[0_0_2px_rgba(255,255,255,0.3)]"
-                  href="/BlankPage"
-                >
-                  Category
-                </Link>
-              </div>
-            </div>
-            <div className={`${isEditing && "hidden"}`}>
-              <div className="mt-0.5 flex flex-2 cursor-pointer justify-center rounded-full from-[#0E5BA8] to-[#0395BC] p-2 text-center font-semibold text-white hover:bg-linear-to-t lg:px-5 xl:px-6">
-                <Link
-                  className="drop-shadow-[0_0_2px_rgba(255,255,255,0.3)]"
-                  href="/BlankPage"
-                >
-                  Tickets
-                </Link>
-              </div>
-            </div>
-            <div className={`${isEditing && "hidden"}`}>
-              <div className="mt-0.5 flex flex-2 cursor-pointer justify-center rounded-full from-[#0E5BA8] to-[#0395BC] p-2 text-center font-semibold text-white hover:bg-linear-to-t lg:px-5 xl:px-6">
-                <Link
-                  className="drop-shadow-[0_0_2px_rgba(255,255,255,0.3)]"
-                  href="/BlankPage"
-                >
-                  Realese
-                </Link>
-              </div>
-            </div>
+            {navbarOptions.map((option) => {
+              const isActive = option.url === pathname;
+              return (
+                <div key={option.id} className={`${isEditing && "hidden"}`}>
+                  <div className={`mt-0.5 flex flex-2 cursor-pointer justify-center items-center leading-none rounded-full from-[#0E5BA8] to-[#0395BC] p-2 text-center font-semibold border-2 border-[#0881AB] text-white lg:px-5 xl:px-6 hover:bg-linear-to-t ${isActive && "bg-linear-to-t border-2 border-white/40"}`}>
+                    <Link
+                      className="drop-shadow-[0_0_2px_rgba(255,255,255,0.3)]"
+                      href={option.url}
+                    >
+                      {option.tittle}
+                    </Link>
+                  </div>
+                </div>
+              );
+            }
+            )}
             <div
               className={`flex-cols relative flex flex-4 items-center justify-start gap-1 rounded-3xl bg-blue-300 hover:ring-1 hover:ring-white ${isEditing ? "px-0" : "px-2 lg:px-5 xl:px-6"} transition-all duration-300 ease-in-out`}
             >
@@ -265,6 +248,7 @@ export default function NavbarContent() {
         {isMenuBarsOpen && (
           <SideBarMenu
             searchQuery={searchQuery}
+            pathname={pathname}
             handleSearchChange={handleSearchChange}
             handleBlur={handleBlur}
             logoSearch={logoSearch}

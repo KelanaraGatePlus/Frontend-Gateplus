@@ -93,3 +93,18 @@ body {
   -ms-user-select: none;
   user-select: none;
 }
+
+/* Custom warna bullet default */
+.splide__pagination__page {
+  background: #d1d5db;
+  opacity: 0.7;
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  margin: 0 5px;
+  transition: background 0.3s;
+}
+.splide__pagination__page.is-active {
+  background: #0e5ba8;
+  opacity: 1;
+}

@@ -3,12 +3,16 @@ import PropTypes from "prop-types";
 import Link from "next/link";
 import Image from "next/image";
 
+/*[--- CONSTANTS IMPORT ---]*/
+import { navbarOptions } from '@/lib/constants/navbarOptions';
+
 export default function SideBarMenu({
   searchQuery,
-  handleSearchChange,
-  handleBlur,
+  pathname,
   logoSearch,
   isAuthenticated,
+  handleBlur,
+  handleSearchChange,
 }) {
   return (
     <section className="flex h-fit flex-col gap-4 px-2 pb-4 md:hidden">
@@ -39,27 +43,18 @@ export default function SideBarMenu({
           </div>
         </div>
 
-        <ul className="flex justify-between gap-1 text-sm font-semibold text-white">
-          <Link href={"/"}>
-            <li className="zeinFont flex flex-2 cursor-pointer items-center justify-center rounded-full px-2 py-2 text-center text-xl [text-shadow:0_0_4px_#FFFFFF40] hover:bg-white/25">
-              Home
-            </li>
-          </Link>
-          <Link href={"/Category"}>
-            <li className="zeinFont flex flex-2 cursor-pointer items-center justify-center rounded-full px-2 py-2 text-center text-xl [text-shadow:0_0_4px_#FFFFFF40] hover:bg-white/25">
-              Category
-            </li>
-          </Link>
-          <Link href={"/Ticket"}>
-            <li className="zeinFont flex flex-2 cursor-pointer items-center justify-center rounded-full px-2 py-2 text-center text-xl [text-shadow:0_0_4px_#FFFFFF40] hover:bg-white/25">
-              Ticket
-            </li>
-          </Link>
-          <Link href={"/RealeaseSoon"}>
-            <li className="zeinFont flex flex-3 cursor-pointer items-center justify-center rounded-full px-2 py-2 text-center text-xl [text-shadow:0_0_4px_#FFFFFF40] hover:bg-white/25">
-              Realease Soon
-            </li>
-          </Link>
+        <ul className="flex justify-between gap-1 text-sm font-semibold text-white mx-2">
+          {navbarOptions.map((option) => {
+            const isActive = option.url === pathname;
+            return (
+              <Link href={option.url} key={option.id}>
+                <li className={`zeinFont flex flex-2 cursor-pointer items-center justify-center rounded-full px-2 py-2 text-center text-xl [text-shadow:0_0_4px_#FFFFFF40] hover:underline hover:underline-offset-4 ${isActive ? "underline underline-offset-4" : ""}`}>
+                  {option.tittle}
+                </li>
+              </Link>
+            );
+          }
+          )}
         </ul>
       </div>
       {!isAuthenticated && (
@@ -84,8 +79,9 @@ export default function SideBarMenu({
 
 SideBarMenu.propTypes = {
   searchQuery: PropTypes.string.isRequired,
-  handleSearchChange: PropTypes.func.isRequired,
-  handleBlur: PropTypes.func,
+  pathname: PropTypes.string,
   logoSearch: PropTypes.string,
   isAuthenticated: PropTypes.bool,
+  handleBlur: PropTypes.func,
+  handleSearchChange: PropTypes.func.isRequired,
 };

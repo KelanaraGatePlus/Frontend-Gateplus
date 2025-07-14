@@ -1,7 +1,7 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
 import { useEffect, useState } from "react";
-import Image from "next/legacy/image";
+import Image from "next/image";
 import Link from "next/link";
 import axios from "axios";
 import Cookies from "js-cookie";
@@ -136,9 +136,9 @@ export default function CategoryPage() {
   }
 
   return (
-    <div className="">
+    <div className="block md:hidden">
       <section className="my-5 md:my-10">
-        <div className="grid grid-cols-5 gap-4 md:grid-cols-5">
+        <div className="grid grid-cols-5 md:grid-cols-5 justify-between">
           <div
             className={`flex transform cursor-pointer flex-col items-center justify-between gap-0 transition duration-100 ease-linear md:gap-2 ${
               selectedCategory === "Movie"
@@ -148,8 +148,8 @@ export default function CategoryPage() {
             onClick={() => setSelectedCategory("Movie")}
           >
             <div className="flex h-full w-full flex-col items-center">
-              <div className="aspect-auto scale-90 md:scale-100">
-                <Image priority alt="logo-movie" src={logoMovie} />
+              <div className="aspect-auto scale-90 md:scale-100 relative w-16 h-16 ">
+                <Image priority alt="logo-movie" src={logoMovie} fill className="w-full h-full object-cover"/>
               </div>
               <div className="montserratFont w-full text-center font-medium text-white">
                 <span className="text-sm md:text-base">MOVIE</span>
@@ -166,8 +166,8 @@ export default function CategoryPage() {
             onClick={() => setSelectedCategory("Series")}
           >
             <div className="flex h-full w-full flex-col items-center">
-              <div className="aspect-auto scale-90 md:scale-100">
-                <Image priority alt="logo-series" src={logoSeries} />
+              <div className="aspect-auto scale-90 md:scale-100 relative w-16 h-16 ">
+                <Image priority alt="logo-series" src={logoSeries} fill className="w-full h-full object-cover scale-105" />
               </div>
               <div className="montserratFont w-full text-center font-medium text-white">
                 <span className="text-sm md:text-base">SERIES</span>
@@ -184,8 +184,8 @@ export default function CategoryPage() {
             onClick={() => setSelectedCategory("Podcast")}
           >
             <div className="flex h-full w-full flex-col items-center">
-              <div className="aspect-auto scale-90 md:scale-100">
-                <Image priority alt="logo-podcast" src={logoPodcast} />
+              <div className="aspect-auto scale-90 md:scale-100 relative w-16 h-16 ">
+                <Image priority alt="logo-podcast" src={logoPodcast} fill className="w-full h-full object-cover scale-105 ml-1" />
               </div>
               <div className="montserratFont w-full text-center font-medium text-white">
                 <span className="text-sm md:text-base">PODCAST</span>
@@ -208,8 +208,8 @@ export default function CategoryPage() {
             }}
           >
             <div className="flex h-full w-full flex-col items-center">
-              <div className="aspect-auto scale-90 md:scale-100">
-                <Image priority alt="logo-ebook" src={logoEbook} />
+              <div className="aspect-auto scale-90 md:scale-100 relative w-16 h-16 ">
+                <Image priority alt="logo-ebook" src={logoEbook} fill className="w-full h-full object-cover scale-125"/>
               </div>
               <div className="montserratFont w-full text-center font-medium text-white">
                 <span className="text-sm md:text-base">EBOOK</span>
@@ -226,10 +226,10 @@ export default function CategoryPage() {
             onClick={() => setSelectedCategory("Comic")}
           >
             <div className="flex h-full w-full flex-col items-center">
-              <div className="aspect-auto scale-90 md:scale-100">
-                <Image priority alt="logo-comic" src={logoEComics} />
+              <div className="aspect-auto scale-90 md:scale-100 relative w-16 h-16 ">
+                <Image priority alt="logo-comic" src={logoEComics} fill className="w-full h-full object-cover scale-125" />
               </div>
-              <div className="montserratFont w-full text-center font-medium text-white">
+              <div className="montserratFont w-full text-center font-medium text-white ">
                 <span className="text-sm md:text-base">COMIC</span>
               </div>
             </div>

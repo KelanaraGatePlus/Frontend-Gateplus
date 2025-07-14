@@ -212,8 +212,8 @@ export default function ProfileMenu({
                       </Link>
                     </div>
                     <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
-                      <Link href="/Podcast/DetailPodcast">
-                        <span>Podcast</span>
+                      <Link href="/Podcast/UploadPodcast">
+                        <span>Upload Podcast</span>
                       </Link>
                     </div>
                     <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">

@@ -26,6 +26,7 @@ export const saveProduct = async (
 
   try {
     setIsSaved(true);
+    console.log("Test");
     const userId = localStorage.getItem("users_id");
     if (!userId) {
       setShowToast(true);
@@ -38,6 +39,10 @@ export const saveProduct = async (
       userId: userId,
       [fieldKey]: id,
     };
+
+    console.log("DEBUG 2");
+    console.log(id);
+    console.log(fieldKey);
 
     const response = await axios.post(
       `https://backend-gateplus-api.my.id/save`,

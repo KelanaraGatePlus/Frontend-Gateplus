@@ -1,13 +1,40 @@
 /* eslint-disable react/react-in-jsx-scope */
-import bannerPromoMiddle from "@@/BannerPromo/Hero-1.svg";
-import bannerPromoEnd from "@@/BannerPromo/Hero-2.svg";
 import { Splide, SplideSlide } from "@splidejs/react-splide";
+import Image from "next/image";
+import Link from "next/link";
 import "@splidejs/react-splide/css/skyblue";
-import Image from "next/legacy/image";
+
+import bannerPromo1 from "@@/BannerPromo/hero-banner-1.svg";
+import bannerPromo2 from "@@/BannerPromo/hero-banner-2.svg";
+// import bannerPromo3 from "@@/BannerPromo/hero-banner-3.svg";
+import bannerPromo4 from "@@/BannerPromo/hero-banner-4.svg";
 
 export default function sliderBannerPage() {
+  const bannerPromo = [
+    {
+      id: 1,
+      image: bannerPromo1,
+      url: "#",
+    },
+    {
+      id: 2,
+      image: bannerPromo2,
+      url: "/RegisterCreators",
+    },
+    // {
+    //   id: 3,
+    //   image: bannerPromo3,
+    //   url: "/Movie",
+    // },
+    {
+      id: 4,
+      image: bannerPromo4,
+      url: "/RegisterCreators",
+    },
+  ]
+
   return (
-    <div className="my-auto mt-3.5 mb-0.5 flex w-screen flex-col md:h-fit">
+    <div className="my-auto mt-3.5 mb-0.5 md:mb-10 flex w-screen flex-col md:h-fit">
       <Splide
         options={{
           type: "loop",
@@ -27,22 +54,18 @@ export default function sliderBannerPage() {
         }}
         aria-label="Banner Foto"
       >
-        <SplideSlide>
-          <Image
-            priority
-            src={bannerPromoMiddle}
-            alt="BannerPromo002"
-            layout="responsive"
-          />
-        </SplideSlide>
-        <SplideSlide>
-          <Image
-            priority
-            src={bannerPromoEnd}
-            alt="BannerPromo003"
-            layout="responsive"
-          />
-        </SplideSlide>
+        {bannerPromo.map((item) => (
+          <SplideSlide key={item.id}>
+            <Link href={item.url}>
+              <Image
+                priority
+                src={item.image}
+                alt={`BannerPromo00${item.id}`}
+                layout="responsive"
+              />
+            </Link>
+          </SplideSlide>
+        ))}
       </Splide>
     </div>
   );

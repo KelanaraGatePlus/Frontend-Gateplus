@@ -72,7 +72,7 @@ export default function ProductEpisodeSection({
                     <div className="h-24 w-24 overflow-hidden rounded-lg md:h-36 md:w-36">
                       <Image
                         priority
-                        src={item.coverEpisodeUrl}
+                        src={productType === "ebook" ? item.coverEpisodeUrl : item.coverImageUrl}
                         alt={`poster-${item.title}`}
                         className="h-full w-full rounded object-cover object-center"
                         width={144}
@@ -144,20 +144,19 @@ export default function ProductEpisodeSection({
               .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
               .map((item, index) => (
                 <Link key={index} href={`/Podcast/ListenPodcast/${item.id}`}>
-                  <div className="group flex cursor-pointer items-stretch gap-2 px-4 py-2 hover:bg-[#1F6E8A] md:gap-4 md:px-15">
-                    <div className="h-24 w-24 overflow-hidden rounded-lg bg-[#DEDEDE] md:h-36 md:w-36">
-                      <Image
-                        priority
-                        src={item.coverEpisodeUrl}
-                        alt={`poster-${item.title}`}
-                        className="h-full w-full rounded object-cover object-center"
-                        width={144}
-                        height={144}
-                      />
-                    </div>
-
-                    <div className="flex flex-1 justify-center gap-1 rounded-lg py-1 sm:justify-between">
-                      <div className="flex w-2/5 flex-col justify-between sm:w-3/5">
+                  <div className="group flex cursor-pointer items-stretch gap-2 px-4 py-4 hover:bg-[#105CAC] md:gap-4 md:mx-15 md:rounded-lg transition-all duration-300 ease-in-out justify-between">
+                    <div className="flex gap-2 w-[200px] md:w-2xl">
+                      <div className="h-24 w-24 overflow-hidden rounded-lg bg-[#DEDEDE] md:h-36 md:w-36">
+                        <Image
+                          priority
+                          src={item.coverPodcastEpisodeURL}
+                          alt={`poster-${item.title}`}
+                          className="h-full w-full rounded object-cover object-center"
+                          width={144}
+                          height={144}
+                        />
+                      </div>
+                      <div className="flex flex-1 flex-col justify-between sm:w-3/5">
                         <div className="flex flex-col">
                           <h4
                             className={`zeinFont mb-1 [display:-webkit-box] w-fit overflow-hidden text-xl leading-5 font-extrabold text-ellipsis [-webkit-box-orient:vertical] [-webkit-line-clamp:2] md:text-2xl`}
@@ -165,7 +164,7 @@ export default function ProductEpisodeSection({
                             {item.title}
                           </h4>
                           <p className="text-xs font-normal text-white/50 lg:text-sm">
-                            <span className="md:hidden">
+                            <span className="md:hidden line-clamp-3">
                               {item.description
                                 .split(" ")
                                 .slice(0, 5)
@@ -181,49 +180,50 @@ export default function ProductEpisodeSection({
                           {formatDateTime(item.createdAt, "short")}
                         </p>
                       </div>
-
-                      <div className="w-1.2/5 montserratFont flex items-center justify-center text-xs font-semibold text-white/50 sm:w-1/5 lg:text-base">
-                        17 Menit
-                      </div>
-
-                      <div className="w-1.8/5 flex items-center justify-center gap-2 sm:w-1/5">
-                        <div className="rounded border-2 border-[#F5F5F524] bg-[#F5F5F524] p-1">
-                          <Image
-                            priority
-                            src={isLocked ? iconLocked : iconUnlocked}
-                            alt="icon-locked"
-                            className="h-full w-full rounded object-cover object-center"
-                            width={16}
-                            height={16}
-                          />
-                        </div>
-                        <div className="relative h-6 w-6 cursor-pointer transition-transform duration-150 active:scale-90">
-                          <Image
-                            priority
-                            src={iconSaveOutline}
-                            alt="icon-save-outline"
-                            className="rounded object-cover object-center"
-                            fill
-                          />
-                        </div>
-                        <button
-                          className="relative z-20 h-6 w-6 cursor-pointer transition-transform duration-150 active:scale-90"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleSelectedPodcast(item);
-                          }}
-                        >
-                          <Image
-                            priority
-                            src={iconMore}
-                            alt="icon-more"
-                            className="rounded object-cover object-center"
-                            fill
-                          />
-                        </button>
-                      </div>
                     </div>
+
+                    <div className="w-1.2/5 montserratFont flex items-center justify-center text-xs font-semibold text-white/50 sm:w-1/5 lg:text-base line-clamp-1">
+                      17m
+                    </div>
+
+                    <div className="w-1.8/5 flex items-center justify-end gap-2 sm:w-1/5">
+                      <div className="rounded border-2 border-[#F5F5F524] bg-[#F5F5F524] p-1">
+                        <Image
+                          priority
+                          src={isLocked ? iconLocked : iconUnlocked}
+                          alt="icon-locked"
+                          className="h-full w-full rounded object-cover object-center"
+                          width={16}
+                          height={16}
+                        />
+                      </div>
+                      <div className="relative h-6 w-6 cursor-pointer transition-transform duration-150 active:scale-90">
+                        <Image
+                          priority
+                          src={iconSaveOutline}
+                          alt="icon-save-outline"
+                          className="rounded object-cover object-center"
+                          fill
+                        />
+                      </div>
+                      <button
+                        className="relative z-0 h-6 w-6 cursor-pointer transition-transform duration-150 active:scale-90"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleSelectedPodcast(item);
+                        }}
+                      >
+                        <Image
+                          priority
+                          src={iconMore}
+                          alt="icon-more"
+                          className="rounded object-cover object-center"
+                          fill
+                        />
+                      </button>
+                    </div>
+
                   </div>
                 </Link>
               ))}
@@ -282,7 +282,7 @@ function SeeAnotherEpisodes({ productEpisodes, showAll, handleShowAll }) {
           onClick={handleShowAll}
         >
           <p
-            className={`zeinFont text-2xl font-extrabold ${showAll ? "text-white/50" : "text-white"}`}
+            className={`zeinFont text-2xl font-extrabold hover:text-blue-500 ${showAll ? "text-white/50 " : "text-white"}`}
           >
             {showAll ? "Lihat Lebih Sedikit" : "Lihat Lainnya"}
           </p>
@@ -293,11 +293,11 @@ function SeeAnotherEpisodes({ productEpisodes, showAll, handleShowAll }) {
 }
 
 const test = [1, 2, 3, 4, 5, 6];
-// eslint-disable-next-line no-unused-vars
-function PodcastMoreDetail({
+export function PodcastMoreDetail({
   coverEpisodeUrl,
   title,
   description,
+  // eslint-disable-next-line no-unused-vars
   creator,
   createdAt,
   handlePodcastModal,
@@ -311,11 +311,11 @@ function PodcastMoreDetail({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-5 backdrop-blur"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-5"
       onClick={handlePodcastModal}
     >
       <div
-        className="flex w-md flex-col rounded-2xl border-1 border-[#F5F5F580] bg-black/60 px-4 pt-2 drop-shadow-2xl backdrop-blur md:w-lg lg:w-xl"
+        className="flex w-md flex-col rounded-2xl border-1 border-[#F5F5F580] bg-transparent px-4 pt-2 drop-shadow-2xl backdrop-blur-sm md:w-lg lg:w-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="relative flex w-full items-center justify-center">

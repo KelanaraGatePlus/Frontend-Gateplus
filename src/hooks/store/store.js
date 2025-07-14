@@ -5,11 +5,13 @@ import { setupListeners } from "@reduxjs/toolkit/query";
 import { ebookApi } from "../api/ebookSliceAPI";
 import { filmAPI } from "../api/filmSliceAPI";
 import { userAPI } from "../api/userSliceAPI";
+import { homeAPI } from "../api/homeSliceAPI";
 
 const rootReducer = combineReducers({
   [ebookApi.reducerPath]: ebookApi.reducer,
   [userAPI.reducerPath]: userAPI.reducer,
   [filmAPI.reducerPath]: filmAPI.reducer,
+  [homeAPI.reducerPath]: homeAPI.reducer,
 });
 
 export const store = configureStore({
@@ -19,6 +21,7 @@ export const store = configureStore({
       ebookApi.middleware,
       userAPI.middleware,
       filmAPI.middleware,
+      homeAPI.middleware,
     ),
 });
 

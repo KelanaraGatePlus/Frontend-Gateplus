@@ -2,6 +2,7 @@
 import React, { use, useEffect, useState } from "react";
 import axios from "axios";
 
+/*[--- COMPONENT IMPORT ---]*/
 import MainTemplateLayout from "@/components/template/page";
 
 // eslint-disable-next-line react/prop-types

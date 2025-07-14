@@ -161,7 +161,7 @@ export default function UploadEpisodeComicContent() {
 
       const fullData = response.data.data;
       const creatorData = fullData.data[0];
-      setComicsCreator(creatorData.comics);
+      setComicsCreator(creatorData.Comics);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -243,7 +243,7 @@ export default function UploadEpisodeComicContent() {
         <section className="relative mb-2 flex items-center">
           <BackPage />
           <div className="zeinFont absolute left-1/2 -translate-x-1/2 text-3xl font-bold text-[#979797]">
-            Upload Comic
+            Upload Komik
           </div>
         </section>
         <section className="mb-4 flex flex-row items-center justify-center gap-3">
