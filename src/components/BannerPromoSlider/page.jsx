@@ -6,8 +6,7 @@ import "@splidejs/react-splide/css/skyblue";
 
 import bannerPromo1 from "@@/BannerPromo/hero-banner-1.svg";
 import bannerPromo2 from "@@/BannerPromo/hero-banner-2.svg";
-// import bannerPromo3 from "@@/BannerPromo/hero-banner-3.svg";
-import bannerPromo4 from "@@/BannerPromo/hero-banner-4.svg";
+import bannerPromo3 from "@@/BannerPromo/hero-banner-3.svg";
 
 export default function sliderBannerPage() {
   const bannerPromo = [
@@ -21,20 +20,15 @@ export default function sliderBannerPage() {
       image: bannerPromo2,
       url: "/RegisterCreators",
     },
-    // {
-    //   id: 3,
-    //   image: bannerPromo3,
-    //   url: "/Movie",
-    // },
     {
-      id: 4,
-      image: bannerPromo4,
+      id: 3,
+      image: bannerPromo3,
       url: "/RegisterCreators",
     },
-  ]
+  ];
 
   return (
-    <div className="my-auto mt-3.5 mb-0.5 md:mb-10 flex w-screen flex-col md:h-fit">
+    <div className="my-auto mt-3.5 mb-0.5 flex w-screen flex-col md:mb-10 md:h-fit">
       <Splide
         options={{
           type: "loop",
