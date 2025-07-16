@@ -63,6 +63,19 @@ export default function ReadComic({ params }) {
       setComicData(comicSingleData.fileImageComics);
       setUpdatedAt(formatDateTime(comicSingleData.updatedAt, "short"));
       console.log(comicSingleData);
+
+      const existing = JSON.parse(localStorage.getItem("last_seen_content")) || [];
+      const isAlreadyExist = existing.find(item => item.id === comicSingleData.comics.id);
+      let updated = existing;
+      if (!isAlreadyExist) {
+        const newContent = {
+          ...comicSingleData.comics,
+          type: "comic",
+        };
+        updated = [newContent, ...existing].slice(0, 10);
+      }
+      localStorage.setItem("last_seen_content", JSON.stringify(updated));
+
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -87,16 +100,14 @@ export default function ReadComic({ params }) {
       {/* Komik View */}
       <div className="-mt-3 flex h-full flex-1 items-center justify-center overflow-auto">
         <div
-          className={`flex ${
-            viewMode === "2" ? "flex-row" : "flex-col"
-          } items-center justify-center`}
+          className={`flex ${viewMode === "2" ? "flex-row" : "flex-col"
+            } items-center justify-center`}
         >
           {visiblePages.map((page, idx) => (
             <div
               key={idx}
-              className={`relative max-h-[calc(100vh-140px)] w-auto ${
-                viewMode === "2" ? (idx % 2 === 0 ? "pr-1" : "pl-1") : "mb-2"
-              } transition-all`}
+              className={`relative max-h-[calc(100vh-140px)] w-auto ${viewMode === "2" ? (idx % 2 === 0 ? "pr-1" : "pl-1") : "mb-2"
+                } transition-all`}
             >
               <Image
                 src={page}

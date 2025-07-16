@@ -74,6 +74,17 @@ export default function ReadEbookPage({ params }) {
       setBannerEndEpisodeUrl(ebookSingleData.bannerEndEpisodeUrl);
       setUpdatedAt(formatDateTime(ebookSingleData.updatedAt, "short"));
       console.log(ebookSingleData);
+      const existing = JSON.parse(localStorage.getItem("last_seen_content")) || [];
+      const isAlreadyExist = existing.find(item => item.id === ebookSingleData.ebooks.id);
+      let updated = existing;
+      if (!isAlreadyExist) {
+        const newContent = {
+          ...ebookSingleData.ebooks,
+          type: "ebook",
+        };
+        updated = [newContent, ...existing].slice(0, 10);
+      }
+      localStorage.setItem("last_seen_content", JSON.stringify(updated));
 
       setCurrentEpisode(ebookSingleData);
       const ebookId = ebookSingleData.ebooks.id;
@@ -171,11 +182,10 @@ export default function ReadEbookPage({ params }) {
               className="peer sr-only"
             />
             <div
-              className={`relative h-7 w-14 rounded-full transition-colors duration-300 ${
-                isDark
-                  ? "bg-indigo-900 peer-focus:ring-2 peer-focus:ring-violet-800"
-                  : "bg-amber-200 peer-focus:ring-2 peer-focus:ring-amber-400"
-              } `}
+              className={`relative h-7 w-14 rounded-full transition-colors duration-300 ${isDark
+                ? "bg-indigo-900 peer-focus:ring-2 peer-focus:ring-violet-800"
+                : "bg-amber-200 peer-focus:ring-2 peer-focus:ring-amber-400"
+                } `}
             >
               <div
                 className={`absolute top-1/2 left-[2px] flex h-5 w-5 -translate-y-1/2 transform items-center justify-center rounded-full bg-white shadow-md transition-transform duration-300 ${isDark ? "translate-x-7" : "translate-x-1"}`}
@@ -365,14 +375,12 @@ export default function ReadEbookPage({ params }) {
 
         {/* SawerKuy */}
         <section
-          className={`relative flex w-screen flex-col px-4 py-5 md:px-15 ${
-            isDark ? "text-white" : "text-[#222222]"
-          }`}
+          className={`relative flex w-screen flex-col px-4 py-5 md:px-15 ${isDark ? "text-white" : "text-[#222222]"
+            }`}
         >
           <div
-            className={`w-full rounded-xl p-4 ${
-              isDark ? "bg-[#2f2f2f] text-white" : "bg-[#e0e0e0] text-[#222222]"
-            }`}
+            className={`w-full rounded-xl p-4 ${isDark ? "bg-[#2f2f2f] text-white" : "bg-[#e0e0e0] text-[#222222]"
+              }`}
           >
             <h3 className="mb-2 text-xl font-bold lg:text-2xl">Sawerkuy!</h3>
             <p className="mb-2 text-justify text-sm lg:text-base">
@@ -450,11 +458,10 @@ export default function ReadEbookPage({ params }) {
                 name="comment"
                 id="comment"
                 placeholder="Tell us about you, maxs 150 character."
-                className={`h-32 w-full rounded-md border p-2 text-sm transition-colors duration-300 placeholder:text-sm placeholder:font-bold ${
-                  isDark
-                    ? "border-[#F5F5F540] bg-[#686464] text-white placeholder:text-[#979797]"
-                    : "border-[#d0d0d0] bg-[#f0f0f0] text-[#444444] placeholder:text-[#555555]"
-                }`}
+                className={`h-32 w-full rounded-md border p-2 text-sm transition-colors duration-300 placeholder:text-sm placeholder:font-bold ${isDark
+                  ? "border-[#F5F5F540] bg-[#686464] text-white placeholder:text-[#979797]"
+                  : "border-[#d0d0d0] bg-[#f0f0f0] text-[#444444] placeholder:text-[#555555]"
+                  }`}
                 value={myComment}
                 onChange={(e) => setMyComment(e.target.value)}
                 onKeyDown={(e) => {
@@ -468,13 +475,12 @@ export default function ReadEbookPage({ params }) {
               <button
                 disabled={isUploadingComment}
                 type="submit"
-                className={`flex w-full items-center justify-center rounded-md border-2 py-2 text-sm font-bold ${
-                  isUploadingComment
-                    ? "cursor-not-allowed bg-gray-500"
-                    : isDark
-                      ? "cursor-pointer border-[#F5F5F540] bg-[#0E5BA8] text-white"
-                      : "cursor-pointer border-gray-300 bg-blue-600 text-white hover:bg-blue-700"
-                }`}
+                className={`flex w-full items-center justify-center rounded-md border-2 py-2 text-sm font-bold ${isUploadingComment
+                  ? "cursor-not-allowed bg-gray-500"
+                  : isDark
+                    ? "cursor-pointer border-[#F5F5F540] bg-[#0E5BA8] text-white"
+                    : "cursor-pointer border-gray-300 bg-blue-600 text-white hover:bg-blue-700"
+                  }`}
               >
                 {isUploadingComment ? "Mengirim..." : "Kirim Komentar"}
               </button>
@@ -484,9 +490,8 @@ export default function ReadEbookPage({ params }) {
 
         {/* Komentar  */}
         <section
-          className={`mb-10 flex w-screen flex-col gap-1 px-5 py-6 ${
-            isDark ? "text-white" : "text-gray-900"
-          }`}
+          className={`mb-10 flex w-screen flex-col gap-1 px-5 py-6 ${isDark ? "text-white" : "text-gray-900"
+            }`}
         >
           {allComments.length > 0 ? (
             [...allComments]
@@ -520,7 +525,7 @@ export default function ReadEbookPage({ params }) {
                             : comment.user.username}{" "}
                           {comment.user.creator &&
                             comment.user.creator.id ===
-                              comment.ebook_episode.ebooks.creators.id &&
+                            comment.ebook_episode.ebooks.creators.id &&
                             "(Author)"}
                         </h5>
                         <p className="text-[10px] font-normal">

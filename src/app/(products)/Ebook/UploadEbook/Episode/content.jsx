@@ -148,7 +148,7 @@ export default function UploadEpisodePageContent() {
       );
 
       const fullData = response.data.data;
-      const creatorData = fullData.data[0];
+      const creatorData = fullData.data;
 
       setEbooksCreator(creatorData.Ebooks);
     } catch (error) {
