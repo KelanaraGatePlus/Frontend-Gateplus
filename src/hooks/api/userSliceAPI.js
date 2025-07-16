@@ -9,6 +9,13 @@ export const userAPI = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: url,
     credentials: "include",
+    prepareHeaders: (headers) => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      return headers;
+    },
   }),
   tagTypes: ["usersAPI"],
   endpoints: (builder) => ({
@@ -18,7 +25,7 @@ export const userAPI = createApi({
       keepUnusedDataFor: 5,
     }),
     getUserDetail: builder.query({
-      query: ({ userId }) => `/${userId}`,
+      query: (id) => `/users/${id}`,
       providesTags: ["usersAPI"],
       keepUnusedDataFor: 60,
     }),

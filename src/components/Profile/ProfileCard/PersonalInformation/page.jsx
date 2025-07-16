@@ -39,6 +39,7 @@ export default function PersonalInformationSection({
                 />
             )}
             <ButtonSection
+                profileFor={profileFor}
                 isOwnProfile={isOwnProfile}
                 isSubscribed={isSubscribed}
                 isSubscribing={isSubsribing}

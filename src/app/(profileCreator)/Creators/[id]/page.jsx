@@ -21,7 +21,7 @@ import "react-loading-skeleton/dist/skeleton.css";
 /*[--- CONSTANT IMPORT ---]*/
 import { imageDefaultValue } from "@/lib/constants/imageDefaultValue";
 
-export default function CreatorsPage({ params }) {
+export default function CreatorProfilePage({ params }) {
   const { id } = use(params);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -30,6 +30,7 @@ export default function CreatorsPage({ params }) {
   const [isReady, setIsReady] = useState(false);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [totalSubs, setTotalSubs] = useState(0);
+  const [bannerImageUrl, setBannerImageUrl] = useState(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -47,6 +48,7 @@ export default function CreatorsPage({ params }) {
 
   useEffect(() => {
     if (creatorDetailQuery.isSuccess && creatorDetailData) {
+      setBannerImageUrl(creatorDetailData.bannerImageUrl);
       setTotalSubs(creatorDetailData.totalSubscribers);
       const storedCreatorId = localStorage.getItem("creators_id");
       setIsOwnProfile(storedCreatorId === id);
@@ -78,13 +80,23 @@ export default function CreatorsPage({ params }) {
             </section>
           ) : (
             <section className="absolute top-1 -z-10 mb-2 hidden h-36 w-full overflow-hidden md:block md:h-64 lg:w-full rounded-xl bg-[#2e2e2e]">
-              <Image
-                priority
-                src={imageDefaultValue.creator.bannerImageUrl}
-                alt="banner-creator"
-                fill
-                className="object-cover object-center"
-              />
+              {bannerImageUrl && bannerImageUrl !== "null" ? (
+                <Image
+                  priority
+                  src={bannerImageUrl}
+                  alt="banner-creator"
+                  fill
+                  className="object-cover object-center"
+                />
+              ) : (
+                <Image
+                  priority
+                  src={imageDefaultValue.creator.bannerImageUrl}
+                  alt="banner-creator"
+                  fill
+                  className="object-cover object-center"
+                />
+              )}
 
             </section>
           )
@@ -143,6 +155,6 @@ export default function CreatorsPage({ params }) {
   );
 }
 
-CreatorsPage.propTypes = {
+CreatorProfilePage.propTypes = {
   params: PropTypes.string.isRequired,
 }

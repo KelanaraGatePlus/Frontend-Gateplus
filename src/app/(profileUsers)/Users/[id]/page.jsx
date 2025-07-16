@@ -6,62 +6,41 @@ import logoBuy from "@@/icons/icons-buy.svg";
 import BackPage from "@/components/BackPage/page";
 import logoRiwayatTonton from "@@/icons/icons-riwayat-tonton.svg";
 import logoSave from "@@/icons/icons-save.svg";
-import logoUsersComment from "@@/icons/logo-users-comment.svg";
+import PropTypes from "prop-types";
 import film1 from "@@/logo/logoFilm/film_1.svg";
 import axios from "axios";
 import { Pagination } from "flowbite-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import emptyWorkCreator from "@@/icons/empty-work-creator.svg";
+import ProfileCard from "@/components/Profile/ProfileCard/ProfileCard";
 
-const dataRiwayatTonton = [
-  // { id: 1, name: "Film 1", image: film1 },
-];
+/*[--- HOOKS IMPORT ---]*/
+import { useGetUserDetailQuery } from "@/hooks/api/userSliceAPI";
 
 const dataFilmDibeli = [{ id: 1, name: "Film 1", image: film1 }];
+const dataRiwayatTonton = [{ id: 1, name: "Film 1", image: film1 }];
 
-export default function ProfilePage() {
+export default function UserProfilePage({ params }) {
+  const { id } = use(params);
   const [currentPage, setCurrentPage] = useState(1);
-  const [profileName, setProfileName] = useState("");
-  const [bio, setBio] = useState("");
-  const [username, setUsername] = useState("");
   const [switchTab, setSwitchTab] = useState("RiwayatTonton");
+  const [isOwnProfile, setIsOwnProfile] = useState(false);
+  const userDetailQuery = useGetUserDetailQuery(id);
+  const userDetailData = userDetailQuery.data?.data?.data;
+
+  useEffect(() => {
+    if (userDetailQuery.isSuccess && userDetailData) {
+      const storedUserId = localStorage.getItem("users_id");
+      setIsOwnProfile(storedUserId === id);
+    }
+  }, [userDetailQuery.isSuccess, userDetailData]);
 
   const onChangePage = (page) => setCurrentPage(page);
-  const [imageUrl, setImageUrl] = useState(null);
   const [savedEbooks, setSavedEbooks] = useState([]);
   const handleSwitchTab = (tab) => {
     setSwitchTab(tab);
-  };
-
-  const getData = async () => {
-    try {
-      const userId = localStorage.getItem("users_id");
-      const token = localStorage.getItem("token");
-      if (!userId) {
-        console.error("User ID not found in localStorage");
-        console.error("User Unauthorized");
-        return;
-      }
-
-      const response = await axios.get(
-        `http://localhost:3000/users/${userId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      const usersData = response.data.data.data;
-
-      setProfileName(usersData.profileName);
-      setUsername(usersData.username);
-      setBio(usersData.bio);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
   };
 
   const getDataByUserId = async () => {
@@ -83,17 +62,6 @@ export default function ProfilePage() {
   };
 
   useEffect(() => {
-    const storedImage = localStorage.getItem("image_users");
-    if (storedImage) {
-      setImageUrl(storedImage);
-    }
-  }, []);
-
-  useEffect(() => {
-    getData();
-  }, []);
-
-  useEffect(() => {
     getDataByUserId();
   }, []);
 
@@ -108,62 +76,13 @@ export default function ProfilePage() {
         </div>
 
         <div className="flex w-full flex-col px-5 md:flex-row md:gap-5 md:px-10">
-          {/* Detail Profil */}
-          <div className="sticky mt-1 flex h-fit flex-col items-center justify-center rounded-xl bg-[#FFFFFF1A] p-4 md:max-w-[300px] md:min-w-[300px]">
-            {/* Profile */}
-            <div className="mt-2 h-28 w-28 shrink-0 lg:h-24 lg:w-24">
-              {imageUrl && imageUrl !== "null" ? (
-                <Image
-                  priority
-                  className="h-full w-full rounded-full bg-white object-cover"
-                  src={imageUrl}
-                  width={128}
-                  height={128}
-                  alt="logo-usercomment"
-                />
-              ) : (
-                <Image
-                  priority
-                  className="h-full w-full rounded-full bg-white object-cover"
-                  src={logoUsersComment}
-                  width={128}
-                  height={128}
-                  alt="logo-defaultuser"
-                />
-              )}
-            </div>
+          <ProfileCard
+            data={userDetailData}
+            profileFor="user"
+            isLoading={userDetailQuery.isLoading}
+            isOwnProfile={isOwnProfile}
+          />
 
-            {/* personal information */}
-            <div className="flex w-full flex-col gap-4">
-              {/* Name */}
-              <div className="w-full text-white">
-                <h1
-                  className={`mt-4 text-xl font-semibold lg:text-2xl ${
-                    !profileName ? "text-gray-500/60" : ""
-                  }`}
-                >
-                  {profileName || "Nama Profile Belum di atur"}
-                </h1>
-                <div className="flex items-center gap-1 text-[12px] text-gray-300 lg:text-base">
-                  <p>@{username}</p>
-                </div>
-              </div>
-
-              {/* Description */}
-              <p
-                className={`mt-1 min-h-[100px] w-full bg-[#2222224D] p-2 text-[12px] text-gray-200 lg:text-base ${!bio ? "text-gray-500/60 italic" : ""}`}
-              >
-                {bio || "Tidak ada Bio"}
-              </p>
-
-              {/* Edit Profile */}
-              <button className="mt-1 rounded-lg bg-[#0E5BA8] py-2 font-bold text-white hover:bg-[#0E5BA8]/80">
-                <Link href="/Users/Setting">
-                  <p>Edit Profile</p>
-                </Link>
-              </button>
-            </div>
-          </div>
 
           {/* Activity Menu */}
           <div className="mb-4 flex flex-1 flex-col px-0">
@@ -380,4 +299,8 @@ export default function ProfilePage() {
       <Footer />
     </div>
   );
+}
+
+UserProfilePage.propTypes = {
+  params: PropTypes.string.isRequired,
 }

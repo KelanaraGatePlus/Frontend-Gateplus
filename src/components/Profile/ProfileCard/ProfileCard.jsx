@@ -14,11 +14,11 @@ import ProfileCardLoading from "@/components/Profile/ProfileCard/ProfileCardLoad
 export default function ProfileCard({
     data,
     profileFor,
-    totalSubs,
+    totalSubs = 0,
     isLoading,
-    isReady,
+    isReady = true,
     isOwnProfile,
-    setTotalSubs,
+    setTotalSubs = () => { },
 }) {
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [isSubscribing, setIsSubscribing] = useState(false);
@@ -56,28 +56,31 @@ export default function ProfileCard({
         return <ProfileCardLoading profileFor={profileFor} />;
     }
 
+    console.log(data);
     return (
         <>
             <div className="relative mt-1 flex h-fit w-full flex-col items-center justify-center overflow-hidden rounded-xl bg-[#FFFFFF1A] p-4 transition-all duration-300 ease-out md:max-w-[300px] md:min-w-[300px]">
-                <section className="absolute top-0 mb-2 h-36 w-full overflow-hidden md:hidden md:h-32 lg:w-full">
-                    {data.bannerImageUrl && data.bannerImageUrl !== "null" ? (
-                        <Image
-                            priority
-                            src={data.bannerImageUrl}
-                            alt="banner-creator"
-                            fill
-                            className="object-cover object-center"
-                        />
-                    ) : (
-                        <Image
-                            priority
-                            src={imageDefaultValue.creator.bannerImageUrl}
-                            alt="banner-creator"
-                            fill
-                            className="object-cover object-top"
-                        />
-                    )}
-                </section>
+                {profileFor === "creator" && (
+                    <section className="absolute top-0 mb-2 h-36 w-full overflow-hidden md:hidden md:h-32 lg:w-full">
+                        {data.bannerImageUrl && data.bannerImageUrl !== "null" ? (
+                            <Image
+                                priority
+                                src={data.bannerImageUrl}
+                                alt="banner-creator"
+                                fill
+                                className="object-cover object-center"
+                            />
+                        ) : (
+                            <Image
+                                priority
+                                src={imageDefaultValue.creator.bannerImageUrl}
+                                alt="banner-creator"
+                                fill
+                                className="object-cover object-top"
+                            />
+                        )}
+                    </section>
+                )}
 
                 {/* Profile */}
                 <div className="z-0 mt-8 mb-2 h-32 w-32 shrink-0 rounded-full shadow-2xl transition-all duration-300 ease-out md:mt-2 md:h-36 md:w-36">
@@ -127,9 +130,9 @@ export default function ProfileCard({
 ProfileCard.propTypes = {
     data: PropTypes.object.isRequired,
     profileFor: PropTypes.oneOf(['creator', 'user']).isRequired,
-    totalSubs: PropTypes.number.isRequired,
+    totalSubs: PropTypes.number,
     isLoading: PropTypes.bool.isRequired,
-    isReady: PropTypes.bool.isRequired,
+    isReady: PropTypes.bool,
     isOwnProfile: PropTypes.bool.isRequired,
-    setTotalSubs: PropTypes.func.isRequired,
+    setTotalSubs: PropTypes.func,
 };
