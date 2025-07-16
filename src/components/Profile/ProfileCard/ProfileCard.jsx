@@ -14,7 +14,12 @@ import PersonalInformationSection from "./PersonalInformation/page";
 import Toast from "@/components/Toast/page";
 import ProfileCardLoading from "@/components/Profile/ProfileCard/ProfileCardLoading";
 
-export default function ProfileCard({ creatorId, setBannerImageUrl, setIsLoading }) {
+export default function ProfileCard({
+    creatorId, 
+    profileFor,
+    setIsLoading,
+    setBannerImageUrl, 
+}) {
     const [isOwnProfile, setIsOwnProfile] = useState(null);
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [totalSubs, setTotalSubs] = useState(0);
@@ -128,6 +133,7 @@ export default function ProfileCard({ creatorId, setBannerImageUrl, setIsLoading
                 <PersonalInformationSection
                     data={creatorData}
                     totalSubsribers={totalSubs}
+                    profileFor={profileFor}
                     isOwnProfile={isOwnProfile}
                     isSubscribed={isSubscribed}
                     isSubsribing={isSubscribing}
@@ -147,6 +153,7 @@ export default function ProfileCard({ creatorId, setBannerImageUrl, setIsLoading
 
 ProfileCard.propTypes = {
     creatorId: PropTypes.string.isRequired,
-    setBannerImageUrl: PropTypes.func.isRequired,
+    profileFor: PropTypes.oneOf(['creator', 'user']).isRequired,
     setIsLoading: PropTypes.func.isRequired,
+    setBannerImageUrl: PropTypes.func.isRequired,
 };

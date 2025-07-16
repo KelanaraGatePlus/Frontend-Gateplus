@@ -8,14 +8,42 @@ import DescriptionSection from './DescriptionSection';
 import SocialMediaSection from './SocialMediaSection';
 import ButtonSection from './ButtonSection';
 
-export default function PersonalInformationSection({ data, totalSubsribers, isOwnProfile, isSubscribed, isSubsribing, handleToggleSubscribe }) {
+export default function PersonalInformationSection({
+    data,
+    totalSubsribers,
+    profileFor,
+    isOwnProfile,
+    isSubscribed,
+    isSubsribing,
+    handleToggleSubscribe
+}) {
     return (
         <div className="flex w-full flex-col gap-3">
-            <NameSection profileName={data.profileName} username={data.username} />
-            <ViewAndSubSection totalViews={data.totalViews} totalSubsribers={totalSubsribers} />
+            <NameSection
+                profileName={data.profileName}
+                username={data.username}
+            />
+            {profileFor === 'creator' && (
+                <ViewAndSubSection
+                    totalViews={data.totalViews}
+                    totalSubsribers={totalSubsribers}
+                />
+            )}
             <DescriptionSection description={data.description} />
-            <SocialMediaSection instagramUrl={data.instagramUrl} tiktokUrl={data.tiktokUrl} twitterUrl={data.twitterUrl} facebookUrl={data.facebookUrl} />
-            <ButtonSection isOwnProfile={isOwnProfile} isSubscribed={isSubscribed} isSubscribing={isSubsribing} handleToggleSubscribe={handleToggleSubscribe} />
+            {profileFor === 'creator' && (
+                <SocialMediaSection
+                    instagramUrl={data.instagramUrl}
+                    tiktokUrl={data.tiktokUrl}
+                    twitterUrl={data.twitterUrl}
+                    facebookUrl={data.facebookUrl}
+                />
+            )}
+            <ButtonSection
+                isOwnProfile={isOwnProfile}
+                isSubscribed={isSubscribed}
+                isSubscribing={isSubsribing}
+                handleToggleSubscribe={handleToggleSubscribe}
+            />
         </div>
     )
 }
@@ -23,9 +51,9 @@ export default function PersonalInformationSection({ data, totalSubsribers, isOw
 PersonalInformationSection.propTypes = {
     data: PropTypes.object.isRequired,
     totalSubsribers: PropTypes.number.isRequired,
+    profileFor: PropTypes.oneOf(['creator', 'user']).isRequired,
     isOwnProfile: PropTypes.bool.isRequired,
     isSubscribed: PropTypes.bool.isRequired,
     isSubsribing: PropTypes.bool.isRequired,
-    
     handleToggleSubscribe: PropTypes.func.isRequired
 }

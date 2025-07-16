@@ -62,7 +62,12 @@ export default function CreatorsPage({ params }) {
         }
 
         <div className="flex w-full flex-col items-start gap-2 transition-all duration-300 ease-out md:mt-32 md:flex-row md:items-end">
-          <ProfileCard creatorId={id} setBannerImageUrl={setBannerImageUrl} setIsLoading={setIsLoading} />
+          <ProfileCard
+            creatorId={id}
+            profileFor="creator"
+            setIsLoading={setIsLoading}
+            setBannerImageUrl={setBannerImageUrl}
+          />
           <section className="w-full md:min-w-[calc(100%-300px)] md:max-w-[calc(100%-300px)] transition-all duration-300 ease-out">
             <CreatorMostViewedContent creatorId={id} />
           </section>
