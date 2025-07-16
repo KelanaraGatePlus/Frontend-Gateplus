@@ -20,11 +20,10 @@ export const creatorAPI = createApi({
             keepUnusedDataFor: 60,
         }),
         getCreatorDetail: builder.query({
-            query: ({ creatorId, userId }) => `/${creatorId}?userId=${userId}`,
+            query: ({ id, userId }) => `/${id}?userId=${userId}`,
             providesTags: ["creatorsAPI"],
             keepUnusedDataFor: 60,
         }),
-
     }),
 })
 

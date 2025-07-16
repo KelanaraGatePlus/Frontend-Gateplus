@@ -1,12 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from "axios";
 import Image from "next/image";
 import PropTypes from "prop-types";
 
-/*[--- HOOKS IMPORT ---]*/
-import { useGetCreatorDetailQuery } from "@/hooks/api/creatorSliceAPI";
-
-/*[--- UTILITY IMPORT ---]*/
+/*[--- CONSTANT IMPORT ---]*/
 import { imageDefaultValue } from "@/lib/constants/imageDefaultValue";
 
 /*[--- COMPONENT IMPORT ---]*/
@@ -15,41 +12,17 @@ import Toast from "@/components/Toast/page";
 import ProfileCardLoading from "@/components/Profile/ProfileCard/ProfileCardLoading";
 
 export default function ProfileCard({
-    creatorId, 
+    data,
     profileFor,
-    setIsLoading,
-    setBannerImageUrl, 
+    totalSubs,
+    isLoading,
+    isReady,
+    isOwnProfile,
+    setTotalSubs,
 }) {
-    const [isOwnProfile, setIsOwnProfile] = useState(null);
     const [isSubscribed, setIsSubscribed] = useState(false);
-    const [totalSubs, setTotalSubs] = useState(0);
     const [isSubscribing, setIsSubscribing] = useState(false);
     const [showToast, setShowToast] = useState(false);
-    const [userId, setUserId] = useState(null);
-    const [ready, setReady] = useState(false);
-
-    useEffect(() => {
-        if (typeof window !== "undefined") {
-            const storedUserId = localStorage.getItem("users_id");
-            setUserId(storedUserId);
-            setReady(true);
-        }
-    }, []);
-
-    const skip = !creatorId || !userId;
-    const { data, isLoading } = useGetCreatorDetailQuery({ creatorId, userId }, { skip });
-    const creatorData = data?.data?.data || {};
-
-    useEffect(() => {
-        if (!isLoading) {
-            setBannerImageUrl(creatorData.bannerImageUrl);
-            setTotalSubs(creatorData.totalSubscribers);
-            const storedCreatorId = localStorage.getItem("creators_id");
-            setIsOwnProfile(storedCreatorId === creatorData.id);
-        }
-        setIsLoading(isLoading);
-    }, [creatorData, isLoading]);
-
 
     const handleToggleSubscribe = async () => {
         if (isSubscribed) {
@@ -59,7 +32,7 @@ export default function ProfileCard({
         try {
             setIsSubscribing(true);
             const userId = localStorage.getItem("users_id");
-            const creatorId = creatorData.id;
+            const creatorId = data.id;
             console.log(userId);
             console.log(creatorId);
             const response = await axios.post(
@@ -79,18 +52,18 @@ export default function ProfileCard({
         }
     };
 
-    if (!ready || isLoading) {
-        return <ProfileCardLoading />;
+    if (!isReady || isLoading) {
+        return <ProfileCardLoading profileFor={profileFor} />;
     }
 
     return (
         <>
             <div className="relative mt-1 flex h-fit w-full flex-col items-center justify-center overflow-hidden rounded-xl bg-[#FFFFFF1A] p-4 transition-all duration-300 ease-out md:max-w-[300px] md:min-w-[300px]">
                 <section className="absolute top-0 mb-2 h-36 w-full overflow-hidden md:hidden md:h-32 lg:w-full">
-                    {creatorData.bannerImageUrl && creatorData.bannerImageUrl !== "null" ? (
+                    {data.bannerImageUrl && data.bannerImageUrl !== "null" ? (
                         <Image
                             priority
-                            src={creatorData.bannerImageUrl}
+                            src={data.bannerImageUrl}
                             alt="banner-creator"
                             fill
                             className="object-cover object-center"
@@ -108,11 +81,11 @@ export default function ProfileCard({
 
                 {/* Profile */}
                 <div className="z-0 mt-8 mb-2 h-32 w-32 shrink-0 rounded-full shadow-2xl transition-all duration-300 ease-out md:mt-2 md:h-36 md:w-36">
-                    {creatorData.imageUrl && creatorData.imageUrl !== "null" ? (
+                    {data.imageUrl && data.imageUrl !== "null" ? (
                         <Image
                             priority
                             className="h-full w-full rounded-full bg-[#2e2e2e] object-cover"
-                            src={creatorData.imageUrl}
+                            src={data.imageUrl}
                             width={128}
                             height={128}
                             alt="logo-usercomment"
@@ -131,7 +104,7 @@ export default function ProfileCard({
 
                 {/* personal information */}
                 <PersonalInformationSection
-                    data={creatorData}
+                    data={data}
                     totalSubsribers={totalSubs}
                     profileFor={profileFor}
                     isOwnProfile={isOwnProfile}
@@ -142,7 +115,7 @@ export default function ProfileCard({
             </div>
             {showToast && (
                 <Toast
-                    message={`Untuk saat ini belum bisa Unsubscribe Creator (${creatorData.profileName})`}
+                    message={`Untuk saat ini belum bisa Unsubscribe Creator (${data.profileName})`}
                     type="failed"
                     onClose={() => setShowToast(false)}
                 />
@@ -152,8 +125,11 @@ export default function ProfileCard({
 }
 
 ProfileCard.propTypes = {
-    creatorId: PropTypes.string.isRequired,
+    data: PropTypes.object.isRequired,
     profileFor: PropTypes.oneOf(['creator', 'user']).isRequired,
-    setIsLoading: PropTypes.func.isRequired,
-    setBannerImageUrl: PropTypes.func.isRequired,
+    totalSubs: PropTypes.number.isRequired,
+    isLoading: PropTypes.bool.isRequired,
+    isReady: PropTypes.bool.isRequired,
+    isOwnProfile: PropTypes.bool.isRequired,
+    setTotalSubs: PropTypes.func.isRequired,
 };

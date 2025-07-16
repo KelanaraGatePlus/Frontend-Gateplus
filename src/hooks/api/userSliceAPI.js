@@ -17,6 +17,11 @@ export const userAPI = createApi({
       providesTags: ["usersAPI"],
       keepUnusedDataFor: 5,
     }),
+    getUserDetail: builder.query({
+      query: ({ userId }) => `/${userId}`,
+      providesTags: ["usersAPI"],
+      keepUnusedDataFor: 60,
+    }),
     getMe: builder.query({
       query: () => "/users/authMe",
       providesTags: ["usersAPI"],
@@ -42,6 +47,7 @@ export const userAPI = createApi({
 
 export const {
   useGetUsersQuery,
+  useGetUserDetailQuery,
   useGetMeQuery,
   useRegisterUserMutation,
   useLoginUserMutation,
