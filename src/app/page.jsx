@@ -6,6 +6,7 @@ import CategoryPage from "@/components/CategoryPage/page";
 import CarouselNewest from "@/components/Carousel/CarouselHome/carouselNewest";
 import CarouselHighlight from "@/components/Carousel/CarouselHome/carouselHighlight";
 import CarouselTopTen from "@/components/Carousel/CarouselHome/carouselTopTen";
+import CarouselLastSeen from "@/components/Carousel/CarouselHome/carouselLastSeen";
 import CarouselRecommendations from "@/components/Carousel/CarouselHome/carouselRecommendation";
 import CarouselPopularEbooks from "@/components/Carousel/CarouselHome/carouselPopularEbooks";
 import CarouselPopularComics from "@/components/Carousel/CarouselHome/carouselPopularComics";
@@ -24,6 +25,7 @@ export default function HomePage() {
           <CarouselNewest />
           <CarouselHighlight />
           <CarouselTopTen />
+          <CarouselLastSeen />
           <CarouselRecommendations />
           <CarouselPopularEbooks />
           <CarouselPopularComics />
