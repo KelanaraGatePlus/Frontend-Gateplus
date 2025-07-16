@@ -1,48 +1,80 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+
+/*[--- HOOKS IMPORT ---]*/
+import { useGetUserSavedContentQuery } from "@/hooks/api/userSliceAPI";
 
 import { Pagination } from 'flowbite-react';
 import MenuTabs from './MenuTabs';
-import ContentItem from '../ContentItem';
+import ContentList from '../ContentList';
 
-export default function UserLibraryTabs({
-    datas,
-    switchTab,
-    currentPage,
-    onChangePage,
-    handleSwitchTab,
-}) {
+export default function UserLibraryTabs({ id }) {
+    const [switchTab, setSwitchTab] = useState("Disimpan");
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+    const [totalItems, setTotalItems] = useState(0);
+    const [activeContent, setActiveContent] = useState([]);
+    const [isLoadingContent, setIsLoadingContent] = useState(false);
+
+    const { data, isLoading: isLoadingSavedContent, isSuccess } = useGetUserSavedContentQuery(id);
+    const userSavedContentData = data?.data?.data || [];
+
+    useEffect(() => {
+        if (isSuccess && userSavedContentData) {
+            setTotalItems(userSavedContentData.length);
+        }
+    }, [isSuccess, userSavedContentData]);
+
+    useEffect(() => {
+        let content = [];
+        let isLoading = false;
+
+        if (switchTab === "Disimpan") {
+            content = userSavedContentData;
+            isLoading = isLoadingSavedContent;
+        } else if (switchTab === "Dibeli") {
+            content = [];
+            isLoading = false;
+        } else if (switchTab === "Riwayat Tonton") {
+            const local = localStorage.getItem("lastSeenContent");
+            content = local ? JSON.parse(local) : [];
+            isLoading = false;
+        }
+
+        setActiveContent(content);
+        setIsLoadingContent(isLoading);
+        setTotalItems(content.length);
+    }, [switchTab, userSavedContentData]);
+
+    const handleSwitchTab = (tab) => {
+        setSwitchTab(tab);
+    };
+
     return (
-        <div className="mb-4 flex flex-1 flex-col px-0">
-            {/* menu */}
+        <div className="mb-4 flex flex-1 flex-col px-0 gap-4 relative">
             <MenuTabs switchTab={switchTab} handleSwitchTab={handleSwitchTab} />
-            {/* content */}
-            <div className="lg:x-0 grid grid-cols-3 justify-items-center gap-2 py-2 sm:grid-cols-4 lg:grid-cols-5 lg:gap-4 lg:pt-4">
-                {datas.map((data, index) => (
-                    <ContentItem
-                        key={index}
-                        item={data}
-                        type={"ebook"}
-                    />
-                ))}
-            </div>
-
-            {/* pagination */}
-            <Pagination
-                className="flex justify-center"
+            <ContentList
+                data={activeContent}
+                isLoading={isLoadingContent}
+                isOnUserProfile={true}
                 currentPage={currentPage}
-                totalPages={10}
-                onPageChange={onChangePage}
-                alt="pagination"
+                itemsPerPage={itemsPerPage}
             />
+
+            <section className="mx-5 mt-10 flex justify-center">
+                {totalItems > itemsPerPage && (
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={Math.max(1, Math.ceil(totalItems / itemsPerPage))}
+                        onPageChange={(page) => setCurrentPage(page)}
+                        showIcons
+                    />
+                )}
+            </section>
         </div>
     )
 }
 
 UserLibraryTabs.propTypes = {
-    datas: PropTypes.array.isRequired,
-    switchTab: PropTypes.string.isRequired,
-    currentPage: PropTypes.number.isRequired,
-    onChangePage: PropTypes.func.isRequired,
-    handleSwitchTab: PropTypes.func.isRequired
+    id: PropTypes.string.isRequired,
 }

@@ -50,7 +50,7 @@ export default function ContentItem({ item, type }) {
                         height={353}
                         alt={item.title || "podcast-image"}
                         unoptimized
-                        className={`h-full w-full rounded-lg bg-[#222222] object-cover group-hover:opacity-50 transition-all duration-300 ease-in-out`}
+                        className={`h-full w-full rounded-lg bg-[#2E2E2E] object-cover group-hover:opacity-50 transition-all duration-300 ease-in-out`}
                     />
                 </div>
             </Link>

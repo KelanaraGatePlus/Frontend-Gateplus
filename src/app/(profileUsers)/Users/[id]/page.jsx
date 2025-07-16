@@ -4,7 +4,6 @@ import Footer from "@/components/Footer/MainFooter";
 import Navbar from "@/components/Navbar/page";
 import BackPage from "@/components/BackPage/page";
 import PropTypes from "prop-types";
-import axios from "axios";
 import { use, useEffect, useState } from "react";
 import ProfileCard from "@/components/Profile/ProfileCard/ProfileCard";
 import UserLibraryTabs from "@/components/Profile/UserLibraryTabs/page";
@@ -14,46 +13,16 @@ import { useGetUserDetailQuery } from "@/hooks/api/userSliceAPI";
 
 export default function UserProfilePage({ params }) {
   const { id } = use(params);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [switchTab, setSwitchTab] = useState("RiwayatTonton");
   const [isOwnProfile, setIsOwnProfile] = useState(false);
-  const userDetailQuery = useGetUserDetailQuery(id);
-  const userDetailData = userDetailQuery.data?.data?.data;
+  const { data, isLoading, isSuccess } = useGetUserDetailQuery(id);
+  const userDetailData = data?.data?.data;
 
   useEffect(() => {
-    if (userDetailQuery.isSuccess && userDetailData) {
+    if (isSuccess && userDetailData) {
       const storedUserId = localStorage.getItem("users_id");
       setIsOwnProfile(storedUserId === id);
     }
-  }, [userDetailQuery.isSuccess, userDetailData]);
-
-  const onChangePage = (page) => setCurrentPage(page);
-  const [savedEbooks, setSavedEbooks] = useState([]);
-  const handleSwitchTab = (tab) => {
-    setSwitchTab(tab);
-  };
-
-  const getDataByUserId = async () => {
-    try {
-      const userId = localStorage.getItem("users_id");
-      const response = await axios.get(
-        `http://localhost:3000/save/byUser/${userId}`,
-      );
-      const usersSavedEbook = response.data.data.data;
-
-      const allEbooks = usersSavedEbook
-        .flatMap((item) => item.users?.savedEpisode || [])
-        .map((se) => se.ebook);
-
-      setSavedEbooks(allEbooks);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
-
-  useEffect(() => {
-    getDataByUserId();
-  }, []);
+  }, [isSuccess, userDetailData]);
 
   return (
     <div className="flex w-full flex-col">
@@ -65,16 +34,11 @@ export default function UserProfilePage({ params }) {
           <ProfileCard
             data={userDetailData}
             profileFor="user"
-            isLoading={userDetailQuery.isLoading}
+            isLoading={isLoading}
             isOwnProfile={isOwnProfile}
           />
 
-          <UserLibraryTabs
-            datas={savedEbooks}
-            switchTab={switchTab}
-            currentPage={currentPage}
-            onChangePage={onChangePage}
-            handleSwitchTab={handleSwitchTab} />
+          <UserLibraryTabs id={id} />
         </div>
       </main>
 

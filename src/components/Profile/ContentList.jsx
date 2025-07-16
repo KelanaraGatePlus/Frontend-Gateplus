@@ -4,9 +4,12 @@ import ContentItem from "./ContentItem";
 import ContentLoading from "./ContentLoading";
 import "react-loading-skeleton/dist/skeleton.css";
 
+import EmptySection from "@/components/EmptyCondition/page";
+
 export default function ContentList({
     data,
     isLoading,
+    isOnUserProfile = false,
     currentPage,
     itemsPerPage,
 }) {
@@ -14,8 +17,15 @@ export default function ContentList({
     const startIndex = (currentPage - 1) * itemsPerPage;
     const paginatedContent = data.slice(startIndex, startIndex + itemsPerPage);
 
+    if (!isLoading && data.length === 0) {
+        return <EmptySection
+            headerMessage='Konten Masih Kosong'
+            descriptionMessage='Konten kamu masih kosong, silakan cek lagi nanti!'
+        />;
+    }
+
     return (
-        <div className="flex flex-start flex-wrap gap-6">
+        <div className={`flex flex-start flex-wrap ${isOnUserProfile ? "gap-4 justify-center" : "gap-6 justify-start"}`}>
             {isLoading ? (
                 Array.from({ length: 10 }).map((_, index) => (
                     <ContentLoading key={index} />
@@ -36,6 +46,7 @@ export default function ContentList({
 ContentList.propTypes = {
     data: PropTypes.array.isRequired,
     isLoading: PropTypes.bool.isRequired,
+    isOnUserProfile: PropTypes.bool,
     currentPage: PropTypes.number.isRequired,
     itemsPerPage: PropTypes.number.isRequired,
     setTotalItems: PropTypes.func.isRequired,
