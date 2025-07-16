@@ -14,8 +14,8 @@ import ProfileCard from "@/components/Profile/ProfileCard/ProfileCard";
 import CreatorMostViewedContent from "@/components/Carousel/CarouselProfile/creatorMostViewedContent";
 import ContentList from "@/components/Profile/ContentList";
 import BackPage from "@/components/BackPage/page";
-import { Pagination } from 'flowbite-react';
 import Skeleton from "react-loading-skeleton";
+import { Pagination } from 'flowbite-react';
 import "react-loading-skeleton/dist/skeleton.css";
 
 /*[--- CONSTANT IMPORT ---]*/
