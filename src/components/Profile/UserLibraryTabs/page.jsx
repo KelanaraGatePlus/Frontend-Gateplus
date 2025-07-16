@@ -36,7 +36,7 @@ export default function UserLibraryTabs({ id }) {
             content = [];
             isLoading = false;
         } else if (switchTab === "Riwayat Tonton") {
-            const local = localStorage.getItem("lastSeenContent");
+            const local = localStorage.getItem("last_seen_content");
             content = local ? JSON.parse(local) : [];
             isLoading = false;
         }
