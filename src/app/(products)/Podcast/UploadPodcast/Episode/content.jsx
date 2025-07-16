@@ -1,7 +1,7 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
-import Footer from "@/components/Footer/page";
+import Footer from "@/components/Footer/MainFooter";
 import Navbar from "@/components/Navbar/page";
 import Toast from "@/components/Toast/page";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
@@ -157,7 +157,7 @@ export default function UploadEpisodePageContent() {
         try {
             const creatorId = localStorage.getItem("creators_id");
             const response = await axios.get(
-                `https://backend-gateplus-api.my.id/creator/${creatorId}`,
+                `http://localhost:3000/creator/${creatorId}`,
             );
 
             const fullData = response.data.data;
@@ -214,7 +214,7 @@ export default function UploadEpisodePageContent() {
 
         try {
             const response = await axios.post(
-                "https://backend-gateplus-api.my.id/episode",
+                "http://localhost:3000/episode",
                 formData,
                 {
                     headers: {

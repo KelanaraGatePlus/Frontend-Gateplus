@@ -40,12 +40,12 @@ export default function NotificationMenu() {
         setIsAuthorized(true);
         if (role === "Creators" && creatorId) {
           const resCreator = await axios.get(
-            `https://backend-gateplus-api.my.id/creator/${creatorId}`,
+            `http://localhost:3000/creator/${creatorId}`,
             {
               headers,
             },
           );
-          const creatorData = resCreator.data?.data?.data?.[0];
+          const creatorData = resCreator.data?.data?.data;
           console.log("data notif creator 2:", creatorData);
           notifList =
             creatorData.notifications?.filter(
@@ -53,7 +53,7 @@ export default function NotificationMenu() {
             ) || [];
         } else if (role === "Users" && userId) {
           const resUser = await axios.get(
-            `https://backend-gateplus-api.my.id/users/${userId}`,
+            `http://localhost:3000/users/${userId}`,
             {
               headers,
             },
@@ -96,7 +96,7 @@ export default function NotificationMenu() {
   const handleReadNotification = async (id) => {
     try {
       const response = await axios.patch(
-        `https://backend-gateplus-api.my.id/notifications/${id}/read`,
+        `http://localhost:3000/notifications/${id}/read`,
       );
       console.log("Notifikasi dibaca:", response.data);
       fetchNotifications();

@@ -1,15 +1,16 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
+import Navbar from "@/components/Navbar/page";
 import SliderBannerPage from "@/components/BannerPromoSlider/page";
-import CarouselEbook from "@/components/Carousel/CarouselEbook/page";
-import CarouselComic from "@/components/Carousel/CarouselComic/page";
-import CarouselPodcast from "@/components/Carousel/CarouselPodcast/page";
+import CategoryPage from "@/components/CategoryPage/page";
 import CarouselNewest from "@/components/Carousel/CarouselHome/carouselNewest";
 import CarouselHighlight from "@/components/Carousel/CarouselHome/carouselHighlight";
 import CarouselTopTen from "@/components/Carousel/CarouselHome/carouselTopTen";
-import CategoryPage from "@/components/CategoryPage/page";
-import Footer from "@/components/Footer/page";
-import Navbar from "@/components/Navbar/page";
+import CarouselRecommendations from "@/components/Carousel/CarouselHome/carouselRecommendation";
+import CarouselPopularEbooks from "@/components/Carousel/CarouselHome/carouselPopularEbooks";
+import CarouselPopularComics from "@/components/Carousel/CarouselHome/carouselPopularComics";
+import CarouselPopularPodcasts from "@/components/Carousel/CarouselHome/carouselPopularPodcasts";
+import Footer from "@/components/Footer/MainFooter";
 import "@splidejs/react-splide/css";
 
 export default function HomePage() {
@@ -23,9 +24,10 @@ export default function HomePage() {
           <CarouselNewest />
           <CarouselHighlight />
           <CarouselTopTen />
-          <CarouselEbook />
-          <CarouselComic />
-          <CarouselPodcast />
+          <CarouselRecommendations />
+          <CarouselPopularEbooks />
+          <CarouselPopularComics />
+          <CarouselPopularPodcasts />
         </main>
         <Footer />
       </div>

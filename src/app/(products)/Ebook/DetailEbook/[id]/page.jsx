@@ -14,7 +14,7 @@ export default function DetailEbook({ params }) {
     try {
       const userId = localStorage.getItem("users_id");
       const response = await axios.get(
-        `https://backend-gateplus-api.my.id/ebooks/${id}?userId=${userId}`,
+        `http://localhost:3000/ebooks/${id}?userId=${userId}`,
       );
       const ebookSingleData = response.data.data.data;
       console.log("ini das", ebookSingleData);

@@ -1,6 +1,6 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
-import Footer from "@/components/Footer/page";
+import Footer from "@/components/Footer/MainFooter";
 import Navbar from "@/components/Navbar/page";
 import logoBuy from "@@/icons/icons-buy.svg";
 import BackPage from "@/components/BackPage/page";
@@ -46,7 +46,7 @@ export default function ProfilePage() {
       }
 
       const response = await axios.get(
-        `https://backend-gateplus-api.my.id/users/${userId}`,
+        `http://localhost:3000/users/${userId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -68,7 +68,7 @@ export default function ProfilePage() {
     try {
       const userId = localStorage.getItem("users_id");
       const response = await axios.get(
-        `https://backend-gateplus-api.my.id/save/byUser/${userId}`,
+        `http://localhost:3000/save/byUser/${userId}`,
       );
       const usersSavedEbook = response.data.data.data;
 

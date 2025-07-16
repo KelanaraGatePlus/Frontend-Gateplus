@@ -1,5 +1,5 @@
 import React from "react";
-import Footer from "@/components/Footer/page";
+import Footer from "@/components/Footer/MainFooter";
 import Navbar from "@/components/Navbar/page";
 import emptyWorkCreator from "@@/icons/empty-work-creator.svg";
 import Image from "next/image";

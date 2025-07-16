@@ -1,4 +1,4 @@
-import Footer from "@/components/Footer/page";
+import Footer from "@/components/Footer/MainFooter";
 import Navbar from "@/components/Navbar/page";
 import iconArrow from "@@/icons/icon-arrow.svg";
 import iconEmail from "@@/icons/icons-email.svg";

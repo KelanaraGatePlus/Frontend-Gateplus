@@ -1,8 +1,8 @@
 /* eslint-disable react/react-in-jsx-scope */
 import Picture404 from "@@/icons/error-page.svg";
-import Image from "next/legacy/image";
+import Image from "next/image";
 import Link from "next/link";
-import MiniFooter from "@/components/MiniFooter/page";
+import MiniFooter from "@/components/Footer/MiniFooter";
 
 export default function PageSessionExpired() {
   return (
@@ -14,7 +14,7 @@ export default function PageSessionExpired() {
               priority
               src={Picture404}
               alt="icons 404"
-              className="object-cover object-center"
+              className="object-contain object-center"
               fill
             />
           </div>

@@ -19,7 +19,7 @@ import HeaderTab from '@/components/UploadForm/HeaderTab';
 import Toast from "@/components/Toast/page";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import BottomSpacer from '@/components/BottomSpacer/page';
-import Footer from "@/components/Footer/page";
+import Footer from "@/components/Footer/MainFooter";
 
 /*[--- ASSETS IMPORT ---]*/
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
@@ -113,7 +113,7 @@ export default function UploadEbookPage() {
 
     try {
       const response = await axios.post(
-        "https://backend-gateplus-api.my.id/ebooks",
+        "http://localhost:3000/ebooks",
         formData,
         {
           headers: {
@@ -142,7 +142,7 @@ export default function UploadEbookPage() {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "https://backend-gateplus-api.my.id/category/",
+        "http://localhost:3000/category/",
         {
           headers: {
             Authorization: `Bearer ${token}`,

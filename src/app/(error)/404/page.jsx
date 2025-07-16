@@ -2,7 +2,7 @@
 import Picture404 from "@@/icons/error-page.svg";
 import Image from "next/image";
 import Link from "next/link";
-import MiniFooter from "@/components/MiniFooter/page";
+import MiniFooter from "@/components/Footer/MiniFooter";
 
 export default function PageNotFound() {
   return (

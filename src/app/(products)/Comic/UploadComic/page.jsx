@@ -3,7 +3,7 @@
 
 import BackPage from "@/components/BackPage/page";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
-import Footer from "@/components/Footer/page";
+import Footer from "@/components/Footer/MainFooter";
 import Navbar from "@/components/Navbar/page";
 import Toast from "@/components/Toast/page";
 import ArrowRight from "@@/icons/icons-arrow-right.svg";
@@ -109,7 +109,7 @@ export default function UploadEbookPage() {
 
     try {
       const response = await axios.post(
-        "https://backend-gateplus-api.my.id/comics",
+        "http://localhost:3000/comics",
         formData,
         {
           headers: {
@@ -138,7 +138,7 @@ export default function UploadEbookPage() {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "https://backend-gateplus-api.my.id/category/",
+        "http://localhost:3000/category/",
         {
           headers: {
             Authorization: `Bearer ${token}`,

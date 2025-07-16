@@ -1,5 +1,5 @@
 import BackPreviousPage from "@/components/BackPreviousPage/page";
-import Footer from "@/components/Footer/page";
+import Footer from "@/components/Footer/MainFooter";
 import FormUploadContentPage from "@/components/FormUploadContent/page";
 import NavbarLogin from "@/components/NavbarLogin/page";
 

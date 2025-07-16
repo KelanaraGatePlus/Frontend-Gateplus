@@ -1,6 +1,6 @@
 /* eslint-disable react/react-in-jsx-scope */
 import BackPage from "@/components/BackPage/page";
-import Footer from "@/components/Footer/page";
+import Footer from "@/components/Footer/MainFooter";
 import Navbar from "@/components/Navbar/page";
 import BannerBackground from "@@/Law/banner-background.svg";
 import Image from "next/image";

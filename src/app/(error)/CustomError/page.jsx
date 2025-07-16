@@ -2,7 +2,7 @@ import React from "react";
 import Image from "next/image";
 import MaintenancePictures from "@@/icons/maintenance-picture.svg";
 import logo from "../../../../public/images/logo/logoGate+/logo-header-login.svg";
-import MiniFooter from "@/components/MiniFooter/page";
+import MiniFooter from "@/components/Footer/MiniFooter";
 
 export default function InternalServerError() {
     return (

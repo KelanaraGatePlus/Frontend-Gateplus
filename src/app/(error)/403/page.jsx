@@ -1,8 +1,8 @@
 /* eslint-disable react/react-in-jsx-scope */
 import Picture404 from "@@/icons/error-page.svg";
-import Image from "next/legacy/image";
+import Image from "next/image";
 import Link from "next/link";
-import MiniFooter from "@/components/MiniFooter/page";
+import MiniFooter from "@/components/Footer/MiniFooter";
 
 export default function PageForbidden() {
   return (
@@ -14,7 +14,7 @@ export default function PageForbidden() {
               priority
               src={Picture404}
               alt="icons 404"
-              className="object-cover object-center"
+              className="object-contain object-center"
               fill
             />
           </div>
@@ -22,7 +22,7 @@ export default function PageForbidden() {
         <section className="flex flex-col items-center">
           <div className="relative flex h-24 w-fit items-center justify-start">
             <div className="text-white">
-              <h1 className="zeinFont text-7xl font-black">403</h1>
+              <h1 className="zeinFont text-8xl font-black">403</h1>
             </div>
           </div>
 
@@ -52,7 +52,7 @@ export default function PageForbidden() {
         </section>
       </main>
 
-      <div className="absolute bottom-0 text-[10px] md:text-sm">
+      <div className="absolute bottom-0 md:bottom-2 text-[10px] md:text-sm">
         <MiniFooter />
       </div>
     </div>

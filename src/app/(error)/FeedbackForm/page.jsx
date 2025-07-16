@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Image from "next/image";
-import MiniFooter from "@/components/MiniFooter/page";
+import MiniFooter from "@/components/Footer/MiniFooter";
 import Picture404 from "@@/icons/error-page.svg";
 import { useState, useRef } from "react";
 
