@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const url = "http://localhost:3000/creator";
+const url = "https://backend-gateplus-api.my.id/creator";
 
 export const creatorAPI = createApi({
     reducerPath: "creatorsAPI",

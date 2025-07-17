@@ -14,6 +14,7 @@ import { useGetEpisodeEbookByIdQuery } from "@/hooks/api/ebookSliceAPI";
 /*[--- COMPONENT IMPORT ---]*/
 import BackPage from "@/components/BackPage/page";
 import EpubReader from "@/components/EbookReader/page";
+import DetailPageLoadingSkeleton from "@/components/template/Loading/ProductReadLoading"
 
 /*[--- ASSETS IMPORT ---]*/
 import iconMoreMenuComment from "@@/icons/icon-comment.svg";
@@ -25,6 +26,7 @@ import IconsLikeComment from "@@/logo/logoDetailEbook/icon-like-comment.svg";
 
 export default function ReadEbookPage({ params }) {
   const { id } = use(params);
+  const [showSkeleton, setShowSkeleton] = useState(true);
   const [ebookTitle, setEbookTitle] = useState("");
   const [ebookId, setEbookId] = useState("");
   const [title, setTitle] = useState("");
@@ -59,7 +61,7 @@ export default function ReadEbookPage({ params }) {
       if (!hasUpdatedViews) {
         console.log("Tambah Views");
         await axios.patch(
-          `http://localhost:3000/episode/${id}/views`,
+          `https://backend-gateplus-api.my.id/episode/${id}/views`,
         );
         hasUpdatedViews = true;
       }
@@ -92,7 +94,7 @@ export default function ReadEbookPage({ params }) {
   const getCommentData = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/comment/by-ebook-episode/${id}`,
+        `https://backend-gateplus-api.my.id/comment/by-ebook-episode/${id}`,
       );
 
       console.log(response.data.data.data);
@@ -110,7 +112,7 @@ export default function ReadEbookPage({ params }) {
       setIsUploadingComment(true);
       const userId = localStorage.getItem("users_id");
       const response = await axios.post(
-        `http://localhost:3000/comment`,
+        `https://backend-gateplus-api.my.id/comment`,
         {
           userId: userId,
           episodeEbookId: id,
@@ -151,9 +153,14 @@ export default function ReadEbookPage({ params }) {
     }
   }, []);
 
-  if (isLoading) {
+  useEffect(() => {
+    setShowSkeleton(isLoading);
+  }, [isLoading]);
+
+
+  if (showSkeleton) {
     return (
-      <p>Loading dlu aja ini mah nanti dlu skeletonnya</p>
+      <DetailPageLoadingSkeleton />
     );
   }
 
@@ -221,7 +228,7 @@ export default function ReadEbookPage({ params }) {
           </label>
         </div>
         {/* Bagian Header */}
-        <section className="relative mt-[75px] w-full">
+        <section className="relative mt-16 w-full">
           {/* banner */}
           <div className="h-64 w-full overflow-hidden">
             {bannerStartEpisodeUrl && (

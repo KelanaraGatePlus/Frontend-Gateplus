@@ -22,9 +22,10 @@ export default function DetailEbook({ params }) {
   const skip = !id || !userId;
   const { data, isLoading } = useGetEbookByIdQuery({ id, userId }, { skip });
   const ebookData = data?.data?.data || {};
-  const episode_ebooks = ebookData.episode_ebooks || [];
-  console.log(ebookData);
-  console.log(episode_ebooks);
+  const episode_ebooks = (ebookData.episode_ebooks || []).slice().sort((a, b) => {
+    return new Date(a.createdAt) - new Date(b.createdAt);
+  });
+
 
   return (
     <MainTemplateLayout
