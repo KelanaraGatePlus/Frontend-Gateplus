@@ -3,6 +3,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
+/*[--- HOOKS IMPORT ---]*/
+import { useCreateEbookMutation } from "@/hooks/api/ebookSliceAPI";
+
 /*[--- CONSTANT VAR IMPORT ---]*/
 import { languageOptions } from '@/lib/constants/languageOptions';
 
@@ -39,6 +42,7 @@ export default function UploadEbookPage() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const router = useRouter();
+  const [createEbook] = useCreateEbookMutation();
 
   const [uploadedFiles, setUploadedFiles] = useState({
     posterBanner: [],
@@ -96,7 +100,6 @@ export default function UploadEbookPage() {
     ) {
       setToastMessage("Semua kolom harus diisi");
       setShowToast(true);
-      setShowToast(true);
       setIsLoading(false);
       return;
     }
@@ -112,17 +115,8 @@ export default function UploadEbookPage() {
     formData.append("posterImageUrl", uploadedFiles.posterBanner[0]);
 
     try {
-      const response = await axios.post(
-        "http://localhost:3000/ebooks",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        },
-      );
-
-      console.log(response.data);
+      const result = await createEbook(formData).unwrap();
+      console.log(result);
 
       setIsLoading(false);
       setTitle("");
@@ -131,7 +125,7 @@ export default function UploadEbookPage() {
       setLanguage("");
       setAgeRestriction("");
 
-      router.push(`/Ebook/UploadEbook/Episode?series=${response.data.data.id}`);
+      router.push(`/Ebook/UploadEbook/Episode?series=${result.data.id}`);
     } catch (error) {
       console.error("Error during post request:", error);
       setIsLoading(false);
@@ -168,9 +162,9 @@ export default function UploadEbookPage() {
     <div className="flex flex-col overflow-x-hidden">
       <Navbar />
       <main className="mt-16 flex flex-col py-2 md:mt-[100px] lg:px-4">
-        <HeaderUploadForm title={"Upload Ebook"}/>
+        <HeaderUploadForm title={"Upload Ebook"} />
         <HeaderTab type={"Ebook"} />
-        
+
         <div className="flex w-full flex-col px-2">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 lg:gap-0">
             <div className="flex flex-col gap-2">
