@@ -109,7 +109,7 @@ export default function UploadPodcastPage() {
 
         try {
             const response = await axios.post(
-                "https://backend-gateplus-api.my.id/podcast",
+                "http://localhost:3000/podcast",
                 formData,
                 {
                     headers: {
@@ -138,7 +138,7 @@ export default function UploadPodcastPage() {
         try {
             const token = localStorage.getItem("token");
             const response = await axios.get(
-                "https://backend-gateplus-api.my.id/category/",
+                "http://localhost:3000/category/",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,

@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
+import { useCreateEpisodeMutation } from "@/hooks/api/ebookSliceAPI";
 
 /*[--- COMPONENT IMPORT ---]*/
 import HeaderUploadForm from '@/components/UploadForm/HeaderUploadForm';
@@ -23,6 +24,7 @@ import InputTextArea from '@/components/UploadForm/InputTextArea';
 import InputImageBanner from '@/components/UploadForm/InputImageBanner';
 
 export default function UploadEpisodePageContent() {
+  const [createEpisode] = useCreateEpisodeMutation();
   const router = useRouter();
   const [termAccepted, setTermAccepted] = useState(false);
   const [agreementAccepted, setAgreementAccepted] = useState(false);
@@ -144,7 +146,7 @@ export default function UploadEpisodePageContent() {
     try {
       const creatorId = localStorage.getItem("creators_id");
       const response = await axios.get(
-        `https://backend-gateplus-api.my.id/creator/${creatorId}`,
+        `http://localhost:3000/creator/${creatorId}`,
       );
 
       const fullData = response.data.data;
@@ -177,13 +179,8 @@ export default function UploadEpisodePageContent() {
     ) {
       setToastMessage("Semua kolom harus diisi");
       setShowToast(true);
-      setShowToast(true);
       setIsLoading(false);
       return;
-    }
-
-    if (selectedPrice === "Free") {
-      setSelectedPrice("0");
     }
 
     const formData = new FormData();
@@ -192,7 +189,7 @@ export default function UploadEpisodePageContent() {
     formData.append("ebookId", selectedEbookId);
     formData.append("title", episodeTitle);
     formData.append("description", description);
-    formData.append("price", selectedPrice);
+    formData.append("price", selectedPrice === "Free" ? "0" : selectedPrice);
     formData.append("notedEpisode", creatorNotes);
     formData.append("coverEpisodeUrl", uploadedFiles.episodeCover[0]);
     formData.append("bannerStartEpisodeUrl", uploadedFiles.bannerStart[0]);
@@ -200,18 +197,10 @@ export default function UploadEpisodePageContent() {
     formData.append("ebookUrl", uploadedFiles.inputFile[0]);
 
     try {
-      const response = await axios.post(
-        "https://backend-gateplus-api.my.id/episode",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        },
-      );
-      console.log(response.data);
-
+      await createEpisode(formData).unwrap();
       setIsLoading(false);
+
+      // reset form
       setSelectedEbookId("");
       setEpisodeTitle("");
       setDescription("");
@@ -220,8 +209,10 @@ export default function UploadEpisodePageContent() {
 
       router.push(`/Ebook/DetailEbook/${selectedEbookId}`);
     } catch (error) {
-      console.error("Error during post request:", error);
+      console.error("Gagal buat episode:", error);
       setIsLoading(false);
+      setToastMessage("Gagal mengirim data episode");
+      setShowToast(true);
     }
   };
 
@@ -433,7 +424,7 @@ export default function UploadEpisodePageContent() {
                 </Link>
               </label>
             </section>
-            
+
             <button
               disabled={!termAccepted || !agreementAccepted}
               className={`mt-1 flex w-full justify-center gap-2 rounded-lg border border-[#F5F5F559] bg-[#0E5BA8] py-2 font-bold text-white lg:mt-8 lg:w-10/12 lg:self-end ${!termAccepted || !agreementAccepted

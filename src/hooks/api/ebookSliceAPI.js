@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const url = "https://backend-gateplus-api.my.id";
+const url = "http://localhost:3000";
 
 export const ebookApi = createApi({
   reducerPath: "ebookApi",
@@ -29,6 +29,15 @@ export const ebookApi = createApi({
       }),
       invalidatesTags: ["ebook"],
     }),
+    createEpisode: builder.mutation({
+      query: (formData) => ({
+        url: "/episode",
+        method: "POST",
+        body: formData,
+        formData: true,
+      }),
+      invalidatesTags: ["ebook"],
+    }),
   }),
 });
 
@@ -36,4 +45,5 @@ export const {
   useGetEbookQuery,
   useGetEbookByIdQuery,
   useCreateEbookMutation,
+  useCreateEpisodeMutation,
 } = ebookApi;

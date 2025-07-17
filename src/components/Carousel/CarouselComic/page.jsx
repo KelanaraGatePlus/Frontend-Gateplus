@@ -23,7 +23,7 @@ export default function CarouselItemComicPage() {
       setIsLoading(true);
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `https://backend-gateplus-api.my.id/comics`,
+        `http://localhost:3000/comics`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
