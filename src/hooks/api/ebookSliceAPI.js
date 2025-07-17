@@ -16,7 +16,7 @@ export const ebookApi = createApi({
       keepUnusedDataFor: 5,
     }),
     getEbookById: builder.query({
-      query: (id) => `/ebooks/${id}`,
+      query: ({ id, userId }) => `/ebooks/${id}?userId=${userId}`,
       providesTags: ["ebook"],
     }),
     getEpisodeEbookById: builder.query({

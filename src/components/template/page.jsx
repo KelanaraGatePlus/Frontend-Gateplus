@@ -15,37 +15,38 @@ export default function MainTemplateLayout({
   productType,
   productDetail,
   productEpisode,
+  isLoading = true,
 }) {
   return (
     <div className="flex flex-col overflow-x-hidden">
       <Navbar />
 
       <main className="mt-16 flex flex-col md:mt-[100px]">
-        {productDetail && (
-          <ProductDetailSection
-            productType={productType}
-            productID={productDetail.id}
-            productBanner={productDetail.posterImageUrl}
-            productCover={productType === 'podcast' ? productDetail.coverPodcastImage : productDetail.coverImageUrl}
-            productTitle={productDetail.title}
-            productDescription={productDetail.description}
-            productAgeRestriction={productDetail.ageRestriction}
-            productGenre={productDetail.categories?.tittle}
-            productLanguage={productDetail.language}
-            productFirstEpisode={productEpisode?.[0]}
-            productIsLiked={productDetail.isLiked}
-            productIsSaved={productDetail.isSaved}
-            productTotalViews={productDetail.totalViews}
-            productTotalLikes={productDetail.totalLikes}
-            creatorDetail={productType === 'podcast' ? productDetail.Creator : productDetail.creators}
-            creatorTotalSubscriber={productDetail.totalCount}
-            creatorIsSubscribed={productDetail.isSubscribed}
-          />
-        )}
+        <ProductDetailSection
+          productType={productType}
+          productID={productDetail.id}
+          productBanner={productDetail.posterImageUrl}
+          productCover={productType === 'podcast' ? productDetail.coverPodcastImage : productDetail.coverImageUrl}
+          productTitle={productDetail.title}
+          productDescription={productDetail.description}
+          productAgeRestriction={productDetail.ageRestriction}
+          productGenre={productDetail.categories?.tittle}
+          productLanguage={productDetail.language}
+          productFirstEpisode={productEpisode?.[0]}
+          productIsLiked={productDetail.isLiked}
+          productIsSaved={productDetail.isSaved}
+          productTotalViews={productDetail.totalViews}
+          productTotalLikes={productDetail.totalLikes}
+          creatorDetail={productType === 'podcast' ? productDetail.Creator : productDetail.creators}
+          creatorTotalSubscriber={productDetail.totalCount}
+          creatorIsSubscribed={productDetail.isSubscribed}
+          isLoading={isLoading}
+        />
 
         <ProductEpisodeSection
           productType={productType}
           productEpisodes={productEpisode}
+          isLoading={isLoading}
         />
 
         <CarouselItemEookPage />
@@ -62,4 +63,5 @@ MainTemplateLayout.propTypes = {
   productType: PropTypes.string.isRequired,
   productDetail: PropTypes.object.isRequired,
   productEpisode: PropTypes.array.isRequired,
+  isLoading: PropTypes.bool,
 };

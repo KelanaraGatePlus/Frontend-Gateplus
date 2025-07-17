@@ -1,40 +1,37 @@
 "use client";
 import React, { use, useEffect, useState } from "react";
-import axios from "axios";
 
 /*[--- COMPONENT IMPORT ---]*/
 import MainTemplateLayout from "@/components/template/page";
 
+/*[--- HOOKS IMPORT ---]*/
+import { useGetEbookByIdQuery } from "@/hooks/api/ebookSliceAPI";
+
 // eslint-disable-next-line react/prop-types
 export default function DetailEbook({ params }) {
   const { id } = use(params);
-  const [ebookData, setEbookData] = useState({});
-
-  const getData = async () => {
-    try {
-      const userId = localStorage.getItem("users_id");
-      const response = await axios.get(
-        `http://localhost:3000/ebooks/${id}?userId=${userId}`,
-      );
-      const ebookSingleData = response.data.data.data;
-      console.log("ini das", ebookSingleData);
-      setEbookData(ebookSingleData);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
-
+  const [userId, setUserId] = useState(null);
   useEffect(() => {
-    getData();
+    if (typeof window !== "undefined") {
+      const storedUserId = localStorage.getItem("users_id");
+      setUserId(storedUserId);
+      console.log(storedUserId);
+    }
   }, []);
 
+  const skip = !id || !userId;
+  const { data, isLoading } = useGetEbookByIdQuery({ id, userId }, { skip });
+  const ebookData = data?.data?.data || {};
+  const episode_ebooks = ebookData.episode_ebooks || [];
+  console.log(ebookData);
+  console.log(episode_ebooks);
+
   return (
-    ebookData && (
-      <MainTemplateLayout
-        productType="ebook"
-        productDetail={ebookData}
-        productEpisode={ebookData.episode_ebooks}
-      />
-    )
+    <MainTemplateLayout
+      productType="ebook"
+      productDetail={ebookData}
+      productEpisode={episode_ebooks}
+      isLoading={isLoading}
+    />
   );
 }

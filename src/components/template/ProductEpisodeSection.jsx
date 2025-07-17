@@ -5,6 +5,9 @@ import Link from "next/link";
 import PropTypes from "prop-types";
 
 /*[--- UTILITY IMPORT ---]*/
+import ProductEpisodeSkeleton from "./Loading/ProductEpisodeLoading"
+
+/*[--- UTILITY IMPORT ---]*/
 import { formatDateTime } from "@/lib/timeFormatter";
 
 /*[--- ASSETS IMPORT ---]*/
@@ -17,7 +20,9 @@ import iconMore from "@@/icons/icons-more.svg";
 export default function ProductEpisodeSection({
   productType,
   productEpisodes,
+  isLoading,
 }) {
+  const [showSkeleton, setShowSkeleton] = useState(true);
   const [showAll, setShowAll] = useState(false);
   const [selectedPodcast, setSelectedPodcast] = useState({});
   const [isPodcastModalVisible, setIsPodcastModalVisible] = useState(false);
@@ -35,6 +40,12 @@ export default function ProductEpisodeSection({
     setSelectedPodcast(item);
     handlePodcastModal();
   };
+
+  useEffect(() => {
+    setShowSkeleton(isLoading);
+  }, [isLoading])
+
+  if (showSkeleton) return <ProductEpisodeSkeleton />;
 
   /*[--- EBOOK and COMIC ---]*/
   if (productType === "ebook" || productType === "comic") {
@@ -257,6 +268,7 @@ export default function ProductEpisodeSection({
 ProductEpisodeSection.propTypes = {
   productType: PropTypes.string.isRequired,
   productEpisodes: PropTypes.array.isRequired,
+  isLoading: PropTypes.bool,
 };
 
 function EpisodeUnAvailable() {

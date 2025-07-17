@@ -62,10 +62,10 @@ export default function ProfileCard({
             <div className="relative mt-1 flex h-fit w-full flex-col items-center justify-center overflow-hidden rounded-xl bg-[#FFFFFF1A] p-4 transition-all duration-300 ease-out md:max-w-[300px] md:min-w-[300px]">
                 {profileFor === "creator" && (
                     <section className="absolute top-0 mb-2 h-36 w-full overflow-hidden md:hidden md:h-32 lg:w-full">
-                        {data.bannerImageUrl && data.bannerImageUrl !== "null" ? (
+                        {data?.bannerImageUrl && data?.bannerImageUrl !== "null" ? (
                             <Image
                                 priority
-                                src={data.bannerImageUrl}
+                                src={data?.bannerImageUrl}
                                 alt="banner-creator"
                                 fill
                                 className="object-cover object-center"
@@ -84,7 +84,7 @@ export default function ProfileCard({
 
                 {/* Profile */}
                 <div className="z-0 mt-8 mb-2 h-32 w-32 shrink-0 rounded-full shadow-2xl transition-all duration-300 ease-out md:mt-2 md:h-36 md:w-36">
-                    {data.imageUrl && data.imageUrl !== "null" ? (
+                    {data?.imageUrl && data?.imageUrl !== "null" ? (
                         <Image
                             priority
                             className="h-full w-full rounded-full bg-[#2e2e2e] object-cover"
@@ -106,15 +106,17 @@ export default function ProfileCard({
                 </div>
 
                 {/* personal information */}
-                <PersonalInformationSection
-                    data={data}
-                    totalSubsribers={totalSubs}
-                    profileFor={profileFor}
-                    isOwnProfile={isOwnProfile}
-                    isSubscribed={isSubscribed}
-                    isSubsribing={isSubscribing}
-                    handleToggleSubscribe={handleToggleSubscribe}
-                />
+                {data &&
+                    (<PersonalInformationSection
+                        data={data}
+                        totalSubsribers={totalSubs}
+                        profileFor={profileFor}
+                        isOwnProfile={isOwnProfile}
+                        isSubscribed={isSubscribed}
+                        isSubsribing={isSubscribing}
+                        handleToggleSubscribe={handleToggleSubscribe}
+                    />)
+                }
             </div>
             {showToast && (
                 <Toast

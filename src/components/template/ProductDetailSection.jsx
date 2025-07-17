@@ -17,6 +17,7 @@ import {
 import BackPage from "@/components/BackPage/page";
 import ShareModal from "@/components/ShareModal/page";
 import Toast from "@/components/Toast/page";
+import DetailPageLoading from "@/components/template/Loading/ProductDetailLoading";
 
 /*[--- ASSETS IMPORT ---]*/
 import iconViews from "@@/icons/views-icon.svg";
@@ -46,7 +47,9 @@ export default function ProductDetailSection({
   creatorDetail,
   creatorTotalSubscriber,
   creatorIsSubscribed,
+  isLoading,
 }) {
+  const [showSkeleton, setShowSkeleton] = useState(true);
   const [isLiked, setIsLiked] = useState(productIsLiked);
   const [totalLike, setTotalLike] = useState(productTotalLikes);
   const [isSaved, setIsSaved] = useState(productIsSaved);
@@ -78,6 +81,7 @@ export default function ProductDetailSection({
     setIsSubscribed(creatorIsSubscribed);
     setTotalSubs(creatorTotalSubscriber);
   }, [productIsLiked, productTotalLikes]);
+
 
   const handleToggleDislike = () => {
     showFeatureUnavailableToast({
@@ -125,6 +129,12 @@ export default function ProductDetailSection({
     );
   };
 
+  useEffect(() => {
+    setShowSkeleton(isLoading);
+  }, [isLoading])
+
+  if (showSkeleton) return <DetailPageLoading />;
+
   return (
     <>
       <section className="relative w-full">
@@ -136,7 +146,7 @@ export default function ProductDetailSection({
                 src={productBanner}
                 alt="Poster"
                 fill
-                className="object-cover"
+                className="object-cover bg-[#2E2E2E]"
               />
             )}
             <div className="absolute top-0 left-0 z-0 h-full w-full bg-[linear-gradient(to_bottom,_#FFFFFF00,_#FFFFFF00,_#FFFFFF00,_#FFFFFF00,_#737373A1,_#595959BF,_#3F3F3FDE,_#303030ED,_#222222FF)]" />
@@ -155,7 +165,7 @@ export default function ProductDetailSection({
                 src={productCover}
                 alt="Poster"
                 fill
-                className="object-cover"
+                className="object-cover bg-[#2E2E2E]"
               />
             )}
           </div>
@@ -403,4 +413,5 @@ ProductDetailSection.propTypes = {
   creatorDetail: PropTypes.object.isRequired,
   creatorTotalSubscriber: PropTypes.number.isRequired,
   creatorIsSubscribed: PropTypes.bool.isRequired,
+  isLoading: PropTypes.bool,
 };

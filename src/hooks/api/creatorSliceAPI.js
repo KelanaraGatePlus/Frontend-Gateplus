@@ -1,11 +1,12 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { BACKEND_URL } from "@/lib/constants/backendUrl";
+
+const url = "http://localhost:3000/creator";
 
 export const creatorAPI = createApi({
     reducerPath: "creatorsAPI",
     refetchOnFocus: true,
     refetchOnReconnect: true,
-    baseQuery: fetchBaseQuery({ baseUrl: BACKEND_URL }),
+    baseQuery: fetchBaseQuery({ baseUrl: url }),
     tagTypes: ["creatorsAPI"],
     endpoints: (builder) => ({
         getMostViewedContent: builder.query({
