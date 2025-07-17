@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const url = "http://localhost:3000";
+const url = "https://backend-gateplus-api.my.id";
 
 export const ebookApi = createApi({
   reducerPath: "ebookApi",
