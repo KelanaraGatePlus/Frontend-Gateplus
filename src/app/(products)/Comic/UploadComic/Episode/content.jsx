@@ -15,6 +15,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
+import InputSelect from '@/components/UploadForm/InputSelect';
+import InputText from '@/components/UploadForm/InputText';
+import InputTextArea from '@/components/UploadForm/InputTextArea';
+import InputImageBanner from '@/components/UploadForm/InputImageBanner';
 
 export default function UploadEpisodeComicContent() {
   const router = useRouter();
@@ -160,7 +164,7 @@ export default function UploadEpisodeComicContent() {
       );
 
       const fullData = response.data.data;
-      const creatorData = fullData.data[0];
+      const creatorData = fullData.data;
       setComicsCreator(creatorData.Comics);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -273,142 +277,45 @@ export default function UploadEpisodeComicContent() {
             className="flex flex-col gap-2 lg:gap-2"
             onSubmit={handleSubmit}
           >
-            <section className="flex items-start gap-2 text-[#979797]">
-              <h3 className="montserratFont flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                Judul
-              </h3>
-              <div className="flex w-full flex-4 text-white md:flex-10">
-                <select
-                  className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1 text-white"
-                  onChange={handleSelectChange}
-                  value={selectedComicId}
-                >
-                  <option value="" disabled>
-                    Pilih Judul Series
-                  </option>
-                  {comicsCreator.map((comic) => (
-                    <option key={comic.id} value={comic.id}>
-                      {comic.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </section>
-
-            <section className="flex items-start gap-2 text-[#979797]">
-              <h3 className="montserratFont flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                Judul Episode
-              </h3>
-              <div className="flex w-full flex-4 text-white md:flex-10">
-                <input
-                  type="text"
-                  name="episdeTitle"
-                  className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                  placeholder="Judul Episode"
-                  onChange={(e) => setEpisodeTitle(e.target.value)}
-                  required
-                />
-              </div>
-            </section>
-            <section className="flex items-start gap-2 text-[#979797]">
-              <h3 className="montserratFont flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                Deskripsi
-              </h3>
-              <div className="flex w-full flex-4 text-white md:flex-10">
-                <textarea
-                  name="description"
-                  className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                  id="about"
-                  cols="30"
-                  rows="5"
-                  placeholder="Tuliskan Deskripsi"
-                  onChange={(e) => setDescription(e.target.value)}
-                  required
-                ></textarea>
-              </div>
-            </section>
-            <section className="flex items-start gap-2 text-[#979797]">
-              <div className="flex flex-2 flex-col">
-                <h3 className="montserratFont text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                  Cover Episode
-                </h3>
-                <p className="text-[10px] text-[#979797] italic md:text-sm">
-                  Format banner its 1x1 with maks 500kb
-                </p>
-              </div>
-              <div className="flex h-full w-fit flex-4 flex-wrap items-stretch justify-start gap-x-6 text-white md:flex-10">
-                <div className="container flex w-full flex-wrap items-start gap-4 rounded-md bg-[#585454] p-2">
-                  {/* Upload Section */}
-                  <div className="flex flex-col items-center">
-                    <div className="relative h-24 w-24 cursor-pointer overflow-hidden rounded-md bg-gray-500 md:h-28 md:w-28">
-                      <input
-                        type="file"
-                        accept="image/png, image/jpeg"
-                        id="episodeCover"
-                        name="episodeCover"
-                        hidden
-                        ref={episodeCoverRef}
-                        onChange={(e) => handleFileUpload(e, "episodeCover")}
-                      />
-                      <label
-                        htmlFor="episodeCover"
-                        className="absolute top-0 right-0 bottom-0 left-0 flex cursor-pointer items-center justify-center gap-1 bg-black/50 text-xs font-semibold"
-                      >
-                        <Image
-                          src={IconsGalery}
-                          alt="camera icon"
-                          width={12}
-                          height={12}
-                          className="object-contain lg:h-5 lg:w-5"
-                        />
-                        <p className="text-[10px] font-semibold text-white lg:text-[12px]">
-                          Upload
-                        </p>
-                      </label>
-                    </div>
-                    {/* Filename Text */}
-                    <p className="mt-2 text-center text-xs text-white italic">
-                      {uploadedFiles.episodeCover?.length > 0
-                        ? `${uploadedFiles.episodeCover.length} file(s) selected`
-                        : "No file chosen"}
-                    </p>
-                  </div>
-
-                  {/* Preview Section */}
-                  <div className="flex flex-wrap gap-4">
-                    {uploadedFiles.episodeCover?.map((file, index) => (
-                      <div
-                        key={index}
-                        className="relative flex h-28 w-24 flex-col items-center overflow-hidden rounded-md bg-gray-500 md:h-32 md:w-28"
-                      >
-                        <div className="relative h-24 w-full md:h-28">
-                          <img
-                            src={URL.createObjectURL(file)}
-                            alt={`preview-${index}`}
-                            className="h-full w-full object-cover object-center"
-                          />
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleRemoveFile("episodeCover", index)
-                            }
-                            className="absolute top-1 right-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-red-600/50 text-xs text-white"
-                          >
-                            <span className="flex text-base lg:-mt-0.5">
-                              &times;
-                            </span>
-                          </button>
-                        </div>
-                        <p className="w-full truncate px-1 py-0.5 text-center text-[8px] text-white lg:text-[10px]">
-                          {file.name}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </section>
-            <section className="flex items-start gap-2 text-[#979797]">
+            {/* Judul */}
+            <InputSelect
+              label="Judul"
+              name="series"
+              onChange={handleSelectChange}
+              value={selectedComicId}
+              options={comicsCreator}
+              placeholder="Pilih Judul Series"
+            />
+            {/* Judul EPISODE */}
+            <InputText
+              label="Judul Episode"
+              name="episdeTitle"
+              placeholder="Judul Episode"
+              onChange={(e) => setEpisodeTitle(e.target.value)}
+              required
+            />
+            {/* Deskripsi */}
+            <InputTextArea
+              label="Deskripsi"
+              name="description"
+              placeholder="Deskripsi"
+              onChange={(e) => setDescription(e.target.value)}
+              required
+            />
+            {/* Cover Episode */}
+            <InputImageBanner
+              type="cover"
+              label="Cover Episode"
+              description="Format banner its 1x1 with maks 500kb."
+              name="episodeCover"
+              icon={IconsGalery}
+              files={uploadedFiles.episodeCover}
+              inputRef={episodeCoverRef}
+              onUpload={handleFileUpload}
+              onRemove={handleRemoveFile}
+            />
+            {/* File Input */}
+            <section className="flex items-start gap-2 text-[#979797] montserratFont">
               <div className="flex flex-2 flex-col">
                 <h3 className="montserratFont text-base font-semibold text-[#979797] md:text-base lg:text-xl">
                   File Input
@@ -491,23 +398,14 @@ export default function UploadEpisodeComicContent() {
                 </div>
               </div>
             </section>
-            <section className="flex items-start gap-2 text-[#979797]">
-              <h3 className="montserratFont flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                Catatan Kreator
-              </h3>
-              <div className="flex w-full flex-4 text-white md:flex-10">
-                <textarea
-                  name="creatorNotes"
-                  className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                  id="about"
-                  cols="30"
-                  rows="5"
-                  placeholder="Tuliskan Catatan Anda"
-                  onChange={(e) => setCreatorNotes(e.target.value)}
-                  required
-                ></textarea>
-              </div>
-            </section>
+            {/* Creator Notes */}
+            <InputTextArea
+              label="Catatan Kreator"
+              name="creatorNotes"
+              placeholder="Tuliskan Catatan Anda"
+              onChange={(e) => setCreatorNotes(e.target.value)}
+              required
+            />
             {/* Price */}
             <section className="my-3 flex flex-col items-center justify-center gap-3">
               <h3 className="montserratFont w-full flex-2 text-left text-base font-semibold text-[#979797] md:text-base lg:text-xl">
@@ -530,6 +428,7 @@ export default function UploadEpisodeComicContent() {
                 Lihat Simulasi Pendapatan
               </div>
             </section>
+            {/* Term and Condition */}
             <section className="flex w-4/6 flex-col text-sm md:text-base lg:w-10/12 lg:self-end">
               <label className="flex flex-1 flex-row items-center justify-start gap-1">
                 <Checkbox
@@ -573,13 +472,13 @@ export default function UploadEpisodeComicContent() {
                 </Link>
               </label>
             </section>
+            {/* BUtton */}
             <button
               disabled={!termAccepted || !agreementAccepted}
-              className={`mt-1 flex w-full justify-center gap-2 rounded-lg border border-[#F5F5F559] bg-[#0E5BA8] py-2 font-bold text-white lg:mt-8 lg:w-10/12 lg:self-end ${
-                !termAccepted || !agreementAccepted
-                  ? "cursor-not-allowed bg-gray-500 text-white/50"
-                  : "cursor-pointer"
-              }`}
+              className={`mt-1 flex w-full justify-center gap-2 rounded-lg border border-[#F5F5F559] bg-[#0E5BA8] py-2 font-bold text-white lg:mt-8 lg:w-10/12 lg:self-end ${!termAccepted || !agreementAccepted
+                ? "cursor-not-allowed bg-gray-500 text-white/50"
+                : "cursor-pointer"
+                }`}
               type="submit"
             >
               <span className="flex">

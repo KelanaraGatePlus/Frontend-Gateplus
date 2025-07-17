@@ -9,6 +9,14 @@ const nextConfig = {
       "picsum.photos",
       "images.unsplash.com",
     ],
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "103.38.108.117",
+        port: "9000",
+        pathname: "/**",
+      },
+    ],
   },
 };
 

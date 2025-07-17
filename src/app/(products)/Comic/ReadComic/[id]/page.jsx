@@ -109,14 +109,16 @@ export default function ReadComic({ params }) {
               className={`relative max-h-[calc(100vh-140px)] w-auto ${viewMode === "2" ? (idx % 2 === 0 ? "pr-1" : "pl-1") : "mb-2"
                 } transition-all`}
             >
-              <Image
-                src={page}
-                alt={page}
-                width={800 * zoomLevel}
-                height={1000 * zoomLevel}
-                className="object-contain"
-                priority
-              />
+              {page ? (
+                <Image
+                  src={page}
+                  alt={page}
+                  width={800 * zoomLevel}
+                  height={1000 * zoomLevel}
+                  className="object-contain"
+                  priority
+                />
+              ) : null}
             </div>
           ))}
         </div>
@@ -213,7 +215,6 @@ export default function ReadComic({ params }) {
           </div>
         </div>
 
-        {/* Mobile: dropdown "more" */}
         <div className="relative md:hidden">
           <button
             onClick={() => setShowMoreOptions(!showMoreOptions)}
