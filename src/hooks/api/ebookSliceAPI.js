@@ -1,13 +1,12 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-
-const url = "http://localhost:3000";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export const ebookApi = createApi({
   reducerPath: "ebookApi",
   refetchOnFocus: true,
   refetchOnReconnect: true,
   baseQuery: fetchBaseQuery({
-    baseUrl: url,
+    baseUrl: BACKEND_URL,
   }),
   tagTypes: ["ebook"],
   endpoints: (builder) => ({
@@ -18,6 +17,10 @@ export const ebookApi = createApi({
     }),
     getEbookById: builder.query({
       query: (id) => `/ebooks/${id}`,
+      providesTags: ["ebook"],
+    }),
+    getEpisodeEbookById: builder.query({
+      query: (id) => `/episode/${id}`,
       providesTags: ["ebook"],
     }),
     createEbook: builder.mutation({
@@ -44,6 +47,7 @@ export const ebookApi = createApi({
 export const {
   useGetEbookQuery,
   useGetEbookByIdQuery,
+  useGetEpisodeEbookByIdQuery,
   useCreateEbookMutation,
   useCreateEpisodeMutation,
 } = ebookApi;
