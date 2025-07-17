@@ -1,7 +1,7 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
-import Footer from "@/components/Footer/page";
+import Footer from "@/components/Footer/MainFooter";
 import Navbar from "@/components/Navbar/page";
 import Toast from "@/components/Toast/page";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";

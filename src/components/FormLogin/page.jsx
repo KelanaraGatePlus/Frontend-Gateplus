@@ -1,102 +1,124 @@
-/* eslint-disable react/react-in-jsx-scope */
 "use client";
-
-import { useLoginUserMutation } from "@/hooks/api/userSliceAPI";
+import React, {useState} from 'react';
+import { useSearchParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-
-import { getSession } from "next-auth/react";
+import { useLoginUserMutation } from "@/hooks/api/userSliceAPI";
+import IconsEyeClose from "@@/icons/icons-eyes-close.svg";
+import IconsEyeOpen from "@@/icons/icons-eyes-open.svg";
+import LogoGoogle from "@@/logo/logoGoogle/icons-google.svg";
 
 export default function FormLogin() {
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const [login, { isLoading }] = useLoginUserMutation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [login, { isLoading, isSuccess, isError, error }] =
-    useLoginUserMutation();
-
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    const checkSession = async () => {
-      const session = await getSession();
-      console.log(session);
-    };
-    checkSession();
-  }, []);
+  const toggleShowPassword = () => {
+    setIsPasswordVisible(!isPasswordVisible);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const user = await login({ email, password }).unwrap();
-      localStorage.setItem("token", user.data.token);
-      setEmail("");
-      setPassword("");
-      router.push("/");
+      const response = await login({ email, password }).unwrap();
+      const token = response.data?.token;
+      if (token) {
+        localStorage.setItem("token", token);
+        localStorage.setItem("theme", "dark");
+        localStorage.setItem("users_id", response.data.id);
+        localStorage.setItem("image_users", response.data.image);
+        localStorage.setItem("role", response.data.role);
+        if (response.data.creator !== null) {
+          localStorage.setItem(
+            "image_creators",
+            response.data.creator.imageUrl,
+          );
+          localStorage.setItem("creators_id", response.data.creator.id);
+          localStorage.setItem("isCreator", JSON.stringify(true));
+        }
+        document.cookie = `token=${token}; path=/`;
+        setEmail("");
+        setPassword("");
+        router.push(callbackUrl);
+      } else {
+        console.error("Token not found in response");
+      }
     } catch (err) {
-      console.error("Failed to login: ", err);
+      console.error("Failed to login:", err);
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex max-h-max max-w-max flex-col gap-3 px-12"
-    >
-      <label hidden className="font-mono text-[16px] text-black">
-        Email
-      </label>
-      <input
-        className="rounded-md bg-slate-100 p-2 py-1 font-mono text-black placeholder:text-[13px] hover:bg-amber-200"
-        name="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        type="text"
-        placeholder="Username or Email"
-      />
-      <label hidden className="font-mono text-[16px] text-black">
-        Password
-      </label>
-      <input
-        className="rounded-md bg-slate-100 p-2 py-1 font-mono text-black placeholder:text-[13px] hover:bg-amber-200"
-        name="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        type="password"
-        placeholder="Password"
-      />
-      <div className="my-1 flex flex-row justify-between">
-        <div className="mr-3 font-mono text-[10px] text-[#1DBDF5] hover:text-blue-500">
-          <Link href="/Register">Create a new account</Link>
-        </div>
-        <div className="font-mono text-[10px] text-[#1DBDF5] hover:text-blue-500">
-          <Link href="/ForgotPassword">Forgot Password?</Link>
+    <form onSubmit={handleSubmit} className="flex w-full flex-col gap-2">
+      <div className="relative w-full">
+        <input
+          id="email"
+          placeholder="Email"
+          className="peer montserratFont w-full rounded-lg bg-white px-3 pt-6 pb-2 text-sm font-normal placeholder-transparent focus:outline-blue-500"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <label
+          htmlFor="email"
+          className="absolute top-2 left-3 text-xs text-gray-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-1.5 peer-focus:text-xs peer-focus:text-blue-500"
+        >
+          Email
+        </label>
+      </div>
+      <div className="relative flex w-full">
+        <input
+          id="password"
+          placeholder="Password"
+          className="peer montserratFont w-full rounded-lg bg-white px-3 pt-6 pb-2 text-sm font-normal placeholder-transparent focus:outline-blue-500"
+          type={isPasswordVisible ? "text" : "password"}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <label
+          htmlFor="password"
+          className="absolute top-2 left-3 text-xs text-gray-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-1.5 peer-focus:text-xs peer-focus:text-blue-500"
+        >
+          Password
+        </label>
+        <div
+          className="absolute top-1/2 right-3 h-6 w-6 -translate-y-1/2 cursor-pointer"
+          onClick={toggleShowPassword}
+        >
+          <Image
+            src={isPasswordVisible ? IconsEyeOpen : IconsEyeClose}
+            alt="Show Password"
+            className="object-cover"
+          />
         </div>
       </div>
-      <div className="my-5 flex flex-col gap-5 text-white">
-        <button
-          className="rounded-md bg-blue-600 p-2 py-1.5 font-mono text-xl hover:bg-blue-700"
-          type="submit"
-          disabled={isLoading}
-        >
-          {isLoading ? "Logging in..." : "Log In"}
-        </button>
-        <button
-          className="rounded-md bg-blue-400 p-2 py-1.5 font-mono text-xl hover:bg-blue-500"
-          type="button"
-        >
-          Sign In with Google
-        </button>
-        {isError && (
-          <div className="font-mono text-[10px] text-red-500">
-            {error.message}
-          </div>
-        )}
-        {isSuccess && (
-          <div className="font-mono text-[10px] text-green-500">
-            Login successful!
-          </div>
-        )}
-      </div>
+      <span className="zeinFont flex justify-between text-xl text-[#1DBDF5]">
+        <Link href="/Register" className="text-left">
+          <span>Create new account</span>
+        </Link>
+        <Link href="/ForgotPassword" className="text-right">
+          <span>Forgot Password?</span>
+        </Link>
+      </span>
+      <button
+        disabled={isLoading}
+        className="zeinFont mt-4 cursor-pointer rounded-lg border border-[#156EB7] bg-[#156EB7] py-2 text-2xl font-bold text-white hover:border-white/70 hover:bg-[#156EB7CC]"
+      >
+        {isLoading ? "Logging in ..." : "Log In"}
+      </button>
+
+      <button className="zeinFont flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-blue-500 bg-blue-900 py-2 text-2xl font-bold text-white hover:bg-blue-950 md:rounded-xl">
+        <Image priority src={LogoGoogle} alt="logo-google" />
+        <p>
+          <span>Sign In with Google</span>
+        </p>
+      </button>
     </form>
-  );
+  )
 }

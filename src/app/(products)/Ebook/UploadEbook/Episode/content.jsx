@@ -1,7 +1,7 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
-import Footer from "@/components/Footer/page";
+import Footer from "@/components/Footer/MainFooter";
 import Navbar from "@/components/Navbar/page";
 import Toast from "@/components/Toast/page";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
@@ -148,7 +148,7 @@ export default function UploadEpisodePageContent() {
       );
 
       const fullData = response.data.data;
-      const creatorData = fullData.data[0];
+      const creatorData = fullData.data;
 
       setEbooksCreator(creatorData.Ebooks);
     } catch (error) {

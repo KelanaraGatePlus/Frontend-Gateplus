@@ -19,7 +19,7 @@ import HeaderTab from '@/components/UploadForm/HeaderTab';
 import Toast from "@/components/Toast/page";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import BottomSpacer from '@/components/BottomSpacer/page';
-import Footer from "@/components/Footer/page";
+import Footer from "@/components/Footer/MainFooter";
 
 /*[--- ASSETS IMPORT ---]*/
 import IconsGalery from "@@/icons/logo-upload-banner.svg";

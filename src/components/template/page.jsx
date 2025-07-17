@@ -3,7 +3,7 @@ import React from "react";
 import PropTypes from "prop-types";
 
 /*[--- COMPONENTS IMPORT ---]*/
-import Footer from "@/components/Footer/page";
+import Footer from "@/components/Footer/MainFooter";
 import Navbar from "@/components/Navbar/page";
 import ProductDetailSection from "@/components/template/ProductDetailSection";
 import ProductEpisodeSection from "@/components/template/ProductEpisodeSection";

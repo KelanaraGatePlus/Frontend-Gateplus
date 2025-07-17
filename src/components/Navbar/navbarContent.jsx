@@ -131,14 +131,15 @@ export default function NavbarContent() {
               const isActive = option.url === pathname;
               return (
                 <div key={option.id} className={`${isEditing && "hidden"}`}>
-                  <div className={`mt-0.5 flex flex-2 cursor-pointer justify-center items-center leading-none rounded-full from-[#0E5BA8] to-[#0395BC] p-2 text-center font-semibold border-2 border-[#0881AB] text-white lg:px-5 xl:px-6 hover:bg-linear-to-t ${isActive && "bg-linear-to-t border-2 border-white/40"}`}>
-                    <Link
-                      className="drop-shadow-[0_0_2px_rgba(255,255,255,0.3)]"
-                      href={option.url}
-                    >
-                      {option.tittle}
-                    </Link>
-                  </div>
+                  <Link
+                    href={option.url}
+                  >
+                    <div className={`mt-0.5 flex flex-2 cursor-pointer justify-center items-center leading-none rounded-full from-[#0E5BA8] to-[#0395BC] p-2 text-center font-semibold border-2 border-[#0881AB] text-white lg:px-5 xl:px-6 hover:bg-linear-to-t active:bg-linear-to-t active:border-2 active:border-white/40 ${isActive && "bg-linear-to-t border-2 border-white/40"}`}>
+                      <span className="drop-shadow-[0_0_2px_rgba(255,255,255,0.3)]">
+                        {option.tittle}
+                      </span>
+                    </div>
+                  </Link>
                 </div>
               );
             }
@@ -221,24 +222,24 @@ export default function NavbarContent() {
             ) : (
               <>
                 <div className="hidden md:mt-0.5 md:flex md:flex-col md:py-3">
-                  <div className="flex justify-center rounded-full bg-linear-to-t from-[#0E5BA8] to-[#0395BC] py-2 font-semibold sm:px-2 md:px-4 lg:px-6 xl:px-8">
-                    <Link
-                      href="/Login"
-                      className="zeinFont mt-0.5 text-center text-lg leading-tight drop-shadow-[0_0_2px_rgba(255,255,255,0.4)] sm:text-lg lg:text-xl"
-                    >
-                      Log In
-                    </Link>
-                  </div>
+                  <Link
+                    href="/Login"
+                  >
+                    <div className="flex justify-center rounded-full bg-linear-to-t from-[#0E5BA8] to-[#0395BC] py-2 font-semibold sm:px-2 md:px-4 lg:px-6 xl:px-8">
+                      <span className="zeinFont mt-0.5 text-center text-lg leading-tight drop-shadow-[0_0_2px_rgba(255,255,255,0.4)] sm:text-lg lg:text-xl">
+                        Log In
+                      </span>
+                    </div>
+                  </Link>
                 </div>
                 <div className="hidden md:mt-0.5 md:block md:py-3">
-                  <div className="flex justify-center rounded-full bg-[#0881AB] py-2 font-semibold saturate-35 sm:px-2 md:px-4 lg:px-6 xl:px-8">
-                    <Link
-                      href="/Register"
-                      className="zeinFont mt-0.5 text-center text-base leading-tight drop-shadow-[0_0_2px_rgba(255,255,255,0.4)] sm:text-sm lg:text-xl"
-                    >
-                      Sign Up
-                    </Link>
-                  </div>
+                  <Link href="/Register">
+                    <div className="flex justify-center rounded-full bg-[#0881AB] py-2 font-semibold saturate-35 sm:px-2 md:px-4 lg:px-6 xl:px-8">
+                      <span className="zeinFont mt-0.5 text-center text-base leading-tight drop-shadow-[0_0_2px_rgba(255,255,255,0.4)] sm:text-sm lg:text-xl">
+                        Sign Up
+                      </span>
+                    </div>
+                  </Link>
                 </div>
               </>
             )}

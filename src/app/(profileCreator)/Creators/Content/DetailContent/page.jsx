@@ -1,5 +1,5 @@
 /* eslint-disable react/react-in-jsx-scope */
-import Footer from "@/components/Footer/page";
+import Footer from "@/components/Footer/MainFooter";
 import NavbarLogin from "@/components/NavbarLogin/page";
 import IconsArrowLeft from "@@/icons/icons-dashboard/icons-arrow-left.svg";
 import IconsFilterContent from "@@/icons/icons-filtering-contents.svg";

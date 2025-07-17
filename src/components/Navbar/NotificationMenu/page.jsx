@@ -45,7 +45,7 @@ export default function NotificationMenu() {
               headers,
             },
           );
-          const creatorData = resCreator.data?.data?.data?.[0];
+          const creatorData = resCreator.data?.data?.data;
           console.log("data notif creator 2:", creatorData);
           notifList =
             creatorData.notifications?.filter(

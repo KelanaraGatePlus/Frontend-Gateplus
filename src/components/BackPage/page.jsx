@@ -12,7 +12,7 @@ export default function BackPage({ isDark = true }) {
   return (
     <button
       onClick={() => router.back()}
-      className={`m-1 w-fit cursor-pointer rounded-full p-1 ${isDark ? "hover:bg-white/30" : "hover:bg-black/10"}`}
+      className={`mt-1.5 w-fit cursor-pointer rounded-full p-1 ${isDark ? "hover:bg-white/30" : "hover:bg-black/10"}`}
     >
       <p
         className={`flex flex-row items-center justify-start gap-2 font-semibold ${isDark ? "text-white" : "text-black"}`}
