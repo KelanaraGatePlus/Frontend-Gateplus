@@ -14,7 +14,7 @@ import { useGetEpisodeEbookByIdQuery } from "@/hooks/api/ebookSliceAPI";
 /*[--- COMPONENT IMPORT ---]*/
 import BackPage from "@/components/BackPage/page";
 import EpubReader from "@/components/EbookReader/page";
-import DetailPageLoadingSkeleton from "@/components/template/Loading/ProductReadLoading"
+import DetailPageLoadingSkeleton from "@/components/MainDetailProduct/Loading/ProductReadLoading"
 
 /*[--- ASSETS IMPORT ---]*/
 import iconMoreMenuComment from "@@/icons/icon-comment.svg";

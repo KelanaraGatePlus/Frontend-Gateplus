@@ -5,10 +5,10 @@ import PropTypes from "prop-types";
 /*[--- COMPONENTS IMPORT ---]*/
 import Footer from "@/components/Footer/MainFooter";
 import Navbar from "@/components/Navbar/page";
-import ProductDetailSection from "@/components/template/ProductDetailSection";
-import ProductEpisodeSection from "@/components/template/ProductEpisodeSection";
-import ProductDonationSection from "@/components/template/ProductDonationSection";
-import ProductCommentUnavailable from "@/components/template/ProductCommentUnavailable";
+import ProductDetailSection from "@/components/MainDetailProduct/ProductDetailSection";
+import ProductEpisodeSection from "@/components/MainDetailProduct/ProductEpisodeSection";
+import ProductDonationSection from "@/components/MainDetailProduct/ProductDonationSection";
+import ProductCommentUnavailable from "@/components/MainDetailProduct/ProductCommentUnavailable";
 import CarouselItemEookPage from "@/components/Carousel/CarouselEbook/page";
 
 export default function MainTemplateLayout({

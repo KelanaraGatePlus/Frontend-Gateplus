@@ -2,7 +2,7 @@
 import React, { use, useEffect, useState } from "react";
 
 /*[--- COMPONENT IMPORT ---]*/
-import MainTemplateLayout from "@/components/template/page";
+import MainTemplateLayout from "@/components/MainDetailProduct/page";
 
 /*[--- HOOKS IMPORT ---]*/
 import { useGetEbookByIdQuery } from "@/hooks/api/ebookSliceAPI";

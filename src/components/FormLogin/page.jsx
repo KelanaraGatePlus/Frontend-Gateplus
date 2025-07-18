@@ -1,5 +1,6 @@
 "use client";
-import React, {useState} from 'react';
+import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,14 +9,24 @@ import IconsEyeClose from "@@/icons/icons-eyes-close.svg";
 import IconsEyeOpen from "@@/icons/icons-eyes-open.svg";
 import LogoGoogle from "@@/logo/logoGoogle/icons-google.svg";
 
-export default function FormLogin() {
+export default function FormLogin({
+  setIsError,
+  setError,
+  setIsSuccess,
+}) {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
-  const [login, { isLoading }] = useLoginUserMutation();
+  const [login, { isLoading, isSuccess, isError, error }] = useLoginUserMutation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    setIsError(isError);
+    setError(error);
+    setIsSuccess(isSuccess);
+  }, [isError, error, isSuccess]);
 
   const toggleShowPassword = () => {
     setIsPasswordVisible(!isPasswordVisible);
@@ -122,3 +133,9 @@ export default function FormLogin() {
     </form>
   )
 }
+
+FormLogin.propTypes = {
+  setIsError: PropTypes.func.isRequired,
+  setIsSuccess: PropTypes.func.isRequired,
+  setError: PropTypes.string.isRequired,
+};

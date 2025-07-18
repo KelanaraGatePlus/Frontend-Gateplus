@@ -17,7 +17,7 @@ import {
 import BackPage from "@/components/BackPage/page";
 import ShareModal from "@/components/ShareModal/page";
 import Toast from "@/components/Toast/page";
-import DetailPageLoading from "@/components/template/Loading/ProductDetailLoading";
+import DetailPageLoading from "@/components/MainDetailProduct/Loading/ProductDetailLoading";
 
 /*[--- ASSETS IMPORT ---]*/
 import iconViews from "@@/icons/views-icon.svg";
@@ -211,8 +211,12 @@ export default function ProductDetailSection({
             <div className={`flex  ${productType === 'podcast' ? "flex-row justify-between" : "flex-col gap-4"}`}>
               {/* action button */}
               <div className="flex w-fit justify-center gap-2 self-center md:justify-start lg:self-auto">
-                <div className="flex w-fit flex-1 items-center justify-center md:flex-none">
-                  {productFirstEpisode ? (
+                <div className="flex w-fit flex-1 items-center justify-center md:flex-none montserratFont">
+                  {productType === "podcast" ? (
+                    <button className="w-full cursor-pointer rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white hover:bg-[#0076E999]/80 md:w-auto">
+                      Subscribe
+                    </button>
+                  ) : productFirstEpisode ? (
                     <Link href={`/Ebook/ReadEbook/${productFirstEpisode.id}`}>
                       <button className="w-full cursor-pointer rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white hover:bg-[#0076E999]/80 md:w-auto">
                         {productType === "podcast" ? "Dengarkan" : "Baca"}
