@@ -1,8 +1,5 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
-
-import Footer from "@/components/Footer/MainFooter";
-import Navbar from "@/components/Navbar/page";
 import Toast from "@/components/Toast/page";
 import IconsCameraAdd from "@@/icons/icons-camera-add.svg";
 import BackPage from "@/components/BackPage/page";
@@ -84,7 +81,7 @@ export default function SettingPage() {
       }
 
       const response = await axios.patch(
-        `http://localhost:3000/creator/${id}`,
+        `https://backend-gateplus-api.my.id/creator/${id}`,
         formData,
         {
           headers: {
@@ -109,7 +106,7 @@ export default function SettingPage() {
   const getData = async (id) => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/creator/${id}`,
+        `https://backend-gateplus-api.my.id/creator/${id}`,
       );
 
       const creatorData = response.data.data.data[0];
@@ -168,9 +165,7 @@ export default function SettingPage() {
   }, [profilePicturePreview, bannerProfilePicturePreview]);
 
   return (
-    <div className="top-0 right-0 bottom-0 left-0 flex h-screen w-screen flex-col overflow-x-hidden overflow-y-auto">
-      <Navbar />
-
+    <>
       <main className="mx-2 my-2 mt-16 flex flex-col md:mt-24 lg:mx-6 lg:mb-10 lg:h-fit">
         {/* Back Menu */}
         <BackPage />
@@ -195,9 +190,9 @@ export default function SettingPage() {
                   <label className="relative h-16 w-16 cursor-pointer lg:h-24 lg:w-24">
                     <div className="group relative h-16 w-16 cursor-pointer overflow-hidden rounded-full lg:h-24 lg:w-24">
                       {profilePictureUrl &&
-                      profilePictureUrl !== "null" &&
-                      profilePictureUrl !== "" &&
-                      profilePicturePreview === null ? (
+                        profilePictureUrl !== "null" &&
+                        profilePictureUrl !== "" &&
+                        profilePicturePreview === null ? (
                         <Image
                           src={profilePictureUrl}
                           alt="profile"
@@ -243,9 +238,9 @@ export default function SettingPage() {
                   <label className="relative block h-full w-full cursor-pointer lg:max-h-42 lg:max-w-[70%]">
                     {/* Banner Image */}
                     {bannerProfileUrl &&
-                    bannerProfileUrl !== "null" &&
-                    bannerProfileUrl !== "" &&
-                    bannerProfilePicturePreview === null ? (
+                      bannerProfileUrl !== "null" &&
+                      bannerProfileUrl !== "" &&
+                      bannerProfilePicturePreview === null ? (
                       <Image
                         src={bannerProfileUrl}
                         alt="profile"
@@ -525,12 +520,7 @@ export default function SettingPage() {
           </form>
         </div>
       </main>
-      <div className="block h-10 w-full bg-transparent text-transparent lg:hidden">
-        {"GatePlus"}
-      </div>
-      <span className="hidden lg:block">
-        <Footer />
-      </span>
+
 
       {showToast && (
         <Toast
@@ -539,6 +529,6 @@ export default function SettingPage() {
           onClose={() => setShowToast(false)}
         />
       )}
-    </div>
+    </>
   );
 }

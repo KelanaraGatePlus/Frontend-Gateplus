@@ -1,8 +1,5 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
-
-import Footer from "@/components/Footer/MainFooter";
-import Navbar from "@/components/Navbar/page";
 import BackPage from "@/components/BackPage/page";
 import Toast from "@/components/Toast/page";
 import IconsCameraAdd from "@@/icons/icons-camera-add.svg";
@@ -64,7 +61,7 @@ export default function SettingPage() {
       }
 
       const response = await axios.patch(
-        `http://localhost:3000/users/${userId}`,
+        `https://backend-gateplus-api.my.id/users/${userId}`,
         formData,
         {
           headers: {
@@ -102,7 +99,7 @@ export default function SettingPage() {
   const getData = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/users/${userId}`,
+        `https://backend-gateplus-api.my.id/users/${userId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -144,9 +141,7 @@ export default function SettingPage() {
   }, [userId, token]);
 
   return (
-    <div className="top-0 right-0 bottom-0 left-0 flex h-screen w-screen flex-col overflow-x-hidden">
-      <Navbar />
-
+    <>
       <main className="mx-2 my-2 mt-16 flex flex-col md:mt-24 lg:mx-6 lg:mb-10 lg:h-fit lg:min-h-[80vh]">
         {/* Back Menu */}
         <BackPage />
@@ -168,9 +163,9 @@ export default function SettingPage() {
                   <label className="relative h-16 w-16 cursor-pointer lg:h-24 lg:w-24">
                     <div className="group relative h-16 w-16 cursor-pointer overflow-hidden rounded-full bg-amber-600 lg:h-24 lg:w-24">
                       {imageUrl &&
-                      imageUrl !== "null" &&
-                      imageUrl !== "" &&
-                      uploadedPhotoProfile === null ? (
+                        imageUrl !== "null" &&
+                        imageUrl !== "" &&
+                        uploadedPhotoProfile === null ? (
                         <Image
                           src={imageUrl}
                           alt="profile"
@@ -382,10 +377,6 @@ export default function SettingPage() {
         </div>
       </main>
 
-      <span className="mt-10 hidden lg:block">
-        <Footer />
-      </span>
-
       {showToast && (
         <Toast
           message={toastMessage}
@@ -393,6 +384,6 @@ export default function SettingPage() {
           onClose={() => setShowToast(false)}
         />
       )}
-    </div>
+    </>
   );
 }

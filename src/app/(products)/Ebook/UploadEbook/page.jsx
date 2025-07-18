@@ -10,7 +10,6 @@ import { useCreateEbookMutation } from "@/hooks/api/ebookSliceAPI";
 import { languageOptions } from '@/lib/constants/languageOptions';
 
 /*[--- COMPONENT IMPORT ---]*/
-import Navbar from "@/components/Navbar/page";
 import InputText from '@/components/UploadForm/InputText';
 import InputTextArea from '@/components/UploadForm/InputTextArea';
 import InputSelect from '@/components/UploadForm/InputSelect';
@@ -21,8 +20,6 @@ import HeaderUploadForm from '@/components/UploadForm/HeaderUploadForm';
 import HeaderTab from '@/components/UploadForm/HeaderTab';
 import Toast from "@/components/Toast/page";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
-import BottomSpacer from '@/components/BottomSpacer/page';
-import Footer from "@/components/Footer/MainFooter";
 
 /*[--- ASSETS IMPORT ---]*/
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
@@ -136,7 +133,7 @@ export default function UploadEbookPage() {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "http://localhost:3000/category/",
+        "https://backend-gateplus-api.my.id/category/",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -159,8 +156,7 @@ export default function UploadEbookPage() {
   }, []);
 
   return (
-    <div className="flex flex-col overflow-x-hidden">
-      <Navbar />
+    <>
       <main className="mt-16 flex flex-col py-2 md:mt-[100px] lg:px-4">
         <HeaderUploadForm title={"Upload Ebook"} />
         <HeaderTab type={"Ebook"} />
@@ -243,9 +239,6 @@ export default function UploadEbookPage() {
           </form>
         </div>
       </main>
-      <BottomSpacer />
-
-      <Footer />
       {showToast && (
         <Toast
           message={toastMessage}
@@ -256,6 +249,6 @@ export default function UploadEbookPage() {
       {isLoading && (
         <LoadingOverlay message="Tunggu Sebentar... <br/> Sedang membuat series" />
       )}
-    </div>
+    </>
   );
 }

@@ -2,8 +2,6 @@
 "use client";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import BackPage from "@/components/BackPage/page";
-import Footer from "@/components/Footer/MainFooter";
-import Navbar from "@/components/Navbar/page";
 import Toast from "@/components/Toast/page";
 import ArrowRight from "@@/icons/icons-arrow-right.svg";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
@@ -14,7 +12,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import InputSelect from '@/components/UploadForm/InputSelect';
 import InputText from '@/components/UploadForm/InputText';
 import InputTextArea from '@/components/UploadForm/InputTextArea';
@@ -29,6 +27,7 @@ export default function UploadEpisodeComicContent() {
   const inputFileRef = useRef(null);
   const episodeCoverRef = useRef(null);
   const priceOption = ["10000", "20000", "30000", "Free"];
+  // eslint-disable-next-line no-unused-vars
   const [isTallScreen, setIsTallScreen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [comicsCreator, setComicsCreator] = useState([]);
@@ -160,7 +159,7 @@ export default function UploadEpisodeComicContent() {
     try {
       const creatorId = localStorage.getItem("creators_id");
       const response = await axios.get(
-        `http://localhost:3000/creator/${creatorId}`,
+        `https://backend-gateplus-api.my.id/creator/${creatorId}`,
       );
 
       const fullData = response.data.data;
@@ -214,7 +213,7 @@ export default function UploadEpisodeComicContent() {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/episodeComics",
+        "https://backend-gateplus-api.my.id/episodeComics",
         formData,
         {
           headers: {
@@ -239,10 +238,7 @@ export default function UploadEpisodeComicContent() {
   };
 
   return (
-    <div className="flex flex-col overflow-x-hidden">
-      <Suspense fallback={<div>Loading...</div>}>
-        <Navbar />
-      </Suspense>
+    <>
       <main className="mt-16 flex flex-col py-2 md:mt-[100px] lg:px-4">
         <section className="relative mb-2 flex items-center">
           <BackPage />
@@ -505,9 +501,6 @@ export default function UploadEpisodeComicContent() {
         />
       )}
       {isLoading && <LoadingOverlay message="Uploading..." />}
-      <div className={isTallScreen ? "absolute bottom-0 w-full" : ""}>
-        <Footer />
-      </div>
-    </div>
+    </>
   );
 }
