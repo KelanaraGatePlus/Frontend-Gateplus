@@ -1,32 +1,32 @@
-/* eslint-disable react/react-in-jsx-scope */
 "use client";
+import React, { use, useEffect, useState } from "react";
+import axios from "axios";
+import Image from "next/image";
+import Link from "next/link";
+import PropTypes from "prop-types";
 
+/*[--- UTILS IMPORT ---]*/
+import { formatDateTime } from "@/lib/timeFormatter";
+
+/*[--- HOOKS IMPORT ---]*/
+import { useGetEpisodeEbookByIdQuery } from "@/hooks/api/ebookSliceAPI";
+
+/*[--- COMPONENT IMPORT ---]*/
 import BackPage from "@/components/BackPage/page";
 import EpubReader from "@/components/EbookReader/page";
+import DetailPageLoadingSkeleton from "@/components/MainDetailProduct/Loading/ProductReadLoading"
+
+/*[--- ASSETS IMPORT ---]*/
 import iconMoreMenuComment from "@@/icons/icon-comment.svg";
 import logoUsersComment from "@@/icons/logo-users-comment.svg";
 import logoArrowDownDark from "@@/icons/icons-dashboard/icons-arrow-left.svg";
 import logoArrowDownLight from "@@/icons/icons-dashboard/icons-arrow-left-light.svg";
 import IconsDislikeComment from "@@/logo/logoDetailEbook/icon-dislike-comment.svg";
-import { formatDateTime } from "@/lib/timeFormatter";
 import IconsLikeComment from "@@/logo/logoDetailEbook/icon-like-comment.svg";
-import axios from "axios";
-import { Zain } from "next/font/google";
-import Image from "next/image";
-import Link from "next/link";
-import { use, useEffect, useState } from "react";
 
-const zain = Zain({
-  variable: "--font-zain",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  display: "swap",
-  weight: ["200", "400", "700", "800"],
-});
-
-// eslint-disable-next-line react/prop-types
 export default function ReadEbookPage({ params }) {
   const { id } = use(params);
+  const [showSkeleton, setShowSkeleton] = useState(true);
   const [ebookTitle, setEbookTitle] = useState("");
   const [ebookId, setEbookId] = useState("");
   const [title, setTitle] = useState("");
@@ -35,28 +35,29 @@ export default function ReadEbookPage({ params }) {
   const [bannerStartEpisodeUrl, setBannerStartEpisodeUrl] = useState(null);
   const [bannerEndEpisodeUrl, setBannerEndEpisodeUrl] = useState(null);
   const [ebookUrl, setEbookUrl] = useState(null);
-  const [allEpisodes, setAllEpisodes] = useState([]);
-  const [currentEpisode, setCurrentEpisode] = useState(null);
   const [allComments, setAllComments] = useState([]);
   const [myComment, setMyComment] = useState("");
   const [isUploadingComment, setIsUploadingComment] = useState(false);
   const [isDark, setIsDark] = useState(false);
+  const { data, isLoading } = useGetEpisodeEbookByIdQuery(id);
+  console.log("ini id episode", id)
+  const episodeEbookData = data?.data?.data || {};
+  const ebookData = episodeEbookData.ebooks || {};
+  const allEpisodes = ebookData.episode_ebooks || [];
   let hasUpdatedViews = false;
 
+  console.log("episodeEbookData", episodeEbookData);
+  console.log("ebookData", ebookData);
+  console.log("allEpisodes", allEpisodes);
+
   const currentIndex = allEpisodes.findIndex(
-    (ep) => ep.id === currentEpisode.id,
+    (ep) => ep.id === episodeEbookData.id,
   );
   const prevEpisode = allEpisodes[currentIndex - 1];
   const nextEpisode = allEpisodes[currentIndex + 1];
 
   const getData = async () => {
     try {
-      const response = await axios.get(
-        `https://backend-gateplus-api.my.id/episode/${id}`,
-      );
-
-      const ebookSingleData = response.data.data.data[0];
-
       if (!hasUpdatedViews) {
         console.log("Tambah Views");
         await axios.patch(
@@ -65,34 +66,26 @@ export default function ReadEbookPage({ params }) {
         hasUpdatedViews = true;
       }
 
-      setTitle(ebookSingleData.title);
-      setEbookTitle(ebookSingleData.ebooks.title);
-      setEbookId(ebookSingleData.ebooks.id);
-      setCreatorNotes(ebookSingleData.notedEpisode);
-      setEbookUrl(ebookSingleData.ebookUrl);
-      setBannerStartEpisodeUrl(ebookSingleData.bannerStartEpisodeUrl);
-      setBannerEndEpisodeUrl(ebookSingleData.bannerEndEpisodeUrl);
-      setUpdatedAt(formatDateTime(ebookSingleData.updatedAt, "short"));
-      console.log(ebookSingleData);
+      setTitle(episodeEbookData.title);
+      setEbookTitle(ebookData.title);
+      setEbookId(ebookData.id);
+      setCreatorNotes(episodeEbookData.notedEpisode);
+      setEbookUrl(episodeEbookData.ebookUrl);
+      setBannerStartEpisodeUrl(episodeEbookData.bannerStartEpisodeUrl);
+      setBannerEndEpisodeUrl(episodeEbookData.bannerEndEpisodeUrl);
+      setUpdatedAt(formatDateTime(episodeEbookData.updatedAt, "short"));
+      console.log(episodeEbookData);
       const existing = JSON.parse(localStorage.getItem("last_seen_content")) || [];
-      const isAlreadyExist = existing.find(item => item.id === ebookSingleData.ebooks.id);
+      const isAlreadyExist = existing.find(item => item.id === ebookData.id);
       let updated = existing;
       if (!isAlreadyExist) {
         const newContent = {
-          ...ebookSingleData.ebooks,
+          ...episodeEbookData.ebooks,
           type: "ebook",
         };
         updated = [newContent, ...existing].slice(0, 10);
       }
       localStorage.setItem("last_seen_content", JSON.stringify(updated));
-
-      setCurrentEpisode(ebookSingleData);
-      const ebookId = ebookSingleData.ebooks.id;
-      const resAll = await axios.get(
-        `https://backend-gateplus-api.my.id/ebooks/${ebookId}`,
-      );
-      const allEpisodesData = resAll.data.data.data.episode_ebooks;
-      setAllEpisodes(allEpisodesData);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -143,7 +136,13 @@ export default function ReadEbookPage({ params }) {
   };
 
   useEffect(() => {
-    getData();
+    if (data && !isLoading) {
+      getData();
+    }
+  }, [data, isLoading]);
+
+
+  useEffect(() => {
     getCommentData();
   }, []);
 
@@ -153,6 +152,17 @@ export default function ReadEbookPage({ params }) {
       setIsDark(darkMode);
     }
   }, []);
+
+  useEffect(() => {
+    setShowSkeleton(isLoading);
+  }, [isLoading]);
+
+
+  if (showSkeleton) {
+    return (
+      <DetailPageLoadingSkeleton />
+    );
+  }
 
   return (
     <div
@@ -164,7 +174,7 @@ export default function ReadEbookPage({ params }) {
         >
           <BackPage isDark={isDark} />
           <h4
-            className={` ${zain.className} [display:-webkit-box] w-full overflow-hidden text-center text-xl font-extrabold text-ellipsis [-webkit-box-orient:vertical] [-webkit-line-clamp:1] md:text-2xl`}
+            className={`zeinFont [display:-webkit-box] w-full overflow-hidden text-center text-xl font-extrabold text-ellipsis [-webkit-box-orient:vertical] [-webkit-line-clamp:1] md:text-2xl`}
           >
             <Link
               href={`/Ebook/DetailEbook/${ebookId}`}
@@ -218,7 +228,7 @@ export default function ReadEbookPage({ params }) {
           </label>
         </div>
         {/* Bagian Header */}
-        <section className="relative mt-[75px] w-full">
+        <section className="relative mt-16 w-full">
           {/* banner */}
           <div className="h-64 w-full overflow-hidden">
             {bannerStartEpisodeUrl && (
@@ -444,7 +454,7 @@ export default function ReadEbookPage({ params }) {
           className={`flex w-screen flex-col px-5 py-6 ${isDark ? "text-white" : "text-[#222222]"}`}
         >
           <div className="flex w-full justify-start py-2">
-            <h3 className={`${zain.className} text-3xl font-extrabold`}>
+            <h3 className={`zeinFont text-3xl font-extrabold`}>
               Komentar
             </h3>
           </div>
@@ -592,4 +602,8 @@ export default function ReadEbookPage({ params }) {
       </main>
     </div>
   );
+}
+
+ReadEbookPage.propTypes = {
+  params: PropTypes.string,
 }

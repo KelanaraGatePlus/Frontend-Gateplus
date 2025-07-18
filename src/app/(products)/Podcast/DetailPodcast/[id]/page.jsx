@@ -2,7 +2,7 @@
 import React, { useState, useEffect, Suspense, use } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
-import MainTemplateLayout from "@/components/template/page";
+import MainTemplateLayout from "@/components/MainDetailProduct/page";
 import ListenPodcast from "@/components/PodcastPlayingComponent/listenPodcast";
 import BottomSpacer from "@/components/BottomSpacer/page";
 
@@ -10,9 +10,11 @@ export default function DetailPodcast({ params }) {
   const { id } = use(params);
   const [podcastData, setPodcastData] = useState({});
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const getData = async () => {
     try {
+      setIsLoading(true);
       const userId = localStorage.getItem("users_id");
       const token = localStorage.getItem("token");
       const response = await axios.get(
@@ -28,6 +30,8 @@ export default function DetailPodcast({ params }) {
       setPodcastData(ebookSingleData);
     } catch (error) {
       console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -42,6 +46,7 @@ export default function DetailPodcast({ params }) {
           productType="podcast"
           productDetail={podcastData}
           productEpisode={podcastData.episode_podcasts}
+          isLoading={isLoading}
         />
 
         <BottomSpacer height="h-42" />

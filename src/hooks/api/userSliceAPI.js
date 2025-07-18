@@ -1,13 +1,12 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-
-const url = "https://backend-gateplus-api.my.id";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export const userAPI = createApi({
   reducerPath: "usersAPI",
   refetchOnFocus: true,
   refetchOnReconnect: true,
   baseQuery: fetchBaseQuery({
-    baseUrl: url,
+    baseUrl: BACKEND_URL,
     credentials: "include",
     prepareHeaders: (headers) => {
       const token = localStorage.getItem("token");

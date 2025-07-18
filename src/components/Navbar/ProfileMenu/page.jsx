@@ -44,7 +44,11 @@ export default function ProfileMenu({
   };
 
   const handleLogout = () => {
+    const lastSeen = localStorage.getItem("last_seen_content");
     localStorage.clear();
+    if (lastSeen) {
+      localStorage.setItem("last_seen_content", lastSeen);
+    }
     document.cookie.split(";").forEach((cookie) => {
       const name = cookie.split("=")[0].trim();
       document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
@@ -144,11 +148,10 @@ export default function ProfileMenu({
                     </span>
                   </div>
                   <div
-                    className={`flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${
-                      isDashboardMenuOpen
+                    className={`flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${isDashboardMenuOpen
                         ? "max-h-[500px] opacity-100"
                         : "-mt-1 max-h-0 opacity-0"
-                    }`}
+                      }`}
                   >
                     <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
                       <span>Dashboard</span>
@@ -180,9 +183,8 @@ export default function ProfileMenu({
                     </span>
                     <span>Upload Konten</span>
                     <span
-                      className={`absolute top-1/2 right-0 h-4 w-4 -translate-y-1/2 transition-transform duration-300 ${
-                        isUploadContentMenuOpen ? "-rotate-90" : "rotate-90"
-                      }`}
+                      className={`absolute top-1/2 right-0 h-4 w-4 -translate-y-1/2 transition-transform duration-300 ${isUploadContentMenuOpen ? "-rotate-90" : "rotate-90"
+                        }`}
                     >
                       <Image
                         src={iconsArrow}
@@ -195,11 +197,10 @@ export default function ProfileMenu({
                   </div>
 
                   <div
-                    className={`flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${
-                      isUploadContentMenuOpen
+                    className={`flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${isUploadContentMenuOpen
                         ? "max-h-[500px] opacity-100"
                         : "-mt-1 max-h-0 opacity-0"
-                    }`}
+                      }`}
                   >
                     <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
                       <Link href="/Ebook/UploadEbook">

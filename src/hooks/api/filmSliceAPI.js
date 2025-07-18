@@ -1,11 +1,9 @@
-/* eslint-disable no-undef */
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-
-const url = process.env.SERVER_BACKEND;
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export const filmAPI = createApi({
   reducerPath: "filmAPI",
-  baseQuery: fetchBaseQuery({ baseUrl: url }),
+  baseQuery: fetchBaseQuery({ baseUrl: BACKEND_URL }),
   endpoints: (builder) => ({
     getFilm: builder.query({
       queryFn: () => {

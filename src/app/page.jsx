@@ -31,8 +31,8 @@ export default function HomePage() {
           <CarouselPopularComics />
           <CarouselPopularPodcasts />
         </main>
-        <Footer />
       </div>
+      <Footer />
     </div>
   );
 }

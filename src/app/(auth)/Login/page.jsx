@@ -1,13 +1,14 @@
 "use client";
-import React, {Suspense} from "react";
-import { useLoginUserMutation } from "@/hooks/api/userSliceAPI";
+import React, { Suspense, useState } from "react";
 import Image from "next/image";
 import logo from "@@/logo/logoGate+/logo-header-login.svg";
 
 import FormLogin from '@/components/FormLogin/page'
 
 export default function LoginPage() {
-  const [{ isSuccess, isError, error }] = useLoginUserMutation();
+  const [isError, setIsError] = useState(false);
+  const [error, setError] = useState(null);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   return (
     <div className="flex min-h-screen min-w-screen items-center justify-center px-4 md:py-10">
@@ -76,7 +77,11 @@ export default function LoginPage() {
           )}
 
           <Suspense fallback={<div>Loading...</div>}>
-            <FormLogin />
+            <FormLogin
+              setIsError={setIsError}
+              setError={setError}
+              setIsSuccess={setIsSuccess}
+            />
           </Suspense>
         </section>
       </main>

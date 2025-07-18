@@ -1,4 +1,4 @@
-/* eslint-disable react/react-in-jsx-scope */
+import React, { useEffect, useState } from "react";
 import { Splide, SplideSlide } from "@splidejs/react-splide";
 import Image from "next/image";
 import Link from "next/link";
@@ -6,10 +6,14 @@ import "@splidejs/react-splide/css/skyblue";
 
 import bannerPromo1 from "@@/BannerPromo/hero-banner-1.svg";
 import bannerPromo2 from "@@/BannerPromo/hero-banner-2.svg";
-// import bannerPromo3 from "@@/BannerPromo/hero-banner-3.svg";
 import bannerPromo4 from "@@/BannerPromo/hero-banner-4.svg";
 
-export default function sliderBannerPage() {
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
+
+export default function SliderBannerPage() {
+  const [isLoading, setIsLoading] = useState(true);
+
   const bannerPromo = [
     {
       id: 1,
@@ -21,52 +25,56 @@ export default function sliderBannerPage() {
       image: bannerPromo2,
       url: "/RegisterCreators",
     },
-    // {
-    //   id: 3,
-    //   image: bannerPromo3,
-    //   url: "/Movie",
-    // },
     {
       id: 4,
       image: bannerPromo4,
       url: "/RegisterCreators",
     },
-  ]
+  ];
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="my-auto mt-3.5 mb-0.5 md:mb-10 flex w-screen flex-col md:h-fit">
-      <Splide
-        options={{
-          type: "loop",
-          perPage: 1,
-          autoplay: true,
-          gap: "0rem",
-          breakpoints: {
-            1024: {
-              perPage: 1,
-              gap: "0rem",
+      {isLoading ? (
+        <Skeleton
+          height={400}
+          width="100%"
+          borderRadius="0.75rem"
+          baseColor="#2e2e2e"
+          highlightColor="#3d3d3d"
+        />
+      ) : (
+        <Splide
+          options={{
+            type: "loop",
+            perPage: 1,
+            autoplay: true,
+            gap: "0rem",
+            breakpoints: {
+              1024: { perPage: 1 },
+              768: { perPage: 1 },
             },
-            768: {
-              perPage: 1,
-              gap: "0rem",
-            },
-          },
-        }}
-        aria-label="Banner Foto"
-      >
-        {bannerPromo.map((item) => (
-          <SplideSlide key={item.id}>
-            <Link href={item.url}>
-              <Image
-                priority
-                src={item.image}
-                alt={`BannerPromo00${item.id}`}
-                layout="responsive"
-              />
-            </Link>
-          </SplideSlide>
-        ))}
-      </Splide>
+          }}
+          aria-label="Banner Foto"
+        >
+          {bannerPromo.map((item) => (
+            <SplideSlide key={item.id}>
+              <Link href={item.url}>
+                <Image
+                  priority
+                  src={item.image}
+                  alt={`BannerPromo00${item.id}`}
+                  layout="responsive"
+                />
+              </Link>
+            </SplideSlide>
+          ))}
+        </Splide>
+      )}
     </div>
   );
 }

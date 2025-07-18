@@ -1,13 +1,12 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-
-const url = "https://backend-gateplus-api.my.id";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export const ebookApi = createApi({
   reducerPath: "ebookApi",
   refetchOnFocus: true,
   refetchOnReconnect: true,
   baseQuery: fetchBaseQuery({
-    baseUrl: url,
+    baseUrl: BACKEND_URL,
   }),
   tagTypes: ["ebook"],
   endpoints: (builder) => ({
@@ -17,12 +16,25 @@ export const ebookApi = createApi({
       keepUnusedDataFor: 5,
     }),
     getEbookById: builder.query({
-      query: (id) => `/ebooks/${id}`,
+      query: ({ id, userId }) => `/ebooks/${id}?userId=${userId}`,
+      providesTags: ["ebook"],
+    }),
+    getEpisodeEbookById: builder.query({
+      query: (id) => `/episode/${id}`,
       providesTags: ["ebook"],
     }),
     createEbook: builder.mutation({
       query: (formData) => ({
         url: "/ebooks",
+        method: "POST",
+        body: formData,
+        formData: true,
+      }),
+      invalidatesTags: ["ebook"],
+    }),
+    createEpisode: builder.mutation({
+      query: (formData) => ({
+        url: "/episode",
         method: "POST",
         body: formData,
         formData: true,
@@ -35,5 +47,7 @@ export const ebookApi = createApi({
 export const {
   useGetEbookQuery,
   useGetEbookByIdQuery,
+  useGetEpisodeEbookByIdQuery,
   useCreateEbookMutation,
+  useCreateEpisodeMutation,
 } = ebookApi;

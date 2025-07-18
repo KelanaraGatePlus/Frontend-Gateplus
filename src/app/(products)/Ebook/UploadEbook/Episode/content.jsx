@@ -1,8 +1,6 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
-import Footer from "@/components/Footer/MainFooter";
-import Navbar from "@/components/Navbar/page";
 import Toast from "@/components/Toast/page";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
@@ -12,7 +10,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useCreateEpisodeMutation } from "@/hooks/api/ebookSliceAPI";
 
 /*[--- COMPONENT IMPORT ---]*/
 import HeaderUploadForm from '@/components/UploadForm/HeaderUploadForm';
@@ -23,6 +22,7 @@ import InputTextArea from '@/components/UploadForm/InputTextArea';
 import InputImageBanner from '@/components/UploadForm/InputImageBanner';
 
 export default function UploadEpisodePageContent() {
+  const [createEpisode] = useCreateEpisodeMutation();
   const router = useRouter();
   const [termAccepted, setTermAccepted] = useState(false);
   const [agreementAccepted, setAgreementAccepted] = useState(false);
@@ -33,6 +33,7 @@ export default function UploadEpisodePageContent() {
   const bannerStartRef = useRef(null);
   const bannerEndRef = useRef(null);
   const priceOption = ["10000", "20000", "30000", "Free"];
+  // eslint-disable-next-line no-unused-vars
   const [isTallScreen, setIsTallScreen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [ebooksCreator, setEbooksCreator] = useState([]);
@@ -177,13 +178,8 @@ export default function UploadEpisodePageContent() {
     ) {
       setToastMessage("Semua kolom harus diisi");
       setShowToast(true);
-      setShowToast(true);
       setIsLoading(false);
       return;
-    }
-
-    if (selectedPrice === "Free") {
-      setSelectedPrice("0");
     }
 
     const formData = new FormData();
@@ -192,7 +188,7 @@ export default function UploadEpisodePageContent() {
     formData.append("ebookId", selectedEbookId);
     formData.append("title", episodeTitle);
     formData.append("description", description);
-    formData.append("price", selectedPrice);
+    formData.append("price", selectedPrice === "Free" ? "0" : selectedPrice);
     formData.append("notedEpisode", creatorNotes);
     formData.append("coverEpisodeUrl", uploadedFiles.episodeCover[0]);
     formData.append("bannerStartEpisodeUrl", uploadedFiles.bannerStart[0]);
@@ -200,18 +196,10 @@ export default function UploadEpisodePageContent() {
     formData.append("ebookUrl", uploadedFiles.inputFile[0]);
 
     try {
-      const response = await axios.post(
-        "https://backend-gateplus-api.my.id/episode",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        },
-      );
-      console.log(response.data);
-
+      await createEpisode(formData).unwrap();
       setIsLoading(false);
+
+      // reset form
       setSelectedEbookId("");
       setEpisodeTitle("");
       setDescription("");
@@ -220,16 +208,15 @@ export default function UploadEpisodePageContent() {
 
       router.push(`/Ebook/DetailEbook/${selectedEbookId}`);
     } catch (error) {
-      console.error("Error during post request:", error);
+      console.error("Gagal buat episode:", error);
       setIsLoading(false);
+      setToastMessage("Gagal mengirim data episode");
+      setShowToast(true);
     }
   };
 
   return (
-    <div className="flex flex-col overflow-x-hidden">
-      <Suspense fallback={<div>Loading...</div>}>
-        <Navbar />
-      </Suspense>
+    <>
       <main className="mt-16 flex flex-col py-2 md:mt-[100px] lg:px-4">
         <HeaderUploadForm title={"Upload Ebook"} />
         <HeaderTab type={"Ebook"} />
@@ -433,7 +420,7 @@ export default function UploadEpisodePageContent() {
                 </Link>
               </label>
             </section>
-            
+
             <button
               disabled={!termAccepted || !agreementAccepted}
               className={`mt-1 flex w-full justify-center gap-2 rounded-lg border border-[#F5F5F559] bg-[#0E5BA8] py-2 font-bold text-white lg:mt-8 lg:w-10/12 lg:self-end ${!termAccepted || !agreementAccepted
@@ -466,9 +453,6 @@ export default function UploadEpisodePageContent() {
         />
       )}
       {isLoading && <LoadingOverlay message="Uploading..." />}
-      <div className={isTallScreen ? "absolute bottom-0 w-full" : ""}>
-        <Footer />
-      </div>
-    </div>
+    </>
   );
 }

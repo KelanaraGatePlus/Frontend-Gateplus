@@ -3,8 +3,6 @@
 
 import BackPage from "@/components/BackPage/page";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
-import Footer from "@/components/Footer/MainFooter";
-import Navbar from "@/components/Navbar/page";
 import Toast from "@/components/Toast/page";
 import ArrowRight from "@@/icons/icons-arrow-right.svg";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
@@ -19,7 +17,7 @@ import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /*[--- CONSTANT VAR IMPORT ---]*/
 import { languageOptions } from '@/lib/constants/languageOptions';
@@ -164,10 +162,7 @@ export default function UploadEbookPage() {
   }, []);
 
   return (
-    <div className="flex flex-col overflow-x-hidden">
-      <Suspense fallback={<div>Loading...</div>}>
-        <Navbar />
-      </Suspense>
+    <>
       <main className="mt-16 flex flex-col py-2 md:mt-[100px] lg:px-4">
         {/* Header */}
         <section className="relative mb-2 flex items-center">
@@ -280,11 +275,7 @@ export default function UploadEbookPage() {
           </form>
         </div>
       </main>
-      <div className="block h-20 w-full bg-transparent text-transparent">
-        {"GatePlus"}
-      </div>
 
-      <Footer />
       {showToast && (
         <Toast
           message={toastMessage}
@@ -295,6 +286,6 @@ export default function UploadEbookPage() {
       {isLoading && (
         <LoadingOverlay message="Tunggu Sebentar... <br/> Sedang membuat series" />
       )}
-    </div>
+    </>
   );
 }

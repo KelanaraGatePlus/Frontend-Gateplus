@@ -1,12 +1,11 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
-
-import Footer from "@/components/Footer/MainFooter";
-import Navbar from "@/components/Navbar/page";
-import BackPage from "@/components/BackPage/page";
 import Toast from "@/components/Toast/page";
 import IconsCameraAdd from "@@/icons/icons-camera-add.svg";
+import BackPage from "@/components/BackPage/page";
 import IconsSaveChanges from "@@/icons/icons-save-changes.svg";
+import BannerCreator from "@@/icons/logo-banner-creator.svg";
+import IconsGalery from "@@/icons/logo-upload-banner.svg";
 import logoUsersComment from "@@/icons/logo-users-comment.svg";
 import axios from "axios";
 import Image from "next/image";
@@ -15,31 +14,43 @@ import { useEffect, useState } from "react";
 
 export default function SettingPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [imageFile, setImageFile] = useState(null);
-  const [imageUrl, setImageUrl] = useState(null);
-  const [userId, setUserId] = useState(null);
-  const [id, setId] = useState("");
+  const [showToast, setShowToast] = useState(false);
+  const [id, setId] = useState(null);
+  const [profilePictureUrl, setProfilePictureUrl] = useState(null);
+  const [bannerProfileUrl, setBannerProfileUrl] = useState(null);
   const [profileName, setProfileName] = useState("");
   const [username, setUsername] = useState("");
-  const [bio, setBio] = useState("");
+  const [description, setDescription] = useState("");
   const [gender, setGender] = useState(null);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [dateOfBirth, setdateOfBirth] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [region, setRegion] = useState("");
-  const [uploadedPhotoProfile, setuploadedPhotoProfile] = useState(null);
-  const [showToast, setShowToast] = useState(false);
+  const [instagramUrl, setInstagramUrl] = useState("");
+  const [tiktokUrl, setTiktokUrl] = useState("");
+  const [twitterUrl, setTwitterUrl] = useState("");
+  const [facebookUrl, setFacebookUrl] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState("");
-  const [token, setToken] = useState("");
+
+  const [profilePicturePreview, setProfilePicturePreview] = useState(null);
+  const [bannerProfilePicturePreview, setBannerProfilePicturePreview] =
+    useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (profileName === "" || username === "" || email === "") {
+    if (
+      profileName === "" ||
+      username === "" ||
+      email === "" ||
+      profilePictureUrl === null
+    ) {
       setShowToast(true);
-      setToastMessage("Profile Name, Username, dan Email Wajib diisi");
+      setToastMessage(
+        "Profile Picture, Profile Name, Username, dan Email Wajib diisi",
+      );
       setToastType("failed");
       return;
     }
@@ -50,8 +61,7 @@ export default function SettingPage() {
       const formData = new FormData();
       formData.append("profileName", profileName);
       formData.append("username", username);
-      formData.append("bio", bio);
-      console.log("ini gender", gender);
+      formData.append("description", description);
       if (gender !== "" && gender !== null) {
         formData.append("gender", gender);
       }
@@ -59,95 +69,104 @@ export default function SettingPage() {
       formData.append("phone", phone);
       formData.append("dateOfBirth", dateOfBirth);
       formData.append("region", region);
-      if (imageFile) {
-        formData.append("imageUrl", imageFile);
+      formData.append("instagramUrl", instagramUrl);
+      formData.append("tiktokUrl", tiktokUrl);
+      formData.append("twitterUrl", twitterUrl);
+      formData.append("facebookUrl", facebookUrl);
+      if (profilePictureUrl) {
+        formData.append("imageUrl", profilePictureUrl);
+      }
+      if (bannerProfileUrl) {
+        formData.append("bannerImageUrl", bannerProfileUrl);
       }
 
       const response = await axios.patch(
-        `https://backend-gateplus-api.my.id/users/${userId}`,
+        `https://backend-gateplus-api.my.id/creator/${id}`,
         formData,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
         },
       );
 
-      localStorage.setItem("image_users", response.data.data.imageUrl);
       setShowToast(true);
       setToastMessage("Profil berhasil diupdate!");
       setToastType("success");
+      console.log("Update success:", response.data);
+      localStorage.setItem("image_users", response.data.data.imageUrl);
       setIsLoading(false);
-      router.push(`/Users/${id}`);
+      router.push(`/Creators/${id}`);
     } catch (error) {
       setIsLoading(false);
       console.error("Error during patch request:", error);
-      setShowToast(true);
-      setToastMessage(
-        `${error.response.data.message} - ${error.response.data.error}`,
-      );
-      setToastType("failed");
     }
   };
 
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setuploadedPhotoProfile(URL.createObjectURL(file));
-      setImageFile(file);
-    }
-  };
-
-  const getData = async () => {
+  const getData = async (id) => {
     try {
       const response = await axios.get(
-        `https://backend-gateplus-api.my.id/users/${userId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
+        `https://backend-gateplus-api.my.id/creator/${id}`,
       );
 
-      const usersData = response.data.data.data;
+      const creatorData = response.data.data.data[0];
 
-      setProfileName(usersData.profileName || "");
-      setUsername(usersData.username || "");
-      setBio(usersData.bio || "");
-      setGender(usersData.gender || "");
-      setEmail(usersData.email || "");
-      setPhone(usersData.phone || "");
-      setdateOfBirth(usersData.dateOfBirth || "");
-      setRegion(usersData.region || "");
-      setId(usersData.id || "");
+      setProfilePictureUrl(creatorData.imageUrl);
+      setBannerProfileUrl(creatorData.bannerImageUrl);
+      setProfileName(creatorData.profileName);
+      setUsername(creatorData.username);
+      setDescription(creatorData.description);
+      setGender(creatorData.gender);
+      setEmail(creatorData.email);
+      setPhone(creatorData.phone);
+      setDateOfBirth(creatorData.dateOfBirth);
+      setRegion(creatorData.region);
+      setInstagramUrl(creatorData.instagramUrl);
+      setTiktokUrl(creatorData.tiktokUrl);
+      setTwitterUrl(creatorData.twitterUrl);
+      setFacebookUrl(creatorData.facebookUrl);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
 
   useEffect(() => {
-    const userIdFromSession = localStorage.getItem("users_id");
-    const imageFromSession = localStorage.getItem("image_users");
-    const tokenFromSession = localStorage.getItem("token");
-
-    setUserId(userIdFromSession);
-    setImageUrl(imageFromSession);
-    setToken(tokenFromSession);
-    console.log(token);
+    const creatorId = localStorage.getItem("creators_id");
+    if (creatorId) {
+      setId(creatorId);
+      getData(creatorId);
+    }
   }, []);
 
-  useEffect(() => {
-    if (userId && token) {
-      getData();
+  const handleFileUpload = (event) => {
+    if (event.target.id === "profile-picture") {
+      const file = event.target.files[0];
+      if (file) {
+        setProfilePicturePreview(URL.createObjectURL(file));
+        setProfilePictureUrl(file);
+      }
     }
-  }, [userId, token]);
+
+    if (event.target.id === "banner-profile-picture") {
+      const file = event.target.files[0];
+      if (file) {
+        setBannerProfilePicturePreview(URL.createObjectURL(file));
+        setBannerProfileUrl(file);
+      }
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (profilePicturePreview) URL.revokeObjectURL(profilePicturePreview);
+      if (bannerProfilePicturePreview)
+        URL.revokeObjectURL(bannerProfilePicturePreview);
+    };
+  }, [profilePicturePreview, bannerProfilePicturePreview]);
 
   return (
-    <div className="top-0 right-0 bottom-0 left-0 flex h-screen w-screen flex-col overflow-x-hidden">
-      <Navbar />
-
-      <main className="mx-2 my-2 mt-16 flex flex-col md:mt-24 lg:mx-6 lg:mb-10 lg:h-fit lg:min-h-[80vh]">
+    <>
+      <main className="mx-2 my-2 mt-16 flex flex-col md:mt-24 lg:mx-6 lg:mb-10 lg:h-fit">
         {/* Back Menu */}
         <BackPage />
 
@@ -163,23 +182,26 @@ export default function SettingPage() {
               <div className="flex items-center gap-2">
                 <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
                   Profile Picture
+                  <span className="align-super text-[12px] text-red-700">
+                    {" *"}
+                  </span>
                 </h3>
                 <div className="flex flex-4 text-white md:flex-10">
                   <label className="relative h-16 w-16 cursor-pointer lg:h-24 lg:w-24">
-                    <div className="group relative h-16 w-16 cursor-pointer overflow-hidden rounded-full bg-amber-600 lg:h-24 lg:w-24">
-                      {imageUrl &&
-                      imageUrl !== "null" &&
-                      imageUrl !== "" &&
-                      uploadedPhotoProfile === null ? (
+                    <div className="group relative h-16 w-16 cursor-pointer overflow-hidden rounded-full lg:h-24 lg:w-24">
+                      {profilePictureUrl &&
+                        profilePictureUrl !== "null" &&
+                        profilePictureUrl !== "" &&
+                        profilePicturePreview === null ? (
                         <Image
-                          src={imageUrl}
+                          src={profilePictureUrl}
                           alt="profile"
                           fill
                           className="h-full w-full rounded-full bg-white object-cover"
                         />
                       ) : (
                         <Image
-                          src={uploadedPhotoProfile || logoUsersComment}
+                          src={profilePicturePreview || logoUsersComment}
                           alt="profile"
                           fill
                           className="h-full w-full rounded-full bg-white object-cover"
@@ -195,10 +217,63 @@ export default function SettingPage() {
                         />
                       </div>
                     </div>
+
                     <input
                       type="file"
-                      accept="image/png, image/jpeg"
+                      accept="image/*"
                       className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+                      id="profile-picture"
+                      onChange={(e) => handleFileUpload(e)}
+                    />
+                  </label>
+                </div>
+              </div>
+              {/* Banner */}
+              <div className="flex items-center gap-2">
+                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
+                  Banner Profile IMG
+                </h3>
+
+                <div className="relative flex w-full flex-4 overflow-hidden rounded-xl md:flex-10">
+                  <label className="relative block h-full w-full cursor-pointer lg:max-h-42 lg:max-w-[70%]">
+                    {/* Banner Image */}
+                    {bannerProfileUrl &&
+                      bannerProfileUrl !== "null" &&
+                      bannerProfileUrl !== "" &&
+                      bannerProfilePicturePreview === null ? (
+                      <Image
+                        src={bannerProfileUrl}
+                        alt="profile"
+                        width={1080}
+                        height={200}
+                        className="aspect-auto h-full w-full object-cover object-center"
+                      />
+                    ) : (
+                      <Image
+                        src={bannerProfilePicturePreview || BannerCreator}
+                        alt="banner"
+                        width={1080}
+                        height={200}
+                        className="aspect-auto h-full w-full object-cover object-center"
+                      />
+                    )}
+
+                    <div className="absolute top-1/2 right-0 left-0 flex h-[28%] -translate-y-1/2 items-center justify-center gap-2 bg-black/40">
+                      <Image
+                        src={IconsGalery}
+                        alt="camera icon"
+                        width={24}
+                        height={24}
+                        className="object-contain"
+                      />
+                      <p className="font-bold text-white">Upload</p>
+                    </div>
+
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+                      id="banner-profile-picture"
                       onChange={(e) => handleFileUpload(e)}
                     />
                   </label>
@@ -216,9 +291,9 @@ export default function SettingPage() {
                   <input
                     type="text"
                     className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
+                    value={profileName || ""}
                     onChange={(e) => setProfileName(e.target.value)}
-                    value={profileName}
-                    placeholder="Masukan Profile Name"
+                    placeholder="Masukan Nama Profile"
                     required
                   />
                 </div>
@@ -235,17 +310,17 @@ export default function SettingPage() {
                   <input
                     type="text"
                     className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
+                    value={username || ""}
                     onChange={(e) => setUsername(e.target.value)}
-                    value={username}
-                    placeholder="Masukan username"
+                    placeholder="Masukan Username"
                     required
                   />
                 </div>
               </div>
-              {/* Bio */}
+              {/* Description */}
               <div className="flex items-center gap-2">
                 <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                  Bio
+                  Description
                 </h3>
                 <div className="flex w-full flex-4 text-white md:flex-10">
                   <textarea
@@ -253,10 +328,10 @@ export default function SettingPage() {
                     className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
                     id="about"
                     cols="30"
-                    rows="4"
+                    rows="5"
                     placeholder="Tell us about you, maxs 150 character."
-                    onChange={(e) => setBio(e.target.value)}
-                    value={bio}
+                    value={description || ""}
+                    onChange={(e) => setDescription(e.target.value)}
                   />
                 </div>
               </div>
@@ -272,8 +347,8 @@ export default function SettingPage() {
                       name="gender"
                       value="Male"
                       className="accent-green-500"
-                      onChange={(e) => setGender(e.target.value)}
                       checked={gender === "Male"}
+                      onChange={(e) => setGender(e.target.value)}
                     />
                     <span>Male</span>
                   </label>
@@ -283,8 +358,8 @@ export default function SettingPage() {
                       name="gender"
                       value="Female"
                       className="accent-green-500"
-                      onChange={(e) => setGender(e.target.value)}
                       checked={gender === "Female"}
+                      onChange={(e) => setGender(e.target.value)}
                     />
                     <span>Female</span>
                   </label>
@@ -302,8 +377,8 @@ export default function SettingPage() {
                   <input
                     type="email"
                     className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
+                    value={email || ""}
                     onChange={(e) => setEmail(e.target.value)}
-                    value={email}
                     placeholder="Masukan Email"
                     required
                   />
@@ -313,29 +388,33 @@ export default function SettingPage() {
               <div className="flex items-center gap-2">
                 <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
                   Phone
+                  <span className="align-super text-[12px] text-red-700">
+                    {" *"}
+                  </span>
                 </h3>
                 <div className="flex w-full flex-4 text-white md:flex-10">
                   <input
                     type="number"
                     className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
+                    value={phone || ""}
+                    placeholder="Masukan No. Telepon"
                     onChange={(e) => setPhone(e.target.value)}
-                    value={phone}
-                    placeholder="Masukan Nomor Telepon"
+                    required
                   />
                 </div>
               </div>
-              {/* Date Of Birthday */}
+              {/* Date of Birth */}
               <div className="flex items-center gap-2">
                 <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                  Date Of Birthday
+                  Date of Birth
                 </h3>
                 <div className="flex w-full flex-4 text-white md:flex-10">
                   <input
                     type="date"
-                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                    onChange={(e) => setdateOfBirth(e.target.value)}
-                    value={dateOfBirth}
-                    placeholder="Masukan Nomor Telepon"
+                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1 text-white"
+                    placeholder="your birthday"
+                    value={dateOfBirth || ""}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
                   />
                 </div>
               </div>
@@ -347,8 +426,8 @@ export default function SettingPage() {
                 <div className="flex w-full flex-4 text-white md:flex-10">
                   <select
                     className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1 text-white"
+                    value={region || ""}
                     onChange={(e) => setRegion(e.target.value)}
-                    value={region}
                   >
                     <option value="">Pilih Region</option>
                     <option value="Indonesia">Indonesia</option>
@@ -357,6 +436,66 @@ export default function SettingPage() {
                     <option value="Vietnam">Vietnam</option>
                     <option value="Philippines">Philippines</option>
                   </select>
+                </div>
+              </div>
+              {/* Instagram Link */}
+              <div className="flex items-center gap-2">
+                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
+                  Instagram Link
+                </h3>
+                <div className="flex w-full flex-4 text-white md:flex-10">
+                  <input
+                    type="text"
+                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
+                    placeholder="https://www.instagram.com/profilename"
+                    value={instagramUrl || ""}
+                    onChange={(e) => setInstagramUrl(e.target.value)}
+                  />
+                </div>
+              </div>
+              {/* Tiktok Link */}
+              <div className="flex items-center gap-2">
+                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
+                  Tiktok Link
+                </h3>
+                <div className="flex w-full flex-4 text-white md:flex-10">
+                  <input
+                    type="text"
+                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
+                    placeholder="https://www.tiktok.com/@profilename"
+                    value={tiktokUrl || ""}
+                    onChange={(e) => setTiktokUrl(e.target.value)}
+                  />
+                </div>
+              </div>
+              {/* Twitter/X Link */}
+              <div className="flex items-center gap-2">
+                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
+                  Twitter/X Link
+                </h3>
+                <div className="flex w-full flex-4 text-white md:flex-10">
+                  <input
+                    type="text"
+                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
+                    placeholder="https://www.x.com/profilename"
+                    value={twitterUrl || ""}
+                    onChange={(e) => setTwitterUrl(e.target.value)}
+                  />
+                </div>
+              </div>
+              {/* Facebook Link */}
+              <div className="flex items-center gap-2">
+                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
+                  Facebook Link
+                </h3>
+                <div className="flex w-full flex-4 text-white md:flex-10">
+                  <input
+                    type="text"
+                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
+                    placeholder="https://www.facebook.com/profilename"
+                    value={facebookUrl || ""}
+                    onChange={(e) => setFacebookUrl(e.target.value)}
+                  />
                 </div>
               </div>
             </div>
@@ -382,9 +521,6 @@ export default function SettingPage() {
         </div>
       </main>
 
-      <span className="mt-10 hidden lg:block">
-        <Footer />
-      </span>
 
       {showToast && (
         <Toast
@@ -393,6 +529,6 @@ export default function SettingPage() {
           onClose={() => setShowToast(false)}
         />
       )}
-    </div>
+    </>
   );
 }
