@@ -146,7 +146,7 @@ export default function UploadEpisodePageContent() {
     try {
       const creatorId = localStorage.getItem("creators_id");
       const response = await axios.get(
-        `https://backend-gateplus-api.my.id/creator/${creatorId}`,
+        `http://localhost:3000/creator/${creatorId}`,
       );
 
       const fullData = response.data.data;

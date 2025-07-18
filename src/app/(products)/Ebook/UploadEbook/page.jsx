@@ -136,7 +136,7 @@ export default function UploadEbookPage() {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "https://backend-gateplus-api.my.id/category/",
+        "http://localhost:3000/category/",
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -64,7 +64,7 @@ export default function SettingPage() {
       }
 
       const response = await axios.patch(
-        `https://backend-gateplus-api.my.id/users/${userId}`,
+        `http://localhost:3000/users/${userId}`,
         formData,
         {
           headers: {
@@ -102,7 +102,7 @@ export default function SettingPage() {
   const getData = async () => {
     try {
       const response = await axios.get(
-        `https://backend-gateplus-api.my.id/users/${userId}`,
+        `http://localhost:3000/users/${userId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
