@@ -23,7 +23,7 @@ export default function VerifyEmailPage() {
         </section>
         <div className="flex w-full flex-col gap-2">
           <Link
-            href="/Login"
+            href="/login"
             className="zeinFont mt-4 cursor-pointer rounded-lg border border-[#156EB7] bg-[#156EB7] py-2 text-center text-2xl font-bold text-white hover:border-white/70 hover:bg-[#156EB7CC]"
           >
             Log in

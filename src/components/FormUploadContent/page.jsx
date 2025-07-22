@@ -324,15 +324,15 @@ export default function FormUploadContentPage() {
           <div className="flex flex-col">
             <div className="flex flex-row items-center gap-3">
               <input type="radio" />
-              <Link href="/TermAndCondition">
+              <Link href="/term-and-conditions">
                 <p className="mb-1 text-balance text-white underline hover:text-blue-500">
-                  Terms and Condition
+                  Terms and Conditions
                 </p>
               </Link>
             </div>
             <div className="flex flex-row items-center gap-3">
               <input type="radio" />
-              <Link href="/Agreement">
+              <Link href="/agreement">
                 <p className="mb-1 text-balance text-white underline hover:text-blue-500">
                   Agreement
                 </p>

@@ -35,7 +35,7 @@ export default function SessionExpiredPage() {
         </section>
         <section className="flex flex-col items-center gap-2 px-3 text-white lg:flex-row-reverse lg:justify-center">
           <Link
-            href="/Login"
+            href="/login"
             className="flex rounded-lg border border-[#184A97] bg-[#156EB7] px-8 py-2 text-center text-base font-semibold [box-shadow:0px_7px_10px_rgba(0,0,0,0.25)]"
           >
             Login

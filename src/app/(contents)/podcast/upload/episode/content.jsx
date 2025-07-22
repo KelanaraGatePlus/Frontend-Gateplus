@@ -230,7 +230,7 @@ export default function UploadEpisodePageContent() {
             setSelectedPrice("");
             setCreatorNotes("");
 
-            router.push(`/Ebook/DetailEbook/${selectedEbookId}`);
+            router.push(`/podcast/detail/${selectedEbookId}`);
         } catch (error) {
             console.error("Error during post request:", error);
             setIsLoading(false);
@@ -455,11 +455,11 @@ export default function UploadEpisodePageContent() {
                                     }}
                                 />
                                 <Link
-                                    href="/TermAndCondition"
+                                    href="/term-and-conditions"
                                     target="_blank"
                                     className="text-white underline"
                                 >
-                                    Term and Condition
+                                    Term and Conditions
                                 </Link>
                             </label>
 
@@ -476,7 +476,7 @@ export default function UploadEpisodePageContent() {
                                     }}
                                 />
                                 <Link
-                                    href="/Agreement"
+                                    href="/agreement"
                                     target="_blank"
                                     className="text-white underline"
                                 >

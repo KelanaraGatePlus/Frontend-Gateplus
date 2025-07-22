@@ -91,7 +91,7 @@ export default function CarouselItemComicPage() {
                         key={index}
                         className="relative h-[180px] w-[120px] cursor-pointer overflow-hidden rounded-lg sm:h-[200px] sm:w-[140px] md:h-[320px] md:w-[230px]"
                       >
-                        <Link href={`/Comic/DetailComic/${comic.id}`}>
+                        <Link href={`/comic/detail/${comic.id}`}>
                           <div className="relative h-full w-full">
                             <div className="bg-opacity-60 absolute top-2 right-2 z-10 rounded-md bg-black/85 px-2 py-1 text-xs text-white">
                               👁 {"0"}

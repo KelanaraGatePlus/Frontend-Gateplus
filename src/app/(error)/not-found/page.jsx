@@ -52,7 +52,7 @@ export default function NotFoundPage() {
             Kembali ke Beranda
           </Link>
           <Link
-            href="/feedback-success"
+            href="/feedback"
             className="flex rounded-lg px-4 py-3 text-center text-sm font-semibold"
           >
             Laporin ke Developer

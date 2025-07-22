@@ -31,7 +31,7 @@ export default function ProfileMenu({
   const [isDashboardMenuOpen, setIsDashboardMenuOpen] = useState(false);
   const [isUploadContentMenuOpen, setIsUploadContentMenuOpen] = useState(false);
   const linkHref =
-    role === "Creators" ? `/Creators/${creatorId}` : `/Users/${userId}`;
+    role === "Creators" ? `/creator/${creatorId}` : `/user/${userId}`;
 
   const toggleProfile = () => {
     setIsProfileMenuOpen(!isProfileMenuOpen);
@@ -53,7 +53,7 @@ export default function ProfileMenu({
       const name = cookie.split("=")[0].trim();
       document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
     });
-    router.push("/Login");
+    router.push("/login");
   };
 
   useEffect(() => {
@@ -203,17 +203,17 @@ export default function ProfileMenu({
                       }`}
                   >
                     <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
-                      <Link href="/Ebook/UploadEbook">
+                      <Link href="/ebook/upload">
                         <span>Upload Ebook</span>
                       </Link>
                     </div>
                     <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
-                      <Link href="/Comic/UploadComic">
+                      <Link href="/comic/upload">
                         <span>Upload Komik</span>
                       </Link>
                     </div>
                     <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
-                      <Link href="/Podcast/UploadPodcast">
+                      <Link href="/podcast/upload">
                         <span>Upload Podcast</span>
                       </Link>
                     </div>
@@ -249,7 +249,7 @@ export default function ProfileMenu({
               </span>
               <span>Accounts & Privacy</span>
             </li>
-            <Link href="/Users/FAQ">
+            <Link href="/faq">
               <li className="flex flex-row gap-2 rounded-md p-2 font-semibold text-white hover:bg-[#F5F5F54D]">
                 <span className="relative h-6 w-6">
                   <Image
@@ -263,7 +263,7 @@ export default function ProfileMenu({
                 <span>Help</span>
               </li>
             </Link>
-            <Link href="/Users/Setting">
+            <Link href="/user/settings">
               <li className="flex flex-row gap-2 rounded-md p-2 font-semibold text-white hover:bg-[#F5F5F54D]">
                 <span className="relative h-6 w-6">
                   <Image
@@ -289,7 +289,7 @@ export default function ProfileMenu({
                   className="object-cover"
                 />
               </span>
-              <Link href="/RegisterCreators">
+              <Link href="/register-creators">
                 <span>Be Creator</span>
               </Link>
             </div>

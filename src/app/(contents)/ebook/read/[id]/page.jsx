@@ -177,7 +177,7 @@ export default function ReadEbookPage({ params }) {
             className={`zeinFont [display:-webkit-box] w-full overflow-hidden text-center text-xl font-extrabold text-ellipsis [-webkit-box-orient:vertical] [-webkit-line-clamp:1] md:text-2xl`}
           >
             <Link
-              href={`/Ebook/DetailEbook/${ebookId}`}
+              href={`/ebook/detail/${ebookId}`}
               className="hover:underline"
             >
               {ebookTitle || "Loading..."}
@@ -309,7 +309,7 @@ export default function ReadEbookPage({ params }) {
         >
           {prevEpisode ? (
             <Link
-              href={`/Ebook/ReadEbook/${prevEpisode.id}`}
+              href={`/ebook/read/${prevEpisode.id}`}
               className={`flex flex-1 justify-center gap-2 rounded-lg px-2 py-2 ${isDark ? "bg-[#3939394D]" : "bg-[#DEDEDE]"}`}
             >
               <div className="flex h-8 w-8 rotate-0 items-center justify-center self-center">
@@ -342,7 +342,7 @@ export default function ReadEbookPage({ params }) {
           )}
           {nextEpisode ? (
             <Link
-              href={`/Ebook/ReadEbook/${nextEpisode.id}`}
+              href={`/ebook/read/${nextEpisode.id}`}
               className={`flex flex-1 justify-center gap-2 rounded-lg px-2 py-2 ${isDark ? "bg-[#3939394D]" : "bg-[#DEDEDE]"}`}
             >
               <p className="flex h-fit self-center leading-tight font-bold">
@@ -439,11 +439,11 @@ export default function ReadEbookPage({ params }) {
 
           <p className="mt-6 text-center text-base">
             Gimana nih? Apakah konten ini melanggar{" "}
-            <Link href="#" className="underline">
+            <Link href="/term-and-conditions" className="underline">
               aturan (Syarat & Ketentuan)
             </Link>
             ? Laporkan aja kalau ada yang nggak sesuai ya!{" "}
-            <Link href="#" className="underline">
+            <Link href="/feedback" className="underline">
               Laporkan!
             </Link>
           </p>

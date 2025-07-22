@@ -122,7 +122,7 @@ export default function UploadEbookPage() {
       setLanguage("");
       setAgeRestriction("");
 
-      router.push(`/Ebook/UploadEbook/Episode?series=${result.data.id}`);
+      router.push(`/ebook/upload/episode?series=${result.data.id}`);
     } catch (error) {
       console.error("Error during post request:", error);
       setIsLoading(false);

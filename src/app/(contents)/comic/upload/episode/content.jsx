@@ -230,7 +230,7 @@ export default function UploadEpisodeComicContent() {
       setSelectedPrice("");
       setCreatorNotes("");
 
-      router.push(`/Comic/DetailComic/${selectedComicId}`);
+      router.push(`/comic/detail/${selectedComicId}`);
     } catch (error) {
       console.error("Error during post request:", error);
       setIsLoading(false);
@@ -252,7 +252,7 @@ export default function UploadEpisodeComicContent() {
               1
             </span>
             <span className="gap-1.5 text-xl font-bold text-[#979797]">
-              <Link href="/Comic/UploadComic">Series</Link>
+              <Link href="/comic/upload">Series</Link>
             </span>
           </div>
           <div>
@@ -263,7 +263,7 @@ export default function UploadEpisodeComicContent() {
               2
             </span>
             <span className="gap-1.5 text-xl font-bold text-[#1DBDF580]">
-              <Link href="/Comic/UploadComic/Episode">Episode</Link>
+              <Link href="/comic/upload/episode">Episode</Link>
             </span>
           </div>
         </section>
@@ -439,7 +439,7 @@ export default function UploadEpisodeComicContent() {
                   }}
                 />
                 <Link
-                  href="/TermAndCondition"
+                  href="/term-and-conditions"
                   target="_blank"
                   className="text-white underline"
                 >
@@ -460,7 +460,7 @@ export default function UploadEpisodeComicContent() {
                   }}
                 />
                 <Link
-                  href="/Agreement"
+                  href="/agreement"
                   target="_blank"
                   className="text-white underline"
                 >

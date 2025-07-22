@@ -6,15 +6,15 @@ const MAINTENANCE_MODE = false;
 export async function middleware(req) {
     const { pathname } = req.nextUrl;
 
-    if (MAINTENANCE_MODE && pathname !== "/OnMaintenance") {
-        return NextResponse.redirect(new URL("/OnMaintenance", req.url));
+    if (MAINTENANCE_MODE && pathname !== "/maintenance") {
+        return NextResponse.redirect(new URL("/maintenance", req.url));
     }
 
-    if (!MAINTENANCE_MODE && pathname === "/OnMaintenance") {
+    if (!MAINTENANCE_MODE && pathname === "/maintenance") {
         return NextResponse.redirect(new URL("/", req.url));
     }
 
-    const PUBLIC_PATHS = ["/", "/Login", "/Register", "/OnMaintenance"];
+    const PUBLIC_PATHS = ["/", "/login", "/register", "/maintenance", "/privacy-policy", "/term-of-service", "/faq", "/blank"];
     if (PUBLIC_PATHS.includes(pathname)) {
         return NextResponse.next();
     }
@@ -22,7 +22,7 @@ export async function middleware(req) {
     const token = req.cookies.get("token")?.value;
     if (!token) {
         return NextResponse.redirect(
-            new URL(`/Login?callbackUrl=${encodeURIComponent(pathname)}`, req.url),
+            new URL(`/login?callbackUrl=${encodeURIComponent(pathname)}`, req.url),
         );
     }
 
@@ -33,10 +33,10 @@ export async function middleware(req) {
 
         const now = Math.floor(Date.now() / 1000);
         if (payload.exp && payload.exp < now) {
-            return NextResponse.redirect(new URL("/SessionExpired", req.url));
+            return NextResponse.redirect(new URL("/session-expired", req.url));
         }
 
-        if (pathname === "/Login" || pathname === "/Register") {
+        if (pathname === "/Login" || pathname === "/register") {
             return NextResponse.redirect(new URL("/", req.url));
         }
 

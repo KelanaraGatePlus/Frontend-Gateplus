@@ -110,10 +110,10 @@ export default function FormLogin({
         </div>
       </div>
       <span className="zeinFont flex justify-between text-xl text-[#1DBDF5]">
-        <Link href="/Register" className="text-left">
+        <Link href="/register" className="text-left">
           <span>Create new account</span>
         </Link>
-        <Link href="/ForgotPassword" className="text-right">
+        <Link href="/forgot-password" className="text-right">
           <span>Forgot Password?</span>
         </Link>
       </span>

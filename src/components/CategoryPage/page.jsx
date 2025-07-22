@@ -80,7 +80,7 @@ export default function CategoryPage() {
             <div className="mt-0.5 flex flex-col py-3 text-white">
               <div className="flex justify-center rounded-full bg-linear-to-t from-[#0E5BA8] to-[#0395BC] py-2 font-semibold sm:px-2 md:px-4 lg:px-6 xl:px-8">
                 <Link
-                  href="/Login"
+                  href="/login"
                   className="zeinFont mt-0.5 text-center text-lg leading-tight drop-shadow-[0_0_2px_rgba(255,255,255,0.4)] sm:text-lg lg:text-xl"
                 >
                   Log In
@@ -90,7 +90,7 @@ export default function CategoryPage() {
             <div className="mt-0.5 block py-3 text-white">
               <div className="flex justify-center rounded-full bg-[#0881AB] py-2 font-semibold saturate-35 sm:px-2 md:px-4 lg:px-6 xl:px-8">
                 <Link
-                  href="/Register"
+                  href="/register"
                   className="zeinFont mt-0.5 text-center text-base leading-tight drop-shadow-[0_0_2px_rgba(255,255,255,0.4)] sm:text-sm lg:text-xl"
                 >
                   Sign Up

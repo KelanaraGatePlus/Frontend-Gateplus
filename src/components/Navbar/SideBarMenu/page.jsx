@@ -60,13 +60,13 @@ export default function SideBarMenu({
       {!isAuthenticated && (
         <div className="flex justify-center gap-4 font-bold text-white">
           <Link
-            href="/Login"
+            href="/login"
             className="rounded-full bg-linear-to-b from-[#0395BC] to-[#0E5BA8] px-4 py-1 text-center [text-shadow:0_0_4px_#FFFFFF40]"
           >
             Log In
           </Link>
           <Link
-            href="/Register"
+            href="/register"
             className="rounded-full border border-[#0395BC26] bg-[#0881AB59] px-4 py-1 text-center [text-shadow:0_0_4px_#FFFFFF40]"
           >
             Sign Up

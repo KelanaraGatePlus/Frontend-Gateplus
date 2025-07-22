@@ -128,7 +128,7 @@ export default function UploadComicPage() {
       setLanguage("");
       setAgeRestriction("");
 
-      router.push(`/Comic/UploadComic/Episode?series=${response.data.data.id}`);
+      router.push(`/comic/upload/episode?series=${response.data.data.id}`);
     } catch (error) {
       console.error("Error during post request:", error);
       setIsLoading(false);
@@ -177,7 +177,7 @@ export default function UploadComicPage() {
               1
             </span>
             <span className="gap-1.5 text-xl font-bold text-[#1DBDF580]">
-              <Link href="/Comic/UploadComic">Series</Link>
+              <Link href="/comic/upload">Series</Link>
             </span>
           </div>
           <div>
@@ -188,7 +188,7 @@ export default function UploadComicPage() {
               2
             </span>
             <span className="gap-1.5 text-xl font-bold text-[#979797]">
-              <Link href="/Comic/UploadComic/Episode">Episode</Link>
+              <Link href="/comic/upload/episode">Episode</Link>
             </span>
           </div>
         </section>

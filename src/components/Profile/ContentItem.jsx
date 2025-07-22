@@ -10,7 +10,7 @@ export default function ContentItem({ item, type }) {
 
     return (
         <div className="overflow-hidden grow-0 group relative h-[180px] w-[120px] cursor-pointer rounded-lg sm:h-[200px] sm:w-[140px] md:h-[320px] md:w-[230px] group">
-            <Link href={`/${type.charAt(0).toUpperCase() + type.slice(1)}/Detail${type.charAt(0).toUpperCase() + type.slice(1)}/${item.id}`}>
+            <Link href={`/${type.toLowerCase()}/detail/${item.id}`}>
                 <div className="relative h-full w-full">
                     <>
                         <div className="bottom-0 right-0 rounded-tl-full bg-opacity-60 absolute z-10 bg-[#02536e] px-2 py-1 text-xs text-white h-[18%] md:h-[20%] w-[30%] drop-shadow-[0_0_2px_rgba(255,255,255,0.3)] flex items-center justify-center">
