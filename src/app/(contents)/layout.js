@@ -5,15 +5,15 @@ import { usePathname } from "next/navigation";
 import Navbar from "@/components/Navbar/page";
 import Footer from "@/components/Footer/MainFooter";
 
-export default function ErrorsLayout({ children }) {
+export default function ContentLayout({ children }) {
     const pathname = usePathname();
-    const showNavbarFooter = pathname.startsWith("/blank");
+    const hideLayout = pathname.startsWith("/comic/read") || pathname.startsWith("/ebook/read");
 
     return (
         <div className="flex flex-col overflow-x-hidden">
-            {showNavbarFooter && <Navbar />}
+            {!hideLayout && <Navbar />}
             <div className="flex flex-col">{children}</div>
-            {showNavbarFooter && <Footer />}
+            {!hideLayout && <Footer />}
         </div>
     );
 }

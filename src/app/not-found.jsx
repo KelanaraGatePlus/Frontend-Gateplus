@@ -1,5 +1,5 @@
 import React from 'react';
-import PageNotFound from '@/app/(error)/404/page';
+import PageNotFound from '@/app/(error)/not-found/page';
 
 export default function NotFound() {
     return (

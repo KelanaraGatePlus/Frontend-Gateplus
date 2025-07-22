@@ -225,7 +225,7 @@ export default function RegisterPage() {
             <span className="zeinFont flex justify-between text-xl text-[#1DBDF5]">
               <div>
                 Already registered?{" "}
-                <Link href="/Login" className="text-left font-bold">
+                <Link href="/login" className="text-left font-bold">
                   Log in
                 </Link>
               </div>
