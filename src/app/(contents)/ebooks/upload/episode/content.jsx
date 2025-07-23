@@ -21,7 +21,7 @@ import InputText from '@/components/UploadForm/InputText';
 import InputTextArea from '@/components/UploadForm/InputTextArea';
 import InputImageBanner from '@/components/UploadForm/InputImageBanner';
 
-export default function UploadEpisodePageContent() {
+export default function UploadEbookEpisodeContent() {
   const [createEpisode] = useCreateEpisodeMutation();
   const router = useRouter();
   const [termAccepted, setTermAccepted] = useState(false);
@@ -206,7 +206,7 @@ export default function UploadEpisodePageContent() {
       setSelectedPrice("");
       setCreatorNotes("");
 
-      router.push(`/ebook/detail/${selectedEbookId}`);
+      router.push(`/ebooks/detail/${selectedEbookId}`);
     } catch (error) {
       console.error("Gagal buat episode:", error);
       setIsLoading(false);

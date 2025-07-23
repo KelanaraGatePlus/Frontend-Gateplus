@@ -8,7 +8,7 @@ import MainTemplateLayout from "@/components/MainDetailProduct/page";
 import { useGetEbookByIdQuery } from "@/hooks/api/ebookSliceAPI";
 
 // eslint-disable-next-line react/prop-types
-export default function DetailEbook({ params }) {
+export default function DetailEbookPage({ params }) {
   const { id } = use(params);
   const [userId, setUserId] = useState(null);
   useEffect(() => {

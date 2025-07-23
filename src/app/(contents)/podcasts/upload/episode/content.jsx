@@ -20,7 +20,7 @@ import InputText from '@/components/UploadForm/InputText';
 import InputTextArea from '@/components/UploadForm/InputTextArea';
 import InputImageBanner from '@/components/UploadForm/InputImageBanner';
 
-export default function UploadEpisodePageContent() {
+export default function UploadPodcastEpisodeContent() {
     const router = useRouter();
     const [termAccepted, setTermAccepted] = useState(false);
     const [agreementAccepted, setAgreementAccepted] = useState(false);
@@ -230,7 +230,7 @@ export default function UploadEpisodePageContent() {
             setSelectedPrice("");
             setCreatorNotes("");
 
-            router.push(`/podcast/detail/${selectedEbookId}`);
+            router.push(`/podcasts/detail/${selectedEbookId}`);
         } catch (error) {
             console.error("Error during post request:", error);
             setIsLoading(false);

@@ -1,28 +1,31 @@
-/* eslint-disable react/react-in-jsx-scope */
 "use client";
+import React, { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 
-import BackPage from "@/components/BackPage/page";
-import LoadingOverlay from "@/components/LoadingOverlay/page";
-import Toast from "@/components/Toast/page";
-import ArrowRight from "@@/icons/icons-arrow-right.svg";
-import IconsGalery from "@@/icons/logo-upload-banner.svg";
-import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
+/*[--- HOOKS IMPORT ---]*/
+import { useCreateEbookMutation } from "@/hooks/api/ebookSliceAPI";
+
+/*[--- CONSTANT VAR IMPORT ---]*/
+import { languageOptions } from '@/lib/constants/languageOptions';
+
+/*[--- COMPONENT IMPORT ---]*/
 import InputText from '@/components/UploadForm/InputText';
 import InputTextArea from '@/components/UploadForm/InputTextArea';
 import InputSelect from '@/components/UploadForm/InputSelect';
 import InputAgeResctriction from '@/components/UploadForm/InputAgeResctriction';
 import InputImageBanner from '@/components/UploadForm/InputImageBanner';
 import ButtonSubmit from '@/components/UploadForm/ButtonSubmit';
-import axios from "axios";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import HeaderUploadForm from '@/components/UploadForm/HeaderUploadForm';
+import HeaderTab from '@/components/UploadForm/HeaderTab';
+import Toast from "@/components/Toast/page";
+import LoadingOverlay from "@/components/LoadingOverlay/page";
 
-/*[--- CONSTANT VAR IMPORT ---]*/
-import { languageOptions } from '@/lib/constants/languageOptions';
+/*[--- ASSETS IMPORT ---]*/
+import IconsGalery from "@@/icons/logo-upload-banner.svg";
+import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
 
-export default function UploadComicPage() {
+export default function UploadEbookPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [creatorId, setCreatorId] = useState("");
@@ -36,6 +39,7 @@ export default function UploadComicPage() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const router = useRouter();
+  const [createEbook] = useCreateEbookMutation();
 
   const [uploadedFiles, setUploadedFiles] = useState({
     posterBanner: [],
@@ -93,7 +97,6 @@ export default function UploadComicPage() {
     ) {
       setToastMessage("Semua kolom harus diisi");
       setShowToast(true);
-      setShowToast(true);
       setIsLoading(false);
       return;
     }
@@ -109,17 +112,8 @@ export default function UploadComicPage() {
     formData.append("posterImageUrl", uploadedFiles.posterBanner[0]);
 
     try {
-      const response = await axios.post(
-        "https://backend-gateplus-api.my.id/comics",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        },
-      );
-
-      console.log(response.data);
+      const result = await createEbook(formData).unwrap();
+      console.log(result);
 
       setIsLoading(false);
       setTitle("");
@@ -128,7 +122,7 @@ export default function UploadComicPage() {
       setLanguage("");
       setAgeRestriction("");
 
-      router.push(`/comic/upload/episode?series=${response.data.data.id}`);
+      router.push(`/ebooks/upload/episode?series=${result.data.id}`);
     } catch (error) {
       console.error("Error during post request:", error);
       setIsLoading(false);
@@ -164,41 +158,11 @@ export default function UploadComicPage() {
   return (
     <>
       <main className="mt-16 flex flex-col py-2 md:mt-[100px] lg:px-4">
-        {/* Header */}
-        <section className="relative mb-2 flex items-center">
-          <BackPage />
-          <div className="zeinFont absolute left-1/2 -translate-x-1/2 text-3xl font-bold text-[#979797]">
-            Upload Komik
-          </div>
-        </section>
-        <section className="mb-4 flex flex-row items-center justify-center gap-3">
-          <div className="flex flex-row items-center justify-center gap-1 rounded-full">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1DBDF580] text-2xl font-extrabold text-white">
-              1
-            </span>
-            <span className="gap-1.5 text-xl font-bold text-[#1DBDF580]">
-              <Link href="/comic/upload">Series</Link>
-            </span>
-          </div>
-          <div>
-            <Image src={ArrowRight} alt="arrow-right" />
-          </div>
-          <div className="flex flex-row items-center gap-1 rounded-full">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/25 text-2xl font-extrabold text-[#979797]">
-              2
-            </span>
-            <span className="gap-1.5 text-xl font-bold text-[#979797]">
-              <Link href="/comic/upload/episode">Episode</Link>
-            </span>
-          </div>
-        </section>
-        {/* form */}
+        <HeaderUploadForm title={"Upload Ebook"} />
+        <HeaderTab type={"Ebook"} />
+
         <div className="flex w-full flex-col px-2">
-          {/* form */}
-          <form
-            onSubmit={handleSubmit}
-            className="flex flex-col gap-4 lg:gap-0"
-          >
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4 lg:gap-0">
             <div className="flex flex-col gap-2">
               {/* Judul */}
               <InputText
@@ -265,17 +229,16 @@ export default function UploadComicPage() {
               />
             </div>
 
-            {/* button */}
             <ButtonSubmit
               type="submit"
               icon={IconsButtonSubmit}
               label="Buat Series"
               isLoading={isLoading}
             />
+
           </form>
         </div>
       </main>
-
       {showToast && (
         <Toast
           message={toastMessage}

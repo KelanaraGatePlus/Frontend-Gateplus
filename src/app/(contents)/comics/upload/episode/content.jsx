@@ -18,7 +18,7 @@ import InputText from '@/components/UploadForm/InputText';
 import InputTextArea from '@/components/UploadForm/InputTextArea';
 import InputImageBanner from '@/components/UploadForm/InputImageBanner';
 
-export default function UploadEpisodeComicContent() {
+export default function UploadComicEpisodeContent() {
   const router = useRouter();
   const [termAccepted, setTermAccepted] = useState(false);
   const [agreementAccepted, setAgreementAccepted] = useState(false);
@@ -230,7 +230,7 @@ export default function UploadEpisodeComicContent() {
       setSelectedPrice("");
       setCreatorNotes("");
 
-      router.push(`/comic/detail/${selectedComicId}`);
+      router.push(`/comics/detail/${selectedComicId}`);
     } catch (error) {
       console.error("Error during post request:", error);
       setIsLoading(false);
@@ -252,7 +252,7 @@ export default function UploadEpisodeComicContent() {
               1
             </span>
             <span className="gap-1.5 text-xl font-bold text-[#979797]">
-              <Link href="/comic/upload">Series</Link>
+              <Link href="/comics/upload">Series</Link>
             </span>
           </div>
           <div>
@@ -263,7 +263,7 @@ export default function UploadEpisodeComicContent() {
               2
             </span>
             <span className="gap-1.5 text-xl font-bold text-[#1DBDF580]">
-              <Link href="/comic/upload/episode">Episode</Link>
+              <Link href="/comics/upload/episode">Episode</Link>
             </span>
           </div>
         </section>

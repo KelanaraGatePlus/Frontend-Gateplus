@@ -7,7 +7,7 @@ import Footer from "@/components/Footer/MainFooter";
 
 export default function ContentLayout({ children }) {
     const pathname = usePathname();
-    const hideLayout = pathname.startsWith("/comic/read") || pathname.startsWith("/ebook/read");
+    const hideLayout = pathname.startsWith("/comics/read") || pathname.startsWith("/ebooks/read");
 
     return (
         <div className="flex flex-col overflow-x-hidden">

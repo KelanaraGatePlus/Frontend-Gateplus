@@ -1,12 +1,12 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
 import { Suspense } from "react";
-import UploadEpisodePageContent from "./content";
+import UploadPodcastEpisodeContent from "./content";
 
-export default function UploadEpisodePodcastPage() {
+export default function UploadPodcastEpisodePage() {
     return (
         <Suspense fallback={<div>Loading...</div>}>
-            <UploadEpisodePageContent />
+            <UploadPodcastEpisodeContent />
         </Suspense>
     );
 }

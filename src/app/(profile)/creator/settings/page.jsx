@@ -12,7 +12,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export default function SettingPage() {
+export default function CreatorSettingsPage() {
   const router = useRouter();
   const [showToast, setShowToast] = useState(false);
   const [id, setId] = useState(null);

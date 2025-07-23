@@ -5,7 +5,7 @@ import BannerBackground from "@@/Law/banner-background.svg";
 import Image from "next/image";
 import Link from "next/link";
 
-export default function TermAndConditionPage() {
+export default function TermAndConditionsPage() {
   return (
     <div className="mt-16 flex flex-col md:mt-[100px]">
       {/* banner */}

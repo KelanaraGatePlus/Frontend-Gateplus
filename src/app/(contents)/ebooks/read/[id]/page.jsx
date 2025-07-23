@@ -177,7 +177,7 @@ export default function ReadEbookPage({ params }) {
             className={`zeinFont [display:-webkit-box] w-full overflow-hidden text-center text-xl font-extrabold text-ellipsis [-webkit-box-orient:vertical] [-webkit-line-clamp:1] md:text-2xl`}
           >
             <Link
-              href={`/ebook/detail/${ebookId}`}
+              href={`/ebooks/detail/${ebookId}`}
               className="hover:underline"
             >
               {ebookTitle || "Loading..."}
@@ -309,7 +309,7 @@ export default function ReadEbookPage({ params }) {
         >
           {prevEpisode ? (
             <Link
-              href={`/ebook/read/${prevEpisode.id}`}
+              href={`/ebooks/read/${prevEpisode.id}`}
               className={`flex flex-1 justify-center gap-2 rounded-lg px-2 py-2 ${isDark ? "bg-[#3939394D]" : "bg-[#DEDEDE]"}`}
             >
               <div className="flex h-8 w-8 rotate-0 items-center justify-center self-center">
@@ -342,7 +342,7 @@ export default function ReadEbookPage({ params }) {
           )}
           {nextEpisode ? (
             <Link
-              href={`/ebook/read/${nextEpisode.id}`}
+              href={`/ebooks/read/${nextEpisode.id}`}
               className={`flex flex-1 justify-center gap-2 rounded-lg px-2 py-2 ${isDark ? "bg-[#3939394D]" : "bg-[#DEDEDE]"}`}
             >
               <p className="flex h-fit self-center leading-tight font-bold">

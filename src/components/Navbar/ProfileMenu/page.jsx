@@ -203,17 +203,17 @@ export default function ProfileMenu({
                       }`}
                   >
                     <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
-                      <Link href="/ebook/upload">
+                      <Link href="/ebooks/upload">
                         <span>Upload Ebook</span>
                       </Link>
                     </div>
                     <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
-                      <Link href="/comic/upload">
+                      <Link href="/comics/upload">
                         <span>Upload Komik</span>
                       </Link>
                     </div>
                     <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
-                      <Link href="/podcast/upload">
+                      <Link href="/podcasts/upload">
                         <span>Upload Podcast</span>
                       </Link>
                     </div>

@@ -124,7 +124,7 @@ export default function UploadPodcastPage() {
             setLanguage("");
             setAgeRestriction("");
 
-            router.push(`/podcast/upload/episode?series=${response.data.data.id}`);
+            router.push(`/podcasts/upload/episode?series=${response.data.data.id}`);
         } catch (error) {
             console.error("Error during post request:", error);
             setIsLoading(false);

@@ -26,7 +26,7 @@ import Image from "next/legacy/image";
 import Link from "next/link";
 import ReactPlayer from "react-player";
 
-export default function DetailFilm() {
+export default function PlayingMoviePage() {
   return (
     <div className="overflow-y-a flex h-screen w-screen flex-col overflow-x-hidden">
       <NavbarLogin />

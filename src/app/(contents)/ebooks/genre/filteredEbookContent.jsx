@@ -51,7 +51,7 @@ export default function FilteredEbookContent() {
       <div className="flex flex-wrap justify-items-center gap-2 p-0 md:mx-5">
         {!loading && ebooks.length > 0 ? (
           ebooks.map((ebook) => (
-            <Link key={ebook.id} href={`/ebook/detail/${ebook.id}`}>
+            <Link key={ebook.id} href={`/ebooks/detail/${ebook.id}`}>
               <div className="relative cursor-pointer overflow-hidden rounded-lg border-2 border-transparent text-center transition duration-300 hover:scale-105 hover:border-blue-600">
                 <div className="absolute bottom-0 left-0 z-10 w-full bg-[#0395BCB2]/80 py-2 text-xs font-bold text-white md:text-sm">
                   Lihat Karya

@@ -1,12 +1,12 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
 import { Suspense } from "react";
-import UploadEpisodeComicContent from "./content";
+import UploadEbookEpisodeContent from "./content";
 
-export default function UploadEpisodeComicPage() {
+export default function UploadEbookEpisodePage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <UploadEpisodeComicContent />
+      <UploadEbookEpisodeContent />
     </Suspense>
   );
 }
