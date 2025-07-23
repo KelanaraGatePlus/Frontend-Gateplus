@@ -1,7 +1,7 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
-import BackPage from "@/components/BackPage/page";
+import BackButton from "@/components/BackButton/page";
 import Toast from "@/components/Toast/page";
 import ArrowRight from "@@/icons/icons-arrow-right.svg";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
@@ -241,7 +241,7 @@ export default function UploadComicEpisodeContent() {
     <>
       <main className="mt-16 flex flex-col py-2 md:mt-[100px] lg:px-4">
         <section className="relative mb-2 flex items-center">
-          <BackPage />
+          <BackButton />
           <div className="zeinFont absolute left-1/2 -translate-x-1/2 text-3xl font-bold text-[#979797]">
             Upload Komik
           </div>

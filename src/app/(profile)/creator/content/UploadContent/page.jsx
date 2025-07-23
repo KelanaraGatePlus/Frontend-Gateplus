@@ -1,4 +1,3 @@
-import BackPreviousPage from "@/components/BackPreviousPage/page";
 import Footer from "@/components/Footer/MainFooter";
 import FormUploadContentPage from "@/components/FormUploadContent/page";
 import NavbarLogin from "@/components/NavbarLogin/page";
@@ -8,7 +7,6 @@ export default function UploadContentPage() {
   return (
     <div className="top-0 right-0 bottom-0 left-0 flex h-screen w-screen flex-col overflow-x-hidden overflow-y-auto">
       <NavbarLogin />
-      <BackPreviousPage />
       <main className="mx-5">
         <FormUploadContentPage />
       </main>

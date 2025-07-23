@@ -3,7 +3,7 @@ import React, { useState, useEffect, Suspense, use } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
 import MainTemplateLayout from "@/components/MainDetailProduct/page";
-import ListenPodcast from "@/components/PodcastPlayingComponent/listenPodcast";
+import ListenPodcast from "@/components/PodcastPlayer/PodcastPlayback";
 import BottomSpacer from "@/components/BottomSpacer/page";
 
 export default function DetailPodcastPage({ params }) {

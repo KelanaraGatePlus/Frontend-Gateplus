@@ -11,7 +11,7 @@ import bannerPromo4 from "@@/BannerPromo/hero-banner-4.svg";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 
-export default function SliderBannerPage() {
+export default function BannerPromoSlider() {
   const [isLoading, setIsLoading] = useState(true);
 
   const bannerPromo = [

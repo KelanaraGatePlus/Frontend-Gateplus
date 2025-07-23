@@ -1,12 +1,11 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-
-const url = "https://backend-gateplus-api.my.id/creator";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export const creatorAPI = createApi({
     reducerPath: "creatorsAPI",
     refetchOnFocus: true,
     refetchOnReconnect: true,
-    baseQuery: fetchBaseQuery({ baseUrl: url }),
+    baseQuery: fetchBaseQuery({ baseUrl: `${BACKEND_URL}/creator` }),
     tagTypes: ["creatorsAPI"],
     endpoints: (builder) => ({
         getMostViewedContent: builder.query({

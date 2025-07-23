@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from 'next/navigation';
 
 /*[--- COMPONENT IMPORT ---]*/
-import SearchResult from "@/components/SearchResult/page.jsx";
+import SearchResults from "@/components/SearchResults/page.jsx";
 import SideBarMenu from "@/components/Navbar/SideBarMenu/page.jsx";
 import NotificationMenu from "@/components/Navbar/NotificationMenu/page.jsx";
 import ProfileMenu from "@/components/Navbar/ProfileMenu/page.jsx";
@@ -256,7 +256,7 @@ export default function NavbarContent() {
             isAuthenticated={isAuthenticated}
           />
         )}
-        <SearchResult />
+        <SearchResults />
       </nav>
     </>
   );

@@ -14,7 +14,7 @@ import {
 } from "./utils";
 
 /*[--- COMPONENT IMPORT ---]*/
-import BackPage from "@/components/BackPage/page";
+import BackButton from "@/components/BackButton/page";
 import ShareModal from "@/components/ShareModal/page";
 import Toast from "@/components/Toast/page";
 import DetailPageLoading from "@/components/MainDetailProduct/Loading/ProductDetailLoading";
@@ -154,7 +154,7 @@ export default function ProductDetailSection({
         )}
 
         {/* Back menu */}
-        <BackPage />
+        <BackButton />
 
         {/* container content */}
         <div className="flex w-screen flex-col items-center gap-4 px-4 py-8 md:px-15 lg:flex-row">

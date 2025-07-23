@@ -10,7 +10,7 @@ import iconSaveOutline from "@@/logo/logoDetailFilm/save-icons.svg";
 import iconMore from "@@/icons/icons-more.svg";
 import iconFlag from "@@/icons/icons-flag.svg";
 
-export default function ExpandPodcast({
+export default function ExpandView({
     coverEpisodeUrl,
     title,
     description,
@@ -96,7 +96,7 @@ export default function ExpandPodcast({
     )
 }
 
-ExpandPodcast.propTypes = {
+ExpandView.propTypes = {
     coverEpisodeUrl: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
     description: PropTypes.string.isRequired,

@@ -11,7 +11,7 @@ import { useGetNewestContentQuery } from "@/hooks/api/creatorSliceAPI";
 import ProfileCard from "@/components/Profile/ProfileCard/ProfileCard";
 import CreatorMostViewedContent from "@/components/Carousel/CarouselProfile/creatorMostViewedContent";
 import ContentList from "@/components/Profile/ContentList";
-import BackPage from "@/components/BackPage/page";
+import BackButton from "@/components/BackButton/page";
 import Skeleton from "react-loading-skeleton";
 import { Pagination } from 'flowbite-react';
 import "react-loading-skeleton/dist/skeleton.css";
@@ -62,7 +62,7 @@ export default function CreatorProfilePage({ params }) {
 
   return (
     <main className="relative mx-2 my-2 mt-16 flex flex-col md:mt-24 lg:mx-6">
-      <BackPage />
+      <BackButton />
       {
         creatorDetailQuery.isLoading ? (
           <section className="absolute top-1 -z-10 mb-2 hidden h-36 w-full overflow-hidden md:block md:h-64 lg:w-full rounded-xl">

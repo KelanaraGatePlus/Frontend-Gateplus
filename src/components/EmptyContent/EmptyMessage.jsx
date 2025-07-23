@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-export default function ContentUnavailableMessage({
+export default function EmptyMessage({
     headerMessage,
     descriptionMessage,
 }) {
@@ -17,7 +17,7 @@ export default function ContentUnavailableMessage({
     )
 }
 
-ContentUnavailableMessage.propTypes = {
+EmptyMessage.propTypes = {
     headerMessage: PropTypes.string.isRequired,
     descriptionMessage: PropTypes.string.isRequired,
 }

@@ -2,7 +2,7 @@
 "use client";
 import Navbar from "@/components/Navbar/page";
 import SliderBannerPage from "@/components/BannerPromoSlider/page";
-import CategoryPage from "@/components/CategoryPage/page";
+import CategoryMenu from "@/components/CategoryMenu/page";
 import CarouselNewest from "@/components/Carousel/CarouselHome/carouselNewest";
 import CarouselHighlight from "@/components/Carousel/CarouselHome/carouselHighlight";
 import CarouselTopTen from "@/components/Carousel/CarouselHome/carouselTopTen";
@@ -21,7 +21,7 @@ export default function HomePage() {
       <div className="mt-15 flex flex-col md:mt-[85px]">
         <SliderBannerPage />
         <main className="flex flex-col px-3 md:mx-5 md:px-0">
-          <CategoryPage />
+          <CategoryMenu />
           <CarouselNewest />
           <CarouselHighlight />
           <CarouselTopTen />

@@ -12,7 +12,7 @@ import { formatDateTime } from "@/lib/timeFormatter";
 import { useGetEpisodeEbookByIdQuery } from "@/hooks/api/ebookSliceAPI";
 
 /*[--- COMPONENT IMPORT ---]*/
-import BackPage from "@/components/BackPage/page";
+import BackButton from "@/components/BackButton/page";
 import EpubReader from "@/components/EbookReader/page";
 import DetailPageLoadingSkeleton from "@/components/MainDetailProduct/Loading/ProductReadLoading"
 
@@ -172,7 +172,7 @@ export default function ReadEbookPage({ params }) {
         <div
           className={`${isDark ? "text-white" : "text-[#222222]"} fixed z-10 mt-0 flex w-full flex-row items-center justify-start gap-2 px-4 py-2 text-2xl font-semibold backdrop-blur`}
         >
-          <BackPage isDark={isDark} />
+          <BackButton isDark={isDark} />
           <h4
             className={`zeinFont [display:-webkit-box] w-full overflow-hidden text-center text-xl font-extrabold text-ellipsis [-webkit-box-orient:vertical] [-webkit-line-clamp:1] md:text-2xl`}
           >

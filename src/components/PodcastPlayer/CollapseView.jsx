@@ -13,7 +13,7 @@ import iconLocked from "@@/icons/icons-locked.svg";
 import iconSaveOutline from "@@/logo/logoDetailFilm/save-icons.svg";
 import iconMore from "@@/icons/icons-more.svg";
 
-export default function CollapsePodcast({
+export default function CollapseView({
   coverEpisodeUrl,
   podcastTitle,
   title,
@@ -207,7 +207,7 @@ export default function CollapsePodcast({
   );
 }
 
-CollapsePodcast.propTypes = {
+CollapseView.propTypes = {
   coverEpisodeUrl: PropTypes.string.isRequired,
   podcastTitle: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
