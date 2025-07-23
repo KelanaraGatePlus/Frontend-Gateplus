@@ -86,7 +86,7 @@ export default function FormRegister() {
         <div className="flex flex-row px-3 font-mono text-[10px] text-[#1DBDF5]">
           <p>
             Already have an account?
-            <Link className="hover:text-blue-500" href="/Login">
+            <Link className="hover:text-blue-500" href="/login">
               Log In
             </Link>
           </p>

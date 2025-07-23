@@ -217,7 +217,7 @@ export default function ProductDetailSection({
                       Subscribe
                     </button>
                   ) : productFirstEpisode ? (
-                    <Link href={`/Ebook/ReadEbook/${productFirstEpisode.id}`}>
+                    <Link href={`/${productType}/read/${productFirstEpisode.id}`}>
                       <button className="w-full cursor-pointer rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white hover:bg-[#0076E999]/80 md:w-auto">
                         {productType === "podcast" ? "Dengarkan" : "Baca"}
                       </button>
@@ -301,7 +301,7 @@ export default function ProductDetailSection({
 
               {/* uploader */}
               <div className={`flex items-center gap-2 ${productType === 'podcast' && "flex-row-reverse"}`}>
-                <Link href={`/Creators/${creatorDetail?.id}`}>
+                <Link href={`/creator/${creatorDetail?.id}`}>
                   <div className="h-15 w-15 rounded-full bg-white">
                     <Image
                       priority
@@ -315,7 +315,7 @@ export default function ProductDetailSection({
                 </Link>
 
                 <div className={`flex flex-row items-center gap-4 ${productType === 'podcast' && "flex-row-reverse"}`}>
-                  <Link href={`/Creators/${creatorDetail?.id}`}>
+                  <Link href={`/creator/${creatorDetail?.id}`}>
                     <div className="group flex max-w-36 cursor-pointer flex-col rounded-lg text-ellipsis whitespace-nowrap md:max-w-72">
                       <h3
                         className={`zeinFont truncate text-2xl font-extrabold group-hover:text-blue-400 group-hover:underline md:text-3xl ${creatorDetail?.profileName ? "" : "text-gray-600/60 italic"}`}

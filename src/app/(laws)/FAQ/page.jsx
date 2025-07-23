@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/accordion";
 
 /* eslint-disable react/react-in-jsx-scope */
-export default function PageFAQ() {
+export default function FaqPage() {
   return (
     <main className="mt-24 mb-10 flex w-full gap-6 px-10 md:mt-32 lg:gap-3">
       <section className="w-full flex-3 px-5 text-white">

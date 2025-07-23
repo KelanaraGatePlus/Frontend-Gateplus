@@ -24,7 +24,7 @@ export default function HeaderTab({ type }) {
                     className={`gap-1.5 text-xl font-bold ${isStep1 ? 'text-[#1DBDF580]' : 'text-[#979797]'
                         }`}
                 >
-                    <Link href={`/${type}/Upload${type}`}>Series</Link>
+                    <Link href={`/${type}/upload`}>Series</Link>
                 </span>
             </div>
 
@@ -45,7 +45,7 @@ export default function HeaderTab({ type }) {
                     className={`gap-1.5 text-xl font-bold ${isStep2 ? 'text-[#1DBDF580]' : 'text-[#979797]'
                         }`}
                 >
-                    <Link href={`/${type}/Upload${type}/Episode`}>Episode</Link>
+                    <Link href={`/${type}/upload/episode`}>Episode</Link>
                 </span>
             </div>
         </section>

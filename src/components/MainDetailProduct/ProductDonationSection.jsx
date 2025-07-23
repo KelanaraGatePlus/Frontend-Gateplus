@@ -51,11 +51,11 @@ export default function ProductDonationSection() {
 
       <p className="mt-6 text-center text-base">
         Gimana nih? Apakah konten ini melanggar{" "}
-        <Link href="#" className="underline">
+        <Link href="/term-and-conditions" className="underline">
           aturan (Syarat & Ketentuan)
         </Link>
         ? Laporkan aja kalau ada yang nggak sesuai ya!{" "}
-        <Link href="#" className="underline">
+        <Link href="/feedback" className="underline">
           Laporkan!
         </Link>
       </p>

@@ -33,12 +33,12 @@ export const siteMetadata = {
         },
     ],
     legalLinks: [
-        { name: "Privacy Policy", href: "/PrivacyPolicy" },
-        { name: "Terms of Service", href: "/TermOfService" },
-        { name: "Help Center", href: "/FAQ" },
+        { name: "Privacy Policy", href: "/privacy-policy" },
+        { name: "Terms of Service", href: "/term-of-service" },
+        { name: "Help Center", href: "/faq" },
     ],
     appDownload: [
-        { name: "Play Store", link: "/BlankPage", icon: logoGooglePlay },
-        { name: "App Store", link: "/BlankPage", icon: logoAppleStore },
+        { name: "Play Store", link: "/blank", icon: logoGooglePlay },
+        { name: "App Store", link: "/blank", icon: logoAppleStore },
     ],
 };

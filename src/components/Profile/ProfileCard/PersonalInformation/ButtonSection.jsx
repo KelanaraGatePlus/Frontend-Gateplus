@@ -11,7 +11,7 @@ export default function ButtonSection({
 }) {
     return isOwnProfile ? (
         <button className="mt-1 rounded-lg bg-[#0E5BA8] py-2 font-bold text-white hover:bg-[#0E5BA8]/80" >
-            <Link href={profileFor === "creator" ? "/Creators/Setting" : "/Users/Settings"}>
+            <Link href={profileFor === "creator" ? "/creator/settings" : "/user/settings"}>
                 <p>Edit Profile</p>
             </Link>
         </button>

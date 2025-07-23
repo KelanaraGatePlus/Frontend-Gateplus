@@ -7,7 +7,7 @@ import Footer from "@/components/Footer/MainFooter";
 
 export default function ErrorsLayout({ children }) {
     const pathname = usePathname();
-    const showNavbarFooter = pathname.startsWith("/BlankPage");
+    const showNavbarFooter = pathname.startsWith("/blank");
 
     return (
         <div className="flex flex-col overflow-x-hidden">

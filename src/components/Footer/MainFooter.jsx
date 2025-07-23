@@ -136,15 +136,15 @@ export default function Footer() {
           <div className="hidden text-sm md:flex">© 2025 GATE+</div>
           <p className="hidden md:flex">|</p>
           <div className="text-center text-sm text-blue-700 underline md:text-base">
-            <Link href="/PrivacyPolicy">Privacy policy</Link>
+            <Link href="/privacy-policy">Privacy policy</Link>
           </div>
           <p>|</p>
           <div className="text-center text-sm text-blue-700 underline md:text-base">
-            <Link href="/TermOfService">Terms of services</Link>
+            <Link href="/term-of-service">Terms of services</Link>
           </div>
           <p>|</p>
           <div className="text-center text-sm text-blue-700 underline md:text-base">
-            <Link href="/FAQ">Help Center</Link>
+            <Link href="/faq">Help Center</Link>
           </div>
         </div>
       </section>

@@ -50,7 +50,7 @@ export default function ProductEpisodeSection({
   /*[--- EBOOK and COMIC ---]*/
   if (productType === "ebook" || productType === "comic") {
     const parentPath =
-      productType === "ebook" ? "/Ebook/ReadEbook" : "/Comic/ReadComic";
+      productType === "ebook" ? "/ebooks/read" : "/comics/read";
     return (
       <>
         {productEpisodes?.length > 0 ? (
@@ -154,7 +154,7 @@ export default function ProductEpisodeSection({
             {(showAll ? productEpisodes : productEpisodes.slice(0, 5))
               .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
               .map((item, index) => (
-                <Link key={index} href={`/Podcast/ListenPodcast/${item.id}`}>
+                <Link key={index} href={`/podcasts/ListenPodcast/${item.id}`}>
                   <div className="group flex cursor-pointer items-stretch gap-2 px-4 py-4 hover:bg-[#105CAC] md:gap-4 md:mx-15 md:rounded-lg transition-all duration-300 ease-in-out justify-between">
                     <div className="flex gap-2 w-[200px] md:w-2xl">
                       <div className="h-24 w-24 overflow-hidden rounded-lg bg-[#DEDEDE] md:h-36 md:w-36">
