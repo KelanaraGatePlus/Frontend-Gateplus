@@ -1,4 +1,4 @@
-import FormForgotPassword from "@/components/FormForgotPassword/page";
+import FormForgotPassword from "@/components/AuthForm/FormForgotPassword/page";
 
 /* eslint-disable react/react-in-jsx-scope */
 export default function ForgotPasswordPage() {
@@ -20,6 +20,7 @@ export default function ForgotPasswordPage() {
             </p>
           </div>
         </section>
+        
         <FormForgotPassword />
       </main>
     </div>

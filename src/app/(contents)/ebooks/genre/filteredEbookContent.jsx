@@ -21,7 +21,7 @@ export default function FilteredEbookContent() {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          `https://backend-gateplus-api.my.id/category/filter?tittle=${encodeURIComponent(filter)}`,
+          `http://localhost:3000/category/filter?tittle=${encodeURIComponent(filter)}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

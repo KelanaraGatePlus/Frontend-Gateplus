@@ -19,7 +19,7 @@ export default function SearchResults() {
     try {
       setLoading(true);
       const response = await axios.get(
-        `https://backend-gateplus-api.my.id/search?q=${searchQuery}`,
+        `http://localhost:3000/search?q=${searchQuery}`,
       );
       setCreatorsResult(response.data.creators);
       setEbooksResult(response.data.ebooks);

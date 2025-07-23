@@ -23,7 +23,7 @@ export default function CarouselItemEookPage() {
     try {
       setIsLoading(true);
       const response = await axios.get(
-        `https://backend-gateplus-api.my.id/ebooks`,
+        `http://localhost:3000/ebooks`,
       );
       const getAllBooks = response.data.data.data;
       setEbooks(getAllBooks);

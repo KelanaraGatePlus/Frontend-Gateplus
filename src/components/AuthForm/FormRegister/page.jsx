@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useRegisterUserMutation } from "../../hooks/api/userSliceAPI";
+import { useRegisterUserMutation } from "../../../hooks/api/userSliceAPI";
 
 export default function FormRegister() {
   const [username, setUsername] = useState("");

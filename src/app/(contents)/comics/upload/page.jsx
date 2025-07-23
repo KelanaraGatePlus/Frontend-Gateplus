@@ -110,7 +110,7 @@ export default function UploadComicPage() {
 
     try {
       const response = await axios.post(
-        "https://backend-gateplus-api.my.id/comics",
+        "http://localhost:3000/comics",
         formData,
         {
           headers: {
@@ -139,7 +139,7 @@ export default function UploadComicPage() {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "https://backend-gateplus-api.my.id/category/",
+        "http://localhost:3000/category/",
         {
           headers: {
             Authorization: `Bearer ${token}`,

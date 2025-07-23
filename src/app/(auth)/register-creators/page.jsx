@@ -24,7 +24,7 @@ export default function RegisterCreatorsPage() {
       setIsLoading(true);
       const userId = localStorage.getItem("users_id");
       const response = await axios.post(
-        `https://backend-gateplus-api.my.id/creator`,
+        `http://localhost:3000/creator`,
         {
           userId: userId,
           profileName: fullName,

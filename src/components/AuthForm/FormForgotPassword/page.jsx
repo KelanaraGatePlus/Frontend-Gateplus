@@ -22,7 +22,7 @@ export default function FormForgotPassword() {
 
   return (
     <section className="">
-      <form onSubmit={""} className="montserratFont flex w-full flex-col gap-2">
+      <form className="montserratFont flex w-full flex-col gap-2">
         <div className="relative flex w-full">
           <input
             id="password"

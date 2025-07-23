@@ -21,6 +21,9 @@ export async function middleware(req) {
         "/term-of-service",
         "/faq",
         "/blank",
+        "/forgot-password",
+        "/otp",
+        "/verify-email",
     ];
     if (PUBLIC_PATHS.includes(pathname)) {
         return NextResponse.next();

@@ -18,7 +18,7 @@ export default function DetailPodcastPage({ params }) {
       const userId = localStorage.getItem("users_id");
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `https://backend-gateplus-api.my.id/podcast/${id}?userId=${userId}`,
+        `http://localhost:3000/podcast/${id}?userId=${userId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
