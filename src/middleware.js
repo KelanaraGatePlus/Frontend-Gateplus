@@ -14,16 +14,27 @@ export async function middleware(req) {
         return NextResponse.redirect(new URL("/", req.url));
     }
 
-    const PUBLIC_PATHS = ["/", "/login", "/register", "/maintenance", "/privacy-policy", "/term-of-service", "/faq", "/blank"];
+    const PUBLIC_PATHS = [
+        "/",
+        "/maintenance",
+        "/privacy-policy",
+        "/term-of-service",
+        "/faq",
+        "/blank",
+    ];
     if (PUBLIC_PATHS.includes(pathname)) {
         return NextResponse.next();
     }
 
     const token = req.cookies.get("token")?.value;
-    if (!token) {
+    if (!token && !PUBLIC_PATHS.includes(pathname) && pathname !== "/login" && pathname !== "/register") {
         return NextResponse.redirect(
             new URL(`/login?callbackUrl=${encodeURIComponent(pathname)}`, req.url),
         );
+    }
+
+    if (token && (pathname === "/login" || pathname === "/register")) {
+        return NextResponse.redirect(new URL("/", req.url));
     }
 
     try {
@@ -34,10 +45,6 @@ export async function middleware(req) {
         const now = Math.floor(Date.now() / 1000);
         if (payload.exp && payload.exp < now) {
             return NextResponse.redirect(new URL("/session-expired", req.url));
-        }
-
-        if (pathname === "/Login" || pathname === "/register") {
-            return NextResponse.redirect(new URL("/", req.url));
         }
 
         return NextResponse.next();
