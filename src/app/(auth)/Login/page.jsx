@@ -32,7 +32,7 @@ export default function LoginPage() {
             <p className="montserratFont my-2 text-sm font-normal text-[#1DBDF5]">
               <span>Welcome back, you&apos;ve been missed</span>
             </p>
-          </div>
+          </div> 
         </section>
         <section className="">
           {isError && (
