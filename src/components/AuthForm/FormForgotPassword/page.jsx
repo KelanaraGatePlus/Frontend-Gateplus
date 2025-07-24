@@ -4,25 +4,18 @@ import { useState } from "react";
 import IconsEyeOpen from "@@/icons/icons-eyes-open.svg";
 import IconsEyeClose from "@@/icons/icons-eyes-close.svg";
 import Image from "next/legacy/image";
+import useTogglePassword from "@/lib/features/useTogglePassword";
 
 export default function FormForgotPassword() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isConfirmTouched, setIsConfirmTouched] = useState(false);
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
-    useState(false);
-
-  const toggleShowPassword = () => {
-    setIsPasswordVisible(!isPasswordVisible);
-  };
-  const toggleShowConfirmPassword = () => {
-    setIsConfirmPasswordVisible(!isConfirmPasswordVisible);
-  };
+  const { isVisible: isPasswordVisible, toggle: toggleShowPassword } = useTogglePassword();
+  const { isVisible: isConfirmPasswordVisible, toggle: toggleShowConfirmPassword } = useTogglePassword();
 
   return (
     <section className="">
-      <form onSubmit={""} className="montserratFont flex w-full flex-col gap-2">
+      <form className="montserratFont flex w-full flex-col gap-2">
         <div className="relative flex w-full">
           <input
             id="password"
@@ -54,11 +47,10 @@ export default function FormForgotPassword() {
           <input
             id="confirm-password"
             placeholder="Confirm Password"
-            className={`peer montserratFont w-full rounded-lg bg-white px-3 pt-6 pb-2 text-sm font-normal placeholder-transparent focus:outline-blue-500 ${
-              isConfirmTouched && confirmPassword !== password
+            className={`peer montserratFont w-full rounded-lg bg-white px-3 pt-6 pb-2 text-sm font-normal placeholder-transparent focus:outline-blue-500 ${isConfirmTouched && confirmPassword !== password
                 ? "border-[#FB3748B2] focus:ring-2 focus:ring-[#FB3748B2]"
                 : "border-gray-300 focus:ring-2 focus:ring-blue-500"
-            }`}
+              }`}
             type={isConfirmPasswordVisible ? "text" : "password"}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}

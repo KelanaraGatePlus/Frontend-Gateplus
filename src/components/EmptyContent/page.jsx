@@ -3,9 +3,9 @@ import emptyWorkCreator from "@@/icons/empty-work-creator.svg";
 import Image from "next/image";
 import PropTypes from "prop-types";
 
-import ContentUnavailableMessage from "./ContentUnavailableMessage";
+import EmptyMessage from "./EmptyMessage";
 
-export default function EmptySection({
+export default function EmptyContent({
     headerMessage = "Konten Lagi On Progress!",
     descriptionMessage = "Sedang disiapin nih, cek lagi nanti buat yang seru-seru!",
 }) {
@@ -22,7 +22,7 @@ export default function EmptySection({
                 />
             </div>
             {/* Text */}
-            <ContentUnavailableMessage
+            <EmptyMessage
                 headerMessage={headerMessage}
                 descriptionMessage={descriptionMessage}
             />
@@ -30,7 +30,7 @@ export default function EmptySection({
     )
 }
 
-EmptySection.propTypes = {
+EmptyContent.propTypes = {
     headerMessage: PropTypes.string,
     descriptionMessage: PropTypes.string,
 }

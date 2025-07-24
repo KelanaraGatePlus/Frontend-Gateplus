@@ -1,6 +1,6 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
-import BackPage from "@/components/BackPage/page";
+import BackButton from "@/components/BackButton/page";
 import Toast from "@/components/Toast/page";
 import IconsCameraAdd from "@@/icons/icons-camera-add.svg";
 import IconsSaveChanges from "@@/icons/icons-save-changes.svg";
@@ -144,7 +144,7 @@ export default function UserSettingsPage() {
     <>
       <main className="mx-2 my-2 mt-16 flex flex-col md:mt-24 lg:mx-6 lg:mb-10 lg:h-fit lg:min-h-[80vh]">
         {/* Back Menu */}
-        <BackPage />
+        <BackButton />
 
         {/* Settings Form */}
         <div className="flex w-full flex-col px-2">

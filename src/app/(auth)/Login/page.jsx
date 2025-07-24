@@ -3,7 +3,7 @@ import React, { Suspense, useState } from "react";
 import Image from "next/image";
 import logo from "@@/logo/logoGate+/logo-header-login.svg";
 
-import FormLogin from '@/components/FormLogin/page'
+import FormLogin from '@/components/AuthForm/FormLogin/page'
 
 export default function LoginPage() {
   const [isError, setIsError] = useState(false);
@@ -12,7 +12,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen min-w-screen items-center justify-center px-4 md:py-10">
-      <main className="flex h-full w-full max-w-lg flex-col rounded-lg border-[#1382C9] bg-[#166CA5] px-4 py-6 [box-shadow:0px_4px_70px_rgba(19,130,201,0.7)]">
+      <main className="flex h-full w-full max-w-lg flex-col rounded-lg border-[#1382C9] bg-[#135B8E] px-4 py-6 [box-shadow:0px_4px_70px_rgba(19,130,201,0.5)]">
         <section className="flex flex-col">
           <div className="relative ml-2 flex h-24 w-fit items-center justify-start">
             <div className="scale-125">
@@ -75,7 +75,6 @@ export default function LoginPage() {
               <p>Login Successfully!</p>
             </div>
           )}
-
           <Suspense fallback={<div>Loading...</div>}>
             <FormLogin
               setIsError={setIsError}

@@ -53,6 +53,10 @@ export const userAPI = createApi({
       }),
       invalidatesTags: ["usersAPI"],
     }),
+    checkUserAvailability: builder.query({
+      query: ({ type, value }) => `/users/check?type=${type}&value=${value}`,
+      keepUnusedDataFor: 0,
+    }),
   }),
 });
 
@@ -63,4 +67,5 @@ export const {
   useGetMeQuery,
   useRegisterUserMutation,
   useLoginUserMutation,
+  useCheckUserAvailabilityQuery,
 } = userAPI;

@@ -1,6 +1,6 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
-import BackPage from "@/components/BackPage/page";
+import BackButton from "@/components/BackButton/page";
 import PropTypes from "prop-types";
 import { use, useEffect, useState } from "react";
 import ProfileCard from "@/components/Profile/ProfileCard/ProfileCard";
@@ -24,7 +24,7 @@ export default function UserProfilePage({ params }) {
 
   return (
     <main className="mt-16 flex w-full flex-col md:mt-24 px-2 lg:px-6">
-      <BackPage />
+      <BackButton />
       <div className="flex w-full flex-col md:flex-row md:gap-5">
         <ProfileCard
           data={userDetailData}

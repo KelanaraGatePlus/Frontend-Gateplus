@@ -4,7 +4,7 @@ import Link from 'next/link';
 import PropTypes from 'prop-types';
 
 /*[--- CONSTANT IMPORT ---]*/
-import { iconsProduct } from "@/lib/constants/IconsProduct";
+import { categoryIcons } from "@/lib/constants/categoryIcons";
 
 export default function ContentItem({ item, type }) {
 
@@ -19,7 +19,7 @@ export default function ContentItem({ item, type }) {
                                     priority
                                     width={45}
                                     height={45}
-                                    src={iconsProduct[type]}
+                                    src={categoryIcons[type]}
                                     alt={type}
                                     className="bg-[#222222] rounded-full p-1 absolute bottom-0 md:right-0 -right-0.5"
                                 />
@@ -31,7 +31,7 @@ export default function ContentItem({ item, type }) {
                                     <div className="relative w-[18px] h-[18px] md:w-[25px] md:h-[25px] shrink-0">
                                         <Image
                                             priority
-                                            src={iconsProduct[type]}
+                                            src={categoryIcons[type]}
                                             alt={type}
                                             fill
                                             className="bg-[#222222] p-1 rounded-full object-contain"

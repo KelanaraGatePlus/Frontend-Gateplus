@@ -5,7 +5,7 @@ import Link from "next/link";
 import PropTypes from "prop-types";
 
 /*[--- CONSTANT IMPORT ---]*/
-import { iconsProduct } from "@/lib/constants/IconsProduct";
+import { categoryIcons } from "@/lib/constants/categoryIcons";
 
 /*[--- COMPONENTS IMPORT ---]*/
 import {
@@ -63,7 +63,7 @@ export default function CarouselTemplate({ label, type, contents, isLoading, isT
                                                                         <div className="relative w-[18px] h-[18px] md:w-[25px] md:h-[25px] shrink-0">
                                                                             <Image
                                                                                 priority
-                                                                                src={iconsProduct[fixedType]}
+                                                                                src={categoryIcons[fixedType]}
                                                                                 alt={fixedType}
                                                                                 fill
                                                                                 className="bg-[#222222] p-1 rounded-full object-contain"
@@ -85,7 +85,7 @@ export default function CarouselTemplate({ label, type, contents, isLoading, isT
                                                                                 priority
                                                                                 width={45}
                                                                                 height={45}
-                                                                                src={iconsProduct[fixedType]}
+                                                                                src={categoryIcons[fixedType]}
                                                                                 alt={fixedType}
                                                                                 className="bg-[#222222] rounded-full p-1 absolute bottom-0 md:right-0 -right-0.5"
                                                                             />
@@ -97,7 +97,7 @@ export default function CarouselTemplate({ label, type, contents, isLoading, isT
                                                                                 <div className="relative w-[18px] h-[18px] md:w-[25px] md:h-[25px] shrink-0">
                                                                                     <Image
                                                                                         priority
-                                                                                        src={iconsProduct[fixedType]}
+                                                                                        src={categoryIcons[fixedType]}
                                                                                         alt={fixedType}
                                                                                         fill
                                                                                         className="bg-[#222222] p-1 rounded-full object-contain"

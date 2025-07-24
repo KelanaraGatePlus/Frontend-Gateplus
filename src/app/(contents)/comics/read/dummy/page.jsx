@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 "use client";
-import BackPage from "@/components/BackPage/page";
+import BackButton from "@/components/BackButton/page";
 import Link from "next/link";
 // import ComicDummyImage from "@@/poster/komik-dummy-content.svg";
 import Image from "next/image";
@@ -94,7 +94,7 @@ export default function ReadComic({ params }) {
     <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-[#222222]">
       {/* Header */}
       <div className="fixed top-0 right-0 left-0 z-10 flex h-[60px] w-full items-center gap-2 bg-[#222222]/80 px-4 py-2 text-2xl font-semibold text-[#FAFAFA] backdrop-blur">
-        <BackPage />
+        <BackButton />
         <h4 className="zeinFont line-clamp-1 w-full overflow-hidden text-left text-xl font-extrabold text-ellipsis md:text-2xl">
           <Link href="/" className="hover:underline">
             {title}

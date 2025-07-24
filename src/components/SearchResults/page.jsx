@@ -8,7 +8,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export default function SearchResult() {
+export default function SearchResults() {
   const searchParams = useSearchParams();
   const query = searchParams.get("search");
   const [creatorsResult, setCreatorsResult] = useState([]);

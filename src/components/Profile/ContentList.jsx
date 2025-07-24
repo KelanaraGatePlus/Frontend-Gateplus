@@ -4,7 +4,7 @@ import ContentItem from "./ContentItem";
 import ContentLoading from "./ContentLoading";
 import "react-loading-skeleton/dist/skeleton.css";
 
-import EmptySection from "@/components/EmptyCondition/page";
+import EmptyContent from "@/components/EmptyContent/page";
 
 export default function ContentList({
     data,
@@ -18,7 +18,7 @@ export default function ContentList({
     const paginatedContent = data.slice(startIndex, startIndex + itemsPerPage);
 
     if (!isLoading && data.length === 0) {
-        return <EmptySection
+        return <EmptyContent
             headerMessage='Konten Masih Kosong'
             descriptionMessage='Konten kamu masih kosong, silakan cek lagi nanti!'
         />;

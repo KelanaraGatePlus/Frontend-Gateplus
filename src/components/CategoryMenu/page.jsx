@@ -13,7 +13,7 @@ import logoMovie from "@@/logo/logo-icons-film-news.svg";
 import logoPodcast from "@@/logo/logo-icons-podcast-news.svg";
 import logoSeries from "@@/logo/logo-icons-series-news.svg";
 
-export default function CategoryPage() {
+export default function CategoryMenu() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [ebookGenres, setEbookGenres] = useState([]);
   const [isAuthorized, setIsAuthorized] = useState(false);

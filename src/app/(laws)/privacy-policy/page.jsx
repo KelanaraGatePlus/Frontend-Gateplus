@@ -1,6 +1,6 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
-import BackPage from "@/components/BackPage/page";
+import BackButton from "@/components/BackButton/page";
 import BannerBackground from "@@/Law/banner-background.svg";
 import Image from "next/image";
 import Link from "next/link";
@@ -19,7 +19,7 @@ export default function PrivacyPolicyPage() {
       </div>
 
       {/* Back menu */}
-      <BackPage />
+      <BackButton />
 
       <h1 className="zeinFont flex h-20 items-center justify-center px-10 text-center text-4xl font-extrabold text-white lg:h-32 xl:-mt-5 xl:text-5xl">
         Privacy Policy Gate+

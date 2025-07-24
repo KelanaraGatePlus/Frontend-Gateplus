@@ -7,15 +7,15 @@ import { isMobile as detectMobile } from "react-device-detect";
 import "react-h5-audio-player/lib/styles.css";
 
 /*[--- COMPONENT IMPORT ---]*/
-import AudioControl from "./audioControl";
-import ExpandPodcast from "./expandPodcast";
-import CollapsePodcast from "./collapsePodcast";
+import AudioControl from "./AudioControl";
+import ExpandPodcast from "./ExpandView";
+import CollapsePodcast from "./CollapseView";
 import BottomSheet from "@/components/BottomSheet/page";
 import SwipeableBottomSheet from "@/components/SwipeableBottomSheet/page";
 import CloseCircleButton from "@/components/CloseCircleButton/page";
 import { formatDateTime } from "@/lib/timeFormatter";
 
-export default function ListenPodcast({ isOpen, setIsOpen }) {
+export default function PodcastPlayback({ isOpen, setIsOpen }) {
   const searchParams = useSearchParams();
   const [isMobile, setIsMobile] = useState(false);
   const podcastId = searchParams.get("podcast_detail");
@@ -389,7 +389,7 @@ export default function ListenPodcast({ isOpen, setIsOpen }) {
   );
 }
 
-ListenPodcast.propTypes = {
+PodcastPlayback.propTypes = {
   isOpen: PropTypes.bool,
   setIsOpen: PropTypes.func,
 }

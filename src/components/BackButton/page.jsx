@@ -6,7 +6,7 @@ import Image from "next/legacy/image";
 import { useRouter } from "next/navigation";
 
 // eslint-disable-next-line react/prop-types
-export default function BackPage({ isDark = true }) {
+export default function BackButton({ isDark = true }) {
   const router = useRouter();
 
   return (
