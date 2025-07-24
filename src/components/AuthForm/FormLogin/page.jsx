@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import PropTypes from "prop-types";
+import React, { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 
 /*[--- THIRD PARTY LIBRARIES ---]*/
+import PropTypes from "prop-types";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -14,8 +14,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "@/lib/schemas/loginSchema";
 import { storeUserData } from "@/lib/helper/authHelper";
 
-/*[--- API HOOKS ---]*/
+/*[--- API HOOKS & FEATURES ---]*/
 import { useLoginUserMutation } from "@/hooks/api/userSliceAPI";
+import useTogglePassword from "@/lib/features/useTogglePassword";
 
 /*[--- UI COMPONENTS ---]*/
 import IconsEyeClose from "@@/icons/icons-eyes-close.svg";
@@ -26,20 +27,13 @@ export default function FormLogin({ setIsError, setError, setIsSuccess, }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm({
+  const { isVisible: isPasswordVisible, toggle: toggleShowPassword } = useTogglePassword();
+  const [login, { isLoading, isSuccess, isError, error }] = useLoginUserMutation();
+  const { register, handleSubmit, formState: { errors }, reset, } = useForm({
     resolver: zodResolver(loginSchema),
     mode: "onChange",
     reValidateMode: "onBlur",
   });
-
-  const [login, { isLoading, isSuccess, isError, error }] = useLoginUserMutation();
 
   useEffect(() => {
     setIsError(isError);
@@ -58,10 +52,6 @@ export default function FormLogin({ setIsError, setError, setIsSuccess, }) {
     }
   };
 
-  const toggleShowPassword = () => {
-    setIsPasswordVisible(!isPasswordVisible);
-  };
-
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex w-full flex-col gap-2">
       <div className="relative w-full">
@@ -70,7 +60,7 @@ export default function FormLogin({ setIsError, setError, setIsSuccess, }) {
           className="peer montserratFont w-full rounded-lg bg-white px-3 pt-6 pb-2 text-sm font-normal placeholder-transparent focus:outline-blue-500"
           type="email"
           autoComplete='off'
-          autoFocus={true}
+          placeholder="Email"
           {...register("email")}
         />
         <label

@@ -23,12 +23,12 @@ export default function BannerPromoSlider() {
     {
       id: 2,
       image: bannerPromo2,
-      url: "/RegisterCreators",
+      url: "/register-creators",
     },
     {
       id: 4,
       image: bannerPromo4,
-      url: "/RegisterCreators",
+      url: "/register-creators",
     },
   ];
 

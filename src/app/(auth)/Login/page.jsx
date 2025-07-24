@@ -75,7 +75,6 @@ export default function LoginPage() {
               <p>Login Successfully!</p>
             </div>
           )}
-
           <Suspense fallback={<div>Loading...</div>}>
             <FormLogin
               setIsError={setIsError}
