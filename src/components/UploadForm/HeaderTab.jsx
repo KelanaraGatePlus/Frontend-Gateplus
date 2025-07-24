@@ -7,8 +7,8 @@ import { usePathname } from 'next/navigation';
 
 export default function HeaderTab({ type }) {
     const pathname = usePathname();
-    const isStep1 = pathname === `/${type}/Upload${type}`;
-    const isStep2 = pathname.endsWith('/Episode');
+    const isStep1 = pathname.endsWith('/upload');
+    const isStep2 = pathname.endsWith('/episode');
 
     return (
         <section className="mb-4 flex flex-row items-center justify-center gap-3">

@@ -1,43 +1,34 @@
 "use client";
 import React, { useState, useEffect, Suspense, use } from "react";
-import axios from "axios";
 import PropTypes from "prop-types";
+
+/*[--- API HOOKS ---]*/
+import { useGetPodcastByIdQuery } from "@/hooks/api/podcastSliceAPI";
+
+/*[--- UI COMPONENTS ---]*/
 import MainTemplateLayout from "@/components/MainDetailProduct/page";
-import ListenPodcast from "@/components/PodcastPlayer/PodcastPlayback";
+import PodcastPlayback from "@/components/PodcastPlayer/PodcastPlayback";
 import BottomSpacer from "@/components/BottomSpacer/page";
 
 export default function DetailPodcastPage({ params }) {
   const { id } = use(params);
-  const [podcastData, setPodcastData] = useState({});
+  const [userId, setUserId] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const getData = async () => {
-    try {
-      setIsLoading(true);
-      const userId = localStorage.getItem("users_id");
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
-        `https://backend-gateplus-api.my.id/podcast/${id}?userId=${userId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const ebookSingleData = response.data.data.data;
-      console.log("ini das", ebookSingleData);
-      setPodcastData(ebookSingleData);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
   useEffect(() => {
-    getData();
+    if (typeof window !== "undefined") {
+      const storedUserId = localStorage.getItem("users_id");
+      setUserId(storedUserId);
+      console.log(storedUserId);
+    }
   }, []);
+
+  const skip = !id || !userId;
+  const { data, isLoading } = useGetPodcastByIdQuery({ id, userId }, { skip });
+  const podcastData = data?.data?.data || {};
+  const episode_podcasts = (podcastData.episode_podcasts || []).slice().sort((a, b) => {
+    return new Date(a.createdAt) - new Date(b.createdAt);
+  });
 
   return (
     podcastData && (
@@ -45,7 +36,7 @@ export default function DetailPodcastPage({ params }) {
         <MainTemplateLayout
           productType="podcast"
           productDetail={podcastData}
-          productEpisode={podcastData.episode_podcasts}
+          productEpisode={episode_podcasts}
           isLoading={isLoading}
         />
 
@@ -53,7 +44,7 @@ export default function DetailPodcastPage({ params }) {
 
         <div className={`fixed bottom-0 ${isOpen ? "z-20" : "z-10"}`}>
           <Suspense fallback="Loading...">
-            <ListenPodcast isOpen={isOpen} setIsOpen={setIsOpen} />
+            <PodcastPlayback isOpen={isOpen} setIsOpen={setIsOpen} />
           </Suspense>
         </div>
 

@@ -4,7 +4,7 @@ import React, { use, useEffect, useState } from "react";
 /*[--- COMPONENT IMPORT ---]*/
 import MainTemplateLayout from "@/components/MainDetailProduct/page";
 
-/*[--- HOOKS IMPORT ---]*/
+/*[--- API HOOKS ---]*/
 import { useGetEbookByIdQuery } from "@/hooks/api/ebookSliceAPI";
 
 // eslint-disable-next-line react/prop-types

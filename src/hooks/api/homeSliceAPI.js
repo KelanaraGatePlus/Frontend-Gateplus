@@ -11,37 +11,37 @@ export const homeAPI = createApi({
         getNewest: builder.query({
             query: () => "/home/newest",
             providesTags: ["homeAPI"],
-            keepUnusedDataFor: 60,
+            keepUnusedDataFor: 120,
         }),
         getHighlight: builder.query({
             query: () => "/home/highlights",
             providesTags: ["homeAPI"],
-            keepUnusedDataFor: 60,
+            keepUnusedDataFor: 86400,
         }),
         getTopTen: builder.query({
             query: () => "/home/top-10",
             providesTags: ["homeAPI"],
-            keepUnusedDataFor: 60,
+            keepUnusedDataFor: 259200,
         }),
         getRecommendations: builder.query({
             query: () => "/home/recommendations",
             providesTags: ["homeAPI"],
-            keepUnusedDataFor: 60,
+            keepUnusedDataFor: 259200,
         }),
         getPopularEbooks: builder.query({
             query: () => "/home/popular-ebooks",
             providesTags: ["homeAPI"],
-            keepUnusedDataFor: 60,
+            keepUnusedDataFor: 86400,
         }),
         getPopularComics: builder.query({
             query: () => "/home/popular-comics",
             providesTags: ["homeAPI"],
-            keepUnusedDataFor: 60,
+            keepUnusedDataFor: 86400,
         }),
         getPopularPodcasts: builder.query({
             query: () => "/home/popular-podcasts",
             providesTags: ["homeAPI"],
-            keepUnusedDataFor: 60,
+            keepUnusedDataFor: 86400,
         }),
     }),
 })

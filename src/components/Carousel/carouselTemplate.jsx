@@ -55,7 +55,7 @@ export default function CarouselTemplate({ label, type, contents, isLoading, isT
                                                     key={index}
                                                     className="overflow-hidden group relative h-[180px] w-[120px] cursor-pointer rounded-lg sm:h-[200px] sm:w-[140px] md:h-[320px] md:w-[230px] group"
                                                 >
-                                                    <Link href={`/${fixedType.toLowerCase()}/detail/${item.id}`}>
+                                                    <Link href={`/${fixedType.toLowerCase()}s/detail/${item.id}`}>
                                                         <div className="relative h-full w-full">
                                                             {isTopTen ? (
                                                                 <div className="bottom-0 left-0 rounded-tr-2xl bg-opacity-60 absolute z-10 bg-[#02536e] px-2 py-1 text-xs text-white h-fit w-fit drop-shadow-[0_0_2px_rgba(255,255,255,0.3)] flex items-center justify-center flex-col max-w-[65%] transition-all duration-300 ease-in-out">

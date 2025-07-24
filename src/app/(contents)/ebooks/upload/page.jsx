@@ -133,7 +133,7 @@ export default function UploadEbookPage() {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "https://backend-gateplus-api.my.id/category/",
+        "http://localhost:3000/category/",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -159,7 +159,7 @@ export default function UploadEbookPage() {
     <>
       <main className="mt-16 flex flex-col py-2 md:mt-[100px] lg:px-4">
         <HeaderUploadForm title={"Upload Ebook"} />
-        <HeaderTab type={"Ebook"} />
+        <HeaderTab type={"ebooks"} />
 
         <div className="flex w-full flex-col px-2">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 lg:gap-0">

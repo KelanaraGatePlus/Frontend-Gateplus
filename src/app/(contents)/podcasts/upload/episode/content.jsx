@@ -156,7 +156,7 @@ export default function UploadPodcastEpisodeContent() {
         try {
             const creatorId = localStorage.getItem("creators_id");
             const response = await axios.get(
-                `https://backend-gateplus-api.my.id/creator/${creatorId}`,
+                `http://localhost:3000/creator/${creatorId}`,
             );
 
             const fullData = response.data.data;
@@ -213,7 +213,7 @@ export default function UploadPodcastEpisodeContent() {
 
         try {
             const response = await axios.post(
-                "https://backend-gateplus-api.my.id/episode",
+                "http://localhost:3000/episode",
                 formData,
                 {
                     headers: {
@@ -241,7 +241,7 @@ export default function UploadPodcastEpisodeContent() {
         <>
             <main className="mt-16 flex flex-col py-2 md:mt-[100px] lg:px-4">
                 <HeaderUploadForm title={"Upload Podcast"} />
-                <HeaderTab type={"Podcast"} />
+                <HeaderTab type={"podcasts"} />
 
                 <div className="flex w-full flex-col px-2">
                     <form className="flex flex-col gap-2 lg:gap-2" onSubmit={handleSubmit}>

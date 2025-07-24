@@ -106,7 +106,7 @@ export default function UploadPodcastPage() {
 
         try {
             const response = await axios.post(
-                "https://backend-gateplus-api.my.id/podcast",
+                "http://localhost:3000/podcast",
                 formData,
                 {
                     headers: {
@@ -135,7 +135,7 @@ export default function UploadPodcastPage() {
         try {
             const token = localStorage.getItem("token");
             const response = await axios.get(
-                "https://backend-gateplus-api.my.id/category/",
+                "http://localhost:3000/category/",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -161,7 +161,7 @@ export default function UploadPodcastPage() {
         <>
             <main className="mt-16 flex flex-col py-2 md:mt-[100px] lg:px-4">
                 <HeaderUploadForm title={"Upload Podcast"} />
-                <HeaderTab type={"Podcast"} />
+                <HeaderTab type={"podcasts"} />
 
                 <div className="flex w-full flex-col px-2">
                     <form onSubmit={handleSubmit} className="flex flex-col gap-4 lg:gap-0">

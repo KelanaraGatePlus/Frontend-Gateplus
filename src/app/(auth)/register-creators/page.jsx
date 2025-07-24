@@ -9,7 +9,14 @@ import IconsSignupCreators from "@@/icons/hands holding gold trophy cup.svg";
 import LogoGatePlus from "@@/logo/logoGate+/logo-header-register.svg";
 
 export default function RegisterCreatorsPage() {
-
+  const content = {
+    title: "Gabung sebagai Kreator dan Nikmati Akses Creator Gate Plus!",
+    description:
+      "Menjadi kreator di platform kami memberi Anda akses eksklusif untuk mengunggah konten, mengelola karya, serta memperoleh pendapatan dari penggemar dan audiens. Dapatkan fitur tambahan seperti analitik konten, dukungan prioritas, dan kesempatan untuk mendapatkan lebih banyak exposure di platform.",
+    subtitle: "Tunggu apa lagi?",
+    subtitleDescription:
+      "Daftar sebagai kreator sekarang dan mulai berbagi karya Anda dengan dunia! 🎬🎤📚"
+  }
   return (
     <div className="flex h-screen w-screen items-center justify-center px-3 md:py-10">
       <main className="flex h-full w-full flex-col items-center justify-center gap-4 px-0 py-6 lg:flex-row">
@@ -24,23 +31,18 @@ export default function RegisterCreatorsPage() {
           </div>
           <div className="mx-5 mt-3.5 mb-2 hidden h-full flex-col items-center justify-center gap-1 lg:flex">
             <p className="zeinFont text-left text-3xl font-semibold text-white">
-              Gabung sebagai Kreator dan Nikmati Akses Creator Gate Plus!
+              {content.title}
             </p>
             <p className="montserratFont text-justify text-sm font-light text-white">
-              Menjadi kreator di platform kami memberi Anda akses eksklusif
-              untuk mengunggah konten, mengelola karya, serta memperoleh
-              pendapatan dari penggemar dan audiens. Dapatkan fitur tambahan
-              seperti analitik konten, dukungan prioritas, dan kesempatan untuk
-              mendapatkan lebih banyak exposure di platform.
+              {content.description}
             </p>
           </div>
           <div className="mx-5 mb-2 hidden h-full flex-col items-start justify-center gap-1 lg:flex">
             <p className="zeinFont text-left text-3xl font-semibold text-white">
-              Tunggu apa lagi?
+              {content.subtitle}
             </p>
             <p className="montserratFont text-justify text-sm font-normal text-white">
-              Daftar sebagai kreator sekarang dan mulai berbagi karya Anda
-              dengan dunia! 🎬🎤📚
+              {content.subtitleDescription}
             </p>
           </div>
         </section>
@@ -77,23 +79,18 @@ export default function RegisterCreatorsPage() {
         <section className="flex h-full w-full max-w-lg flex-col gap-4 lg:hidden">
           <div className="mx-2 mt-3.5 flex h-full flex-col items-center justify-center gap-1">
             <p className="zeinFont mb-1.5 text-left text-3xl font-semibold text-white">
-              Gabung sebagai Kreator dan Nikmati Akses Creator Gate Plus!
+              {content.title}
             </p>
             <p className="montserratFont text-left text-sm font-light text-white">
-              Menjadi kreator di platform kami memberi Anda akses eksklusif
-              untuk mengunggah konten, mengelola karya, serta memperoleh
-              pendapatan dari penggemar dan audiens. Dapatkan fitur tambahan
-              seperti analitik konten, dukungan prioritas, dan kesempatan untuk
-              mendapatkan lebih banyak exposure di platform.
+              {content.description}
             </p>
           </div>
           <div className="mx-2 flex h-full flex-col items-start justify-center gap-1">
             <p className="zeinFont mb-1.5 text-left text-3xl font-semibold text-white">
-              Tunggu apa lagi?
+              {content.subtitle}
             </p>
             <p className="montserratFont text-left text-sm font-normal text-white">
-              Daftar sebagai kreator sekarang dan mulai berbagi karya Anda
-              dengan dunia! 🎬🎤📚
+              {content.subtitleDescription}
             </p>
           </div>
           <div className="block h-10 w-full bg-transparent text-transparent lg:hidden">
