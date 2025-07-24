@@ -49,7 +49,7 @@ export default function OtpPage() {
             <input
               key={index}
               ref={(el) => (inputRefs.current[index] = el)}
-              type="text"
+              type="number"
               inputMode="numeric"
               maxLength={1}
               className="flex h-12 w-12 flex-1 rounded-lg border border-gray-300 bg-white text-center text-lg font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none md:h-18 md:text-3xl"

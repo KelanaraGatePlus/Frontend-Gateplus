@@ -1,52 +1,14 @@
-/* eslint-disable react/react-in-jsx-scope */
 "use client";
-
-import IconsSignupCreators from "@@/icons/hands holding gold trophy cup.svg";
-import LogoGatePlus from "@@/logo/logoGate+/logo-header-register.svg";
-import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import React from "react";
+
+/*[--- UI COMPONENTS ---]*/
+import FormRegisterCreator from "@/components/AuthForm/FormRegisterCreator/page";
+import IconsSignupCreators from "@@/icons/hands holding gold trophy cup.svg";
+import LogoGatePlus from "@@/logo/logoGate+/logo-header-register.svg";
 
 export default function RegisterCreatorsPage() {
-  const router = useRouter();
-  const [fullName, setFullName] = useState("");
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      setIsLoading(true);
-      const userId = localStorage.getItem("users_id");
-      const response = await axios.post(
-        `http://localhost:3000/creator`,
-        {
-          userId: userId,
-          profileName: fullName,
-          username: username,
-          email: email,
-          phone: phone,
-        },
-      );
-      localStorage.setItem("creators_id", response.data.data.data.id);
-      localStorage.setItem("isCreator", JSON.stringify(true));
-      localStorage.setItem("role", response.data.data.data.role);
-      setFullName("");
-      setUsername("");
-      setEmail("");
-      setPhone("");
-      setIsLoading(false);
-      router.push(`/`);
-    } catch (error) {
-      setIsLoading(false);
-      console.error("Error during post request:", error);
-    }
-  };
 
   return (
     <div className="flex h-screen w-screen items-center justify-center px-3 md:py-10">
@@ -108,94 +70,7 @@ export default function RegisterCreatorsPage() {
             </div>
           </section>
           <section className="">
-            <form
-              onSubmit={handleSubmit}
-              className="mt-2 flex w-full flex-col gap-2"
-            >
-              <div className="relative w-full">
-                <input
-                  type="text"
-                  id="fullName"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                  className="peer montserratFont w-full rounded-lg bg-white px-3 pt-6 pb-2 text-sm font-normal placeholder-transparent focus:outline-blue-500"
-                  placeholder="Username"
-                />
-                <label
-                  htmlFor="fullName"
-                  className="absolute top-2 left-3 text-xs text-gray-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-1.5 peer-focus:text-xs peer-focus:text-blue-500"
-                >
-                  Nama Lengkap
-                </label>
-              </div>
-              <div className="relative w-full">
-                <input
-                  type="text"
-                  id="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                  className="peer montserratFont w-full rounded-lg bg-white px-3 pt-6 pb-2 text-sm font-normal placeholder-transparent focus:outline-blue-500"
-                  placeholder="Username"
-                />
-                <label
-                  htmlFor="username"
-                  className="absolute top-2 left-3 text-xs text-gray-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-1.5 peer-focus:text-xs peer-focus:text-blue-500"
-                >
-                  Username
-                </label>
-              </div>
-              <div className="relative w-full">
-                <input
-                  id="email"
-                  placeholder="Email"
-                  className="peer montserratFont w-full rounded-lg bg-white px-3 pt-6 pb-2 text-sm font-normal placeholder-transparent focus:outline-blue-500"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-                <label
-                  htmlFor="email"
-                  className="absolute top-2 left-3 text-xs text-gray-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-1.5 peer-focus:text-xs peer-focus:text-blue-500"
-                >
-                  Email
-                </label>
-              </div>
-              <div className="relative w-full">
-                <input
-                  id="phone"
-                  placeholder="Phone"
-                  className="peer montserratFont w-full rounded-lg bg-white px-3 pt-6 pb-2 text-sm font-normal placeholder-transparent focus:outline-blue-500"
-                  type="number"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  required
-                />
-                <label
-                  htmlFor="phone"
-                  className="absolute top-2 left-3 text-xs text-gray-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-1.5 peer-focus:text-xs peer-focus:text-blue-500"
-                >
-                  Nomor Telepon
-                </label>
-              </div>
-
-              <span className="zeinFont flex justify-between text-xl text-[#1DBDF5]">
-                <div>
-                  Already registered?{" "}
-                  <Link href="/login" className="text-left font-bold">
-                    Log in
-                  </Link>
-                </div>
-              </span>
-              <button
-                disabled={isLoading}
-                className="zeinFont mt-4 cursor-pointer rounded-lg border border-[#156EB7] bg-[#156EB7] py-2 text-2xl font-bold text-white hover:border-white/70 hover:bg-[#156EB7CC]"
-              >
-                {isLoading ? "Registering..." : "Jadi Kreator"}
-              </button>
-            </form>
+            <FormRegisterCreator />
           </section>
         </section>
         {/*  */}

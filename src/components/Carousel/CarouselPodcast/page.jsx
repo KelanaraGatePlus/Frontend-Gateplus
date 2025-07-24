@@ -23,7 +23,7 @@ export default function CarouselItemPodcastPage() {
             setIsLoading(true);
             const token = localStorage.getItem("token");
             const response = await axios.get(
-                `http://localhost:3000/podcast`,
+                `https://backend-gateplus-api.my.id/podcast`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,

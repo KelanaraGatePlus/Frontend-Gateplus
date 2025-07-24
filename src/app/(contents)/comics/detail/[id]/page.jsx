@@ -18,7 +18,7 @@ export default function DetailComicPage({ params }) {
       const userId = localStorage.getItem("users_id");
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `http://localhost:3000/comics/${id}?userId=${userId}`,
+        `https://backend-gateplus-api.my.id/comics/${id}?userId=${userId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

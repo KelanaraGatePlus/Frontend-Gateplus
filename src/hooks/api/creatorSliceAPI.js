@@ -23,6 +23,18 @@ export const creatorAPI = createApi({
             providesTags: ["creatorsAPI"],
             keepUnusedDataFor: 60,
         }),
+        registerCreator: builder.mutation({
+            query: (payload) => ({
+                url: `/`,
+                method: "POST",
+                body: payload,
+            }),
+            invalidatesTags: ["creatorsAPI"],
+        }),
+        checkCreatorAvailability: builder.query({
+            query: ({ type, value }) => `/check?type=${type}&value=${value}`,
+            keepUnusedDataFor: 0,
+        }),
     }),
 })
 
@@ -30,4 +42,6 @@ export const {
     useGetMostViewedContentQuery,
     useGetNewestContentQuery,
     useGetCreatorDetailQuery,
+    useRegisterCreatorMutation,
+    useCheckCreatorAvailabilityQuery,
 } = creatorAPI;

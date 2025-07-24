@@ -61,7 +61,7 @@ export default function ReadEbookPage({ params }) {
       if (!hasUpdatedViews) {
         console.log("Tambah Views");
         await axios.patch(
-          `http://localhost:3000/episode/${id}/views`,
+          `https://backend-gateplus-api.my.id/episode/${id}/views`,
         );
         hasUpdatedViews = true;
       }
@@ -94,7 +94,7 @@ export default function ReadEbookPage({ params }) {
   const getCommentData = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/comment/by-ebook-episode/${id}`,
+        `https://backend-gateplus-api.my.id/comment/by-ebook-episode/${id}`,
       );
 
       console.log(response.data.data.data);
@@ -112,7 +112,7 @@ export default function ReadEbookPage({ params }) {
       setIsUploadingComment(true);
       const userId = localStorage.getItem("users_id");
       const response = await axios.post(
-        `http://localhost:3000/comment`,
+        `https://backend-gateplus-api.my.id/comment`,
         {
           userId: userId,
           episodeEbookId: id,
