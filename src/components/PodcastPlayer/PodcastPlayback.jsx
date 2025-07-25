@@ -207,7 +207,7 @@ export default function PodcastPlayback({
 
               {isExpand ? (
                 <ExpandPodcast
-                  coverEpisodeUrl={episodePodcastData.coverEpisodeUrl}
+                  coverEpisodeUrl={episodePodcastData.coverPodcastEpisodeURL}
                   title={episodePodcastData.title}
                   description={episodePodcastData.description}
                   duration={duration}

@@ -21,6 +21,7 @@ export default function DetailPodcastPage({ params }) {
       setUserId(storedUserId);
       console.log(storedUserId);
     }
+    setCurrentlyPlaying(JSON.parse(localStorage.getItem("currentlyPlaying")) || null);
   }, []);
 
   const skip = !id || !userId;
@@ -32,6 +33,7 @@ export default function DetailPodcastPage({ params }) {
 
   const handlePlayPodcast = (episodeData) => {
     setCurrentlyPlaying(episodeData);
+    localStorage.setItem("currentlyPlaying", JSON.stringify(episodeData));
   };
 
   return (
