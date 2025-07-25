@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -26,10 +26,7 @@ export default function FormRegister({ setIsError, setError, setIsSuccess }) {
   const router = useRouter();
   const { isVisible: isPasswordVisible, toggle: toggleShowPassword } = useTogglePassword();
   const { isVisible: isConfirmPasswordVisible, toggle: toggleShowConfirmPassword } = useTogglePassword();
-
-  const [registerUser, { isLoading, isSuccess, isError, error }] = useRegisterUserMutation();
-  const [isConfirmTouched, setIsConfirmTouched] = useState(false);
-
+  const [ registerUser, { isLoading, isSuccess, isError, error } ] = useRegisterUserMutation();
   const {
     register,
     handleSubmit,
@@ -43,11 +40,8 @@ export default function FormRegister({ setIsError, setError, setIsSuccess }) {
     reValidateMode: "onBlur",
   });
 
-  const username = watch("username");
-  const email = watch("email");
-
-  const [debouncedUsername] = useDebounce(username, 500);
-  const [debouncedEmail] = useDebounce(email, 500);
+  const [debouncedUsername] = useDebounce(watch("username"), 500);
+  const [debouncedEmail] = useDebounce(watch("email"), 500);
 
   const { data: userAvailable } = useCheckUserAvailabilityQuery(
     { type: "username", value: debouncedUsername },
@@ -66,13 +60,13 @@ export default function FormRegister({ setIsError, setError, setIsSuccess }) {
   }, [isError, error, isSuccess]);
 
   useEffect(() => {
-    if (userAvailable && userAvailable.exists) {
+    if (userAvailable?.exists) {
       setFormError("username", { message: "Username already taken" });
     }
   }, [userAvailable]);
 
   useEffect(() => {
-    if (emailAvailable && emailAvailable.exists) {
+    if (emailAvailable?.exists) {
       setFormError("email", { message: "Email already taken" });
     }
   }, [emailAvailable]);
@@ -86,9 +80,6 @@ export default function FormRegister({ setIsError, setError, setIsSuccess }) {
       console.error("Register failed:", err);
     }
   };
-
-  const password = watch("password");
-  const confirmPassword = watch("confirmPassword");
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex w-full flex-col gap-2">
@@ -146,8 +137,7 @@ export default function FormRegister({ setIsError, setError, setIsSuccess }) {
             type={isConfirmPasswordVisible ? "text" : "password"}
             {...register("confirmPassword")}
             placeholder="Confirm Password"
-            className={`peer montserratFont w-full rounded-lg bg-white px-3 pt-6 pb-2 text-sm font-normal placeholder-transparent focus:outline-blue-500 ${isConfirmTouched && confirmPassword !== password ? "border-[#FB3748B2] focus:ring-2 focus:ring-[#FB3748B2]" : "border-gray-300 focus:ring-2 focus:ring-blue-500"}`}
-            onFocus={() => setIsConfirmTouched(true)}
+            className={`peer montserratFont w-full rounded-lg bg-white px-3 pt-6 pb-2 text-sm font-normal placeholder-transparent focus:outline-blue-500`}
           />
           <label htmlFor="confirmPassword" className="absolute top-2 left-3 text-xs text-gray-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-1.5 peer-focus:text-xs peer-focus:text-blue-500">
             Confirm Password

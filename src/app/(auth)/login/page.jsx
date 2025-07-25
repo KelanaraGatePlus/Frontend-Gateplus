@@ -2,7 +2,6 @@
 import React, { Suspense, useState } from "react";
 import Image from "next/image";
 import logo from "@@/logo/logoGate+/logo-header-login.svg";
-
 import FormLogin from '@/components/AuthForm/FormLogin/page'
 
 export default function LoginPage() {
