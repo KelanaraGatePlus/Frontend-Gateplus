@@ -3,6 +3,8 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import PropTypes from "prop-types";
 
+import { formatDateTime } from "@/lib/timeFormatter";
+
 /*[--- COMPONENT IMPORT ---]*/
 import CommentComponent from "@/components/Comment/page";
 import BottomSpacer from '@/components/BottomSpacer/page';
@@ -19,12 +21,13 @@ export default function CollapseView({
   title,
   description,
   createdAt,
-  creators,
   episodePodcasts,
   isExpand,
   isCommentVisible,
   isMobile,
   handleViewComments,
+  currentlyPlaying,
+  handlePlayPodcast,
 }) {
   const isLocked = useState(false);
 
@@ -88,7 +91,7 @@ export default function CollapseView({
                 Kreator
               </h2>
 
-              <div className="custom-scroll flex w-full justify-start gap-3 overflow-x-scroll lg:flex-wrap lg:gap-6">
+              {/* <div className="custom-scroll flex w-full justify-start gap-3 overflow-x-scroll lg:flex-wrap lg:gap-6">
                 {creators.map((creator) => (
                   <div
                     key={creator.id}
@@ -114,7 +117,7 @@ export default function CollapseView({
                     </p>
                   </div>
                 ))}
-              </div>
+              </div> */}
             </div>
           </div>
         </section>
@@ -123,12 +126,12 @@ export default function CollapseView({
           <h2 className="zeinFont text-2xl font-bold">Episode Selanjutnya</h2>
           <div className="flex flex-col gap-4">
             {episodePodcasts.map((episode, index) => (
-              <div key={index} className="flex gap-4 w-full justify-between rounded-lg hover:bg-blue-600/30 hover:p-3 transition-all duration-300 ease-in-out cursor-pointer">
+              <div key={index} className={`flex gap-4 w-full justify-between rounded-lg hover:bg-blue-600/30 hover:p-3 transition-all duration-300 ease-in-out cursor-pointer ${currentlyPlaying?.id === episode.id ? "bg-red-500 p-3" : "p-0"}`} onClick={() => handlePlayPodcast(episode)}>
                 <div className="flex gap-2 max-w-4xl">
                   <div className="relative h-28 w-28">
                     <Image
                       src={
-                        episode.coverEpisodeUrl ||
+                        episode.coverPodcastEpisodeURL ||
                         "https://picsum.photos/seed/eps6/800/450"
                       }
                       alt="cover-podcast"
@@ -147,7 +150,7 @@ export default function CollapseView({
                       </p>
                     </div>
                     <p className="montserratFont flex text-xs font-light text-white/50">
-                      12/23/5432
+                      {formatDateTime(episode.createdAt, "short")}
                     </p>
                   </div>
                 </div>
@@ -219,4 +222,6 @@ CollapseView.propTypes = {
   isCommentVisible: PropTypes.bool.isRequired,
   isMobile: PropTypes.bool.isRequired,
   handleViewComments: PropTypes.func.isRequired,
+  currentlyPlaying: PropTypes.object.isRequired,
+  handlePlayPodcast: PropTypes.func.isRequired,
 };

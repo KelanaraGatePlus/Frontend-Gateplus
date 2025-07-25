@@ -23,6 +23,8 @@ export default function ProductEpisodeSection({
   productType,
   productEpisodes,
   isLoading,
+  currentlyPlaying,
+  handlePlayPodcast,
 }) {
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [showAll, setShowAll] = useState(false);
@@ -156,100 +158,104 @@ export default function ProductEpisodeSection({
             {(showAll ? productEpisodes : productEpisodes.slice(0, 5))
               .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
               .map((item, index) => (
-                  <div key={index} className="group flex cursor-pointer items-stretch gap-2 px-4 py-4 hover:bg-[#105CAC] md:gap-4 md:mx-15 md:rounded-lg transition-all duration-300 ease-in-out justify-between">
-                    <div className="flex gap-2 w-[200px] md:w-2xl">
-                      <div className="h-24 w-24 overflow-hidden rounded-lg bg-[#DEDEDE] md:h-36 md:w-36 relative group">
-                        <Image
-                          priority
-                          src={item.coverPodcastEpisodeURL}
-                          alt={`poster-${item.title}`}
-                          className="h-full w-full rounded object-cover object-center"
-                          width={144}
-                          height={144}
-                        />
-                        <div className="group-hover:opacity-100 opacity-0 transition-all duration-300 ease-in-out absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center h-full w-full">
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center bg-[radial-gradient(circle,_#193B89BF_0%,_transparent_80%)] h-20 w-20" />
-                          <div className="relative h-32 w-32">
-                            <Image
-                              priority
-                              src={iconPlay}
-                              alt="icon-play"
-                              className="h-full w-full rounded object-cover object-center"
-                              fill
-                            />
-                          </div>
+                <div
+                  key={index}
+                  className={`group flex cursor-pointer items-stretch gap-2 px-4 py-4 hover:bg-[#105CAC] md:gap-4 md:mx-15 md:rounded-lg transition-all duration-300 ease-in-out justify-between ${currentlyPlaying?.id === item.id ? "bg-red-500" : ""} `}
+                  onClick={() => handlePlayPodcast(item)}
+                >
+                  <div className="flex gap-2 w-[200px] md:w-2xl">
+                    <div className="h-24 w-24 overflow-hidden rounded-lg bg-[#DEDEDE] md:h-36 md:w-36 relative group">
+                      <Image
+                        priority
+                        src={item.coverPodcastEpisodeURL}
+                        alt={`poster-${item.title}`}
+                        className="h-full w-full rounded object-cover object-center"
+                        width={144}
+                        height={144}
+                      />
+                      <div className="group-hover:opacity-100 opacity-0 transition-all duration-300 ease-in-out absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center h-full w-full">
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center bg-[radial-gradient(circle,_#193B89BF_0%,_transparent_80%)] h-20 w-20" />
+                        <div className="relative h-32 w-32">
+                          <Image
+                            priority
+                            src={iconPlay}
+                            alt="icon-play"
+                            className="h-full w-full rounded object-cover object-center"
+                            fill
+                          />
                         </div>
                       </div>
-                      <div className="flex flex-1 flex-col justify-between sm:w-3/5">
-                        <div className="flex flex-col">
-                          <h4
-                            className={`zeinFont mb-1 [display:-webkit-box] w-fit overflow-hidden text-xl leading-5 font-extrabold text-ellipsis [-webkit-box-orient:vertical] [-webkit-line-clamp:2] md:text-2xl`}
-                          >
-                            {item.title}
-                          </h4>
-                          <p className="text-xs font-normal text-white/50 lg:text-sm">
-                            <span className="md:hidden line-clamp-3">
-                              {item.description
-                                .split(" ")
-                                .slice(0, 5)
-                                .join(" ")}
-                              ...
-                            </span>
-                            <span className="hidden md:inline">
-                              {item.description}
-                            </span>
-                          </p>
-                        </div>
-                        <p className="text-[10px] font-normal text-white/70 md:text-sm">
-                          {formatDateTime(item.createdAt, "short")}
+                    </div>
+                    <div className="flex flex-1 flex-col justify-between sm:w-3/5">
+                      <div className="flex flex-col">
+                        <h4
+                          className={`zeinFont mb-1 [display:-webkit-box] w-fit overflow-hidden text-xl leading-5 font-extrabold text-ellipsis [-webkit-box-orient:vertical] [-webkit-line-clamp:2] md:text-2xl`}
+                        >
+                          {item.title}
+                        </h4>
+                        <p className="text-xs font-normal text-white/50 lg:text-sm">
+                          <span className="md:hidden line-clamp-3">
+                            {item.description
+                              .split(" ")
+                              .slice(0, 5)
+                              .join(" ")}
+                            ...
+                          </span>
+                          <span className="hidden md:inline">
+                            {item.description}
+                          </span>
                         </p>
                       </div>
+                      <p className="text-[10px] font-normal text-white/70 md:text-sm">
+                        {formatDateTime(item.createdAt, "short")}
+                      </p>
                     </div>
-
-                    <div className="w-1.2/5 montserratFont flex items-center justify-center text-xs font-semibold text-white/50 sm:w-1/5 lg:text-base line-clamp-1">
-                      17m
-                    </div>
-
-                    <div className="w-1.8/5 flex items-center justify-end gap-2 sm:w-1/5">
-                      <div className="rounded border-2 border-[#F5F5F524] bg-[#F5F5F524] p-1">
-                        <Image
-                          priority
-                          src={isLocked ? iconLocked : iconUnlocked}
-                          alt="icon-locked"
-                          className="h-full w-full rounded object-cover object-center"
-                          width={16}
-                          height={16}
-                        />
-                      </div>
-                      <div className="relative h-6 w-6 cursor-pointer transition-transform duration-150 active:scale-90">
-                        <Image
-                          priority
-                          src={iconSaveOutline}
-                          alt="icon-save-outline"
-                          className="rounded object-cover object-center"
-                          fill
-                        />
-                      </div>
-                      <button
-                        className="relative z-0 h-6 w-6 cursor-pointer transition-transform duration-150 active:scale-90"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleSelectedPodcast(item);
-                        }}
-                      >
-                        <Image
-                          priority
-                          src={iconMore}
-                          alt="icon-more"
-                          className="rounded object-cover object-center"
-                          fill
-                        />
-                      </button>
-                    </div>
-
                   </div>
-                
+
+                  <div className="w-1.2/5 montserratFont flex items-center justify-center text-xs font-semibold text-white/50 sm:w-1/5 lg:text-base line-clamp-1">
+                    17m
+                  </div>
+
+                  <div className="w-1.8/5 flex items-center justify-end gap-2 sm:w-1/5">
+                    <div className="rounded border-2 border-[#F5F5F524] bg-[#F5F5F524] p-1">
+                      <Image
+                        priority
+                        src={isLocked ? iconLocked : iconUnlocked}
+                        alt="icon-locked"
+                        className="h-full w-full rounded object-cover object-center"
+                        width={16}
+                        height={16}
+                      />
+                    </div>
+                    <div className="relative h-6 w-6 cursor-pointer transition-transform duration-150 active:scale-90">
+                      <Image
+                        priority
+                        src={iconSaveOutline}
+                        alt="icon-save-outline"
+                        className="rounded object-cover object-center"
+                        fill
+                      />
+                    </div>
+                    <button
+                      className="relative z-0 h-6 w-6 cursor-pointer transition-transform duration-150 active:scale-90"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleSelectedPodcast(item);
+                      }}
+                    >
+                      <Image
+                        priority
+                        src={iconMore}
+                        alt="icon-more"
+                        className="rounded object-cover object-center"
+                        fill
+                      />
+                    </button>
+                  </div>
+
+                </div>
+
               ))}
 
             {/* Lihat Lainnya */}
@@ -282,6 +288,8 @@ ProductEpisodeSection.propTypes = {
   productType: PropTypes.string.isRequired,
   productEpisodes: PropTypes.array.isRequired,
   isLoading: PropTypes.bool,
+  currentlyPlaying: PropTypes.object,
+  handlePlayPodcast: PropTypes.func,
 };
 
 function EpisodeUnAvailable() {

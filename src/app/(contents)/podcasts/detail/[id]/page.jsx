@@ -14,7 +14,7 @@ export default function DetailPodcastPage({ params }) {
   const { id } = use(params);
   const [userId, setUserId] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
-  // const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
+  const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedUserId = localStorage.getItem("users_id");
@@ -30,6 +30,10 @@ export default function DetailPodcastPage({ params }) {
     return new Date(a.createdAt) - new Date(b.createdAt);
   });
 
+  const handlePlayPodcast = (episodeData) => {
+    setCurrentlyPlaying(episodeData);
+  };
+
   return (
     podcastData && (
       <div className="relative">
@@ -38,13 +42,22 @@ export default function DetailPodcastPage({ params }) {
           productDetail={podcastData}
           productEpisode={episode_podcasts}
           isLoading={isLoading}
+          currentlyPlaying={currentlyPlaying}
+          handlePlayPodcast={handlePlayPodcast}
         />
 
         <BottomSpacer height="h-42" />
 
         <div className={`fixed bottom-0 ${isOpen ? "z-20" : "z-10"}`}>
           <Suspense fallback="Loading...">
-            <PodcastPlayback isOpen={isOpen} setIsOpen={setIsOpen} />
+            <PodcastPlayback
+              isOpen={isOpen}
+              setIsOpen={setIsOpen}
+              currentlyPlaying={currentlyPlaying}
+              handlePlayPodcast={handlePlayPodcast}
+              podcast={podcastData}
+              episodePodcasts={episode_podcasts}
+            />
           </Suspense>
         </div>
 

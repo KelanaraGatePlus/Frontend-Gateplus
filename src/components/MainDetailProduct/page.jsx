@@ -14,6 +14,8 @@ export default function MainTemplateLayout({
   productDetail,
   productEpisode,
   isLoading = true,
+  currentlyPlaying,
+  handlePlayPodcast,
 }) {
   return (
     <main className="mt-16 flex flex-col md:mt-[100px]">
@@ -42,8 +44,9 @@ export default function MainTemplateLayout({
         productType={productType}
         productEpisodes={productEpisode}
         isLoading={isLoading}
+        currentlyPlaying={currentlyPlaying}
+        handlePlayPodcast={handlePlayPodcast}
       />
-      {/* mending podcast di pisah dah kali ya? */}
 
       <CarouselItemEookPage />
       <ProductDonationSection />
@@ -57,4 +60,6 @@ MainTemplateLayout.propTypes = {
   productDetail: PropTypes.object.isRequired,
   productEpisode: PropTypes.array.isRequired,
   isLoading: PropTypes.bool,
+  currentlyPlaying: PropTypes.object,
+  handlePlayPodcast: PropTypes.func,
 };

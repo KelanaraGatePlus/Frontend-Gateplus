@@ -1,52 +1,44 @@
 "use client";
 import React from "react";
-import axios from "axios";
 import { use, useEffect, useState } from "react";
+import PropTypes from "prop-types";
 
-/*[--- COMPONENT IMPORT ---]*/
+/*[--- API HOOKS ---]*/
+import { useGetComicByIdQuery } from "@/hooks/api/comicSliceAPI";
+
+/*[--- UI COMPONENTS ---]*/
 import MainTemplateLayout from "@/components/MainDetailProduct/page";
 
-// eslint-disable-next-line react/prop-types
 export default function DetailComicPage({ params }) {
   const { id } = use(params);
-  const [comicData, setComicData] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
-
-  const getData = async () => {
-    try {
-      setIsLoading(true);
-      const userId = localStorage.getItem("users_id");
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
-        `http://localhost:3000/comics/${id}?userId=${userId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-      const comicSingleData = response.data.data.data;
-      console.log("ini data komik", comicSingleData);
-      setComicData(comicSingleData);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  const [userId, setUserId] = useState(null);
   useEffect(() => {
-    getData();
+    if (typeof window !== "undefined") {
+      const storedUserId = localStorage.getItem("users_id");
+      setUserId(storedUserId);
+      console.log(storedUserId);
+    }
   }, []);
+
+  const skip = !id || !userId;
+  const { data, isLoading } = useGetComicByIdQuery({ id, userId }, { skip });
+  const comicData = data?.data?.data || {};
+  const episode_comics = (comicData.episode_comics || []).slice().sort((a, b) => {
+    return new Date(a.createdAt) - new Date(b.createdAt);
+  });
 
   return (
     comicData && (
       <MainTemplateLayout
         productType="comic"
         productDetail={comicData}
-        productEpisode={comicData.episode_comics}
+        productEpisode={episode_comics}
         isLoading={isLoading}
       />
     )
   );
+}
+
+DetailComicPage.propTypes = {
+  params: PropTypes.string,
 }

@@ -15,7 +15,14 @@ import SwipeableBottomSheet from "@/components/SwipeableBottomSheet/page";
 import CloseCircleButton from "@/components/CloseCircleButton/page";
 import { formatDateTime } from "@/lib/timeFormatter";
 
-export default function PodcastPlayback({ isOpen, setIsOpen }) {
+export default function PodcastPlayback({
+  isOpen,
+  setIsOpen,
+  currentlyPlaying,
+  handlePlayPodcast,
+  podcast,
+  episodePodcasts,
+}) {
   const searchParams = useSearchParams();
   const [isMobile, setIsMobile] = useState(false);
   const podcastId = searchParams.get("podcast_detail");
@@ -27,128 +34,11 @@ export default function PodcastPlayback({ isOpen, setIsOpen }) {
   const [blobUrl, setBlobUrl] = useState("");
   const [volume, setVolume] = useState(1);
   const audioRef = useRef(null);
-  const [episodePodcastData] = useState({
-    id: "dummy",
-    podcastId: "cmbhdggt00005jwzkz3znfaj9",
-    creatorId: "4d88a00f-23da-4856-8f01-c6aefb882d76",
-    podcastTitle: "Ngopi Tengah Malam",
-    title: "Episode 6",
-    description:
-      "Obrolan tentang rasa cukup di tengah dunia yang selalu minta lebih.",
-    price: "10000",
-    views: 7,
-    audiofile: "/dummyAssets/podcast/audio1.mp3",
-    coverEpisodeUrl: "https://picsum.photos/seed/eps6/800/450",
-    notedEpisode: "Kunci tenang itu syukur",
-    createdAt: "2025-06-09T18:27:51.823Z",
-    updatedAt: "2025-06-17T12:34:03.908Z",
-    creators: [
-      {
-        id: "creator1",
-        profileName: "Jane Doe",
-        username: "@janedoe",
-        imageUrl: "https://picsum.photos/seed/profile1/200/200",
-      },
-      {
-        id: "creator2",
-        profileName: "John Smith",
-        username: "@johnsmith",
-        imageUrl: "https://picsum.photos/seed/profile2/200/200",
-      },
-      {
-        id: "creator3",
-        profileName: "Alice Blue",
-        username: "@aliceblue",
-        imageUrl: "https://picsum.photos/seed/profile3/200/200",
-      },
-    ],
-    episode_podcasts: [
-      {
-        id: "dummy",
-        podcastId: "cmbhdggt00005jwzkz3znfaj9",
-        creatorId: "4d88a00f-23da-4856-8f01-c6aefb882d76",
-        title: "Episode 1",
-        description:
-          "Ngobrol santai tentang hal-hal kecil yang ternyata punya dampak besar di hidup.",
-        price: "10000",
-        views: 5,
-        coverEpisodeUrl: "https://picsum.photos/800/450?grayscale&blur=2",
-        notedEpisode: "Justru Itu",
-        createdAt: "2025-06-04T03:13:22.004Z",
-        updatedAt: "2025-06-17T12:34:03.908Z",
-      },
-      {
-        id: "dummy",
-        podcastId: "cmbhdggt00005jwzkz3znfaj9",
-        creatorId: "4d88a00f-23da-4856-8f01-c6aefb882d76",
-        title: "Episode 2",
-        description:
-          "Kita bahas kenapa overthinking bisa muncul bahkan dari chat 'oke'.",
-        price: "10000",
-        views: 8,
-        coverEpisodeUrl: "https://picsum.photos/seed/eps2/800/450",
-        notedEpisode: "Relatable banget",
-        createdAt: "2025-06-05T08:21:12.431Z",
-        updatedAt: "2025-06-17T12:34:03.908Z",
-      },
-      {
-        id: "dummy",
-        podcastId: "cmbhdggt00005jwzkz3znfaj9",
-        creatorId: "4d88a00f-23da-4856-8f01-c6aefb882d76",
-        title: "Episode 3",
-        description:
-          "Kisah gagal move on yang akhirnya jadi pelajaran berharga. Siap-siap baper.",
-        price: "10000",
-        views: 12,
-        coverEpisodeUrl: "https://picsum.photos/seed/eps3/800/450",
-        notedEpisode: "Mantan siapa nih?",
-        createdAt: "2025-06-06T10:09:45.100Z",
-        updatedAt: "2025-06-17T12:34:03.908Z",
-      },
-      {
-        id: "dummy",
-        podcastId: "cmbhdggt00005jwzkz3znfaj9",
-        creatorId: "4d88a00f-23da-4856-8f01-c6aefb882d76",
-        title: "Episode 4",
-        description:
-          "Tentang mimpi masa kecil yang ternyata masih relevan banget buat hari ini.",
-        price: "10000",
-        views: 3,
-        coverEpisodeUrl: "https://picsum.photos/seed/eps4/800/450",
-        notedEpisode: "Throwback vibes",
-        createdAt: "2025-06-07T12:15:33.900Z",
-        updatedAt: "2025-06-17T12:34:03.908Z",
-      },
-      {
-        id: "dummy",
-        podcastId: "cmbhdggt00005jwzkz3znfaj9",
-        creatorId: "4d88a00f-23da-4856-8f01-c6aefb882d76",
-        title: "Episode 5",
-        description:
-          "Dari burnout jadi break, dari break jadi bangkit. Cerita soal self-reset.",
-        price: "10000",
-        views: 9,
-        coverEpisodeUrl: "https://picsum.photos/seed/eps5/800/450",
-        notedEpisode: "Capek tapi nggak nyerah",
-        createdAt: "2025-06-08T15:48:20.532Z",
-        updatedAt: "2025-06-17T12:34:03.908Z",
-      },
-      {
-        id: "dummy",
-        podcastId: "cmbhdggt00005jwzkz3znfaj9",
-        creatorId: "4d88a00f-23da-4856-8f01-c6aefb882d76",
-        title: "Episode 6",
-        description:
-          "Obrolan tentang rasa cukup di tengah dunia yang selalu minta lebih.",
-        price: "10000",
-        views: 7,
-        coverEpisodeUrl: "https://picsum.photos/seed/eps6/800/450",
-        notedEpisode: "Kunci tenang itu syukur",
-        createdAt: "2025-06-09T18:27:51.823Z",
-        updatedAt: "2025-06-17T12:34:03.908Z",
-      },
-    ],
-  });
+  const [episodePodcastData, setEpisodePodcastData] = useState({});
+
+  useEffect(() => {
+    setEpisodePodcastData(currentlyPlaying || {});
+  }, [currentlyPlaying]);
 
   useEffect(() => {
     setIsOpen(!!podcastId);
@@ -189,6 +79,7 @@ export default function PodcastPlayback({ isOpen, setIsOpen }) {
   const handleVolumeChange = (e) => {
     const newVolume = parseFloat(e.target.value);
     setVolume(newVolume);
+    localStorage.setItem("volume", newVolume);
     if (audioRef.current?.audio?.current) {
       audioRef.current.audio.current.volume = newVolume;
     }
@@ -277,7 +168,7 @@ export default function PodcastPlayback({ isOpen, setIsOpen }) {
   useEffect(() => {
     const getBlobAudio = async () => {
       try {
-        const res = await fetch(episodePodcastData.audiofile);
+        const res = await fetch(episodePodcastData.podcastFileURL);
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         setBlobUrl(url);
@@ -290,7 +181,7 @@ export default function PodcastPlayback({ isOpen, setIsOpen }) {
     return () => {
       if (blobUrl) URL.revokeObjectURL(blobUrl);
     };
-  }, [episodePodcastData.audiofile]);
+  }, [episodePodcastData.podcastFileURL]);
 
   useEffect(() => {
     const onFullScreenChange = () => {
@@ -327,17 +218,19 @@ export default function PodcastPlayback({ isOpen, setIsOpen }) {
                 />
               ) : (
                 <CollapsePodcast
-                  coverEpisodeUrl={episodePodcastData.coverEpisodeUrl}
-                  podcastTitle={episodePodcastData.podcastTitle}
+                  coverEpisodeUrl={episodePodcastData.coverPodcastEpisodeURL}
+                  podcastTitle={podcast?.title || ""}
                   title={episodePodcastData.title}
                   description={episodePodcastData.description}
                   createdAt={formatDateTime(episodePodcastData.createdAt, "short")}
-                  creators={episodePodcastData.creators}
-                  episodePodcasts={episodePodcastData.episode_podcasts}
+                  // creators={episodePodcastData.creatorsCollaborationId}
+                  episodePodcasts={episodePodcasts || []}
                   isExpand={isExpand}
                   isCommentVisible={isCommentVisible}
                   isMobile={isMobile}
                   handleViewComments={handleViewComments}
+                  currentlyPlaying={currentlyPlaying}
+                  handlePlayPodcast={handlePlayPodcast}
                 />
               )}
             </div>
@@ -347,7 +240,7 @@ export default function PodcastPlayback({ isOpen, setIsOpen }) {
         {/* Kontrol dan Detail */}
         <div className="absolute bottom-0 w-full z-30  pointer-events-auto">
           <AudioControl
-            coverEpisodeUrl={episodePodcastData.coverEpisodeUrl}
+            coverEpisodeUrl={episodePodcastData.coverPodcastEpisodeURL}
             title={episodePodcastData.title}
             description={episodePodcastData.description}
             currentTime={currentTime}
@@ -392,4 +285,8 @@ export default function PodcastPlayback({ isOpen, setIsOpen }) {
 PodcastPlayback.propTypes = {
   isOpen: PropTypes.bool,
   setIsOpen: PropTypes.func,
+  currentlyPlaying: PropTypes.object,
+  handlePlayPodcast: PropTypes.func,
+  podcast: PropTypes.object,
+  episodePodcasts: PropTypes.array,
 }
