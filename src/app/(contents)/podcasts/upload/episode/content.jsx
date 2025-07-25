@@ -160,7 +160,7 @@ export default function UploadPodcastEpisodeContent() {
             );
 
             const fullData = response.data.data;
-            const creatorData = fullData.data[0];
+            const creatorData = fullData.data;
 
             setEbooksCreator(creatorData.Podcast);
         } catch (error) {

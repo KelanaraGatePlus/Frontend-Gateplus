@@ -30,14 +30,10 @@ export default function FormRegisterCreator() {
         mode: "onChange",
         reValidateMode: "onBlur",
     });
-
-    const username = watch("username");
-    const email = watch("email");
-    const phone = watch("phone");
-
-    const [debouncedUsername] = useDebounce(username, 500);
-    const [debouncedEmail] = useDebounce(email, 500);
-    const [debouncedPhone] = useDebounce(phone, 500);
+    
+    const [debouncedUsername] = useDebounce(watch("username"), 500);
+    const [debouncedEmail] = useDebounce(watch("email"), 500);
+    const [debouncedPhone] = useDebounce(watch("phone"), 500);
 
     const { data: usernameAvailable } = useCheckCreatorAvailabilityQuery(
         { type: "username", value: debouncedUsername },

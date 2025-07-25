@@ -30,6 +30,13 @@ export default function InputSelect({
                     <option value="" disabled hidden>
                         {placeholder}
                     </option>
+                    {
+                        options.length === 0 && (
+                            <option value="" disabled className="bg-[#2a2a2a] text-white montserratFont">
+                                Anda belum memiliki series
+                            </option>
+                        )
+                    }
                     {normalizeOptions(options)
                         .sort((a, b) => a.title.localeCompare(b.title))
                         .map((item) => (
