@@ -22,6 +22,7 @@ import useTogglePassword from "@/lib/features/useTogglePassword";
 import IconsEyeClose from "@@/icons/icons-eyes-close.svg";
 import IconsEyeOpen from "@@/icons/icons-eyes-open.svg";
 import LogoGoogle from "@@/logo/logoGoogle/icons-google.svg";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export default function FormLogin({ setIsError, setError, setIsSuccess, }) {
   const router = useRouter();
@@ -52,6 +53,8 @@ export default function FormLogin({ setIsError, setError, setIsSuccess, }) {
     }
   };
 
+  
+  
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex w-full flex-col gap-2">
       <div className="relative w-full">
@@ -119,12 +122,12 @@ export default function FormLogin({ setIsError, setError, setIsSuccess, }) {
         {isLoading ? "Logging in ..." : "Log In"}
       </button>
 
-      <button className="zeinFont flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-blue-900 py-2 text-2xl font-bold text-white hover:bg-blue-950">
+      <Link href={`${BACKEND_URL}/auth/google`} className="zeinFont flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-blue-900 py-2 text-2xl font-bold text-white hover:bg-blue-950">
         <Image priority src={LogoGoogle} alt="logo-google" />
         <p>
           <span>Sign In with Google</span>
         </p>
-      </button>
+      </Link>
     </form>
   )
 }

@@ -18,6 +18,7 @@ export default function ProfileCard({
     isLoading,
     isReady = true,
     isOwnProfile,
+    isLinkedWithGoogle = false,
     setTotalSubs = () => { },
 }) {
     const [isSubscribed, setIsSubscribed] = useState(false);
@@ -115,6 +116,7 @@ export default function ProfileCard({
                         isSubscribed={isSubscribed}
                         isSubsribing={isSubscribing}
                         handleToggleSubscribe={handleToggleSubscribe}
+                        isLinkedWithGoogle={isLinkedWithGoogle}
                     />)
                 }
             </div>

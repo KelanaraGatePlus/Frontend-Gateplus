@@ -15,7 +15,8 @@ export default function PersonalInformationSection({
     isOwnProfile,
     isSubscribed,
     isSubsribing,
-    handleToggleSubscribe
+    handleToggleSubscribe,
+    isLinkedWithGoogle = false
 }) {
     return (
         <div className="flex w-full flex-col gap-3">
@@ -44,6 +45,7 @@ export default function PersonalInformationSection({
                 isSubscribed={isSubscribed}
                 isSubscribing={isSubsribing}
                 handleToggleSubscribe={handleToggleSubscribe}
+                isLinkedWithGoogle={isLinkedWithGoogle}
             />
         </div>
     )
