@@ -14,6 +14,7 @@ export default function UserProfilePage({ params }) {
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const { data, isLoading, isSuccess } = useGetUserDetailQuery(id);
   const userDetailData = data?.data?.data;
+  const isLinkedWithGoogle = userDetailData?.googleId ? true : false;
 
   useEffect(() => {
     if (isSuccess && userDetailData) {
@@ -31,6 +32,7 @@ export default function UserProfilePage({ params }) {
           profileFor="user"
           isLoading={isLoading}
           isOwnProfile={isOwnProfile}
+          isLinkedWithGoogle={isLinkedWithGoogle}
         />
 
         <UserLibraryTabs id={id} />
