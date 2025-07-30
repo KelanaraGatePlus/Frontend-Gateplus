@@ -159,7 +159,7 @@ export default function UploadComicEpisodeContent() {
     try {
       const creatorId = localStorage.getItem("creators_id");
       const response = await axios.get(
-        `http://localhost:3000/creator/${creatorId}`,
+        `https://backend-gateplus-api.my.id/creator/${creatorId}`,
       );
 
       const fullData = response.data.data;
@@ -213,7 +213,7 @@ export default function UploadComicEpisodeContent() {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/episodeComics",
+        "https://backend-gateplus-api.my.id/episodeComics",
         formData,
         {
           headers: {

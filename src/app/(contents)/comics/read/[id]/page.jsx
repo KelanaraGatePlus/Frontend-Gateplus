@@ -53,7 +53,7 @@ export default function ReadComicPage({ params }) {
   const getData = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/episodeComics/${id}`,
+        `https://backend-gateplus-api.my.id/episodeComics/${id}`,
       );
 
       const comicSingleData = response.data.data.data;
