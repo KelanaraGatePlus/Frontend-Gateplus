@@ -160,7 +160,7 @@ export default function ProductEpisodeSection({
               .map((item, index) => (
                 <div
                   key={index}
-                  className={`group flex cursor-pointer items-stretch gap-2 px-4 py-4 hover:bg-[#105CAC] md:gap-4 md:mx-15 md:rounded-lg transition-all duration-300 ease-in-out justify-between ${currentlyPlaying?.id === item.id ? "bg-red-500" : ""} `}
+                  className={`group flex cursor-pointer items-stretch gap-2 px-4 py-4 hover:bg-[#105CAC] md:gap-4 md:mx-15 md:rounded-lg transition-all duration-300 ease-in-out justify-between ${currentlyPlaying?.id === item.id ? "" : ""} `}
                   onClick={() => handlePlayPodcast(item)}
                 >
                   <div className="flex gap-2 w-[200px] md:w-2xl">

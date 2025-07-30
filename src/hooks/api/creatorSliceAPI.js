@@ -35,6 +35,11 @@ export const creatorAPI = createApi({
             query: ({ type, value }) => `/check?type=${type}&value=${value}`,
             keepUnusedDataFor: 0,
         }),
+        searchCreator: builder.query({
+            query: (q) => `/search?q=${q}`,
+            providesTags: ["creatorsAPI"],
+            keepUnusedDataFor: 30,
+        })
     }),
 })
 
@@ -44,4 +49,5 @@ export const {
     useGetCreatorDetailQuery,
     useRegisterCreatorMutation,
     useCheckCreatorAvailabilityQuery,
+    useSearchCreatorQuery,
 } = creatorAPI;

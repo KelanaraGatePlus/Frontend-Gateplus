@@ -21,6 +21,7 @@ export default function CollapseView({
   title,
   description,
   createdAt,
+  collaborators,
   episodePodcasts,
   isExpand,
   isCommentVisible,
@@ -91,33 +92,33 @@ export default function CollapseView({
                 Kreator
               </h2>
 
-              {/* <div className="custom-scroll flex w-full justify-start gap-3 overflow-x-scroll lg:flex-wrap lg:gap-6">
-                {creators.map((creator) => (
+              <div className="custom-scroll flex w-full justify-start gap-3 overflow-x-scroll lg:flex-wrap lg:gap-6">
+                {collaborators.map((collaborator) => (
                   <div
-                    key={creator.id}
+                    key={collaborator.id}
                     className="flex min-w-20 flex-col items-center justify-center lg:w-fit"
                   >
                     <figure className="relative mb-3 h-16 w-16 rounded-full">
                       <Image
                         src={
-                          creator.ImageUrl ||
+                          collaborator.ImageUrl ||
                           "https://picsum.photos/seed/eps6/800/450"
                         }
-                        alt="creator-profile"
+                        alt="collaborator-profile"
                         className="h-full w-full rounded-full object-cover object-center"
                         fill
                         priority
                       />
                     </figure>
                     <h4 className="zeinFont line-clamp-1 text-xl leading-3 font-bold">
-                      {creator.profileName}
+                      {collaborator.profileName}
                     </h4>
                     <p className="montserratFont text-[10px] leading-5 font-thin">
-                      {creator.username}
+                      {collaborator.username}
                     </p>
                   </div>
                 ))}
-              </div> */}
+              </div>
             </div>
           </div>
         </section>
@@ -126,7 +127,7 @@ export default function CollapseView({
           <h2 className="zeinFont text-2xl font-bold">Episode Selanjutnya</h2>
           <div className="flex flex-col gap-4">
             {episodePodcasts.map((episode, index) => (
-              <div key={index} className={`flex gap-4 w-full justify-between rounded-lg hover:bg-blue-600/30 hover:p-3 transition-all duration-300 ease-in-out cursor-pointer ${currentlyPlaying?.id === episode.id ? "bg-red-500 p-3" : "p-0"}`} onClick={() => handlePlayPodcast(episode)}>
+              <div key={index} className={`flex gap-4 w-full justify-between rounded-lg hover:bg-blue-600/30 hover:p-3 transition-all duration-300 ease-in-out cursor-pointer ${currentlyPlaying?.id === episode.id ? "p-0" : "p-0"}`} onClick={() => handlePlayPodcast(episode)}>
                 <div className="flex gap-2 max-w-4xl">
                   <div className="relative h-28 w-28">
                     <Image
@@ -216,7 +217,7 @@ CollapseView.propTypes = {
   title: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
   createdAt: PropTypes.string.isRequired,
-  creators: PropTypes.array.isRequired,
+  collaborators: PropTypes.array.isRequired,
   episodePodcasts: PropTypes.array.isRequired,
   isExpand: PropTypes.bool.isRequired,
   isCommentVisible: PropTypes.bool.isRequired,

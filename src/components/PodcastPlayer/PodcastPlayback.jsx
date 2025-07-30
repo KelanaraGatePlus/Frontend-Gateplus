@@ -39,6 +39,7 @@ export default function PodcastPlayback({
   useEffect(() => {
     setEpisodePodcastData(currentlyPlaying || {});
   }, [currentlyPlaying]);
+  console.log("Currently Playing:", currentlyPlaying);
 
   useEffect(() => {
     setIsOpen(!!podcastId);
@@ -223,7 +224,7 @@ export default function PodcastPlayback({
                   title={episodePodcastData.title}
                   description={episodePodcastData.description}
                   createdAt={formatDateTime(episodePodcastData.createdAt, "short")}
-                  // creators={episodePodcastData.creatorsCollaborationId}
+                  collaborators={episodePodcastData.collaborators || []}
                   episodePodcasts={episodePodcasts || []}
                   isExpand={isExpand}
                   isCommentVisible={isCommentVisible}
