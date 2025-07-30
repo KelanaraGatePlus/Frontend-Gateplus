@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import FormRegister from '@/components/Form/Auth/FormRegister/page';
+import FormRegister from '@/components/Form/AuthForm/FormRegister/page';
 import logo from "@@/logo/logoGate+/logo-header-register.svg";
 import Image from "next/image";
 

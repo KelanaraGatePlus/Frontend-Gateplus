@@ -30,7 +30,7 @@ import LoadingOverlay from "@/components/LoadingOverlay/page";
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
 
-export default function EbookUploadSeriesForm() {
+export default function UploadEbookSeriesForm() {
     const router = useRouter();
     const creatorId = useGetCreatorId();
     const posterBannerInputRef = useRef(null);
@@ -43,7 +43,6 @@ export default function EbookUploadSeriesForm() {
     } = useForm({
         resolver: zodResolver(createEbookSchema),
         mode: "onChange",
-        reValidateMode: "onBlur",
         defaultValues: {
             title: "",
             description: "",
