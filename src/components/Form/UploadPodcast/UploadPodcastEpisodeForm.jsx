@@ -1,17 +1,19 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 /* Third-Party */
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useDebounce } from "use-debounce";
 
 /* Schemas */
-import { createEbookEpisodeSchema } from "@/lib/schemas/createEbookEpisodeSchema";
+import { createPodcastEpisodeSchema } from "@/lib/schemas/createPodcastEpisodeSchema";
 
 /* API Hooks */
+import { useSearchCreatorQuery } from "@/hooks/api/creatorSliceAPI";
 import { useGetCreatorDetailQuery } from "@/hooks/api/creatorSliceAPI";
-import { useCreateEpisodeMutation } from "@/hooks/api/ebookSliceAPI";
+import { useCreateEpisodeMutation } from "@/hooks/api/podcastSliceAPI";
 import { useGetCreatorId } from "@/lib/features/useGetCreatorId";
 import { useGetUserId } from "@/lib/features/useGetUserId";
 
@@ -26,17 +28,24 @@ import PriceSelector from "@/components/UploadForm/PriceSelector";
 import ButtonSubmit from '@/components/UploadForm/ButtonSubmit';
 import TermsCheckbox from '@/components/UploadForm/TermsCheckbox';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+import InputCreatorCollab from '@/components/UploadForm/InputCreatorCollab';
 
 /* Assets */
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
 
-export default function UploadEbookEpisodeForm() {
+export default function UploadPodcastEpisodeForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const seriesFromUrl = searchParams.get("series") || "";
     const creatorId = useGetCreatorId();
     const userId = useGetUserId();
+    const [query, setQuery] = useState("");
+    const [debouncedQuery] = useDebounce(query, 500);
+    const { data: creators, isLoading: isLoadingCreator, isError: isErrorCreator } = useSearchCreatorQuery(debouncedQuery, {
+        skip: !debouncedQuery,
+    });
+    const [selectedCreators, setSelectedCreators] = useState([]);
 
     const {
         register,
@@ -44,18 +53,17 @@ export default function UploadEbookEpisodeForm() {
         control,
         formState: { errors },
     } = useForm({
-        resolver: zodResolver(createEbookEpisodeSchema),
+        resolver: zodResolver(createPodcastEpisodeSchema),
         mode: "onChange",
         defaultValues: {
-            ebookId: seriesFromUrl,
+            podcastId: seriesFromUrl,
             title: "",
             description: "",
             price: "",
             notedEpisode: "",
-            episodeCover: [],
-            bannerStart: [],
-            bannerEnd: [],
-            inputFile: [],
+            coverPodcastEpisodeURL: [],
+            podcastFileURL: [],
+            creatorsCollaborationId: [],
             termAccepted: false,
             agreementAccepted: false,
         },
@@ -67,20 +75,18 @@ export default function UploadEbookEpisodeForm() {
 
     const onSubmit = async (data) => {
         const formData = new FormData();
-        formData.append("creatorId", creatorId);
-        formData.append("ebookId", data.ebookId);
+        formData.append("podcastId", data.podcastId);
         formData.append("title", data.title);
         formData.append("description", data.description);
         formData.append("price", data.price);
-        formData.append("notedEpisode", data.notedEpisode);
-        formData.append("coverEpisodeUrl", data.episodeCover[0]);
-        formData.append("bannerStartEpisodeUrl", data.bannerStart[0]);
-        formData.append("bannerEndEpisodeUrl", data.bannerEnd[0]);
-        formData.append("ebookUrl", data.inputFile[0]);
+        formData.append("notedPodcast", data.notedPodcast);
+        formData.append("creatorsCollaborationId", JSON.stringify(selectedCreators.map(c => c.id)));
+        formData.append("coverPodcastEpisodeURL", data.coverPodcastEpisodeURL[0]);
+        formData.append("podcastFileURL", data.podcastFileURL[0]);
 
         try {
             await createEpisode(formData).unwrap();
-            router.push(`/ebooks/detail/${data.ebookId}`);
+            router.push(`/podcasts/detail/${data.podcastId}`);
         } catch (err) {
             console.error("Error creating episode of ebook:", err);
         }
@@ -91,13 +97,13 @@ export default function UploadEbookEpisodeForm() {
             <form className="flex flex-col gap-2" onSubmit={handleSubmit(onSubmit)}>
                 {/* Series Select */}
                 <Controller
-                    name="ebookId"
+                    name="podcastId"
                     control={control}
                     render={({ field, fieldState }) => (
                         <InputSelect
                             label="Judul Series"
                             name="series"
-                            options={creatorDetailQuery.data?.data?.data?.Ebooks || []}
+                            options={creatorDetailQuery.data?.data?.data?.Podcast || []}
                             value={field.value}
                             onChange={field.onChange}
                             onBlur={field.onBlur}
@@ -127,33 +133,14 @@ export default function UploadEbookEpisodeForm() {
 
                 {/* Cover Episode */}
                 <Controller
-                    name="episodeCover"
+                    name="coverPodcastEpisodeURL"
                     control={control}
                     render={({ field, fieldState }) => (
                         <InputImageBanner
                             type="cover"
                             label="Cover Episode"
                             description="Format banner its 1x1 with maks 500kb."
-                            name="episodeCover"
-                            icon={IconsGalery}
-                            files={field.value}
-                            onUpload={(e) => field.onChange([...e.target.files])}
-                            onRemove={() => field.onChange([])}
-                            error={fieldState.error?.message}
-                        />
-                    )}
-                />
-
-                {/* Banner Start */}
-                <Controller
-                    name="bannerStart"
-                    control={control}
-                    render={({ field, fieldState }) => (
-                        <InputImageBanner
-                            type="banner"
-                            label="Banner Cover Episode Start"
-                            description="maks upload per content 5gb, please make part while uploading and naming ascending number"
-                            name="bannerStart"
+                            name="coverPodcastEpisodeURL"
                             icon={IconsGalery}
                             files={field.value}
                             onUpload={(e) => field.onChange([...e.target.files])}
@@ -164,14 +151,14 @@ export default function UploadEbookEpisodeForm() {
                 />
                 {/* Input File */}
                 <Controller
-                    name="inputFile"
+                    name="podcastFileURL"
                     control={control}
                     render={({ field, fieldState }) => (
                         <InputFileDoc
-                            name="inputFile"
+                            name="podcastFileURL"
                             label="Upload File"
-                            description="Format input .docx"
-                            accept=".doc,.docx"
+                            description="Audio Input .mp3, dll"
+                            accept=".mp3"
                             files={field.value}
                             onUpload={(e) => field.onChange([...e.target.files])}
                             onRemove={() => field.onChange([])}
@@ -179,33 +166,24 @@ export default function UploadEbookEpisodeForm() {
                         />
                     )}
                 />
-
-                {/* Banner End */}
-                <Controller
-                    name="bannerEnd"
-                    control={control}
-                    render={({ field, fieldState }) => (
-                        <InputImageBanner
-                            type="banner"
-                            label="Banner Cover Episode End"
-                            description="maks upload per content 5gb, please make part while uploading and naming ascending number"
-                            name="bannerEnd"
-                            icon={IconsGalery}
-                            files={field.value}
-                            onUpload={(e) => field.onChange([...e.target.files])}
-                            onRemove={() => field.onChange([])}
-                            error={fieldState.error?.message}
-                        />
-                    )}
+                {/* Kreator Kolaborasi */}
+                <InputCreatorCollab
+                    query={query}
+                    setQuery={setQuery}
+                    selectedCreators={selectedCreators}
+                    setSelectedCreators={setSelectedCreators}
+                    creators={creators}
+                    isLoadingCreator={isLoadingCreator}
+                    isErrorCreator={isErrorCreator}
                 />
 
                 {/* Catatan Episode */}
                 <InputTextArea
                     label="Catatan Kreator"
-                    name="notedEpisode"
+                    name="notedPodcast"
                     placeholder="Tulis catatan kreator"
-                    {...register("notedEpisode")}
-                    error={errors.notedEpisode?.message}
+                    {...register("notedPodcast")}
+                    error={errors.notedPodcast?.message}
                 />
 
                 {/* Harga */}
