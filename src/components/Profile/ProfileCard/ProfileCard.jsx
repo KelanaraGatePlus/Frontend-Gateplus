@@ -37,7 +37,7 @@ export default function ProfileCard({
             console.log(userId);
             console.log(creatorId);
             const response = await axios.post(
-                `https://backend-gateplus-api.my.id/subscribers`,
+                `http://localhost:3000/subscribers`,
                 {
                     userId: userId,
                     creatorId: creatorId,

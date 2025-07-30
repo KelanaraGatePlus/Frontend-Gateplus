@@ -45,7 +45,7 @@ export const saveProduct = async (
     console.log(fieldKey);
 
     const response = await axios.post(
-      `https://backend-gateplus-api.my.id/save`,
+      `http://localhost:3000/save`,
       requestBody,
     );
 
@@ -96,7 +96,7 @@ export const likeProduct = async (
     };
 
     const response = await axios.post(
-      `https://backend-gateplus-api.my.id/like`,
+      `http://localhost:3000/like`,
       requestBody,
     );
     setTotalLike(totalLikeLocal + 1);
@@ -145,7 +145,7 @@ export const subscribeCreator = async (
     };
 
     const response = await axios.post(
-      `https://backend-gateplus-api.my.id/subscribers`,
+      `http://localhost:3000/subscribers`,
       requestBody,
     );
 

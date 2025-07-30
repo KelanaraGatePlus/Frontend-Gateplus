@@ -3,29 +3,35 @@ import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
-/*[--- CONSTANT VAR IMPORT ---]*/
+/*[--- API HOOKS & FEATURES ---]*/
+import { useCreatePodcastMutation } from '@/hooks/api/podcastSliceAPI';
+import { useGetCreatorId } from "@/lib/features/useGetCreatorId";
+import { useGetToken } from "@/lib/features/useGetToken";
+
+/*[--- CONSTANT VARIABLE ---]*/
 import { languageOptions } from '@/lib/constants/languageOptions';
 
-/*[--- COMPONENT IMPORT ---]*/
-import InputText from '@/components/UploadForm/InputText';
-import InputTextArea from '@/components/UploadForm/InputTextArea';
-import InputSelect from '@/components/UploadForm/InputSelect';
+/*[--- UI COMPONENTS ---]*/
+import ButtonSubmit from '@/components/UploadForm/ButtonSubmit';
+import HeaderTab from '@/components/UploadForm/HeaderTab';
+import HeaderUploadForm from '@/components/UploadForm/HeaderUploadForm';
 import InputAgeResctriction from '@/components/UploadForm/InputAgeResctriction';
 import InputImageBanner from '@/components/UploadForm/InputImageBanner';
-import ButtonSubmit from '@/components/UploadForm/ButtonSubmit';
-import HeaderUploadForm from '@/components/UploadForm/HeaderUploadForm';
-import HeaderTab from '@/components/UploadForm/HeaderTab';
-import Toast from "@/components/Toast/page";
+import InputSelect from '@/components/UploadForm/InputSelect';
+import InputText from '@/components/UploadForm/InputText';
+import InputTextArea from '@/components/UploadForm/InputTextArea';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+import Toast from "@/components/Toast/page";
 
-/*[--- ASSETS IMPORT ---]*/
-import IconsGalery from "@@/icons/logo-upload-banner.svg";
+/*[--- ASSETS PUBLIC ---]*/
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
+import IconsGalery from "@@/icons/logo-upload-banner.svg";
 
 export default function UploadPodcastPage() {
+    const creatorId = useGetCreatorId();
+    const token = useGetToken();
     const [isLoading, setIsLoading] = useState(false);
     const [title, setTitle] = useState("");
-    const [creatorId, setCreatorId] = useState("");
     const [description, setDescription] = useState("");
     const [category, setCategory] = useState([]);
     const [genre, setGenre] = useState("");
@@ -106,7 +112,7 @@ export default function UploadPodcastPage() {
 
         try {
             const response = await axios.post(
-                "https://backend-gateplus-api.my.id/podcast",
+                "http://localhost:3000/podcast",
                 formData,
                 {
                     headers: {
@@ -133,9 +139,8 @@ export default function UploadPodcastPage() {
 
     const getDataCatgeory = async () => {
         try {
-            const token = localStorage.getItem("token");
             const response = await axios.get(
-                "https://backend-gateplus-api.my.id/category/",
+                "http://localhost:3000/category/",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -150,10 +155,6 @@ export default function UploadPodcastPage() {
     };
 
     useEffect(() => {
-        const creator_id = localStorage.getItem("creators_id");
-        if (creator_id) {
-            setCreatorId(creator_id);
-        }
         getDataCatgeory();
     }, []);
 
