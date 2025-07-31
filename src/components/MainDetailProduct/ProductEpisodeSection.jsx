@@ -267,7 +267,7 @@ export default function ProductEpisodeSection({
 
             {isPodcastModalVisible && (
               <PodcastMoreDetail
-                coverEpisodeUrl={selectedPodcast.coverEpisodeUrl}
+                coverEpisodeUrl={selectedPodcast.coverPodcastEpisodeURL}
                 title={selectedPodcast.title}
                 description={selectedPodcast.description}
                 creator={selectedPodcast.creator}

@@ -38,6 +38,7 @@ export default function MainTemplateLayout({
         creatorTotalSubscriber={productDetail.totalCount}
         creatorIsSubscribed={productDetail.isSubscribed}
         idLikedProduct={productDetail.idLiked}
+        idSavedProduct={productDetail.idSaved}
         isLoading={isLoading}
       />
 

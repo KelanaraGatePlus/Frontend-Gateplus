@@ -8,11 +8,10 @@ import PropTypes from "prop-types";
 import { formatFollowersCount } from "@/lib/followersCount";
 import {
   showFeatureUnavailableToast,
-  saveProduct,
-  // likeProduct,
   subscribeCreator,
 } from "./utils";
 import { useLikeContent } from "@/lib/features/useLikeContent";
+import { useSaveContent } from "@/lib/features/useSaveContent";
 
 /*[--- COMPONENT IMPORT ---]*/
 import BackButton from "@/components/BackButton/page";
@@ -49,6 +48,7 @@ export default function ProductDetailSection({
   creatorTotalSubscriber,
   creatorIsSubscribed,
   idLikedProduct,
+  idSavedProduct,
   isLoading,
 }) {
   const [showSkeleton, setShowSkeleton] = useState(true);
@@ -56,6 +56,7 @@ export default function ProductDetailSection({
   const [idLiked, setIdLiked] = useState(idLikedProduct);
   const [totalLike, setTotalLike] = useState(productTotalLikes);
   const [isSaved, setIsSaved] = useState(productIsSaved);
+  const [idSaved, setIdSaved] = useState(idLikedProduct);
   const [isOwnChannel, setIsOwnChannel] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(creatorIsSubscribed);
@@ -70,6 +71,7 @@ export default function ProductDetailSection({
     podcast: "podcastId",
   }
   const { toggleLike } = useLikeContent();
+  const { toggleSave } = useSaveContent();
 
   useEffect(() => {
     const creatorId = localStorage.getItem("creators_id");
@@ -83,6 +85,7 @@ export default function ProductDetailSection({
     setTotalLike(productTotalLikes);
     setIdLiked(idLikedProduct);
     setIsSaved(productIsSaved);
+    setIdSaved(idSavedProduct);
     setIsSubscribed(creatorIsSubscribed);
     setTotalSubs(creatorTotalSubscriber);
     console.log("tes id like", idLiked)
@@ -111,11 +114,17 @@ export default function ProductDetailSection({
 
   };
   const handleToggleSave = () => {
-    saveProduct(isSaved, productTitle, productID, fieldKey[productType], {
+    toggleSave({
+      isSaved,
+      title: productTitle,
+      id: productID,
+      fieldKey: fieldKey[productType],
+      idSaved,
       setShowToast,
       setToastMessage,
       setToastType,
       setIsSaved,
+      setIdSaved,
     });
 
     console.log("DEBUG");
@@ -429,5 +438,6 @@ ProductDetailSection.propTypes = {
   creatorTotalSubscriber: PropTypes.number.isRequired,
   creatorIsSubscribed: PropTypes.bool.isRequired,
   idLikedProduct: PropTypes.any,
+  idSavedProduct: PropTypes.any,
   isLoading: PropTypes.bool,
 };
