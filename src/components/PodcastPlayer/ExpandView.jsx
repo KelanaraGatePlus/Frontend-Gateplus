@@ -90,6 +90,7 @@ export default function ExpandView({
                     isExpand={isExpand}
                     isCommentVisible={isCommentVisible}
                     handleViewComments={handleViewComments}
+                    isPodcast={true}
                 />
             )}
         </div>

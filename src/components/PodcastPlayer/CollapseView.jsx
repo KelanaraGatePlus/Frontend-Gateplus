@@ -196,6 +196,7 @@ export default function CollapseView({
             isExpand={isExpand}
             isCommentVisible={isCommentVisible}
             handleViewComments={handleViewComments}
+            isPodcast={true}
           />
         )}
       </div>
@@ -205,6 +206,7 @@ export default function CollapseView({
           isExpand={isExpand}
           isCommentVisible={isCommentVisible}
           handleViewComments={handleViewComments}
+          isPodcast={true}
         />
       )}
     </div>
