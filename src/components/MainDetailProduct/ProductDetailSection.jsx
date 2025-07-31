@@ -9,9 +9,10 @@ import { formatFollowersCount } from "@/lib/followersCount";
 import {
   showFeatureUnavailableToast,
   saveProduct,
-  likeProduct,
+  // likeProduct,
   subscribeCreator,
 } from "./utils";
+import { useLikeContent } from "@/lib/features/useLikeContent";
 
 /*[--- COMPONENT IMPORT ---]*/
 import BackButton from "@/components/BackButton/page";
@@ -47,10 +48,12 @@ export default function ProductDetailSection({
   creatorDetail,
   creatorTotalSubscriber,
   creatorIsSubscribed,
+  idLikedProduct,
   isLoading,
 }) {
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [isLiked, setIsLiked] = useState(productIsLiked);
+  const [idLiked, setIdLiked] = useState(idLikedProduct);
   const [totalLike, setTotalLike] = useState(productTotalLikes);
   const [isSaved, setIsSaved] = useState(productIsSaved);
   const [isOwnChannel, setIsOwnChannel] = useState(false);
@@ -66,6 +69,7 @@ export default function ProductDetailSection({
     comic: "comicsId",
     podcast: "podcastId",
   }
+  const { toggleLike } = useLikeContent();
 
   useEffect(() => {
     const creatorId = localStorage.getItem("creators_id");
@@ -77,9 +81,11 @@ export default function ProductDetailSection({
   useEffect(() => {
     setIsLiked(productIsLiked);
     setTotalLike(productTotalLikes);
+    setIdLiked(idLikedProduct);
     setIsSaved(productIsSaved);
     setIsSubscribed(creatorIsSubscribed);
     setTotalSubs(creatorTotalSubscriber);
+    console.log("tes id like", idLiked)
   }, [productIsLiked, productTotalLikes]);
 
 
@@ -91,13 +97,18 @@ export default function ProductDetailSection({
     });
   };
   const handleToggleLike = () => {
-    likeProduct(isLiked, productTitle, productID, fieldKey[productType], totalLike, {
-      setShowToast,
-      setToastMessage,
-      setToastType,
+    toggleLike({
+      isLiked,
+      title: productTitle,
+      id: productID,
+      fieldKey: fieldKey[productType],
+      idLiked,
+      totalLike,
       setIsLiked,
       setTotalLike,
+      setIdLiked,
     });
+
   };
   const handleToggleSave = () => {
     saveProduct(isSaved, productTitle, productID, fieldKey[productType], {
@@ -417,5 +428,6 @@ ProductDetailSection.propTypes = {
   creatorDetail: PropTypes.object.isRequired,
   creatorTotalSubscriber: PropTypes.number.isRequired,
   creatorIsSubscribed: PropTypes.bool.isRequired,
+  idLikedProduct: PropTypes.any,
   isLoading: PropTypes.bool,
 };

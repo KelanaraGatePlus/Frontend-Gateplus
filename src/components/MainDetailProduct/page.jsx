@@ -37,6 +37,7 @@ export default function MainTemplateLayout({
         creatorDetail={productType === 'podcast' ? productDetail.Creator : productDetail.creators}
         creatorTotalSubscriber={productDetail.totalCount}
         creatorIsSubscribed={productDetail.isSubscribed}
+        idLikedProduct={productDetail.idLiked}
         isLoading={isLoading}
       />
 
