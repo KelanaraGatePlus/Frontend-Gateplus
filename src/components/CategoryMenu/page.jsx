@@ -25,7 +25,7 @@ export default function CategoryMenu() {
         if (token) {
           setIsAuthorized(true);
           const response = await axios.get(
-            "https://backend-gateplus-api.my.id/category",
+            "http://localhost:3000/category",
             {
               headers: {
                 Authorization: `Bearer ${token}`,

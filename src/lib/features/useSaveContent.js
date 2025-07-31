@@ -20,7 +20,7 @@ export function useSaveContent() {
                 // UNSAVE
                 setIsSaved(false);
                 console.log("idlike", idSaved);
-                const response = await axios.delete(`https://backend-gateplus-api.my.id/save/${idSaved}`);
+                const response = await axios.delete(`http://localhost:3000/save/${idSaved}`);
                 console.log("UNSAVED", response.data);
                 setIdSaved(null);
                 setShowToast(true);
@@ -34,7 +34,7 @@ export function useSaveContent() {
                     [fieldKey]: id,
                 };
                 const response = await axios.post(
-                    `https://backend-gateplus-api.my.id/save`,
+                    `http://localhost:3000/save`,
                     requestBody,
                 );
                 console.log("SAVED", response.data.data.data);

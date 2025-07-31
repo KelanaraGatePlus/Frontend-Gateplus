@@ -91,6 +91,7 @@ export default function ProductDetailSection({
     setIsDisliked(productIsDisliked);
     setTotalLike(productTotalLikes);
     setIdLiked(idLikedProduct);
+    setIdDisliked(idDislikedProduct);
     setIsSaved(productIsSaved);
     setIdSaved(idSavedProduct);
     setIsSubscribed(creatorIsSubscribed);

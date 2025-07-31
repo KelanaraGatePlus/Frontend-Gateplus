@@ -58,7 +58,7 @@ export default function ReadEbookPage({ params }) {
       if (!hasUpdatedViews) {
         console.log("Tambah Views");
         await axios.patch(
-          `https://backend-gateplus-api.my.id/episode/${id}/views`,
+          `http://localhost:3000/episode/${id}/views`,
         );
         hasUpdatedViews = true;
       }

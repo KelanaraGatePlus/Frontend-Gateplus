@@ -18,14 +18,14 @@ export function useLikeContent() {
                 setIsLiked(false);
                 setTotalLike((prev) => Math.max(prev - 1, 0));
                 console.log("idlike", idLiked);
-                const response = await axios.delete(`https://backend-gateplus-api.my.id/like/${idLiked}`);
+                const response = await axios.delete(`http://localhost:3000/like/${idLiked}`);
                 console.log("UNLIKED", response.data);
                 setIdLiked(null);
             } else {
                 // LIKE
                 setIsLiked(true);
                 setTotalLike((prev) => prev + 1);
-                const response = await axios.post("https://backend-gateplus-api.my.id/like", {
+                const response = await axios.post("http://localhost:3000/like", {
                     userId,
                     [fieldKey]: id,
                 });
