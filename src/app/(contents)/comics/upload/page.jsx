@@ -18,6 +18,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 /*[--- CONSTANT VAR IMPORT ---]*/
 import { languageOptions } from '@/lib/constants/languageOptions';
@@ -110,7 +111,7 @@ export default function UploadComicPage() {
 
     try {
       const response = await axios.post(
-        "https://backend-gateplus-api.my.id/comics",
+        `${BACKEND_URL}/comics`,
         formData,
         {
           headers: {
@@ -139,7 +140,7 @@ export default function UploadComicPage() {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "https://backend-gateplus-api.my.id/category/",
+        `${BACKEND_URL}/category/`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

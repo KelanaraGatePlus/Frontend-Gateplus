@@ -2,25 +2,30 @@
 "use client";
 import BackButton from "@/components/BackButton/page";
 import Link from "next/link";
-// import ComicDummyImage from "@@/poster/komik-dummy-content.svg";
 import Image from "next/image";
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { formatDateTime } from "@/lib/timeFormatter";
-import axios from "axios";
+import { useGetEpisodeComicsByIdQuery } from "@/hooks/api/contentSliceAPI";
 
-// eslint-disable-next-line react/prop-types
 export default function ReadComicPage({ params }) {
-  const { id } = use(params);
+  const { id } = React.use(params); // ✅ gunakan React.use()
+
 
   const [currentPage, setCurrentPage] = useState(0);
   const [isDesktop, setIsDesktop] = useState(false);
   const [viewMode, setViewMode] = useState("auto");
   const [zoomLevel, setZoomLevel] = useState(0.5);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
-  const [title, setTitle] = useState("");
-  const [creatorNotes, setCreatorNotes] = useState("");
-  const [updatedAt, setUpdatedAt] = useState("");
-  const [comicData, setComicData] = useState([]);
+
+  const { data, isLoading, error } = useGetEpisodeComicsByIdQuery(id);
+
+  const comicSingleData = data?.data;
+  const comicData = comicSingleData?.fileImageComics || [];
+  const title = comicSingleData?.title || "";
+  const creatorNotes = comicSingleData?.notedEpisode || "";
+  const updatedAt = comicSingleData
+    ? formatDateTime(comicSingleData.updatedAt, "short")
+    : "";
 
   useEffect(() => {
     const updateScreenSize = () => {
@@ -33,9 +38,29 @@ export default function ReadComicPage({ params }) {
     return () => window.removeEventListener("resize", updateScreenSize);
   }, [viewMode]);
 
+  // Simpan ke localStorage (last seen content)
+  useEffect(() => {
+    if (comicSingleData?.comics) {
+      const existing =
+        JSON.parse(localStorage.getItem("last_seen_content")) || [];
+      const isAlreadyExist = existing.find(
+        (item) => item.id === comicSingleData.comics.id
+      );
+      let updated = existing;
+      if (!isAlreadyExist) {
+        const newContent = {
+          ...comicSingleData.comics,
+          type: "comic",
+        };
+        updated = [newContent, ...existing].slice(0, 10);
+      }
+      localStorage.setItem("last_seen_content", JSON.stringify(updated));
+    }
+  }, [comicSingleData]);
+
   const handleNext = () => {
     setCurrentPage((prev) =>
-      Math.min(prev + (viewMode === "2" ? 2 : 1), comicData.length - 1),
+      Math.min(prev + (viewMode === "2" ? 2 : 1), comicData.length - 1)
     );
   };
 
@@ -48,42 +73,22 @@ export default function ReadComicPage({ params }) {
       ? comicData.slice(currentPage, currentPage + 2)
       : [comicData[currentPage]];
 
-  const progressPercentage = ((currentPage + 1) / comicData.length) * 100;
+  const progressPercentage =
+    comicData.length > 0
+      ? ((currentPage + 1) / comicData.length) * 100
+      : 0;
 
-  const getData = async () => {
-    try {
-      const response = await axios.get(
-        `https://backend-gateplus-api.my.id/episodeComics/${id}`,
-      );
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#222222] text-white">
+        Loading...
+      </div>
+    );
+  }
 
-      const comicSingleData = response.data.data.data;
-
-      setTitle(comicSingleData.title);
-      setCreatorNotes(comicSingleData.notedEpisode);
-      setComicData(comicSingleData.fileImageComics);
-      setUpdatedAt(formatDateTime(comicSingleData.updatedAt, "short"));
-      console.log(comicSingleData);
-
-      const existing = JSON.parse(localStorage.getItem("last_seen_content")) || [];
-      const isAlreadyExist = existing.find(item => item.id === comicSingleData.comics.id);
-      let updated = existing;
-      if (!isAlreadyExist) {
-        const newContent = {
-          ...comicSingleData.comics,
-          type: "comic",
-        };
-        updated = [newContent, ...existing].slice(0, 10);
-      }
-      localStorage.setItem("last_seen_content", JSON.stringify(updated));
-
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
-
-  useEffect(() => {
-    getData();
-  }, []);
+  if (error || !comicSingleData) {
+    window.location.href = "/";
+  }
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-[#222222]">
@@ -106,13 +111,17 @@ export default function ReadComicPage({ params }) {
           {visiblePages.map((page, idx) => (
             <div
               key={idx}
-              className={`relative max-h-[calc(100vh-140px)] w-auto ${viewMode === "2" ? (idx % 2 === 0 ? "pr-1" : "pl-1") : "mb-2"
+              className={`relative max-h-[calc(100vh-140px)] w-auto ${viewMode === "2"
+                ? idx % 2 === 0
+                  ? "pr-1"
+                  : "pl-1"
+                : "mb-2"
                 } transition-all`}
             >
               {page ? (
                 <Image
                   src={page}
-                  alt={page}
+                  alt={`Page ${idx + 1}`}
                   width={800 * zoomLevel}
                   height={1000 * zoomLevel}
                   className="object-contain"

@@ -15,15 +15,20 @@ export const contentAPI = createApi({
             return headers;
         },
     }),
-    tagTypes: ["ebookContent"],
+    tagTypes: ["ebookContent", "comicContent"],
     endpoints: (builder) => ({
         getEpisodeEbookById: builder.query({
             query: (id) => `/episode/${id}`,
             providesTags: ["ebookContent"],
+        }),
+        getEpisodeComicsById: builder.query({
+            query: (id) => `/episodeComics/${id}`,
+            providesTags: ["comicContent"],
         }),
     }),
 });
 
 export const {
     useGetEpisodeEbookByIdQuery,
+    useGetEpisodeComicsByIdQuery,
 } = contentAPI;
