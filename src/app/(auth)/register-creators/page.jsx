@@ -4,7 +4,7 @@ import Link from "next/link";
 import React from "react";
 
 /*[--- UI COMPONENTS ---]*/
-import FormRegisterCreator from "@/components/AuthForm/FormRegisterCreator/page";
+import FormRegisterCreator from "@/components/Form/AuthForm/FormRegisterCreator/page";
 import IconsSignupCreators from "@@/icons/hands holding gold trophy cup.svg";
 import LogoGatePlus from "@@/logo/logoGate+/logo-header-register.svg";
 

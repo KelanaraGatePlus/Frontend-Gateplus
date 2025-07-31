@@ -7,11 +7,11 @@ import PropTypes from "prop-types";
 /*[--- UTILITY IMPORT ---]*/
 import { formatFollowersCount } from "@/lib/followersCount";
 import {
-  showFeatureUnavailableToast,
-  saveProduct,
-  likeProduct,
   subscribeCreator,
 } from "./utils";
+import { useLikeContent } from "@/lib/features/useLikeContent";
+import { useDislikeContent } from "@/lib/features/useDislikeContent";
+import { useSaveContent } from "@/lib/features/useSaveContent";
 
 /*[--- COMPONENT IMPORT ---]*/
 import BackButton from "@/components/BackButton/page";
@@ -24,6 +24,7 @@ import iconViews from "@@/icons/views-icon.svg";
 import iconLikeOutline from "@@/logo/logoDetailFilm/like-icons.svg";
 import iconLikeSolid from "@@/logo/logoDetailFilm/liked-icons.svg";
 import iconDislike from "@@/logo/logoDetailFilm/dislike-icons.svg";
+import iconDislikeSolid from "@@/logo/logoDetailFilm/dislike-icons-solid.svg";
 import iconSaveOutline from "@@/logo/logoDetailFilm/save-icons.svg";
 import iconSaveSolid from "@@/logo/logoDetailFilm/saved-icons.svg";
 import iconShare from "@@/logo/logoDetailFilm/share-icons.svg";
@@ -41,18 +42,26 @@ export default function ProductDetailSection({
   productLanguage,
   productFirstEpisode,
   productIsLiked,
+  productIsDisliked,
   productIsSaved,
   productTotalViews,
   productTotalLikes,
   creatorDetail,
   creatorTotalSubscriber,
   creatorIsSubscribed,
+  idLikedProduct,
+  idDislikedProduct,
+  idSavedProduct,
   isLoading,
 }) {
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [isLiked, setIsLiked] = useState(productIsLiked);
+  const [isDisliked, setIsDisliked] = useState(productIsDisliked);
+  const [idLiked, setIdLiked] = useState(idLikedProduct);
+  const [idDisliked, setIdDisliked] = useState(idDislikedProduct);
   const [totalLike, setTotalLike] = useState(productTotalLikes);
   const [isSaved, setIsSaved] = useState(productIsSaved);
+  const [idSaved, setIdSaved] = useState(idLikedProduct);
   const [isOwnChannel, setIsOwnChannel] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(creatorIsSubscribed);
@@ -66,6 +75,9 @@ export default function ProductDetailSection({
     comic: "comicsId",
     podcast: "podcastId",
   }
+  const { toggleLike } = useLikeContent();
+  const { toggleDislike } = useDislikeContent();
+  const { toggleSave } = useSaveContent();
 
   useEffect(() => {
     const creatorId = localStorage.getItem("creators_id");
@@ -76,35 +88,76 @@ export default function ProductDetailSection({
 
   useEffect(() => {
     setIsLiked(productIsLiked);
+    setIsDisliked(productIsDisliked);
     setTotalLike(productTotalLikes);
+    setIdLiked(idLikedProduct);
+    setIdDisliked(idDislikedProduct);
     setIsSaved(productIsSaved);
+    setIdSaved(idSavedProduct);
     setIsSubscribed(creatorIsSubscribed);
     setTotalSubs(creatorTotalSubscriber);
+    console.log("tes id like", idLiked)
   }, [productIsLiked, productTotalLikes]);
 
 
   const handleToggleDislike = () => {
-    showFeatureUnavailableToast({
-      setShowToast,
-      setToastMessage,
-      setToastType,
+    if (isLiked) {
+      toggleLike({
+        isLiked,
+        title: productTitle,
+        id: productID,
+        fieldKey: fieldKey[productType],
+        idLiked,
+        totalLike,
+        setIsLiked,
+        setTotalLike,
+        setIdLiked,
+      });
+    }
+    toggleDislike({
+      isDisliked,
+      id: productID,
+      fieldKey: fieldKey[productType],
+      idDisliked,
+      setIsDisliked,
+      setIdDisliked,
     });
   };
   const handleToggleLike = () => {
-    likeProduct(isLiked, productTitle, productID, fieldKey[productType], totalLike, {
-      setShowToast,
-      setToastMessage,
-      setToastType,
+    if (isDisliked) {
+      toggleDislike({
+        isDisliked,
+        id: productID,
+        fieldKey: fieldKey[productType],
+        idDisliked,
+        setIsDisliked,
+        setIdDisliked,
+      });
+    }
+    toggleLike({
+      isLiked,
+      title: productTitle,
+      id: productID,
+      fieldKey: fieldKey[productType],
+      idLiked,
+      totalLike,
       setIsLiked,
       setTotalLike,
+      setIdLiked,
     });
   };
   const handleToggleSave = () => {
-    saveProduct(isSaved, productTitle, productID, fieldKey[productType], {
+    toggleSave({
+      isSaved,
+      title: productTitle,
+      id: productID,
+      fieldKey: fieldKey[productType],
+      idSaved,
       setShowToast,
       setToastMessage,
       setToastType,
       setIsSaved,
+      setIdSaved,
     });
 
     console.log("DEBUG");
@@ -259,15 +312,25 @@ export default function ProductDetailSection({
                       </p>
                     </div>
                     <div
-                      className="flex items-center justify-center"
+                      className={`flex cursor-pointer items-center justify-center gap-1 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 ${isDisliked ? "animate-like" : ""}`}
                       onClick={handleToggleDislike}
-                    >
+                    >{isDisliked ? (
                       <Image
                         priority
+                        className="focus-within:bg-purple-300"
+                        width={45}
+                        alt="icon-dislike-solid"
+                        src={iconDislikeSolid}
+                      />
+                    ) : (
+                      <Image
+                        priority
+                        className="focus-within:bg-purple-300"
                         width={35}
-                        alt="icon-dislike"
+                        alt="icon-like-outline"
                         src={iconDislike}
                       />
+                    )}
                     </div>
                   </>
                 )}
@@ -411,11 +474,15 @@ ProductDetailSection.propTypes = {
   productLanguage: PropTypes.string.isRequired,
   productFirstEpisode: PropTypes.object.isRequired,
   productIsLiked: PropTypes.bool.isRequired,
+  productIsDisliked: PropTypes.bool.isRequired,
   productIsSaved: PropTypes.bool.isRequired,
   productTotalViews: PropTypes.number.isRequired,
   productTotalLikes: PropTypes.number.isRequired,
   creatorDetail: PropTypes.object.isRequired,
   creatorTotalSubscriber: PropTypes.number.isRequired,
   creatorIsSubscribed: PropTypes.bool.isRequired,
+  idLikedProduct: PropTypes.any,
+  idDislikedProduct: PropTypes.any,
+  idSavedProduct: PropTypes.any,
   isLoading: PropTypes.bool,
 };

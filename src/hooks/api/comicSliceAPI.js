@@ -28,10 +28,30 @@ export const comicApi = createApi({
             providesTags: ["comic"],
             keepUnusedDataFor: 3600,
         }),
+        createComic: builder.mutation({
+            query: (formData) => ({
+                url: "/comics",
+                method: "POST",
+                body: formData,
+                formData: true,
+            }),
+            invalidatesTags: ["comic"],
+        }),
+        createEpisode: builder.mutation({
+            query: (formData) => ({
+                url: "/episodeComics",
+                method: "POST",
+                body: formData,
+                formData: true,
+            }),
+            invalidatesTags: ["comic"],
+        }),
     }),
 });
 
 export const {
     useGetComicQuery,
     useGetComicByIdQuery,
+    useCreateComicMutation,
+    useCreateEpisodeMutation,
 } = comicApi;

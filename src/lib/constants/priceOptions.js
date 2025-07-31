@@ -1,0 +1,1 @@
+export const priceOption = ["10000", "20000", "30000", "Free"];

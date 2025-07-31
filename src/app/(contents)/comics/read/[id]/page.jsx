@@ -2,15 +2,16 @@
 "use client";
 import BackButton from "@/components/BackButton/page";
 import Link from "next/link";
+// import ComicDummyImage from "@@/poster/komik-dummy-content.svg";
+import iconCommentComic from "@@/icons/icon-comment-comic.svg"
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { formatDateTime } from "@/lib/timeFormatter";
 import { useGetEpisodeComicsByIdQuery } from "@/hooks/api/contentSliceAPI";
+import CommentModalComic from "@/components/CommentModalComic/page"
 
 export default function ReadComicPage({ params }) {
-  const { id } = React.use(params); // ✅ gunakan React.use()
-
-
+  const { id } = React.use(params);
   const [currentPage, setCurrentPage] = useState(0);
   const [isDesktop, setIsDesktop] = useState(false);
   const [viewMode, setViewMode] = useState("auto");
@@ -26,6 +27,7 @@ export default function ReadComicPage({ params }) {
   const updatedAt = comicSingleData
     ? formatDateTime(comicSingleData.updatedAt, "short")
     : "";
+  const [isCommentVisible, setIsCommentVisible] = useState(false);
 
   useEffect(() => {
     const updateScreenSize = () => {
@@ -224,6 +226,21 @@ export default function ReadComicPage({ params }) {
           </div>
         </div>
 
+        <div className="items-center gap-2 md:flex p-1 hover:bg-black/30 rounded-full">
+          <button
+            className="relative w-6 h-6 cursor-pointer rounded-full"
+            onClick={() => {
+              setIsCommentVisible(!isCommentVisible)
+            }}
+          >
+            <Image
+              src={iconCommentComic}
+              fill
+              alt="icon-comment"
+            />
+          </button>
+        </div>
+
         <div className="relative md:hidden">
           <button
             onClick={() => setShowMoreOptions(!showMoreOptions)}
@@ -267,6 +284,13 @@ export default function ReadComicPage({ params }) {
           )}
         </div>
       </div>
+
+      <CommentModalComic
+        episodeId={id}
+        isCommentVisible={isCommentVisible}
+        setIsCommentVisible={setIsCommentVisible}
+      />
+
     </div>
   );
 }

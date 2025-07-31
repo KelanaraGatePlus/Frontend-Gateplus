@@ -5,6 +5,8 @@ import PropTypes from "prop-types";
 
 import { formatDateTime } from "@/lib/timeFormatter";
 
+import { useGetCommentByEpisodePodcastQuery } from "@/hooks/api/commentSliceAPI"
+
 /*[--- COMPONENT IMPORT ---]*/
 import CommentComponent from "@/components/Comment/page";
 import BottomSpacer from '@/components/BottomSpacer/page';
@@ -16,6 +18,7 @@ import iconSaveOutline from "@@/logo/logoDetailFilm/save-icons.svg";
 import iconMore from "@@/icons/icons-more.svg";
 
 export default function CollapseView({
+  episodeId,
   coverEpisodeUrl,
   podcastTitle,
   title,
@@ -31,6 +34,7 @@ export default function CollapseView({
   handlePlayPodcast,
 }) {
   const isLocked = useState(false);
+  const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByEpisodePodcastQuery(episodeId);
 
   useEffect(() => {
     document.body.classList.add("overflow-hidden");
@@ -196,6 +200,11 @@ export default function CollapseView({
             isExpand={isExpand}
             isCommentVisible={isCommentVisible}
             handleViewComments={handleViewComments}
+            isPodcast={true}
+            commentData={commentData?.data?.data || []}
+            isLoadingGetComment={isLoadingGetComment}
+            typeContent={"podcast"}
+            episodeId={episodeId}
           />
         )}
       </div>
@@ -205,6 +214,11 @@ export default function CollapseView({
           isExpand={isExpand}
           isCommentVisible={isCommentVisible}
           handleViewComments={handleViewComments}
+          isPodcast={true}
+          commentData={commentData?.data?.data || []}
+          isLoadingGetComment={isLoadingGetComment}
+          typeContent={"podcast"}
+          episodeId={episodeId}
         />
       )}
     </div>
@@ -212,6 +226,7 @@ export default function CollapseView({
 }
 
 CollapseView.propTypes = {
+  episodeId: PropTypes.string.isRequired,
   coverEpisodeUrl: PropTypes.string.isRequired,
   podcastTitle: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,

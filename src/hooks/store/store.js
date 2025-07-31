@@ -10,6 +10,8 @@ import { userAPI } from "../api/userSliceAPI";
 import { homeAPI } from "../api/homeSliceAPI";
 import { creatorAPI } from "../api/creatorSliceAPI";
 import { contentAPI } from "../api/contentSliceAPI";
+import { genreAPI } from "../api/genreSliceAPI";
+import { commentAPI } from "../api/commentSliceAPI";
 
 const rootReducer = combineReducers({
   [ebookApi.reducerPath]: ebookApi.reducer,
@@ -20,6 +22,8 @@ const rootReducer = combineReducers({
   [homeAPI.reducerPath]: homeAPI.reducer,
   [creatorAPI.reducerPath]: creatorAPI.reducer,
   [contentAPI.reducerPath]: contentAPI.reducer,
+  [genreAPI.reducerPath]: genreAPI.reducer,
+  [commentAPI.reducerPath]: commentAPI.reducer,
 });
 
 export const store = configureStore({
@@ -33,7 +37,9 @@ export const store = configureStore({
       filmAPI.middleware,
       homeAPI.middleware,
       creatorAPI.middleware,
-      contentAPI.middleware
+      contentAPI.middleware,
+      genreAPI.middleware,
+      commentAPI.middleware,
     ),
 });
 
