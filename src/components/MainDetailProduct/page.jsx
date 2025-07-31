@@ -31,6 +31,7 @@ export default function MainTemplateLayout({
         productLanguage={productDetail.language}
         productFirstEpisode={productEpisode?.[0]}
         productIsLiked={productDetail.isLiked}
+        productIsDisliked={productDetail.isDisliked}
         productIsSaved={productDetail.isSaved}
         productTotalViews={productDetail.totalViews}
         productTotalLikes={productDetail.totalLikes}
@@ -38,6 +39,7 @@ export default function MainTemplateLayout({
         creatorTotalSubscriber={productDetail.totalCount}
         creatorIsSubscribed={productDetail.isSubscribed}
         idLikedProduct={productDetail.idLiked}
+        idDislikedProduct={productDetail.idDisliked}
         idSavedProduct={productDetail.idSaved}
         isLoading={isLoading}
       />

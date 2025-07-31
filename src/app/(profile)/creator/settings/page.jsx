@@ -81,7 +81,7 @@ export default function CreatorSettingsPage() {
       }
 
       const response = await axios.patch(
-        `http://localhost:3000/creator/${id}`,
+        `https://backend-gateplus-api.my.id/creator/${id}`,
         formData,
         {
           headers: {
@@ -106,7 +106,7 @@ export default function CreatorSettingsPage() {
   const getData = async (id) => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/creator/${id}`,
+        `https://backend-gateplus-api.my.id/creator/${id}`,
       );
 
       const creatorData = response.data.data.data[0];
