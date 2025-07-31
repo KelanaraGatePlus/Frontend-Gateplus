@@ -86,7 +86,6 @@ export default function DetailEbookPage({ params }) {
       window.snap.pay(data.snapToken, {
         onSuccess: function (result) {
           console.log('Success', result);
-          alert('Pembayaran berhasil!');
         },
         onPending: function (result) {
           console.log('Pending', result);
