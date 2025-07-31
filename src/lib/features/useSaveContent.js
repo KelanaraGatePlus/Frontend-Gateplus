@@ -1,4 +1,5 @@
 import axios from "axios";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export function useSaveContent() {
     const toggleSave = async ({
@@ -20,7 +21,7 @@ export function useSaveContent() {
                 // UNSAVE
                 setIsSaved(false);
                 console.log("idlike", idSaved);
-                const response = await axios.delete(`https://backend-gateplus-api.my.id/save/${idSaved}`);
+                const response = await axios.delete(`${BACKEND_URL}/save/${idSaved}`);
                 console.log("UNSAVED", response.data);
                 setIdSaved(null);
                 setShowToast(true);
@@ -34,7 +35,7 @@ export function useSaveContent() {
                     [fieldKey]: id,
                 };
                 const response = await axios.post(
-                    `https://backend-gateplus-api.my.id/save`,
+                    `${BACKEND_URL}/save`,
                     requestBody,
                 );
                 console.log("SAVED", response.data.data.data);

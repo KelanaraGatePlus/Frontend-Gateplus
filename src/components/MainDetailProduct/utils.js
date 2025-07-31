@@ -1,4 +1,5 @@
 import axios from "axios";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export const showFeatureUnavailableToast = ({
   setShowToast,
@@ -49,7 +50,7 @@ export const subscribeCreator = async (
     };
 
     const response = await axios.post(
-      `https://backend-gateplus-api.my.id/subscribers`,
+      `${BACKEND_URL}/subscribers`,
       requestBody,
     );
 

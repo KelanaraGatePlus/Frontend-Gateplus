@@ -11,6 +11,7 @@ import axios from "axios";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export default function CreatorSettingsPage() {
   const router = useRouter();
@@ -81,7 +82,7 @@ export default function CreatorSettingsPage() {
       }
 
       const response = await axios.patch(
-        `https://backend-gateplus-api.my.id/creator/${id}`,
+        `${BACKEND_URL}/creator/${id}`,
         formData,
         {
           headers: {
@@ -106,7 +107,7 @@ export default function CreatorSettingsPage() {
   const getData = async (id) => {
     try {
       const response = await axios.get(
-        `https://backend-gateplus-api.my.id/creator/${id}`,
+        `${BACKEND_URL}/creator/${id}`,
       );
 
       const creatorData = response.data.data.data[0];

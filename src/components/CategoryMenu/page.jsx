@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 /*[--- ASSETS IMPORT ---]*/
 import logoEComics from "@@/logo/logo-icons-comic-news.svg";
@@ -25,7 +26,7 @@ export default function CategoryMenu() {
         if (token) {
           setIsAuthorized(true);
           const response = await axios.get(
-            "https://backend-gateplus-api.my.id/category",
+            `${BACKEND_URL}/category`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,

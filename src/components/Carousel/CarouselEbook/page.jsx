@@ -12,6 +12,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export default function CarouselItemEookPage() {
   const [ebooks, setEbooks] = useState([]);
@@ -23,7 +24,7 @@ export default function CarouselItemEookPage() {
     try {
       setIsLoading(true);
       const response = await axios.get(
-        `https://backend-gateplus-api.my.id/ebooks`,
+        `${BACKEND_URL}/ebooks`,
       );
       const getAllBooks = response.data.data.data;
       setEbooks(getAllBooks);

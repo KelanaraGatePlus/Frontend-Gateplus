@@ -7,6 +7,7 @@ import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
 import emptyWorkCreator from "@@/icons/empty-work-creator.svg";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export default function FilteredEbookContent() {
   const searchParams = useSearchParams();
@@ -21,7 +22,7 @@ export default function FilteredEbookContent() {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          `https://backend-gateplus-api.my.id/category/filter?tittle=${encodeURIComponent(filter)}`,
+          `${BACKEND_URL}/category/filter?tittle=${encodeURIComponent(filter)}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

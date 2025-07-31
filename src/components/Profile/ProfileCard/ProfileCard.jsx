@@ -5,6 +5,7 @@ import PropTypes from "prop-types";
 
 /*[--- CONSTANT IMPORT ---]*/
 import { imageDefaultValue } from "@/lib/constants/imageDefaultValue";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 /*[--- COMPONENT IMPORT ---]*/
 import PersonalInformationSection from "./PersonalInformation/page";
@@ -37,7 +38,7 @@ export default function ProfileCard({
             console.log(userId);
             console.log(creatorId);
             const response = await axios.post(
-                `https://backend-gateplus-api.my.id/subscribers`,
+                `${BACKEND_URL}/subscribers`,
                 {
                     userId: userId,
                     creatorId: creatorId,

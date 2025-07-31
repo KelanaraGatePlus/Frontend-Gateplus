@@ -1,4 +1,5 @@
 import axios from "axios";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export function useLikeContent() {
     const toggleLike = async ({
@@ -18,14 +19,14 @@ export function useLikeContent() {
                 setIsLiked(false);
                 setTotalLike((prev) => Math.max(prev - 1, 0));
                 console.log("idlike", idLiked);
-                const response = await axios.delete(`https://backend-gateplus-api.my.id/like/${idLiked}`);
+                const response = await axios.delete(`${BACKEND_URL}/like/${idLiked}`);
                 console.log("UNLIKED", response.data);
                 setIdLiked(null);
             } else {
                 // LIKE
                 setIsLiked(true);
                 setTotalLike((prev) => prev + 1);
-                const response = await axios.post("https://backend-gateplus-api.my.id/like", {
+                const response = await axios.post(`${BACKEND_URL}/like`, {
                     userId,
                     [fieldKey]: id,
                 });

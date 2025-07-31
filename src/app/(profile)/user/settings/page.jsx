@@ -9,6 +9,7 @@ import axios from "axios";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export default function UserSettingsPage() {
   const router = useRouter();
@@ -61,7 +62,7 @@ export default function UserSettingsPage() {
       }
 
       const response = await axios.patch(
-        `https://backend-gateplus-api.my.id/users/${userId}`,
+        `${BACKEND_URL}/users/${userId}`,
         formData,
         {
           headers: {
@@ -99,7 +100,7 @@ export default function UserSettingsPage() {
   const getData = async () => {
     try {
       const response = await axios.get(
-        `https://backend-gateplus-api.my.id/users/${userId}`,
+        `${BACKEND_URL}/users/${userId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

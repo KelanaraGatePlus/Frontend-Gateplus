@@ -13,6 +13,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useSearchCreatorQuery } from "@/hooks/api/creatorSliceAPI";
 import { useDebounce } from "use-debounce";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 /*[--- COMPONENT IMPORT ---]*/
 import HeaderUploadForm from '@/components/UploadForm/HeaderUploadForm';
@@ -143,7 +144,7 @@ export default function UploadPodcastEpisodeContent() {
         try {
             const creatorId = localStorage.getItem("creators_id");
             const response = await axios.get(
-                `https://backend-gateplus-api.my.id/creator/${creatorId}`,
+                `${BACKEND_URL}/creator/${creatorId}`,
             );
 
             const fullData = response.data.data;
@@ -195,7 +196,7 @@ export default function UploadPodcastEpisodeContent() {
 
         try {
             const response = await axios.post(
-                "https://backend-gateplus-api.my.id/episodePodcast",
+                `${BACKEND_URL}/episodePodcast`,
                 formData,
                 {
                     headers: {

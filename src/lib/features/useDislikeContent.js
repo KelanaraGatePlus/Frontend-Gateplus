@@ -1,4 +1,5 @@
 import axios from "axios";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export function useDislikeContent() {
     const toggleDislike = async ({
@@ -15,13 +16,13 @@ export function useDislikeContent() {
             if (isDisliked) {
                 // UNDISLIKE
                 setIsDisliked(false);
-                const response = await axios.delete(`https://backend-gateplus-api.my.id/dislike/${idDisliked}`);
+                const response = await axios.delete(`${BACKEND_URL}/dislike/${idDisliked}`);
                 console.log("UNDISLIKED", response.data);
                 setIdDisliked(null);
             } else {
                 // DISLIKE
                 setIsDisliked(true);
-                const response = await axios.post("https://backend-gateplus-api.my.id/dislike", {
+                const response = await axios.post(`${BACKEND_URL}/dislike`, {
                     userId,
                     [fieldKey]: id,
                 });

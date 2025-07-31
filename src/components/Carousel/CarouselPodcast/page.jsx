@@ -3,6 +3,7 @@ import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 import {
     Carousel,
@@ -23,7 +24,7 @@ export default function CarouselItemPodcastPage() {
             setIsLoading(true);
             const token = localStorage.getItem("token");
             const response = await axios.get(
-                `https://backend-gateplus-api.my.id/podcast`,
+                `${BACKEND_URL}/podcast`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
