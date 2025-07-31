@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 
 /*[--- COMPONENT IMPORT ---]*/
 import CommentComponent from '@/components/Comment/page';
+import { useGetCommentByEpisodePodcastQuery } from "@/hooks/api/commentSliceAPI"
 
 /*[--- ASSETS IMPORT ---]*/
 import iconSaveOutline from "@@/logo/logoDetailFilm/save-icons.svg";
@@ -11,6 +12,7 @@ import iconMore from "@@/icons/icons-more.svg";
 import iconFlag from "@@/icons/icons-flag.svg";
 
 export default function ExpandView({
+    episodeId,
     coverEpisodeUrl,
     title,
     description,
@@ -20,6 +22,8 @@ export default function ExpandView({
     isCommentVisible,
     handleViewComments,
 }) {
+    const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByEpisodePodcastQuery(episodeId);
+
     return (
         <div className='flex w-full h-[72vh]'>
             <div className={`flex justify-center flex-col rounded-lg relative transition-all duration-200 ease-in-out ${isCommentVisible ? 'w-1/2 h-auto overflow-hidden items-start mt-5 bg-transparent lg:pl-10 lg:pr-5' : 'items-center w-full m-2 bg-[#786151]'}`}>
@@ -91,6 +95,10 @@ export default function ExpandView({
                     isCommentVisible={isCommentVisible}
                     handleViewComments={handleViewComments}
                     isPodcast={true}
+                    commentData={commentData?.data?.data || []}
+                    isLoadingGetComment={isLoadingGetComment}
+                    typeContent={"podcast"}
+                    episodeId={episodeId}
                 />
             )}
         </div>
@@ -98,6 +106,7 @@ export default function ExpandView({
 }
 
 ExpandView.propTypes = {
+    episodeId: PropTypes.string.isRequired,
     coverEpisodeUrl: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
     description: PropTypes.string.isRequired,

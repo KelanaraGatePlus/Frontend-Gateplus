@@ -208,6 +208,7 @@ export default function PodcastPlayback({
 
               {isExpand ? (
                 <ExpandPodcast
+                episodeId={episodePodcastData.id}
                   coverEpisodeUrl={episodePodcastData.coverPodcastEpisodeURL}
                   title={episodePodcastData.title}
                   description={episodePodcastData.description}
@@ -219,6 +220,7 @@ export default function PodcastPlayback({
                 />
               ) : (
                 <CollapsePodcast
+                  episodeId={episodePodcastData.id}
                   coverEpisodeUrl={episodePodcastData.coverPodcastEpisodeURL}
                   podcastTitle={podcast?.title || ""}
                   title={episodePodcastData.title}

@@ -67,7 +67,7 @@ export default function CommentComponent({
             <CommentForm
               episodeEbookId={typeContent === "ebook" ? episodeId : null}
               episodeComicsId={typeContent === "comic" ? episodeId : null}
-              episodePodcastId={typeContent === "podcast" ? episodeId : null}
+              episode_podcastId={typeContent === "podcast" ? episodeId : null}
             />
           }
         </div>
@@ -81,93 +81,101 @@ export default function CommentComponent({
             <>
               {[...commentData]
                 .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-                .map((comment) => (
-                  <div
-                    className={`flex flex-col gap-4 rounded-lg bg-transparent py-4`}
-                    key={comment.id}
-                  >
-                    <div className="flex flex-row items-center justify-between">
-                      <div className="flex flex-row items-center gap-2 px-4">
-                        <figure>
+                .map((comment) => {
+                  const isAuthor =
+                    comment.user?.creator &&
+                    (
+                      (typeContent === "ebook" &&
+                        comment.ebook_episode?.ebooks?.creators?.id === comment.user.creator.id) ||
+                      (typeContent === "podcast" &&
+                        comment.Episode_podcast?.podcasts?.Creator?.id === comment.user.creator.id)
+                    );
+
+                  return (
+                    <div
+                      className={`flex flex-col gap-4 rounded-lg bg-transparent py-4`}
+                      key={comment.id}
+                    >
+                      <div className="flex flex-row items-center justify-between">
+                        <div className="flex flex-row items-center gap-2 px-4">
+                          <figure>
+                            <Image
+                              priority
+                              className="h-10 w-10 rounded-full bg-blue-300 object-cover object-center"
+                              src={
+                                comment.user.imageUrl
+                                  ? comment.user.imageUrl
+                                  : profilePictureDefault
+                              }
+                              alt="logo-usercomment"
+                              width={40}
+                              height={40}
+                            />
+                          </figure>
+
+                          <div>
+                            <h5 className="text-xs font-medium">
+                              {comment.user.profileName
+                                ? comment.user.profileName
+                                : comment.user.username}{" "}
+                              {isAuthor && "(Author)"}
+                            </h5>
+                            <p className="text-[10px] font-normal text-white/50">
+                              {formatDateTime(comment.createdAt)}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="px-4">
                           <Image
                             priority
-                            className="h-10 w-10 rounded-full bg-blue-300 object-cover object-center"
-                            src={
-                              comment.user.imageUrl
-                                ? comment.user.imageUrl
-                                : profilePictureDefault
-                            }
-                            alt="logo-usercomment"
-                            width={40}
-                            height={40}
+                            className="h-5"
+                            src={iconMoreMenuComment}
+                            alt="logo-more-menu-comment"
                           />
-                        </figure>
+                        </div>
+                      </div>
 
-                        <div>
-                          <h5 className="text-xs font-medium">
-                            {comment.user.profileName
-                              ? comment.user.profileName
-                              : comment.user.username}{" "}
-                            {comment.user.creator &&
-                              comment.user.creator.id ===
-                              comment.ebook_episode.ebooks.creators.id &&
-                              "(Author)"}
-                          </h5>
-                          <p className="text-[10px] font-normal text-white/50">
-                            {formatDateTime(comment.createdAt)}
+                      <div className="flex flex-col gap-2 px-4">
+                        <div className="mb-2 flex">
+                          <p className="text-base font-semibold text-[#979797]">
+                            {comment.message}
                           </p>
                         </div>
-                      </div>
 
-                      <div className="px-4">
-                        <Image
-                          priority
-                          className="h-5"
-                          src={iconMoreMenuComment}
-                          alt="logo-more-menu-comment"
-                        />
-                      </div>
-                    </div>
+                        <div className="flex justify-start gap-4">
+                          <button className="text-sm font-medium text-[#1DBDF5]">
+                            Balas
+                          </button>
 
-                    <div className="flex flex-col gap-2 px-4">
-                      <div className="mb-2 flex">
-                        <p className="text-base font-semibold text-[#979797]">
-                          {comment.message}
-                        </p>
-                      </div>
+                          <div className="flex gap-4">
+                            <div className="flex items-center gap-1">
+                              <Image
+                                priority
+                                className="h-5 w-5 focus-within:bg-purple-300"
+                                width={35}
+                                alt="logo-like"
+                                src={iconLikeComment}
+                              />
+                              <p className="text-[#1DBDF5]">Ya</p>
+                            </div>
 
-                      <div className="flex justify-start gap-4">
-                        <button className="text-sm font-medium text-[#1DBDF5]">
-                          Balas
-                        </button>
-
-                        <div className="flex gap-4">
-                          <div className="flex items-center gap-1">
-                            <Image
-                              priority
-                              className="h-5 w-5 focus-within:bg-purple-300"
-                              width={35}
-                              alt="logo-like"
-                              src={iconLikeComment}
-                            />
-                            <p className="text-[#1DBDF5]">Ya</p>
-                          </div>
-
-                          <div className="flex items-center gap-1">
-                            <Image
-                              priority
-                              className="h-5 w-5 focus-within:bg-purple-300"
-                              width={35}
-                              alt="logo-like"
-                              src={iconDislikeComment}
-                            />
-                            <p className="text-[#1DBDF5]">Tidak</p>
+                            <div className="flex items-center gap-1">
+                              <Image
+                                priority
+                                className="h-5 w-5 focus-within:bg-purple-300"
+                                width={35}
+                                alt="logo-like"
+                                src={iconDislikeComment}
+                              />
+                              <p className="text-[#1DBDF5]">Tidak</p>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
 
               <p className="text-center text-gray-400 italic">Tidak ada komentar lain</p>
               <BottomSpacer />
