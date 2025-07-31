@@ -66,6 +66,7 @@ export default function CommentForm({
                 handleSubmit(onSubmit)();
               }
             }}
+            required
           />
           {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message}</p>}
           <button
@@ -75,7 +76,7 @@ export default function CommentForm({
           >
             {isLoading ? "Loading..." : "Kirim Komentar"}
           </button>
-          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+          {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
         </form>
       </div>
     </section>

@@ -88,7 +88,9 @@ export default function CommentComponent({
                       (typeContent === "ebook" &&
                         comment.ebook_episode?.ebooks?.creators?.id === comment.user.creator.id) ||
                       (typeContent === "podcast" &&
-                        comment.Episode_podcast?.podcasts?.Creator?.id === comment.user.creator.id)
+                        comment.Episode_podcast?.podcasts?.Creator?.id === comment.user.creator.id) ||
+                      (typeContent === "comic" &&
+                        comment.comics_episode?.comics?.creators?.id === comment.user.creator.id)
                     );
 
                   return (
