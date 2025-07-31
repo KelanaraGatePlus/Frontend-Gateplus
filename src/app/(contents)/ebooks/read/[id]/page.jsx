@@ -9,7 +9,8 @@ import PropTypes from "prop-types";
 import { formatDateTime } from "@/lib/timeFormatter";
 
 /*[--- HOOKS IMPORT ---]*/
-import { useGetEpisodeEbookByIdQuery } from "@/hooks/api/ebookSliceAPI";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
+import { useGetEpisodeEbookByIdQuery } from "@/hooks/api/contentSliceAPI";
 
 /*[--- COMPONENT IMPORT ---]*/
 import BackButton from "@/components/BackButton/page";
@@ -39,16 +40,11 @@ export default function ReadEbookPage({ params }) {
   const [myComment, setMyComment] = useState("");
   const [isUploadingComment, setIsUploadingComment] = useState(false);
   const [isDark, setIsDark] = useState(false);
-  const { data, isLoading } = useGetEpisodeEbookByIdQuery(id);
-  console.log("ini id episode", id)
+  const { data, isLoading, error } = useGetEpisodeEbookByIdQuery(id);
   const episodeEbookData = data?.data?.data || {};
   const ebookData = episodeEbookData.ebooks || {};
   const allEpisodes = ebookData.episode_ebooks || [];
   let hasUpdatedViews = false;
-
-  console.log("episodeEbookData", episodeEbookData);
-  console.log("ebookData", ebookData);
-  console.log("allEpisodes", allEpisodes);
 
   const currentIndex = allEpisodes.findIndex(
     (ep) => ep.id === episodeEbookData.id,
@@ -61,7 +57,7 @@ export default function ReadEbookPage({ params }) {
       if (!hasUpdatedViews) {
         console.log("Tambah Views");
         await axios.patch(
-          `https://backend-gateplus-api.my.id/episode/${id}/views`,
+          `${BACKEND_URL}/episode/${id}/views`,
         );
         hasUpdatedViews = true;
       }
@@ -94,7 +90,7 @@ export default function ReadEbookPage({ params }) {
   const getCommentData = async () => {
     try {
       const response = await axios.get(
-        `https://backend-gateplus-api.my.id/comment/by-ebook-episode/${id}`,
+        `${BACKEND_URL}/comment/by-ebook-episode/${id}`,
       );
 
       console.log(response.data.data.data);
@@ -112,7 +108,7 @@ export default function ReadEbookPage({ params }) {
       setIsUploadingComment(true);
       const userId = localStorage.getItem("users_id");
       const response = await axios.post(
-        `https://backend-gateplus-api.my.id/comment`,
+        `${BACKEND_URL}/comment`,
         {
           userId: userId,
           episodeEbookId: id,
@@ -138,6 +134,10 @@ export default function ReadEbookPage({ params }) {
   useEffect(() => {
     if (data && !isLoading) {
       getData();
+    }
+
+    if (error && error.status === 403) {
+      window.location.href = "/";
     }
   }, [data, isLoading]);
 

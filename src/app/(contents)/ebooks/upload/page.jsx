@@ -24,6 +24,7 @@ import LoadingOverlay from "@/components/LoadingOverlay/page";
 /*[--- ASSETS IMPORT ---]*/
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export default function UploadEbookPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -133,7 +134,7 @@ export default function UploadEbookPage() {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "https://backend-gateplus-api.my.id/category/",
+        `${BACKEND_URL}/category/`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

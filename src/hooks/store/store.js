@@ -9,6 +9,7 @@ import { filmAPI } from "../api/filmSliceAPI";
 import { userAPI } from "../api/userSliceAPI";
 import { homeAPI } from "../api/homeSliceAPI";
 import { creatorAPI } from "../api/creatorSliceAPI";
+import { contentAPI } from "../api/contentSliceAPI";
 
 const rootReducer = combineReducers({
   [ebookApi.reducerPath]: ebookApi.reducer,
@@ -18,6 +19,7 @@ const rootReducer = combineReducers({
   [filmAPI.reducerPath]: filmAPI.reducer,
   [homeAPI.reducerPath]: homeAPI.reducer,
   [creatorAPI.reducerPath]: creatorAPI.reducer,
+  [contentAPI.reducerPath]: contentAPI.reducer,
 });
 
 export const store = configureStore({
@@ -31,6 +33,7 @@ export const store = configureStore({
       filmAPI.middleware,
       homeAPI.middleware,
       creatorAPI.middleware,
+      contentAPI.middleware
     ),
 });
 

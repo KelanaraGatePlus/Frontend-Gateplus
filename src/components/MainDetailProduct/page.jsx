@@ -16,6 +16,7 @@ export default function MainTemplateLayout({
   isLoading = true,
   currentlyPlaying,
   handlePlayPodcast,
+  handlePayment
 }) {
   return (
     <main className="mt-16 flex flex-col md:mt-[100px]">
@@ -46,6 +47,7 @@ export default function MainTemplateLayout({
         isLoading={isLoading}
         currentlyPlaying={currentlyPlaying}
         handlePlayPodcast={handlePlayPodcast}
+        handlePayment={handlePayment}
       />
 
       <CarouselItemEookPage />
