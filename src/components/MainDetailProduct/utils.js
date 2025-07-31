@@ -49,7 +49,7 @@ export const subscribeCreator = async (
     };
 
     const response = await axios.post(
-      `http://localhost:3000/subscribers`,
+      `https://backend-gateplus-api.my.id/subscribers`,
       requestBody,
     );
 

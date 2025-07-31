@@ -15,13 +15,13 @@ export function useDislikeContent() {
             if (isDisliked) {
                 // UNDISLIKE
                 setIsDisliked(false);
-                const response = await axios.delete(`http://localhost:3000/dislike/${idDisliked}`);
+                const response = await axios.delete(`https://backend-gateplus-api.my.id/dislike/${idDisliked}`);
                 console.log("UNDISLIKED", response.data);
                 setIdDisliked(null);
             } else {
                 // DISLIKE
                 setIsDisliked(true);
-                const response = await axios.post("http://localhost:3000/dislike", {
+                const response = await axios.post("https://backend-gateplus-api.my.id/dislike", {
                     userId,
                     [fieldKey]: id,
                 });
