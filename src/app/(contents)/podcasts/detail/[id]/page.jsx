@@ -9,19 +9,27 @@ import { useGetPodcastByIdQuery } from "@/hooks/api/podcastSliceAPI";
 import MainTemplateLayout from "@/components/MainDetailProduct/page";
 import PodcastPlayback from "@/components/PodcastPlayer/PodcastPlayback";
 import BottomSpacer from "@/components/BottomSpacer/page";
+import SimpleModal from "@/components/Modal/SimpleModal";
+import { useMidtransPayment } from "@/hooks/api/midtransAPI";
+import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 export default function DetailPodcastPage({ params }) {
   const { id } = use(params);
   const [userId, setUserId] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
+  const [selectedEpisode, setSelectedEpisode] = useState(null);
+  const [selectedCreatorId, setSelectedCreatorId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPrice, setSelectedPrice] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const { pay, snapReady } = useMidtransPayment();
+
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const storedUserId = localStorage.getItem("users_id");
-      setUserId(storedUserId);
-      console.log(storedUserId);
+      setUserId(localStorage.getItem("users_id"));
+      setCurrentlyPlaying(JSON.parse(null));
     }
-    setCurrentlyPlaying(JSON.parse(localStorage.getItem("currentlyPlaying")) || null);
   }, []);
 
   const skip = !id || !userId;
@@ -36,6 +44,25 @@ export default function DetailPodcastPage({ params }) {
     localStorage.setItem("currentlyPlaying", JSON.stringify(episodeData));
   };
 
+  const handleModalOpen = (creatorId, episodeId, price) => {
+    setSelectedCreatorId(creatorId);
+    setSelectedEpisode(episodeId);
+    setSelectedPrice(price);
+    setIsModalOpen(true);
+  }
+
+  const handleBuy = async () => {
+    setLoading(true);
+    await pay({
+      creatorId: selectedCreatorId,
+      episodeId: selectedEpisode,
+      price: selectedPrice,
+      contentType: "PODCAST",
+    });
+    setIsModalOpen(false);
+    setLoading(false);
+  };
+
   return (
     podcastData && (
       <div className="relative">
@@ -46,6 +73,7 @@ export default function DetailPodcastPage({ params }) {
           isLoading={isLoading}
           currentlyPlaying={currentlyPlaying}
           handlePlayPodcast={handlePlayPodcast}
+          handlePayment={handleModalOpen}
         />
 
         <BottomSpacer height="h-42" />
@@ -63,6 +91,14 @@ export default function DetailPodcastPage({ params }) {
           </Suspense>
         </div>
 
+        <SimpleModal
+          title={"Konten ini masih terkunci, apakah kamu bersedia membeli nya dengan harga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onConfirm={handleBuy}
+        />
+
+        {loading && <LoadingOverlay />}
       </div>
     )
   );

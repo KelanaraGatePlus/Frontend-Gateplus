@@ -31,7 +31,6 @@ export default function ProductEpisodeSection({
   const [showAll, setShowAll] = useState(false);
   const [selectedPodcast, setSelectedPodcast] = useState({});
   const [isPodcastModalVisible, setIsPodcastModalVisible] = useState(false);
-  const isLocked = useState(false);
 
   const handleShowAll = () => {
     setShowAll(!showAll);
@@ -161,8 +160,8 @@ export default function ProductEpisodeSection({
               .map((item, index) => (
                 <div
                   key={index}
-                  className={`group flex cursor-pointer items-stretch gap-2 px-4 py-4 hover:bg-[#105CAC] md:gap-4 md:mx-15 md:rounded-lg transition-all duration-300 ease-in-out justify-between ${currentlyPlaying?.id === item.id ? "" : ""} `}
-                  onClick={() => handlePlayPodcast(item)}
+                  className={`group flex cursor-pointer items-stretch gap-2 px-4 py-4 ${item.isPurchased || item.price == 'Free' ? "hover:bg-[#105CAC]" : "hover:bg-gray-900"} md:gap-4 md:mx-15 md:rounded-lg transition-all duration-300 ease-in-out justify-between ${currentlyPlaying?.id === item.id ? "" : ""} `}
+                  onClick={item.isPurchased || item.price == 'Free' ? () => handlePlayPodcast(item) : () => { handlePayment(item.creatorId, item.id, item.price) }}
                 >
                   <div className="flex gap-2 w-[200px] md:w-2xl">
                     <div className="h-24 w-24 overflow-hidden rounded-lg bg-[#DEDEDE] md:h-36 md:w-36 relative group">
@@ -174,18 +173,33 @@ export default function ProductEpisodeSection({
                         width={144}
                         height={144}
                       />
-                      <div className="group-hover:opacity-100 opacity-0 transition-all duration-300 ease-in-out absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center h-full w-full">
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center bg-[radial-gradient(circle,_#193B89BF_0%,_transparent_80%)] h-20 w-20" />
-                        <div className="relative h-32 w-32">
-                          <Image
-                            priority
-                            src={iconPlay}
-                            alt="icon-play"
-                            className="h-full w-full rounded object-cover object-center"
-                            fill
-                          />
+                      {item.isPurchased || item.price == 'Free' ? (
+                        <div className="group-hover:opacity-100 opacity-0 transition-all duration-300 ease-in-out absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center h-full w-full">
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center bg-[radial-gradient(circle,_#193B89BF_0%,_transparent_80%)] h-20 w-20" />
+                          <div className="relative h-32 w-32">
+                            <Image
+                              priority
+                              src={iconPlay}
+                              alt="icon-play"
+                              className="h-full w-full rounded object-cover object-center"
+                              fill
+                            />
+                          </div>
+                        </div>) : (
+                        <div className="group-hover:opacity-100 opacity-0 transition-all duration-300 ease-in-out absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center h-full w-full">
+                          {/* Buat dia ditengah */}
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center bg-[radial-gradient(circle,_#193B89BF_0%,_transparent_80%)] h-20 w-20" />
+                          <div className="relative h-16 w-16">
+                            <Image
+                              priority
+                              src={iconLocked}
+                              alt="icon-locked"
+                              className="h-full w-full rounded object-cover object-center"
+                              fill
+                            />
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                     <div className="flex flex-1 flex-col justify-between sm:w-3/5">
                       <div className="flex flex-col">
@@ -221,7 +235,7 @@ export default function ProductEpisodeSection({
                     <div className="rounded border-2 border-[#F5F5F524] bg-[#F5F5F524] p-1">
                       <Image
                         priority
-                        src={isLocked ? iconLocked : iconUnlocked}
+                        src={item.isPurchased || item.price == 'Free' ? iconUnlocked : iconLocked}
                         alt="icon-locked"
                         className="h-full w-full rounded object-cover object-center"
                         width={16}
