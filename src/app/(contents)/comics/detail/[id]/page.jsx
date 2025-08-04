@@ -21,6 +21,16 @@ export default function DetailComicPage({ params }) {
   const [selectedPrice, setSelectedPrice] = useState(null);
   const [loading, setLoading] = useState(false);
   const { pay, snapReady } = useMidtransPayment();
+  const { pay: subscribePay, snapReady: snapReadySubscribe } = useMidtransPayment("SUBSCRIBE");
+  const [selectedContentId, setSelectedContentId] = useState(null);
+  const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
+
+  const handleModalSubscribeOpen = (creatorId, contentId, price) => {
+    setSelectedCreatorId(creatorId);
+    setSelectedContentId(contentId);
+    setSelectedPrice(price);
+    setIsModalSubscribeOpen(true);
+  };
 
   const handleModalOpen = (creatorId, episodeId, price) => {
     setSelectedCreatorId(creatorId);
@@ -38,6 +48,18 @@ export default function DetailComicPage({ params }) {
       contentType: "COMIC",
     });
     setIsModalOpen(false);
+    setLoading(false);
+  };
+
+  const handleSubscribe = async () => {
+    setLoading(true);
+    await subscribePay({
+      creatorId: selectedCreatorId,
+      contentId: selectedContentId,
+      price: selectedPrice,
+      contentType: "COMIC",
+    });
+    setIsModalSubscribeOpen(false);
     setLoading(false);
   };
 
@@ -64,12 +86,19 @@ export default function DetailComicPage({ params }) {
           productEpisode={episode_comics}
           isLoading={isLoading}
           handlePayment={handleModalOpen}
+          handleSubscribe={handleModalSubscribeOpen}
         />
         <SimpleModal
           title={"Konten ini masih terkunci, apakah kamu bersedia membeli nya dengan harga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onConfirm={handleBuy}
+        />
+        <SimpleModal
+          title={"Subscribe untuk menikmati seluruh episode dari konten ini selama sebulan seharga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
+          isOpen={isModalSubscribeOpen}
+          onClose={() => setIsModalSubscribeOpen(false)}
+          onConfirm={handleSubscribe}
         />
         {loading && <LoadingOverlay />}
       </div>

@@ -18,17 +18,27 @@ export default function DetailEbookPage({ params }) {
   const userId = useGetUserId();
   const [loading, setLoading] = useState(false);
   const [selectedEpisode, setSelectedEpisode] = useState(null);
+  const [selectedContentId, setSelectedContentId] = useState(null);
   const [selectedCreatorId, setSelectedCreatorId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
   const [selectedPrice, setSelectedPrice] = useState(null);
-  const {pay, snapReady} = useMidtransPayment();
+  const { pay, snapReady } = useMidtransPayment();
+  const { pay: subscribePay, snapReady: snapReadySubscribe } = useMidtransPayment("SUBSCRIBE");
 
   const handleModalOpen = (creatorId, episodeId, price) => {
     setSelectedCreatorId(creatorId);
     setSelectedEpisode(episodeId);
     setSelectedPrice(price);
     setIsModalOpen(true);
-  }
+  };
+
+  const handleModalSubscribeOpen = (creatorId, contentId, price) => {
+    setSelectedCreatorId(creatorId);
+    setSelectedContentId(contentId);
+    setSelectedPrice(price);
+    setIsModalSubscribeOpen(true);
+  };
 
   const handleBuy = async () => {
     setLoading(true);
@@ -39,6 +49,18 @@ export default function DetailEbookPage({ params }) {
       contentType: "EBOOK",
     });
     setIsModalOpen(false);
+    setLoading(false);
+  };
+
+  const handleSubscribe = async () => {
+    setLoading(true);
+    await subscribePay({
+      creatorId: selectedCreatorId,
+      contentId: selectedContentId,
+      price: selectedPrice,
+      contentType: "EBOOK",
+    });
+    setIsModalSubscribeOpen(false);
     setLoading(false);
   };
 
@@ -57,12 +79,19 @@ export default function DetailEbookPage({ params }) {
         productEpisode={episode_ebooks}
         isLoading={isLoading}
         handlePayment={handleModalOpen}
+        handleSubscribe={handleModalSubscribeOpen}
       />
       <SimpleModal
         title={"Konten ini masih terkunci, apakah kamu bersedia membeli nya dengan harga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onConfirm={handleBuy}
+      />
+      <SimpleModal
+        title={"Subscribe untuk menikmati seluruh episode dari konten ini selama sebulan seharga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
+        isOpen={isModalSubscribeOpen}
+        onClose={() => setIsModalSubscribeOpen(false)}
+        onConfirm={handleSubscribe}
       />
       {loading && <LoadingOverlay />}
     </div>

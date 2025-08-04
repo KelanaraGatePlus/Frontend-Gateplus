@@ -9,6 +9,8 @@ export const createEbookSchema = z.object({
     genre: z.string().min(1, "Genre wajib dipilih"),
     language: z.string().min(1, "Bahasa wajib dipilih"),
     ageRestriction: z.string().min(1, "Batasan usia wajib dipilih"),
+    canSubscribe: z.boolean().optional(),
+    subscriptionPrice: z.number().optional(),
     posterBanner: z
         .any()
         .refine((file) => file && file.length > 0, "Poster banner wajib diunggah")

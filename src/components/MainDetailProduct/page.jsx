@@ -16,7 +16,8 @@ export default function MainTemplateLayout({
   isLoading = true,
   currentlyPlaying,
   handlePlayPodcast,
-  handlePayment
+  handlePayment,
+  handleSubscribe
 }) {
   return (
     <main className="mt-16 flex flex-col md:mt-[100px]">
@@ -42,7 +43,11 @@ export default function MainTemplateLayout({
         idLikedProduct={productDetail.idLiked}
         idDislikedProduct={productDetail.idDisliked}
         idSavedProduct={productDetail.idSaved}
+        canSubscribe={productDetail.canSubscribe}
+        subscriptionPrice={productDetail.subscriptionPrice}
         isLoading={isLoading}
+        handleSubscribe={handleSubscribe}
+        isSubscribe={productDetail?.isSubscribe && productDetail?.canSubscribe ? true : false}
       />
 
       <ProductEpisodeSection
@@ -52,6 +57,7 @@ export default function MainTemplateLayout({
         currentlyPlaying={currentlyPlaying}
         handlePlayPodcast={handlePlayPodcast}
         handlePayment={handlePayment}
+        isSubscribe={productDetail?.isSubscribe && productDetail?.canSubscribe ? true : false}
       />
 
       <CarouselItemEookPage />

@@ -25,7 +25,8 @@ export default function ProductEpisodeSection({
   isLoading,
   currentlyPlaying,
   handlePlayPodcast,
-  handlePayment
+  handlePayment,
+  isSubscribe = false
 }) {
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [showAll, setShowAll] = useState(false);
@@ -81,7 +82,7 @@ export default function ProductEpisodeSection({
             {(showAll ? productEpisodes : productEpisodes.slice(0, 5))
               .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
               .map((item, index) => (
-                <button key={index} onClick={item.isPurchased || item.price == 'Free' ? () => { window.location.href = `${parentPath}/${item.id}` } : () => { handlePayment(item.creatorId, item.id, item.price, 'EBOOK') }}>
+                <button key={index} onClick={item.isPurchased || item.price == 'Free' || isSubscribe ? () => { window.location.href = `${parentPath}/${item.id}` } : () => { handlePayment(item.creatorId, item.id, item.price, 'EBOOK') }}>
                   <div className="group flex cursor-pointer items-stretch gap-2 px-4 py-2 hover:bg-[#1F6E8A] md:gap-4 md:px-15">
                     {/* Book Container */}
                     <div className="h-24 w-24 overflow-hidden rounded-lg md:h-36 md:w-36">
@@ -108,7 +109,7 @@ export default function ProductEpisodeSection({
                             <div className="rounded border-2 border-[#F5F5F524] bg-[#F5F5F524] p-1">
                               <Image
                                 priority
-                                src={item.isPurchased || item.price == 'Free' ? iconUnlocked : iconLocked}
+                                src={item.isPurchased || item.price == 'Free' || isSubscribe ? iconUnlocked : iconLocked}
                                 alt={`poster-${item.title}`}
                                 className="h-full w-full rounded object-cover object-center"
                                 width={16}

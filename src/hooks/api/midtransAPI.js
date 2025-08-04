@@ -2,9 +2,11 @@
 import { useEffect, useState } from "react";
 import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
-export const useMidtransPayment = () => {
+export const useMidtransPayment = (paymentType = 'ORDER') => {
     const [snapReady, setSnapReady] = useState(false);
     const [token, setToken] = useState('');
+    const midtransURL = paymentType === 'ORDER' ? `${BACKEND_URL}/api/payment/create` : `${BACKEND_URL}/api/payment/create-subscription`;
+
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -30,25 +32,32 @@ export const useMidtransPayment = () => {
         return () => document.body.removeChild(script);
     }, []);
 
-    const pay = async ({ creatorId, episodeId, price, contentType = "PODCAST" }) => {
+    const pay = async ({ creatorId, episodeId, contentId, price, contentType = "PODCAST" }) => {
+        const body = paymentType === 'ORDER' ? JSON.stringify({
+            creatorId,
+            episodeId,
+            contentType,
+            price,
+        }) : JSON.stringify({
+            creatorId,
+            contentId,
+            contentType,
+            price,
+        });
+
         if (!snapReady || !window.snap) {
             alert("Midtrans Snap belum siap.");
             return;
         }
 
         try {
-            const res = await fetch(`${BACKEND_URL}/api/payment/create`, {
+            const res = await fetch(midtransURL, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({
-                    creatorId,
-                    episodeId,
-                    contentType,
-                    price,
-                }),
+                body: body,
             });
 
             const data = await res.json();

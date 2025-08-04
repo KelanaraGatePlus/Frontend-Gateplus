@@ -39,6 +39,7 @@ export default function UploadEbookSeriesForm() {
         register,
         handleSubmit,
         control,
+        watch,
         formState: { errors },
     } = useForm({
         resolver: zodResolver(createEbookSchema),
@@ -51,11 +52,14 @@ export default function UploadEbookSeriesForm() {
             ageRestriction: "",
             posterBanner: null,
             coverBook: null,
+            canSubscribe: false,
+            subscriptionPrice: 0, // Optional field, can be undefined
         },
     });
 
     const [createEbook, { isLoading, error }] = useCreateEbookMutation();
     const { data: genresData } = useGetAllGenresQuery();
+    const canSubscribeValue = watch("canSubscribe");
 
     const onSubmit = async (data) => {
         const formData = new FormData();
@@ -65,6 +69,8 @@ export default function UploadEbookSeriesForm() {
         formData.append("categoriesId", data.genre);
         formData.append("language", data.language);
         formData.append("ageRestriction", data.ageRestriction);
+        formData.append("canSubscribe", data.canSubscribe);
+        formData.append("subscriptionPrice", data.subscriptionPrice); // Ensure it's a
 
         if (data.coverBook?.[0]) formData.append("coverImageUrl", data.coverBook[0]);
         if (data.posterBanner?.[0]) formData.append("posterImageUrl", data.posterBanner[0]);
@@ -152,6 +158,44 @@ export default function UploadEbookSeriesForm() {
                             />
                         )}
                     />
+
+                    {/* Can Subscribe */}
+                    <Controller
+                        name="canSubscribe"
+                        control={control}
+                        render={({ field, fieldState }) => (
+                            <InputText
+                                type="checkbox"
+                                {...field}
+                                isSelected={field.value}
+                                onChange={(e) => field.onChange(e.target.checked)}
+                                label="Izinkan Langganan"
+                                className="text-white w-6 h-6"
+                                error={fieldState.error?.message}
+                            />
+                        )}
+                    />
+
+                    {/* Subscription Price */}
+                    {canSubscribeValue == true && (
+                        <Controller
+                            name="subscriptionPrice"
+                            control={control}
+                            rules={{ required: "Harga langganan wajib diisi" }}
+                            render={({ field, fieldState }) => (
+                                <InputText
+                                    label="Harga Langganan"
+                                    name="subscriptionPrice"
+                                    type="number"
+                                    placeholder="Masukkan harga langganan"
+                                    value={field.value}
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                    error={fieldState.error?.message}
+                                />
+                            )}
+                        />
+                    )}
+                    
                     {/* Poster Banner */}
                     <Controller
                         name="posterBanner"

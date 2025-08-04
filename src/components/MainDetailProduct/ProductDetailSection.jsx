@@ -53,6 +53,10 @@ export default function ProductDetailSection({
   idDislikedProduct,
   idSavedProduct,
   isLoading,
+  handleSubscribe,
+  canSubscribe,
+  subscriptionPrice,
+  isSubscribe = false,
 }) {
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [isLiked, setIsLiked] = useState(productIsLiked);
@@ -264,7 +268,18 @@ export default function ProductDetailSection({
             <div className={`flex  ${productType === 'podcast' ? "flex-row justify-between" : "flex-col gap-4"}`}>
               {/* action button */}
               <div className="flex w-fit justify-center gap-2 self-center md:justify-start lg:self-auto">
-                <div className="flex w-fit flex-1 items-center justify-center md:flex-none montserratFont">
+                <div className="flex w-fit flex-1 gap-3 items-center justify-center md:flex-none montserratFont">
+                  {(productType === 'ebook' || productType === 'comic') && canSubscribe && (
+                    <button
+                      onClick={() => handleSubscribe(creatorDetail.id, productID, subscriptionPrice)}
+                      disabled={isSubscribe}
+                      className={`w-full cursor-pointer rounded-3xl px-12 py-3 font-bold text-white md:w-auto 
+                      ${isSubscribe ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#0076E999] hover:bg-[#0076E999]/80'}`}
+                    >
+                      {isSubscribe ? 'Subscribed' : 'Subscribe'}
+                    </button>
+                  )}
+
                   {productType === "podcast" ? (
                     <button className="w-full cursor-pointer rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white hover:bg-[#0076E999]/80 md:w-auto">
                       Subscribe
@@ -421,9 +436,9 @@ export default function ProductDetailSection({
                             <p className="flex">Subscribing...</p>
                           </div>
                         ) : isSubscribed ? (
-                          "Subscribed"
+                          "Following"
                         ) : (
-                          "Subscribe Now"
+                          "Follow Now"
                         )}
                       </button>
                     )
