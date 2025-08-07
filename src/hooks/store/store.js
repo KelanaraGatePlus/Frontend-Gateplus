@@ -12,6 +12,7 @@ import { creatorAPI } from "../api/creatorSliceAPI";
 import { contentAPI } from "../api/contentSliceAPI";
 import { genreAPI } from "../api/genreSliceAPI";
 import { commentAPI } from "../api/commentSliceAPI";
+import { uploadSessionApi } from "../api/uploadSessionAPI";
 
 const rootReducer = combineReducers({
   [ebookApi.reducerPath]: ebookApi.reducer,
@@ -24,6 +25,7 @@ const rootReducer = combineReducers({
   [contentAPI.reducerPath]: contentAPI.reducer,
   [genreAPI.reducerPath]: genreAPI.reducer,
   [commentAPI.reducerPath]: commentAPI.reducer,
+  [uploadSessionApi.reducerPath]: uploadSessionApi.reducer,
 });
 
 export const store = configureStore({
@@ -40,6 +42,7 @@ export const store = configureStore({
       contentAPI.middleware,
       genreAPI.middleware,
       commentAPI.middleware,
+      uploadSessionApi.middleware
     ),
 });
 
