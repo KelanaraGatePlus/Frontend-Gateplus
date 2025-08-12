@@ -218,6 +218,11 @@ export default function ProfileMenu({
                       </Link>
                     </div>
                     <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
+                      <Link href="/movies/upload">
+                        <span>Upload Movie</span>
+                      </Link>
+                    </div>
+                    <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
                       <span>Lihat Konten</span>
                     </div>
                   </div>

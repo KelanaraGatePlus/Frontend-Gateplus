@@ -30,7 +30,7 @@ type ResumeMeta = {
     fileHash: string;
 };
 
-export function useUploadSessionData(chunkSize = DEFAULT_CHUNK_SIZE, prefix: string) {
+export function useUploadSessionData({ chunkSize = DEFAULT_CHUNK_SIZE, prefix }) {
     // Semua state dari template Anda dipertahankan
     const [progress, setProgress] = useState(0);
     const [uploadedBytes, setUploadedBytes] = useState(0);
@@ -39,6 +39,8 @@ export function useUploadSessionData(chunkSize = DEFAULT_CHUNK_SIZE, prefix: str
     const [uploading, setUploading] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [resumeMeta, setResumeMeta] = useState<ResumeMeta | null>(null);
+    const [isFinish, setIsFinish] = useState(false);
+    const [fileUrl, setFileUrl] = useState<string | null>(null);
 
     // State internal untuk menyimpan data sesi lengkap
     const [fullSession, setFullSession] = useState<FullUploadSession | null>(null);
@@ -116,7 +118,7 @@ export function useUploadSessionData(chunkSize = DEFAULT_CHUNK_SIZE, prefix: str
                 const statusData = await getUploadStatus({ key: sessionToProcess.key, uploadId: sessionToProcess.uploadId }).unwrap();
                 sessionToProcess.uploadedParts = statusData.uploadedParts;
             }
-            
+
             setFullSession(sessionToProcess);
             localStorage.setItem(UPLOAD_STATUS_KEY, JSON.stringify(sessionToProcess));
 
@@ -126,7 +128,7 @@ export function useUploadSessionData(chunkSize = DEFAULT_CHUNK_SIZE, prefix: str
             const uploadedPartNumbers = new Set(uploadedParts.map(p => p.PartNumber));
             let currentBytesSoFar = uploadedParts.reduce((acc, part) => acc + (part.PartNumber <= totalChunks ? chunkSize : file.size % chunkSize || chunkSize), 0);
             setUploadedBytes(currentBytesSoFar);
-            
+
             const t0 = Date.now();
             let bytesUploadedThisSession = 0;
 
@@ -141,7 +143,7 @@ export function useUploadSessionData(chunkSize = DEFAULT_CHUNK_SIZE, prefix: str
                 const { signedUrl } = await getSignedUrlForChunk({ ...sessionToProcess, partNumber }).unwrap();
                 // Upload ke signed URL
                 const uploadResponse = await axios.put(signedUrl, chunk, { headers: { 'Content-Type': file.type } });
-                
+
                 const newPart = { PartNumber: partNumber, ETag: uploadResponse.headers.etag.replaceAll('"', '') };
                 uploadedParts.push(newPart);
 
@@ -171,7 +173,9 @@ export function useUploadSessionData(chunkSize = DEFAULT_CHUNK_SIZE, prefix: str
             }
 
             // 3. Complete
-            await completeUpload({ ...sessionToProcess, parts: uploadedParts }).unwrap();
+            const url = await completeUpload({ ...sessionToProcess, parts: uploadedParts }).unwrap();
+            setFileUrl(url);
+            setIsFinish(true);
             alert("Upload Selesai!");
             setProgress(100);
 
@@ -238,6 +242,7 @@ export function useUploadSessionData(chunkSize = DEFAULT_CHUNK_SIZE, prefix: str
     // Mengembalikan interface yang sama seperti template Anda
     return {
         progress, uploadedBytes, totalBytes, eta, uploading, isLoading, resumeMeta, fileInputRef,
+        isFinish, fileUrl,
         onNewFile, onResumeFile, triggerResume, handleCancel
     };
 }
