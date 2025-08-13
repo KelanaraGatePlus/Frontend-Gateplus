@@ -4,7 +4,7 @@
   "developer-by": "codewithjuni",
   "private": true,
   "scripts": {
-    "dev": "bun run next dev --turbopack",
+    "dev": "bun run next dev --turbopack & npx next-video sync -w",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -43,6 +43,7 @@
     "next": "15.2.1",
     "next-auth": "^4.24.11",
     "next-share": "^0.27.0",
+    "next-video": "^2.2.3",
     "prop-types": "^15.8.1",
     "react": "^19.1.0",
     "react-device-detect": "^2.2.3",

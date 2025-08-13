@@ -1,8 +1,6 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
 
-import Footer from "@/components/Footer/MainFooter";
-import NavbarLogin from "@/components/NavbarLogin/page";
 import {
   Carousel,
   CarouselContent,
@@ -10,6 +8,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+
 import logoPinComment from "@@/icons/icon-comment.svg";
 import IconsArrowLeft from "@@/icons/icons-dashboard/icons-arrow-left.svg";
 import logoUsersComment from "@@/icons/logo-users-comment.svg";
@@ -22,41 +21,57 @@ import logoSubscribe from "@@/logo/logoDetailFilm/subscribe-icon-kelanara.svg";
 import film1 from "@@/logo/logoFilm/film_1.svg";
 import film2 from "@@/logo/logoFilm/film_2.svg";
 import film3 from "@@/logo/logoFilm/film_3.svg";
+
 import Image from "next/legacy/image";
 import Link from "next/link";
-import Video from "next-video";
+import { useGetFilmByIdQuery } from "@/hooks/api/filmSliceAPI";
+import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
 
-export default function PlayingMoviePage() {
+/* ===========================
+   Halaman: PlayingMoviePage (JSX)
+   =========================== */
+export default function PlayingMoviePage({ params }) {
+  const { id } = params;
+  const { data, error, isLoading } = useGetFilmByIdQuery(id);
+
+  const filmData = data?.data?.data || {};
+
+  if (isLoading) return <div className="text-white p-6">Loading...</div>;
+  if (error) return <div className="text-red-400 p-6">Error: {error?.message || "Gagal memuat data"}</div>;
+
   return (
-    <div className="overflow-y-a flex h-screen w-screen flex-col overflow-x-hidden">
-
+    <div>
       <section className="flex justify-center rounded-md relative">
         <p className="absolute top-0 left-0 z-10 mx-2.5 flex flex-row items-center justify-start gap-2 text-2xl font-semibold text-white">
-          <Link className="" href="/">
+          <Link href="/">
             <Image src={IconsArrowLeft} alt="icons-arrow-left" />
           </Link>
         </p>
-        <div className="mx-auto my-auto flex h-auto w-auto justify-center rounded-lg object-cover">
-          <Video
-            className="w-screen object-cover"
-            src={'http://103.38.108.117:9000/media-gateplus/movie/file/1754987925324-Tes.mp4'}
+
+        {/* Player bergaya YouTube */}
+        <div className="mx-auto my-auto flex w-screen justify-center rounded-lg object-cover">
+          <DefaultVideoPlayer
+            className="rounded-lg"
+            src={filmData?.filmFileUrl}
+            poster={filmData?.thumbnailImageUrl}
           />
         </div>
       </section>
-      <main className="mx-5">
-        <section className="my-5 grid grid-cols-2">
-          <div className="grid grid-rows-2">
-            <div className="grid grid-rows-2">
-              <div className="text-2xl font-semibold text-white">
-                Racun Sangga: Santet Pemisah Rumah Tangga
-              </div>
-              <div className="text-sm font-light text-white">
-                1 j 58m | 17+ | Horor Thriller
-              </div>
+
+      <main className="px-5 text-white">
+        <section className="w-full flex flex-row items-center justify-between pt-2 pb-4">
+          <div className="flex flex-col gap-4 w-1/2">
+            <div className="flex flex-col gap-0">
+              <h1 className="font-black text-4xl">
+                {filmData?.title || "Judul Film Tidak Tersedia"}
+              </h1>
+              <p className=" text-sm/normal">
+                {filmData?.duration} | {filmData?.ageRestriction} | {filmData?.categories?.tittle}
+              </p>
             </div>
-            <div className="grid grid-cols-5">
-              <div className="flex items-center justify-center">
-                <button className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white">
+            <div className="flex flex-row gap-6">
+              <div className="flex items-center justify-center w-48">
+                <button className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full">
                   Buy
                 </button>
               </div>
@@ -85,43 +100,52 @@ export default function PlayingMoviePage() {
               </div>
             </div>
           </div>
-          <div className="flex items-center justify-center">
-            <div className="grid grid-cols-2">
-              <div className="ml-22 w-1/2">
-                <Image alt="logo-subscribers" src={logoSubscribe} />
+          <div className="flex flex-row items-center justify-end w-1/2 gap-3">
+            <div className="flex items-center justify-center">
+              <Image
+                width={60}
+                alt="logo-subscribers"
+                src={logoSubscribe}
+                priority
+              />
+            </div>
+            <div className="grid grid-rows-2">
+              <div className="flex place-content-center justify-center text-2xl font-bold text-white">
+                {filmData?.creator?.user?.username}
               </div>
-              <div className="grid grid-rows-2">
-                <div className="flex place-content-center justify-center text-2xl font-bold text-white">
-                  Kelanara Studio
-                </div>
-                <div className="text-sm text-white">100k followers</div>
-              </div>
+              <div className="text-sm text-white">{filmData?.creator?._count.subscriptions} followers</div>
             </div>
           </div>
         </section>
 
-        <section className="flex flex-row gap-3">
-          <div className="flex-shrink-0">
+        <section className="flex flex-row gap-3 items-stretch">
+          {/* Poster 9:16 */}
+          <div className="relative aspect-[9/16] w-[220px] sm:w-[160px] lg:w-[250px] flex-shrink-0">
             <Image
-              // 2. Pastikan gambar mengisi tinggi kontainernya
-              className="rounded-xl h-full w-full object-cover"
               src={logoRacunSangga}
               alt="logo-racunsangga-film"
+              layout="fill"
+              className="rounded-xl object-cover"
+              priority
             />
           </div>
 
-          <div className="rounded-xl bg-[#393939]">
-            <div className="mx-4 my-4 text-white">
-              <p>
-                Racun Sangga: Santet Pemisah Rumah Tangga adalah sebuah film horor
-                Indonesia tahun 2024 yang disutradarai oleh Rizal Mantovani diproduksi
-                Soraya Intercine Films. Film tersebut diangkat dari sebuah utas viral
-                karya Gusti Gina yang juga bertindak sebagai penulis skenario.
-              </p>
-              {/* (Konten deskripsi lainnya) */}
+          {/* Deskripsi */}
+          <div className="rounded-xl bg-[#393939] flex-1">
+            <div className="mx-4 my-4 text-white h-full flex flex-col">
+              <p>{filmData?.description}</p>
+
               <div className="mt-10">
-                <p>Sutradara: Rizal Mantovani</p>
-                {/* ... sisa paragraf ... */}
+                <p>Judul: {filmData.title}</p>
+                <p>Sutradara : {filmData.director}</p>
+                <p>Rumah Produksi : {filmData.productionHouse}</p>
+                <p>Produser : {filmData.producer}</p>
+                <p>Penulis Cerita : {filmData.writer}</p>
+                <p>Pemeran : {filmData.talent}</p>
+                <p>Durasi : {filmData.duration}</p>
+                <p>Genre : {filmData?.categories?.tittle}</p>
+                <p>Tahun Rilis : {filmData.releaseYear}</p>
+                <p>Bahasa : {filmData.language}</p>
               </div>
             </div>
           </div>
@@ -132,9 +156,7 @@ export default function PlayingMoviePage() {
             <section className="mt-10">
               <Carousel className="">
                 <div className="flex justify-between text-white">
-                  <p className="mb-5 text-[20px] font-bold md:ml-3">
-                    Dari Creator
-                  </p>
+                  <p className="mb-5 text-[20px] font-bold md:ml-3">Dari Creator</p>
                   <p className="mb-5 text-[20px] font-bold md:ml-3">Lainnya</p>
                 </div>
                 <CarouselContent className="">
@@ -168,9 +190,7 @@ export default function PlayingMoviePage() {
             <section className="mt-10">
               <Carousel className="sm:max-h-auto sm:max-w-auto">
                 <div className="flex justify-between text-white">
-                  <p className="mb-5 text-[20px] font-bold md:ml-3">
-                    Rekomendasi Serupa
-                  </p>
+                  <p className="mb-5 text-[20px] font-bold md:ml-3">Rekomendasi Serupa</p>
                   <p className="mb-5 text-[20px] font-bold md:ml-3">Lainnya</p>
                 </div>
                 <CarouselContent className="">
@@ -200,19 +220,16 @@ export default function PlayingMoviePage() {
         <section className="grid grid-flow-row">
           <div className="grid grid-flow-row">
             <div className="flex flex-col">
-              <p className="mx-2 font-mono text-3xl font-bold text-white">
-                Komentar
-              </p>
+              <p className="mx-2 font-mono text-3xl font-bold text-white">Komentar</p>
               <div className="flex justify-start">
                 <textarea
                   placeholder="Tell us about you, maxs 150 character."
                   className="my-2 mt-2 h-25 max-h-screen w-full resize rounded-md bg-gray-500 px-2.5 py-2.5 text-white saturate-50 placeholder:text-white focus-visible:placeholder:invisible"
                 />
               </div>
-              <button className="w-full rounded-md bg-blue-500 py-2 text-white">
-                Kirim
-              </button>
+              <button className="w-full rounded-md bg-blue-500 py-2 text-white">Kirim</button>
             </div>
+
             <div className="mt-10 flex flex-col gap-10">
               <div className="flex justify-between text-3xl">
                 <div className="flex w-1/3 flex-col">
@@ -225,13 +242,11 @@ export default function PlayingMoviePage() {
                       />
                     </div>
                     <div className="flex flex-col text-sm font-medium text-white">
-                      <div className="text-lg font-semibold">
-                        Cetul Leather Hearth
-                      </div>
+                      <div className="text-lg font-semibold">Cetul Leather Hearth</div>
                       <div>11 Mar 2025</div>
                     </div>
                   </div>
-                  <div className="">
+                  <div>
                     <div>
                       <input
                         placeholder="  Komen"
@@ -261,7 +276,7 @@ export default function PlayingMoviePage() {
                       <div>11 Mar 2025</div>
                     </div>
                   </div>
-                  <div className="">
+                  <div>
                     <div>
                       <input
                         placeholder="  Mantap Film Nya"
@@ -276,13 +291,13 @@ export default function PlayingMoviePage() {
                 </div>
               </div>
             </div>
+
             <button className="mt-5 rounded-xl border border-gray-400 py-2 font-mono font-semibold text-white">
               Komentar Lainnya
             </button>
           </div>
         </section>
       </main>
-      <Footer />
     </div>
   );
 }

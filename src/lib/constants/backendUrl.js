@@ -1,1 +1,1 @@
-export const BACKEND_URL = "https://backend-gateplus-api.my.id";
+export const BACKEND_URL = "http://localhost:3000";
