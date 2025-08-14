@@ -119,10 +119,10 @@ export default function PlayingMoviePage({ params }) {
                 </section>
 
                 <section className="flex flex-row gap-3 items-stretch">
-                    {/* Poster 9:16 */}
-                    <div className="relative aspect-[9/16] w-[220px] sm:w-[160px] lg:w-[250px] flex-shrink-0">
+                    {/* Poster 3:2 */}
+                    <div className="relative aspect-[2/3] w-[220px] sm:w-[160px] lg:w-[250px] flex-shrink-0">
                         <Image
-                            src={logoRacunSangga}
+                            src={movieData.posterImageUrl}
                             alt="logo-racunsangga-movie"
                             layout="fill"
                             className="rounded-xl object-cover"
@@ -193,7 +193,7 @@ export default function PlayingMoviePage({ params }) {
                                     <p className="mb-5 text-[20px] font-bold md:ml-3">Rekomendasi Serupa</p>
                                     <p className="mb-5 text-[20px] font-bold md:ml-3">Lainnya</p>
                                 </div>
-                                <CarouselContent className="">
+                                <CarouselContent>
                                     <CarouselItem>
                                         <Image src={movie1} priority alt="logo-movie-banner" />
                                     </CarouselItem>

@@ -53,7 +53,7 @@ export default function CarouselTemplate({ label, type, contents, isLoading, isT
                                             return (
                                                 <CarouselItem
                                                     key={index}
-                                                    className="overflow-hidden group relative h-[180px] w-[120px] cursor-pointer rounded-lg sm:h-[200px] sm:w-[140px] md:h-[320px] md:w-[230px] group"
+                                                    className="overflow-hidden group relative w-[120px] cursor-pointer rounded-lg sm:w-[140px] md:w-[230px] group aspect-[2/3]"
                                                 >
                                                     <Link href={`/${fixedType.toLowerCase()}s/detail/${item.id}`}>
                                                         <div className="relative h-full w-full">
@@ -113,7 +113,7 @@ export default function CarouselTemplate({ label, type, contents, isLoading, isT
                                                             )}
 
                                                             <Image
-                                                                src={fixedType === "podcast" ? item.coverPodcastImage : item.coverImageUrl}
+                                                                src={fixedType === "podcast" ? item.coverPodcastImage : item.posterImageUrl}
                                                                 priority
                                                                 width={240}
                                                                 height={353}
