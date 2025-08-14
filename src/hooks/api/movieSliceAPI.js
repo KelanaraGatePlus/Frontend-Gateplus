@@ -1,8 +1,8 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
-export const filmAPI = createApi({
-  reducerPath: "filmAPI",
+export const movieAPI = createApi({
+  reducerPath: "movieAPI",
   refetchOnFocus: true,
   refetchOnReconnect: true,
   baseQuery: fetchBaseQuery({
@@ -15,27 +15,27 @@ export const filmAPI = createApi({
       return headers;
     },
   }),
-  tagTypes: ['film'], // ⬅️ tambahkan 'film'
+  tagTypes: ['movie'], // ⬅️ tambahkan 'movie'
   endpoints: (builder) => ({
-    getFilm: builder.query({
+    getMovie: builder.query({
       queryFn: () => {
-        "films";
+        "movies";
       },
     }),
-    createFilm: builder.mutation({
+    createMovie: builder.mutation({
       query: (formData) => ({
-        url: "/films",
+        url: "/movies",
         method: "POST",
         body: formData,
         formData: true,
       }),
-      invalidatesTags: ["film"],
+      invalidatesTags: ["movie"],
     }),
-    getFilmById: builder.query({
-      query: (id) => `/films/${id}`,
-      providesTags: (result, error, id) => [{ type: 'film', id }],
+    getMovieById: builder.query({
+      query: (id) => `/movies/${id}`,
+      providesTags: (result, error, id) => [{ type: 'movie', id }],
     }),
   }),
 });
 
-export const { useGetFilmQuery, useCreateFilmMutation, useGetFilmByIdQuery } = filmAPI;
+export const { useGetMovieQuery, useCreateMovieMutation, useGetMovieByIdQuery } = movieAPI;

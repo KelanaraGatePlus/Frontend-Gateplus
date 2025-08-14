@@ -5,7 +5,7 @@ import { setupListeners } from "@reduxjs/toolkit/query";
 import { ebookApi } from "../api/ebookSliceAPI";
 import { comicApi } from "../api/comicSliceAPI";
 import { podcastApi } from "../api/podcastSliceAPI";
-import { filmAPI } from "../api/filmSliceAPI";
+import { movieAPI } from "../api/movieSliceAPI";
 import { userAPI } from "../api/userSliceAPI";
 import { homeAPI } from "../api/homeSliceAPI";
 import { creatorAPI } from "../api/creatorSliceAPI";
@@ -19,7 +19,7 @@ const rootReducer = combineReducers({
   [comicApi.reducerPath]: comicApi.reducer,
   [podcastApi.reducerPath]: podcastApi.reducer,
   [userAPI.reducerPath]: userAPI.reducer,
-  [filmAPI.reducerPath]: filmAPI.reducer,
+  [movieAPI.reducerPath]: movieAPI.reducer,
   [homeAPI.reducerPath]: homeAPI.reducer,
   [creatorAPI.reducerPath]: creatorAPI.reducer,
   [contentAPI.reducerPath]: contentAPI.reducer,
@@ -36,7 +36,7 @@ export const store = configureStore({
       comicApi.middleware,
       podcastApi.middleware,
       userAPI.middleware,
-      filmAPI.middleware,
+      movieAPI.middleware,
       homeAPI.middleware,
       creatorAPI.middleware,
       contentAPI.middleware,

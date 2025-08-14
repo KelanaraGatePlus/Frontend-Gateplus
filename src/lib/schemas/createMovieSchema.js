@@ -56,6 +56,6 @@ export const createMovieSchema = z.object({
             (file) => file && file[0] && file[0].size <= maxSize,
             `Ukuran maksimal 500KB`
         ),
-    filmFileUrl: z.string("File video wajib diunggah").min(1, "File video wajib diunggah"),
+    movieFileUrl: z.string("File video wajib diunggah").min(1, "File video wajib diunggah"),
     trailerFileUrl: z.string("Trailer video wajib diunggah").min(1, "Trailer video wajib diunggah"),
 });

@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { useRouter } from "next/navigation";
 
 /*[--- THIRD PARTY LIBRARIES ---]*/
@@ -29,7 +29,7 @@ import LoadingOverlay from "@/components/LoadingOverlay/page";
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
 import UploadLargeFile from "@/components/UploadForm/UploadLargeFile";
-import { useCreateFilmMutation } from "@/hooks/api/filmSliceAPI";
+import { useCreateMovieMutation } from "@/hooks/api/movieSliceAPI";
 import PriceSelector from "@/components/UploadForm/PriceSelector";
 import { priceOption } from "@/lib/constants/priceOptions";
 
@@ -57,7 +57,7 @@ export default function UploadMovieForm() {
             posterBanner: null,
             coverBook: null,
             price: "",
-            filmFileUrl: "",
+            movieFileUrl: "",
             thumbnail: "",
             duration: "",
             productionHouse: "",
@@ -69,10 +69,11 @@ export default function UploadMovieForm() {
         },
     });
 
-    const [createFilm, { isLoading, error }] = useCreateFilmMutation();
+    const [createMovie, { isLoading, error }] = useCreateMovieMutation();
     const { data: genresData } = useGetAllGenresQuery();
 
     const onSubmit = async (data) => {
+        console.log("Form Data:", data);
         try {
             const formData = new FormData();
             formData.append("creatorId", creatorId);
@@ -82,7 +83,7 @@ export default function UploadMovieForm() {
             formData.append("language", data.language);
             formData.append("ageRestriction", data.ageRestriction);
             formData.append("price", data.price);
-            formData.append("filmFileUrl", data.filmFileUrl);
+            formData.append("movieFileUrl", data.movieFileUrl);
             formData.append("duration", data.duration);
             formData.append("productionHouse", data.productionHouse);
             formData.append("director", data.director);
@@ -97,20 +98,23 @@ export default function UploadMovieForm() {
             if (data.thumbnail?.[0]) formData.append("thumbnailImageUrl", data.thumbnail[0]);
 
             try {
-                const result = await createFilm(formData).unwrap();
+                const result = await createMovie(formData).unwrap();
                 router.push(`/`);
             } catch (err) {
-                console.error("Error creating film:", err);
+                console.error("Error creating movie:", err);
             }
         } catch (error) {
             console.error("Error preparing form data:", error);
         }
     };
 
+    const onErrors = (errors) => {
+        console.error("Validation Errors:", errors);
+    };
 
     return (
         <>
-            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 lg:gap-0">
+            <form onSubmit={handleSubmit(onSubmit, onErrors)} className="flex flex-col gap-4 lg:gap-0">
                 <div className="flex flex-col gap-2">
                     {/* Judul */}
                     <InputText
@@ -245,16 +249,16 @@ export default function UploadMovieForm() {
 
                     {/* Movie URL */}
                     <Controller
-                        name="filmFileUrl"
+                        name="movieFileUrl"
                         control={control}
-                        rules={{ required: "File film wajib diunggah" }}
+                        rules={{ required: "File movie wajib diunggah" }}
                         render={({ field, fieldState }) => (
                             <div>
                                 <UploadLargeFile
                                     prefix="movie/file"
                                     setData={field.onChange}
-                                    name={'film'}
-                                    label="Film Upload"
+                                    name={'movie'}
+                                    label="Movie Upload"
                                 />
                                 <input type="hidden" {...field} value={field.value || ""} />
                                 {fieldState.error?.message && (
@@ -264,8 +268,8 @@ export default function UploadMovieForm() {
                         )}
                     />
 
-                    {/* Trailer URL (muncul setelah film ada) */}
-                    {watch("filmFileUrl") && (
+                    {/* Trailer URL (muncul setelah movie ada) */}
+                    {watch("movieFileUrl") && (
                         <Controller
                             name="trailerFileUrl"
                             control={control}
