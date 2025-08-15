@@ -3,8 +3,6 @@ import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export const movieAPI = createApi({
   reducerPath: "movieAPI",
-  refetchOnFocus: true,
-  refetchOnReconnect: true,
   baseQuery: fetchBaseQuery({
     baseUrl: BACKEND_URL,
     prepareHeaders: (headers) => {

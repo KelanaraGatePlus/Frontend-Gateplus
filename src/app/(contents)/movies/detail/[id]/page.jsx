@@ -12,7 +12,6 @@ import {
 import logoPinComment from "@@/icons/icon-comment.svg";
 import IconsArrowLeft from "@@/icons/icons-dashboard/icons-arrow-left.svg";
 import logoUsersComment from "@@/icons/logo-users-comment.svg";
-import logoRacunSangga from "@@/logo/logoDetailFilm/detail-racun-sangga.svg";
 import logoDislike from "@@/logo/logoDetailFilm/dislike-icons.svg";
 import logoLike from "@@/logo/logoDetailFilm/like-icons.svg";
 import logoSave from "@@/logo/logoDetailFilm/save-icons.svg";
@@ -35,10 +34,6 @@ export default function PlayingMoviePage({ params }) {
     const { data, error, isLoading } = useGetMovieByIdQuery(id);
 
     const movieData = data?.data?.data || {};
-
-    if (isLoading) return <div className="text-white p-6">Loading...</div>;
-    if (error) return <div className="text-red-400 p-6">Error: {error?.message || "Gagal memuat data"}</div>;
-
     return (
         <div>
             <section className="flex justify-center rounded-md relative">

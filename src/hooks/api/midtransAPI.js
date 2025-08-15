@@ -23,7 +23,7 @@ export const useMidtransPayment = (paymentType = 'ORDER') => {
 
         const script = document.createElement("script");
         script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
-        script.setAttribute("data-client-key", "SB-Mid-client-w_nX8byQy-u4QRfl");
+        script.setAttribute("data-client-key", process.env.MIDTRANS_CLIENT_KEY);
         script.async = true;
         script.onload = () => setSnapReady(true);
         script.onerror = () => console.error("Failed to load Midtrans Snap.js");
