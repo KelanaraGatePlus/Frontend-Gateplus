@@ -12,6 +12,7 @@ export default function PriceSelector({
     error,
     freeValue = "Free",           // nilai untuk GRATIS (bisa angka/string)
     freeLabel = "Gratis",    // teks tombol gratis
+    canFree = true
 }) {
     const [customValue, setCustomValue] = useState("");
 
@@ -96,7 +97,7 @@ export default function PriceSelector({
                     </div>
 
                     {/* === TOMBOL GRATIS – BARIS SENDIRI (FULL WIDTH) === */}
-                    <button
+                    {canFree && <button
                         type="button"
                         onClick={() => handleOptionClick(freeValue)}
                         disabled={disabled}
@@ -104,7 +105,7 @@ export default function PriceSelector({
                             } ${disabled ? "opacity-60 cursor-not-allowed" : "cursor-pointer"}`}
                     >
                         {freeLabel}
-                    </button>
+                    </button>}
 
                     {error && <p className="text-red-500 text-sm w-full">{error}</p>}
                 </div>
