@@ -53,15 +53,15 @@ export default function ProductEpisodeSection({
   if (showSkeleton) return <ProductEpisodeSkeleton />;
 
   /*[--- EBOOK and COMIC ---]*/
-  if (productType === "ebook" || productType === "comic") {
+  if (productType === "ebook" || productType === "comic" || productType === "series") {
     const parentPath =
-      productType === "ebook" ? "/ebooks/read" : "/comics/read";
+      productType === "ebook" ? "/ebooks/read" : productType == "comic" ? "/comics/read" : "/series/watch";
     return (
       <>
         {productEpisodes?.length > 0 ? (
-          <section className="relative flex w-screen flex-col py-5 text-white">
+          <section className="relative flex w-full flex-col py-5 text-white">
             {/* Lihat episode pertama */}
-            <div className="flex px-4 md:px-15">
+            <div className="flex">
               <div className="mb-1 flex w-full items-center justify-center gap-2 rounded-lg bg-[#393939] py-2">
                 <h4 className={`zeinFont text-2xl font-bold`}>
                   Lihat Episode Pertama
@@ -83,12 +83,12 @@ export default function ProductEpisodeSection({
               .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
               .map((item, index) => (
                 <button key={index} onClick={item.isPurchased || item.price == 'Free' || isSubscribe ? () => { window.location.href = `${parentPath}/${item.id}` } : () => { handlePayment(item.creatorId, item.id, item.price, 'EBOOK') }}>
-                  <div className="group flex cursor-pointer items-stretch gap-2 px-4 py-2 hover:bg-[#1F6E8A] md:gap-4 md:px-15">
+                  <div className="group flex cursor-pointer items-stretch gap-2 px-4 py-2 hover:bg-[#1F6E8A] md:gap-4">
                     {/* Book Container */}
                     <div className="h-24 w-24 overflow-hidden rounded-lg md:h-36 md:w-36">
                       <Image
                         priority
-                        src={productType === "ebook" ? item.coverEpisodeUrl : item.coverImageUrl}
+                        src={productType === "ebook" ? item.coverEpisodeUrl : productType === "comic" ? item.coverImageUrl : item.thumbnailUrl}
                         alt={`poster-${item.title}`}
                         className="h-full w-full rounded object-cover object-center"
                         width={144}

@@ -25,10 +25,15 @@ export const contentAPI = createApi({
             query: (id) => `/episodeComics/${id}`,
             providesTags: ["comicContent"],
         }),
+        getEpisodeSeriesById: builder.query({
+            query: (id) => `/episodeSeries/${id}`,
+            providesTags: ["seriesContent"],
+        }),
     }),
 });
 
 export const {
     useGetEpisodeEbookByIdQuery,
     useGetEpisodeComicsByIdQuery,
+    useGetEpisodeSeriesByIdQuery
 } = contentAPI;
