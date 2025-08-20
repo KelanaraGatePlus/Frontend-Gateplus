@@ -27,6 +27,8 @@ import Link from "next/link";
 import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
 import { useGetSeriesByIdQuery } from "@/hooks/api/seriesSliceAPI";
 import ProductEpisodeSection from "@/components/MainDetailProduct/ProductEpisodeSection";
+import { useMidtransPayment } from "@/hooks/api/midtransAPI";
+import SimpleModal from "@/components/Modal/SimpleModal";
 
 /* ===========================
    Halaman: DetailSeriesPage (JSX)
@@ -35,11 +37,58 @@ export default function DetailSeriesPage({ params }) {
     const { id } = params;
     const { data, error, isLoading } = useGetSeriesByIdQuery(id);
     const [loading, setLoading] = useState(false);
+    const [selectedContentId, setSelectedContentId] = useState(null);
+    const [selectedCreatorId, setSelectedCreatorId] = useState(null);
+    const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
+    const [selectedPrice, setSelectedPrice] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedEpisode, setSelectedEpisode] = useState(null);
 
     const seriesData = data?.data?.data || {};
     const episode_series = (seriesData.episodes || []).slice().sort((a, b) => {
         return new Date(a.createdAt) - new Date(b.createdAt);
     });
+
+    const { pay, snapReady } = useMidtransPayment();
+    const { pay: subscribePay, snapReady: snapReadySubscribe } = useMidtransPayment("SUBSCRIBE");
+
+    const handleModalSubscribeOpen = (creatorId, contentId, price) => {
+        setSelectedCreatorId(creatorId);
+        setSelectedContentId(contentId);
+        setSelectedPrice(price);
+        setIsModalSubscribeOpen(true);
+    };
+
+    const handleModalOpen = (creatorId, episodeId, price) => {
+        setSelectedCreatorId(creatorId);
+        setSelectedEpisode(episodeId);
+        setSelectedPrice(price);
+        setIsModalOpen(true);
+    };
+
+    const handleBuy = async () => {
+        setLoading(true);
+        await pay({
+            creatorId: selectedCreatorId,
+            episodeId: selectedEpisode,
+            price: selectedPrice,
+            contentType: "SERIES",
+        });
+        setIsModalOpen(false);
+        setLoading(false);
+    };
+
+    const handleSubscribe = async () => {
+        setLoading(true);
+        await subscribePay({
+            creatorId: selectedCreatorId,
+            contentId: selectedContentId,
+            price: selectedPrice,
+            contentType: "SERIES",
+        });
+        setIsModalSubscribeOpen(false);
+        setLoading(false);
+    };
 
     return (
         <div>
@@ -73,8 +122,8 @@ export default function DetailSeriesPage({ params }) {
                         </div>
                         <div className="flex flex-row gap-6">
                             <div className="flex items-center justify-center w-48">
-                                <button className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full">
-                                    Buy
+                                <button onClick={!seriesData?.isSubscribed && seriesData?.canSubscribe ? () => { handleModalSubscribeOpen(seriesData?.creator?.id, seriesData?.id, seriesData?.subscriptionPrice) } : null} className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
+                                    {!seriesData?.canSubscribe ? 'Buy Episode To Watch' : seriesData?.isSubscribed ? "Watch" : "Buy"}
                                 </button>
                             </div>
                             <div className="flex items-center justify-center transition delay-150 duration-400 ease-linear hover:-translate-y-1 hover:scale-x-110 hover:scale-y-110">
@@ -113,7 +162,7 @@ export default function DetailSeriesPage({ params }) {
                         </div>
                         <div className="grid grid-rows-2">
                             <div className="flex place-content-center justify-center text-2xl font-bold text-white">
-                                {seriesData?.creator?.user?.username}
+                                {seriesData?.creator?.username}
                             </div>
                             <div className="text-sm text-white">{seriesData?.creator?._count.subscriptions} followers</div>
                         </div>
@@ -157,9 +206,8 @@ export default function DetailSeriesPage({ params }) {
                     productType={'series'}
                     productEpisodes={episode_series}
                     isLoading={loading}
-                    handlePayment={() => {
-                        console.log('Payment initiated for series:');
-                    }}
+                    isSubscribe={seriesData?.isSubscribed}
+                    handlePayment={handleModalOpen}
                 />
 
                 <section className="mt-5">
@@ -308,6 +356,20 @@ export default function DetailSeriesPage({ params }) {
                         </button>
                     </div>
                 </section>
+
+                <SimpleModal
+                    title={"Subscribe untuk menikmati seluruh episode dari konten ini selama sebulan seharga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
+                    isOpen={isModalSubscribeOpen}
+                    onClose={() => setIsModalSubscribeOpen(false)}
+                    onConfirm={handleSubscribe}
+                />
+
+                <SimpleModal
+                    title={"Konten ini masih terkunci, apakah kamu bersedia membeli nya dengan harga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    onConfirm={handleBuy}
+                />
             </main>
         </div>
     );
