@@ -20,7 +20,7 @@ import logoSubscribe from "@@/logo/logoDetailFilm/subscribe-icon-kelanara.svg";
 import movie1 from "@@/logo/logoFilm/film_1.svg";
 import movie2 from "@@/logo/logoFilm/film_2.svg";
 import movie3 from "@@/logo/logoFilm/film_3.svg";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Image from "next/legacy/image";
 import Link from "next/link";
@@ -41,6 +41,12 @@ export default function DetailSeriesPage({ params }) {
     const episode_series = (seriesData.episodes || []).slice().sort((a, b) => {
         return new Date(a.createdAt) - new Date(b.createdAt);
     });
+
+    useEffect(() => {
+        if (error && error.status === 403) {
+            window.location.href = "/";
+        }
+    }, [error]);
 
     return (
         <div>

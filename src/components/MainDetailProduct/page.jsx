@@ -50,15 +50,17 @@ export default function MainTemplateLayout({
         isSubscribe={productDetail?.isSubscribe && productDetail?.canSubscribe ? true : false}
       />
 
-      <ProductEpisodeSection
-        productType={productType}
-        productEpisodes={productEpisode}
-        isLoading={isLoading}
-        currentlyPlaying={currentlyPlaying}
-        handlePlayPodcast={handlePlayPodcast}
-        handlePayment={handlePayment}
-        isSubscribe={productDetail?.isSubscribe && productDetail?.canSubscribe ? true : false}
-      />
+      <div className="px-15">
+        <ProductEpisodeSection
+          productType={productType}
+          productEpisodes={productEpisode}
+          isLoading={isLoading}
+          currentlyPlaying={currentlyPlaying}
+          handlePlayPodcast={handlePlayPodcast}
+          handlePayment={handlePayment}
+          isSubscribe={productDetail?.isSubscribe && productDetail?.canSubscribe ? true : false}
+        />
+      </div>
 
       <CarouselItemEookPage />
       <ProductDonationSection />
