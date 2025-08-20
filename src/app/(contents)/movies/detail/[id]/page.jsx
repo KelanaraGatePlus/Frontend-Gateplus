@@ -25,6 +25,9 @@ import Image from "next/legacy/image";
 import Link from "next/link";
 import { useGetMovieByIdQuery } from "@/hooks/api/movieSliceAPI";
 import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
+import React, { useState } from "react";
+import SimpleModal from "@/components/Modal/SimpleModal";
+import { useMidtransPayment } from "@/hooks/api/midtransAPI";
 
 /* ===========================
    Halaman: PlayingMoviePage (JSX)
@@ -32,8 +35,34 @@ import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
 export default function PlayingMoviePage({ params }) {
     const { id } = params;
     const { data, error, isLoading } = useGetMovieByIdQuery(id);
+    const [loading, setLoading] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedCreatorId, setSelectedCreatorId] = useState(null);
+    const [selectedContentId, setSelectedContentId] = useState(null);
+    const [selectedPrice, setSelectedPrice] = useState(null);
+    const { pay, snapReady } = useMidtransPayment();
+
+    const handleSubscribe = async () => {
+        setLoading(true);
+        await pay({
+            creatorId: selectedCreatorId,
+            episodeId: selectedContentId,
+            price: selectedPrice,
+            contentType: "MOVIE",
+        });
+        setIsModalOpen(false);
+        setLoading(false);
+    };
+
+    const handleModalOpen = (creatorId, contentId, price) => {
+        setSelectedCreatorId(creatorId);
+        setSelectedContentId(contentId);
+        setSelectedPrice(price);
+        setIsModalOpen(true);
+    };
 
     const movieData = data?.data?.data || {};
+    console.log("Movie Data:", movieData);
     return (
         <div>
             <section className="flex justify-center rounded-md relative">
@@ -47,7 +76,7 @@ export default function PlayingMoviePage({ params }) {
                 <div className="mx-auto my-auto flex w-screen justify-center rounded-lg object-cover">
                     <DefaultVideoPlayer
                         className="rounded-lg"
-                        src={movieData?.movieFileUrl}
+                        src={movieData?.isSubscribed ? movieData?.movieFileUrl : movieData?.trailerFileUrl}
                         poster={movieData?.thumbnailImageUrl}
                     />
                 </div>
@@ -66,8 +95,8 @@ export default function PlayingMoviePage({ params }) {
                         </div>
                         <div className="flex flex-row gap-6">
                             <div className="flex items-center justify-center w-48">
-                                <button className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full">
-                                    Buy
+                                <button onClick={movieData?.isSubscribed ? null : () => { handleModalOpen(movieData?.creator?.id, movieData?.id, movieData?.price) }} className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
+                                    {movieData?.isSubscribed ? "Watch" : "Buy"}
                                 </button>
                             </div>
                             <div className="flex items-center justify-center transition delay-150 duration-400 ease-linear hover:-translate-y-1 hover:scale-x-110 hover:scale-y-110">
@@ -292,6 +321,13 @@ export default function PlayingMoviePage({ params }) {
                         </button>
                     </div>
                 </section>
+
+                <SimpleModal
+                    title={"Subscribe untuk menikmati seluruh episode dari konten ini selama sebulan seharga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    onConfirm={() => handleSubscribe()}
+                />
             </main>
         </div>
     );
