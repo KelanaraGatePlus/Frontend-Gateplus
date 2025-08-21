@@ -11,9 +11,7 @@ export default function ContentLayout({ children }) {
 
     return (
         <div className="flex flex-col overflow-x-hidden">
-            {!hideLayout && <Navbar />}
             <div className="flex flex-col">{children}</div>
-            {!hideLayout && <Footer />}
         </div>
     );
 }

@@ -17,7 +17,6 @@ import "@splidejs/react-splide/css";
 export default function HomePage() {
   return (
     <div className="flex flex-col overflow-x-hidden">
-      <Navbar />
       <div className="mt-15 flex flex-col md:mt-[85px]">
         <SliderBannerPage />
         <main className="flex flex-col px-3 md:mx-5 md:px-0">
@@ -32,7 +31,6 @@ export default function HomePage() {
           <CarouselPopularPodcasts />
         </main>
       </div>
-      <Footer />
     </div>
   );
 }

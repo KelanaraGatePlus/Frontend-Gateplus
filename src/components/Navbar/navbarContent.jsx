@@ -21,7 +21,7 @@ import iconMenuClose from "@@/icons/icon-menuclose.svg";
 import logoHome from "@@/icons/logoHome.svg";
 import logoSearch from "@@/logo/logoSearch/nav-search.svg";
 
-export default function NavbarContent() {
+export default function NavbarContent({ openCreateContentModal }) {
   const router = useRouter();
   const pathname = usePathname();
   const [imageUrl, setImageUrl] = useState(null);
@@ -217,6 +217,7 @@ export default function NavbarContent() {
                   imageUrl={imageUrl}
                   role={role}
                   handleSwitchRole={handleSwitchRole}
+                  openCreateContentModal={openCreateContentModal}
                 />
               </>
             ) : (
