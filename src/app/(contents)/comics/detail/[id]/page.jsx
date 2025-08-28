@@ -11,6 +11,7 @@ import MainTemplateLayout from "@/components/MainDetailProduct/page";
 import SimpleModal from "@/components/Modal/SimpleModal";
 import { useMidtransPayment } from "@/hooks/api/midtransAPI";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 
 export default function DetailComicPage({ params }) {
   const { id } = use(params);
@@ -24,6 +25,7 @@ export default function DetailComicPage({ params }) {
   const { pay: subscribePay, snapReady: snapReadySubscribe } = useMidtransPayment("SUBSCRIBE");
   const [selectedContentId, setSelectedContentId] = useState(null);
   const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
+  const [createLog] = useCreateLogMutation();
 
   const handleModalSubscribeOpen = (creatorId, contentId, price) => {
     setSelectedCreatorId(creatorId);
@@ -69,6 +71,14 @@ export default function DetailComicPage({ params }) {
       setUserId(storedUserId);
     }
   }, []);
+
+  useEffect(() => {
+    createLog({
+      contentType: "COMIC",
+      logType: "CLICK",        // atau WATCH_TRAILER / WATCH_CONTENT sesuai kebutuhan
+      contentId: id,
+    });
+  }, [id, createLog]);
 
   const skip = !id || !userId;
   const { data, isLoading } = useGetComicByIdQuery({ id, userId }, { skip });

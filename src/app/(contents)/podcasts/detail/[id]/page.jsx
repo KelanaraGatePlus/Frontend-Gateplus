@@ -12,6 +12,7 @@ import BottomSpacer from "@/components/BottomSpacer/page";
 import SimpleModal from "@/components/Modal/SimpleModal";
 import { useMidtransPayment } from "@/hooks/api/midtransAPI";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 
 export default function DetailPodcastPage({ params }) {
   const { id } = use(params);
@@ -24,6 +25,7 @@ export default function DetailPodcastPage({ params }) {
   const [selectedPrice, setSelectedPrice] = useState(null);
   const [loading, setLoading] = useState(false);
   const { pay, snapReady } = useMidtransPayment();
+  const [createLog] = useCreateLogMutation();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -62,6 +64,14 @@ export default function DetailPodcastPage({ params }) {
     setIsModalOpen(false);
     setLoading(false);
   };
+
+  useEffect(() => {
+    createLog({
+      contentType: "PODCAST",
+      logType: "CLICK",        // atau WATCH_TRAILER / WATCH_CONTENT sesuai kebutuhan
+      contentId: id,
+    });
+  }, [id, createLog]);
 
   return (
     podcastData && (

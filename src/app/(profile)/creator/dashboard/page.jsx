@@ -1,6 +1,12 @@
+"use client";
 /* eslint-disable react/react-in-jsx-scope */
+import AreaTrendChart from "@/components/Chart/AreaChart";
+import MonthYearPicker from "@/components/Dropdown/MonthYearDropdown";
 import Footer from "@/components/Footer/MainFooter";
+import FlexModal from "@/components/Modal/FlexModal";
 import NavbarLogin from "@/components/NavbarLogin/page";
+import { useGetDashboardDataQuery } from "@/hooks/api/creatorSliceAPI";
+import { contentType } from "@/lib/constants/contentType";
 import IconsAnalytics from "@@/icons/icons-dashboard/icons-analytics.svg";
 import IconsContentComics from "@@/icons/icons-dashboard/icons-content-comics.svg";
 import IconsContentEbook from "@@/icons/icons-dashboard/icons-content-ebook.svg";
@@ -9,485 +15,310 @@ import IconsContentPodcast from "@@/icons/icons-dashboard/icons-content-podcast.
 import IconsDownload from "@@/icons/icons-dashboard/icons-download.svg";
 import IconsHistory from "@@/icons/icons-dashboard/icons-history.svg";
 import IconsIncome from "@@/icons/icons-dashboard/icons-penghasilan.svg";
-import IconsPosterFilms from "@@/icons/icons-dashboard/icons-poster.svg";
 import IconsUsers from "@@/icons/icons-dashboard/icons-users.svg";
 import Image from "next/legacy/image";
+import Link from "next/link";
+import { useState } from "react";
 
 export default function DashboardCreatorsPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const dashboardData = useGetDashboardDataQuery();
+
+  console.log("Dashboard Data", dashboardData);
   return (
-    <div className="flex h-screen w-screen flex-col">
-      <NavbarLogin />
-      <main className="">
-        <section className="mx-5 my-5 grid grid-cols-4">
-          <div className="col-span-3 flex flex-col">
-            <div className="mx-2 flex justify-between">
-              <div className="flex flex-row gap-2">
-                <Image src={IconsIncome} alt="icons-income-01" />
-                <span className="text-2xl font-bold text-white">
-                  Penghasilan
-                </span>
-              </div>
+    <div className="montserratFont">
+      {/* Dashboard Creators */}
+      <section className="grid grid-cols-6 gap-8 text-white mt-5 font-monsetrat">
+        {/* Penghasilan */}
+        <div className="col-span-4 flex flex-col gap-6">
+          <div className="flex flex-row w-full justify-between items-center">
+            <div className="flex flex-row items-center gap-2">
+              <Image
+                src={IconsIncome}
+                width={24}
+              />
+              <h1 className="text-xl font-bold">Penghasilan</h1>
+            </div>
+            <p className="text-[#156EB7] font-bold">Lainnya</p>
+          </div>
+          <div className="grid grid-cols-4 gap-32 w-full">
+            <div className="col-span-1 flex flex-col gap-2 w-max">
+              <h2 className="text-lg font-bold">Proses</h2>
               <div>
-                <span className="mx-2 font-semibold text-blue-400">
-                  Lainnya
-                </span>
+                <h3>Total</h3>
+                <p className="text-lg font-bold">Rp <span className="text-3xl">10.000.000</span></p>
               </div>
             </div>
-            <div className="my-4 grid grid-cols-4">
-              <div className="grid grid-flow-row">
-                <div className="text-2xl font-medium text-white">
-                  <span>Proses</span>
+            <div className="col-span-3 flex flex-col gap-2 w-full">
+              <p className="text-lg font-bold">Penarikan</p>
+              <div className="flex flex-row w-full justify-between items-end">
+                <div>
+                  <h3>Minggu Ini</h3>
+                  <p className="text-lg font-bold">Rp <span className="text-3xl">5.000.000</span></p>
                 </div>
-                <div className="my-1 font-semibold text-gray-500">Total</div>
-                <div className="flex flex-row">
-                  <span className="mt-2 text-white">Rp.</span>
-                  <p className="text-3xl font-bold text-white">12.000.000</p>
+                <div>
+                  <h3>Bulan Ini</h3>
+                  <p className="text-lg font-bold">Rp <span className="text-xl">5.000.000</span></p>
                 </div>
-              </div>
-              <div className="grid grid-flow-row">
-                <div className="text-2xl font-medium text-white">
-                  <span>Penarikan</span>
-                </div>
-                <div className="my-1 font-semibold text-gray-500">
-                  Minggu Ini
-                </div>
-                <div className="flex flex-row">
-                  <span className="mt-2 text-white">Rp.</span>
-                  <p className="text-3xl font-bold text-white">9.000.000</p>
-                </div>
-              </div>
-              <div className="grid grid-flow-row">
-                <div className="mt-5 text-white">Bulan Ini</div>
-                <div className="flex flex-row gap-1">
-                  <span className="mt-1 text-white">Rp.</span>
-                  <p className="text-lg font-semibold text-white">30.000.000</p>
-                </div>
-              </div>
-              <div className="grid grid-flow-row">
-                <div className="mt-5 text-white">Bulan Sebelumnya</div>
-                <div className="flex flex-row gap-1">
-                  <span className="mt-1 text-white">Rp.</span>
-                  <p className="text-lg font-semibold text-white">35.000.000</p>
+                <div>
+                  <h3>Tahun Ini</h3>
+                  <p className="text-lg font-bold">Rp <span className="text-xl">5.000.000</span></p>
                 </div>
               </div>
             </div>
           </div>
-          <div className="flex flex-col">
-            <div className="flex justify-between">
-              <div className="flex flex-row gap-2">
-                <Image src={IconsHistory} alt="icons-history-01" />
-                <span className="mt-0.5 text-white">History Penarikan</span>
-              </div>
-              <span className="mx-2 text-blue-400">Lainnya</span>
+        </div>
+        {/* History Penarikan */}
+        <div className="col-span-2 flex flex-col gap-4">
+          <div className="flex flex-row w-full justify-between items-center">
+            <div className="flex flex-row gap-2 items-center">
+              <Image
+                src={IconsHistory}
+                width={24}
+              />
+              <h1 className="text-xl font-bold">History Penarikan</h1>
             </div>
-            <div className="flex place-content-center content-center justify-between border border-b-white">
-              <span className="mt-1 text-white">12 Jan - 12 Feb</span>
-              <Image src={IconsDownload} alt="icons-download-001" />
+            <p className="text-[#156EB7] font-bold">Lainnya</p>
+          </div>
+          <div className="flex flex-col gap-2 items-center w-full p-4">
+            <div className="flex flex-row justify-between items-center w-full border-b-2 border-[#979797] py-2">
+              <p className="text-lg font-bold">17 Mar - 23 Mar</p>
+              <Image
+                src={IconsDownload}
+                width={24}
+              />
             </div>
-            <div className="flex place-content-center content-center justify-between border border-b-white">
-              <span className="mt-1 text-white">12 Mar - 12 Apr</span>
-              <Image src={IconsDownload} alt="icons-download-002" />
+            <div className="flex flex-row justify-between items-center w-full border-b-2 border-[#979797] py-2">
+              <p className="text-lg font-bold">17 Mar - 23 Mar</p>
+              <Image
+                src={IconsDownload}
+                width={24}
+              />
             </div>
-            <div className="flex place-content-center content-center justify-between border border-b-white">
-              <span className="mt-1 text-white">12 May - 12 June</span>
-              <Image src={IconsDownload} alt="icons-download-003" />
+            <div className="flex flex-row justify-between items-center w-full border-b-2 border-[#979797] py-2">
+              <p className="text-lg font-bold">17 Mar - 23 Mar</p>
+              <Image
+                src={IconsDownload}
+                width={24}
+              />
             </div>
-            <div className="flex place-content-center content-center justify-between border border-b-white">
-              <span className="mt-1 text-white">12 June - 12 July</span>
-              <Image src={IconsDownload} alt="icons-download-004" />
+            <div className="flex flex-row justify-between items-center w-full border-b-2 border-[#979797] py-2">
+              <p className="text-lg font-bold">17 Mar - 23 Mar</p>
+              <Image
+                src={IconsDownload}
+                width={24}
+              />
             </div>
-            <div className="flex place-content-center content-center justify-between border border-b-white">
-              <span className="mt-1 text-white">12 Mar - 12 Apr</span>
-              <Image src={IconsDownload} alt="icons-download-005" />
+            <div className="flex flex-row justify-between items-center w-full border-b-2 border-[#979797] py-2">
+              <p className="text-lg font-bold">17 Mar - 23 Mar</p>
+              <Image
+                src={IconsDownload}
+                width={24}
+              />
             </div>
           </div>
-        </section>
-        <p className="mx-5 my-5 text-lg font-semibold text-white">
-          Upload Konten
-        </p>
-        <section className="mx-5 my-5 grid grid-cols-4 gap-4">
-          <div className="grid grid-flow-row content-center justify-center rounded-lg bg-[#0881AB]">
-            <div className="flex justify-center">
-              <Image src={IconsContentFilms} alt="icons-contents-films-01" />
-            </div>
-            <div className="">
-              <span className="flex justify-center text-sm font-light text-white">
-                Upload Konten Film
-              </span>
-            </div>
-            <div className="">
-              <span className="text-lg font-semibold text-white">
-                Upload Films & Series
-              </span>
-            </div>
-          </div>
-          <div className="grid grid-flow-row content-center justify-center rounded-lg bg-[#0881AB]">
-            <div className="flex justify-center">
-              <Image src={IconsContentPodcast} alt="icons-contents-films-01" />
-            </div>
-            <div className="">
-              <span className="flex justify-center text-sm font-light text-white">
-                Upload Konten Podcast
-              </span>
-            </div>
-            <div className="">
-              <span className="text-lg font-semibold text-white">
-                Upload Podcast
-              </span>
-            </div>
-          </div>
-          <div className="grid grid-flow-row content-center justify-center rounded-lg bg-[#0881AB]">
-            <div className="flex justify-center">
-              <Image src={IconsContentEbook} alt="icons-contents-films-01" />
-            </div>
-            <div className="">
-              <span className="flex justify-center text-sm font-light text-white">
-                Upload Konten Ebook
-              </span>
-            </div>
-            <div className="">
-              <span className="text-lg font-semibold text-white">
-                Upload Ebook
-              </span>
-            </div>
-          </div>
-          <div className="grid grid-flow-row content-center justify-center rounded-lg bg-[#0881AB]">
-            <div className="flex justify-center">
-              <Image src={IconsContentComics} alt="icons-contents-films-01" />
-            </div>
-            <div className="">
-              <span className="flex justify-center text-sm font-light text-white">
-                Upload Konten Comics
-              </span>
-            </div>
-            <div className="">
-              <span className="text-lg font-semibold text-white">
-                Upload Comics
-              </span>
-            </div>
-          </div>
-        </section>
-        <section className="mx-5 my-5 grid grid-cols-3 gap-2">
-          <div className="col-span-2">
+        </div>
+      </section>
+
+      {/* Dashboard Creators 2 */}
+      <section className="flex flex-col text-white gap-4">
+        <h1 className="text-xl font-bold">Upload Konten</h1>
+        <div className="grid grid-cols-4 gap-4">
+          <button onClick={() => {
+            setIsModalOpen(true);
+          }} className="w-full h-max p-4 hover:cursor-pointer bg-[#0881AB] rounded-md flex flex-col items-center justify-between">
             <Image
-              className="flex w-full"
-              src={IconsAnalytics}
-              alt="icons-analytics"
+              src={IconsContentFilms}
+              width={48}
             />
+            <h3 className="font-normal text-sm">upload konten movie</h3>
+            <h4 className="font-bold text-lg">Upload Film & Series</h4>
+          </button>
+          <Link href={'/podcasts/upload'} className="w-full h-max p-4 bg-[#0881AB] rounded-md flex flex-col items-center justify-between">
+            <Image
+              src={IconsContentPodcast}
+              width={48}
+            />
+            <h3 className="font-normal text-sm">upload konten podcast</h3>
+            <h4 className="font-bold text-lg">Upload Podcast</h4>
+          </Link>
+          <Link href={'/ebooks/upload'} className="w-full h-max p-4 bg-[#0881AB] rounded-md flex flex-col items-center justify-between">
+            <Image
+              src={IconsContentEbook}
+              width={48}
+            />
+            <h3 className="font-normal text-sm">upload konten ebook</h3>
+            <h4 className="font-bold text-lg">Upload Ebook</h4>
+          </Link>
+          <Link href={'/comics/upload'} className="w-full h-max p-4 bg-[#0881AB] rounded-md flex flex-col items-center justify-between">
+            <Image
+              src={IconsContentComics}
+              width={48}
+            />
+            <h3 className="font-normal text-sm">upload konten komik</h3>
+            <h4 className="font-bold text-lg">Upload Komik</h4>
+          </Link>
+          <div className="col-span-3 flex flex-col p-2 gap-6 items-center justify-center">
+            <div className="flex flex-row w-full justify-between">
+              <h1 className="text-lg font-bold">Analytics Penonton</h1>
+              <MonthYearPicker
+                defaultYear={2025}
+                defaultMonth="March"
+                onChange={() => {
+                  // Handle month and year change
+                  console.log("Month or year changed");
+                }}
+              />
+            </div>
+            <AreaTrendChart />
           </div>
-          <div className="flex flex-col rounded-lg border border-white">
-            <span className="mx-5 my-5 text-2xl font-semibold text-white">
-              Analytics Akun
-            </span>
-            <div className="mx-5 flex flex-col">
-              <span className="text-white">Subscribers</span>
-              <span className="text-2xl font-bold text-white">1.560</span>
+          <div className="col-span-1 rounded-lg p-4 border border-white flex flex-col gap-3">
+            <h2 className="text-lg font-bold">Analisa Akun</h2>
+            <div className="flex flex-col gap-1">
+              <h3 className="font-normal">Subscriber</h3>
+              <p className="zeinFont text-4xl font-black">{dashboardData?.data?.data?.data?.totalSubscriber}</p>
             </div>
-            <div className="mx-5 my-4 flex flex-col">
-              <span className="text-lg font-bold text-white">Ringkasan</span>
-              <span className="text-white">30 Hari terakhir</span>
+            <div className="flex flex-col gap-1">
+              <h3 className="font-semibold">Ringkasan</h3>
+              <p className="text-xs">30 hari terakhir</p>
             </div>
-            <div className="mx-5 font-medium text-white">
-              <div className="my-0.5 flex justify-between">
-                <span>Pembelian Konten</span>
-                <span>16.000</span>
-              </div>
-              <div className="my-0.5 flex justify-between">
-                <span>Total Like</span>
-                <span>12.500</span>
-              </div>
-              <div className="my-0.5 flex justify-between">
-                <span>Total Dislike</span>
-                <span>3.500</span>
-              </div>
+            <div className="flex flex-row justify-between w-full items-center text-xs">
+              <h3>Pembelian Konten</h3>
+              <p>{dashboardData?.data?.data?.data?.totalTransactions}</p>
             </div>
-            <div className="mx-5 my-3 flex flex-col text-white">
-              <span className="text-lg font-semibold">Video Teratas</span>
-              <span className="text-sm">24 Jam terakahir - Penayangan</span>
+            <div className="flex flex-row justify-between w-full items-center text-xs">
+              <h3>Total Like</h3>
+              <p>{dashboardData?.data?.data?.data?.totalLike}</p>
             </div>
-            <div className="mx-5 my-2 mb-3 flex justify-center rounded-lg bg-[#0E5BA8B2] py-2">
-              <button className="text-lg font-semibold text-white">
-                Analisis Akun
-              </button>
+            <div className="flex flex-row justify-between w-full items-center text-xs">
+              <h3>Total Dislike</h3>
+              <p>1.000</p>
             </div>
+            <div className="flex flex-col gap-1">
+              <h3 className="text-lg font-bold">Video Teratas</h3>
+              <p className="text-xs">24 jam terakhir - penayangan</p>
+            </div>
+            <button className="bg-[#0E5BA8B2] text-white rounded-md p-2 py-3 font-bold">
+              Analisis Akun
+            </button>
           </div>
-        </section>
-        <section className="mx-5 my-5 grid grid-cols-4 gap-3">
-          <div className="grid grid-flow-row rounded-lg border border-white">
-            <div className="mx-2 flex items-start py-3 font-semibold">
-              <span className="text-xl font-medium text-white">
-                Pendukung Teratas
-              </span>
-            </div>
-            <div className="mx-2 my-1 flex place-content-center items-center justify-between">
-              <div className="flex flex-row justify-center rounded-full">
-                <Image
-                  className="rounded-full bg-blue-400"
-                  src={IconsUsers}
-                  alt="icons-users"
-                />
-                <span className="mx-2 flex place-content-center items-center text-white">
-                  Users 1
-                </span>
-              </div>
-              <div className="mx-2 flex justify-center text-white">
-                <span>Rp.1000k</span>
+          <div className="col-span-2 flex flex-row justify-between gap-4">
+            {/* Pendukung Teratas */}
+            <div className="rounded-lg p-4 border border-white flex flex-col gap-3 w-full min-h-80">
+              <h2 className="font-bold">Pendukung Teratas</h2>
+              <div className="flex flex-col gap-2">
+                {/* User */}
+                {dashboardData.data?.data?.data.topSpenders.map((spenders) => (
+                  <div className="flex flex-row justify-between items-center">
+                    <div className="flex flex-row items-center gap-2">
+                      <Image
+                        src={IconsUsers}
+                        width={42}
+                        className="rounded-full"
+                      />
+                      <p className="font-semibold">{spenders.user.username}</p>
+                    </div>
+                    <p>Rp. {spenders.totalSpent.toLocaleString()}</p>
+                  </div>
+                ))}
               </div>
             </div>
-            <div className="mx-2 my-1 flex place-content-center items-center justify-between">
-              <div className="flex flex-row justify-center rounded-full">
-                <Image
-                  className="rounded-full bg-blue-400"
-                  src={IconsUsers}
-                  alt="icons-users"
-                />
-                <span className="mx-2 flex place-content-center items-center text-white">
-                  Users 2
-                </span>
-              </div>
-              <div className="mx-2 flex justify-center text-white">
-                <span>Rp.1000k</span>
-              </div>
-            </div>
-            <div className="mx-2 my-1 flex place-content-center items-center justify-between">
-              <div className="flex flex-row justify-center rounded-full">
-                <Image
-                  className="rounded-full bg-blue-400"
-                  src={IconsUsers}
-                  alt="icons-users"
-                />
-                <span className="mx-2 flex place-content-center items-center text-white">
-                  Users 3
-                </span>
-              </div>
-              <div className="mx-2 flex justify-center text-white">
-                <span>Rp.1000k</span>
-              </div>
-            </div>
-            <div className="mx-2 my-1 flex place-content-center items-center justify-between">
-              <div className="flex flex-row justify-center rounded-full">
-                <Image
-                  className="rounded-full bg-blue-400"
-                  src={IconsUsers}
-                  alt="icons-users"
-                />
-                <span className="mx-2 flex place-content-center items-center text-white">
-                  Users 4
-                </span>
-              </div>
-              <div className="mx-2 flex justify-center text-white">
-                <span>Rp.1000k</span>
-              </div>
-            </div>
-            <div className="mx-2 my-5 flex justify-center rounded-lg bg-blue-400 py-2">
-              <button className="text-white">Lihat Semua</button>
-            </div>
-          </div>
-          <div className="grid grid-flow-row rounded-lg border border-white">
-            <div className="mx-2 flex items-start py-3 font-semibold">
-              <span className="text-xl font-medium text-white">
-                Pengikut Baru
-              </span>
-            </div>
-            <div className="mx-2 my-1 flex place-content-center items-center justify-between">
-              <div className="flex flex-row justify-center rounded-full">
-                <Image
-                  className="rounded-full bg-blue-400"
-                  src={IconsUsers}
-                  alt="icons-users"
-                />
-                <span className="mx-2 flex place-content-center items-center text-white">
-                  Users 1
-                </span>
-              </div>
-            </div>
-            <div className="mx-2 my-1 flex place-content-center items-center justify-between">
-              <div className="flex flex-row justify-center rounded-full">
-                <Image
-                  className="rounded-full bg-blue-400"
-                  src={IconsUsers}
-                  alt="icons-users"
-                />
-                <span className="mx-2 flex place-content-center items-center text-white">
-                  Users 2
-                </span>
-              </div>
-            </div>
-            <div className="mx-2 my-1 flex place-content-center items-center justify-between">
-              <div className="flex flex-row justify-center rounded-full">
-                <Image
-                  className="rounded-full bg-blue-400"
-                  src={IconsUsers}
-                  alt="icons-users"
-                />
-                <span className="mx-2 flex place-content-center items-center text-white">
-                  Users 3
-                </span>
-              </div>
-            </div>
-            <div className="mx-2 my-1 flex place-content-center items-center justify-between">
-              <div className="flex flex-row justify-center rounded-full">
-                <Image
-                  className="rounded-full bg-blue-400"
-                  src={IconsUsers}
-                  alt="icons-users"
-                />
-                <span className="mx-2 flex place-content-center items-center text-white">
-                  Users 4
-                </span>
-              </div>
-            </div>
-            <div className="mx-2 my-5 flex justify-center rounded-lg bg-blue-400 py-2">
-              <button className="text-white">Lihat Semua</button>
-            </div>
-          </div>
-          <div className="col-span-2">
-            <Image src={IconsAnalytics} alt="icons-analytics-01" />
-          </div>
-        </section>
-        <span className="mx-5 mt-5 text-2xl font-bold text-white">
-          Karya Teratas
-        </span>
-        <section className="mx-5 my-5 grid grid-cols-4 gap-1">
-          <div className="mx-2 flex flex-row">
-            <div className="">
-              <Image src={IconsPosterFilms} alt="icons-posters-films-01" />
-            </div>
-            <div className="flex flex-col">
-              <div className="mx-2 mb-4 font-semibold text-white">
-                <span>Kampung Jabang Mayit Rangkaspuna</span>
-              </div>
-              <div className="mx-2 my-0.5 flex flex-col">
-                <div className="flex justify-between text-white">
-                  <span>Pembelian</span>
-                  <span>2.000</span>
-                </div>
-              </div>
-              <div className="mx-2 my-0.5 flex flex-col">
-                <div className="flex justify-between text-white">
-                  <span>Penayangan Trailer</span>
-                  <span>2.000</span>
-                </div>
-              </div>
-              <div className="mx-2 my-0.5 flex flex-col">
-                <div className="flex justify-between text-white">
-                  <span>Total Like</span>
-                  <span>1.500</span>
-                </div>
-              </div>
-              <div className="mx-2 my-0.5 flex flex-col">
-                <div className="flex justify-between text-white">
-                  <span>Total Dislike</span>
-                  <span>100</span>
-                </div>
+
+            {/* Pengikut Baru */}
+            <div className="rounded-lg p-4 border border-white flex flex-col gap-3 w-full">
+              <h2 className="font-bold">Pengikut Baru</h2>
+              <div className="flex flex-col gap-2">
+                {/* User */}
+                {dashboardData.data?.data?.data?.newestSubscribers?.map((subscriber) => (
+                  <div className="flex flex-row justify-between items-center" key={subscriber.id}>
+                    <div className="flex flex-row items-center gap-2">
+                      <Image
+                        src={IconsUsers}
+                        width={42}
+                        className="rounded-full"
+                      />
+                      <p className="font-semibold">{subscriber.user.username}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
-          <div className="mx-2 flex flex-row">
-            <div className="">
-              <Image src={IconsPosterFilms} alt="icons-posters-films-01" />
+          <div className="col-span-2 flex flex-col p-2 gap-6 items-center justify-center">
+            <div className="flex flex-row w-full">
+              <h1 className="text-lg font-bold">Rasio Klik Tayang</h1>
             </div>
-            <div className="flex flex-col">
-              <div className="mx-2 mb-4 font-semibold text-white">
-                <span>Kampung Jabang Mayit Rangkaspuna</span>
-              </div>
-              <div className="mx-2 my-0.5 flex flex-col">
-                <div className="flex justify-between text-white">
-                  <span>Pembelian</span>
-                  <span>2.000</span>
+            <AreaTrendChart />
+          </div>
+          <div className="col-span-4 flex flex-col gap-4 mt-10">
+            <div className="flex flex-row justify-between items-center">
+              <h2 className="text-lg font-bold">Karya Teratas</h2>
+              {/* Dropdown */}
+            </div>
+            <div className="grid grid-cols-4 gap-10">
+              {dashboardData.data?.data?.data?.topContents.map((content) => (
+              <div className="grid grid-cols-3 items-center gap-4">
+                <div className="w-full col-span-1 aspect-[12/17]">
+                  <img
+                    src={content.image}
+                    className="rounded-lg w-full h-full"
+                  />
+                </div>
+                <div className="flex flex-col w-full col-span-2 gap-6">
+                  <p className="font-semibold">{content.title}</p>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex flex-row justify-between items-center w-full">
+                      <p className="text-sm">Pembelian</p>
+                      <p className="text-sm">Rp {content.totalRevenue.toLocaleString()}</p>
+                    </div>
+                    <div className="flex flex-row justify-between items-center w-full">
+                      <p className="text-sm">Penayangan Trailer</p>
+                      <p className="text-sm">{content.trailerViews.toLocaleString()}</p>
+                    </div>
+                    <div className="flex flex-row justify-between items-center w-full">
+                      <p className="text-sm">Total Like</p>
+                      <p className="text-sm">{content.likes.toLocaleString()}</p>
+                    </div>
+                    <div className="flex flex-row justify-between items-center w-full">
+                      <p className="text-sm">Total Dislike</p>
+                      <p className="text-sm">150</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="mx-2 my-0.5 flex flex-col">
-                <div className="flex justify-between text-white">
-                  <span>Penayangan Trailer</span>
-                  <span>2.000</span>
-                </div>
-              </div>
-              <div className="mx-2 my-0.5 flex flex-col">
-                <div className="flex justify-between text-white">
-                  <span>Total Like</span>
-                  <span>1.500</span>
-                </div>
-              </div>
-              <div className="mx-2 my-0.5 flex flex-col">
-                <div className="flex justify-between text-white">
-                  <span>Total Dislike</span>
-                  <span>100</span>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
-          <div className="mx-2 flex flex-row">
-            <div className="">
-              <Image src={IconsPosterFilms} alt="icons-posters-films-01" />
-            </div>
-            <div className="flex flex-col">
-              <div className="mx-2 mb-4 font-semibold text-white">
-                <span>Kampung Jabang Mayit Rangkaspuna</span>
-              </div>
-              <div className="mx-2 my-0.5 flex flex-col">
-                <div className="flex justify-between text-white">
-                  <span>Pembelian</span>
-                  <span>2.000</span>
-                </div>
-              </div>
-              <div className="mx-2 my-0.5 flex flex-col">
-                <div className="flex justify-between text-white">
-                  <span>Penayangan Trailer</span>
-                  <span>2.000</span>
-                </div>
-              </div>
-              <div className="mx-2 my-0.5 flex flex-col">
-                <div className="flex justify-between text-white">
-                  <span>Total Like</span>
-                  <span>1.500</span>
-                </div>
-              </div>
-              <div className="mx-2 my-0.5 flex flex-col">
-                <div className="flex justify-between text-white">
-                  <span>Total Dislike</span>
-                  <span>100</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="mx-2 flex flex-row">
-            <div className="">
-              <Image src={IconsPosterFilms} alt="icons-posters-films-01" />
-            </div>
-            <div className="flex flex-col">
-              <div className="mx-2 mb-4 font-semibold text-white">
-                <span>Kampung Jabang Mayit Rangkaspuna</span>
-              </div>
-              <div className="mx-2 my-0.5 flex flex-col">
-                <div className="flex justify-between text-white">
-                  <span>Pembelian</span>
-                  <span>2.000</span>
-                </div>
-              </div>
-              <div className="mx-2 my-0.5 flex flex-col">
-                <div className="flex justify-between text-white">
-                  <span>Penayangan Trailer</span>
-                  <span>2.000</span>
-                </div>
-              </div>
-              <div className="mx-2 my-0.5 flex flex-col">
-                <div className="flex justify-between text-white">
-                  <span>Total Like</span>
-                  <span>1.500</span>
-                </div>
-              </div>
-              <div className="mx-2 my-0.5 flex flex-col">
-                <div className="flex justify-between text-white">
-                  <span>Total Dislike</span>
-                  <span>100</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-      <Footer />
+        </div>
+      </section>
+      <FlexModal isOpen={isModalOpen} onClose={() => {
+        setIsModalOpen(false);
+      }} title={"Kategori Upload Karya"}>
+        <div className="flex flex-row items-center text-white text-md px-52">
+          <Link href={`/${contentType.movie.pluralName}/upload`}
+            key={contentType.movie.singleName}
+            className="flex flex-col items-center justify-center mr-4 hover:cursor-pointer"
+          >
+            <Image
+              src={contentType.movie.icon}
+              alt={contentType.movie.singleName}
+              width={148}
+            />
+            <p>{contentType.movie.pluralName.toUpperCase()}</p>
+          </Link>
+          <Link href={`/${contentType.series.pluralName}/upload`}
+            key={contentType.series.singleName}
+            className="flex flex-col items-center justify-center mr-4 hover:cursor-pointer"
+          >
+            <Image
+              src={contentType.series.icon}
+              alt={contentType.series.singleName}
+              width={148}
+            />
+            <p>{contentType.series.pluralName.toUpperCase()}</p>
+          </Link>
+        </div>
+      </FlexModal>
     </div>
   );
 }

@@ -25,9 +25,10 @@ import Image from "next/legacy/image";
 import Link from "next/link";
 import { useGetMovieByIdQuery } from "@/hooks/api/movieSliceAPI";
 import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import SimpleModal from "@/components/Modal/SimpleModal";
 import { useMidtransPayment } from "@/hooks/api/midtransAPI";
+import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 
 /* ===========================
    Halaman: PlayingMoviePage (JSX)
@@ -41,6 +42,7 @@ export default function PlayingMoviePage({ params }) {
     const [selectedContentId, setSelectedContentId] = useState(null);
     const [selectedPrice, setSelectedPrice] = useState(null);
     const { pay, snapReady } = useMidtransPayment();
+    const [createLog] = useCreateLogMutation();
 
     const handleSubscribe = async () => {
         setLoading(true);
@@ -61,8 +63,15 @@ export default function PlayingMoviePage({ params }) {
         setIsModalOpen(true);
     };
 
+    useEffect(() => {
+        createLog({
+            contentType: "FILM",
+            logType: "CLICK",        // atau WATCH_TRAILER / WATCH_CONTENT sesuai kebutuhan
+            contentId: id,
+        });
+    }, [id, createLog]);
+
     const movieData = data?.data?.data || {};
-    console.log("Movie Data:", movieData);
     return (
         <div>
             <section className="flex justify-center rounded-md relative">
@@ -74,11 +83,13 @@ export default function PlayingMoviePage({ params }) {
 
                 {/* Player bergaya YouTube */}
                 <div className="mx-auto my-auto flex w-screen justify-center rounded-lg object-cover">
-                    <DefaultVideoPlayer
+                    {movieData?.id && <DefaultVideoPlayer
+                        filmId={movieData.id}
+                        type={movieData?.isSubscribed ? 'WATCH_CONTENT' : 'WATCH_TRAILER'}
                         className="rounded-lg"
                         src={movieData?.isSubscribed ? movieData?.movieFileUrl : movieData?.trailerFileUrl}
                         poster={movieData?.thumbnailImageUrl}
-                    />
+                    />}
                 </div>
             </section>
 

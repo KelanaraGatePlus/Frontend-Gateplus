@@ -11,6 +11,7 @@ import { useGetEbookByIdQuery } from "@/hooks/api/ebookSliceAPI";
 import SimpleModal from "@/components/Modal/SimpleModal";
 import { useMidtransPayment } from "@/hooks/api/midtransAPI";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 
 // eslint-disable-next-line react/prop-types
 export default function DetailEbookPage({ params }) {
@@ -25,6 +26,7 @@ export default function DetailEbookPage({ params }) {
   const [selectedPrice, setSelectedPrice] = useState(null);
   const { pay, snapReady } = useMidtransPayment();
   const { pay: subscribePay, snapReady: snapReadySubscribe } = useMidtransPayment("SUBSCRIBE");
+  const [createLog] = useCreateLogMutation();
 
   const handleModalOpen = (creatorId, episodeId, price) => {
     setSelectedCreatorId(creatorId);
@@ -70,6 +72,14 @@ export default function DetailEbookPage({ params }) {
   const episode_ebooks = (ebookData.episode_ebooks || []).slice().sort((a, b) => {
     return new Date(a.createdAt) - new Date(b.createdAt);
   });
+
+  useEffect(() => {
+    createLog({
+      contentType: "EBOOK",
+      logType: "CLICK",        // atau WATCH_TRAILER / WATCH_CONTENT sesuai kebutuhan
+      contentId: id,
+    });
+  }, [id, createLog]);
 
   return (
     <div>
