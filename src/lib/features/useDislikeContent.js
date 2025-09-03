@@ -16,15 +16,16 @@ export function useDislikeContent() {
             if (isDisliked) {
                 // UNDISLIKE
                 setIsDisliked(false);
-                const response = await axios.delete(`${BACKEND_URL}/dislike/${idDisliked}`);
+                const response = await axios.delete(`${BACKEND_URL}/like/${idDisliked}`);
                 console.log("UNDISLIKED", response.data);
                 setIdDisliked(null);
             } else {
                 // DISLIKE
                 setIsDisliked(true);
-                const response = await axios.post(`${BACKEND_URL}/dislike`, {
+                const response = await axios.post(`${BACKEND_URL}/like`, {
                     userId,
                     [fieldKey]: id,
+                    type: "DISLIKE"
                 });
                 console.log("LIKED", response.data.data.data);
                 setIdDisliked(response.data.data.data.id);

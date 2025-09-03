@@ -19,7 +19,7 @@ export const createSeriesEpisodeSchema = z.object({
             (file) => file && file[0] && file[0].size <= maxSize,
             "Ukuran maksimal 500KB"
         ),
-    episodeFileUrl: z.string("Trailer video wajib diunggah").min(1, "Trailer video wajib diunggah"),
+    episodeFileUrl: z.string("Video wajib diunggah").min(1, "Video wajib diunggah"),
     termAccepted: z.literal(true).refine(val => val === true, {
         message: "Syarat dan Ketentuan harus disetujui",
     }),

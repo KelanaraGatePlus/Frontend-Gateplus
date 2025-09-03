@@ -265,7 +265,7 @@ export default function UploadSeriesForm() {
                             <div>
                                 <UploadLargeFile
                                     prefix="series/trailer"
-                                    setData={field.onChange}
+                                    setDataUrl={field.onChange}
                                     name={'trailer'}
                                     label="Trailer Upload"
                                 />

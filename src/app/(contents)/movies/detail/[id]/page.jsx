@@ -20,7 +20,6 @@ import logoSubscribe from "@@/logo/logoDetailFilm/subscribe-icon-kelanara.svg";
 import movie1 from "@@/logo/logoFilm/film_1.svg";
 import movie2 from "@@/logo/logoFilm/film_2.svg";
 import movie3 from "@@/logo/logoFilm/film_3.svg";
-
 import Image from "next/legacy/image";
 import Link from "next/link";
 import { useGetMovieByIdQuery } from "@/hooks/api/movieSliceAPI";
@@ -29,6 +28,8 @@ import React, { useEffect, useState } from "react";
 import SimpleModal from "@/components/Modal/SimpleModal";
 import { useMidtransPayment } from "@/hooks/api/midtransAPI";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
+import { useLikeContent } from "@/lib/features/useLikeContent";
+import { useDislikeContent } from "@/lib/features/useDislikeContent";
 
 /* ===========================
    Halaman: PlayingMoviePage (JSX)
@@ -36,6 +37,8 @@ import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 export default function PlayingMoviePage({ params }) {
     const { id } = params;
     const { data, error, isLoading } = useGetMovieByIdQuery(id);
+    const movieData = data?.data?.data || {}; // Pindahkan ke atas agar bisa dipakai di useEffect
+
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedCreatorId, setSelectedCreatorId] = useState(null);
@@ -43,6 +46,76 @@ export default function PlayingMoviePage({ params }) {
     const [selectedPrice, setSelectedPrice] = useState(null);
     const { pay, snapReady } = useMidtransPayment();
     const [createLog] = useCreateLogMutation();
+    const { toggleLike } = useLikeContent();
+    const { toggleDislike } = useDislikeContent();
+
+    const [isLiked, setIsLiked] = useState(false);
+    const [idLiked, setIdLiked] = useState(null);
+    const [totalLike, setTotalLike] = useState(0);
+    const [isDisliked, setIsDisliked] = useState(false);
+    const [idDisliked, setIdDisliked] = useState(null);
+
+    useEffect(() => {
+        // Mengisi state dari data API saat pertama kali dimuat
+        if (movieData && movieData.id) {
+            setIsLiked(movieData.isLiked || false);
+            setIdLiked(movieData?.isLiked?.id || null);
+            setTotalLike(movieData.likes || 0);
+            setIsDisliked(movieData.isDisliked || false);
+            setIdDisliked(movieData?.isDisliked?.id || null);
+        }
+    }, [movieData]);
+
+    const handleToggleDislike = () => {
+        if (!movieData.id) return; // Mencegah aksi jika data belum siap
+        // Jika konten sedang di-like, batalkan like terlebih dahulu
+        if (isLiked) {
+            // Panggil toggleLike untuk unlike
+            toggleLike({
+                isLiked: true, // Paksa jadi true untuk proses unlike
+                id: movieData.id,
+                fieldKey: "movieId",
+                idLiked,
+                setIsLiked,
+                setTotalLike,
+                setIdLiked,
+            });
+        }
+        // Lanjutkan dengan proses dislike
+        toggleDislike({
+            isDisliked,
+            id: movieData.id,
+            fieldKey: "movieId", // Pastikan key ini sesuai dengan backend
+            idDisliked,
+            setIsDisliked,
+            setIdDisliked,
+        });
+    };
+
+    const handleToggleLike = () => {
+        if (!movieData.id) return; // Mencegah aksi jika data belum siap
+        // Jika konten sedang di-dislike, batalkan dislike terlebih dahulu
+        if (isDisliked) {
+            toggleDislike({
+                isDisliked: true, // Paksa jadi true untuk proses un-dislike
+                id: movieData.id,
+                fieldKey: "movieId",
+                idDisliked,
+                setIsDisliked,
+                setIdDisliked,
+            });
+        }
+        // Lanjutkan dengan proses like
+        toggleLike({
+            isLiked,
+            id: movieData.id,
+            fieldKey: "movieId", // Pastikan key ini sesuai dengan backend
+            idLiked,
+            setIsLiked,
+            setTotalLike,
+            setIdLiked,
+        });
+    };
 
     const handleSubscribe = async () => {
         setLoading(true);
@@ -66,12 +139,11 @@ export default function PlayingMoviePage({ params }) {
     useEffect(() => {
         createLog({
             contentType: "FILM",
-            logType: "CLICK",        // atau WATCH_TRAILER / WATCH_CONTENT sesuai kebutuhan
+            logType: "CLICK",
             contentId: id,
         });
     }, [id, createLog]);
 
-    const movieData = data?.data?.data || {};
     return (
         <div>
             <section className="flex justify-center rounded-md relative">
@@ -84,8 +156,9 @@ export default function PlayingMoviePage({ params }) {
                 {/* Player bergaya YouTube */}
                 <div className="mx-auto my-auto flex w-screen justify-center rounded-lg object-cover">
                     {movieData?.id && <DefaultVideoPlayer
-                        filmId={movieData.id}
-                        type={movieData?.isSubscribed ? 'WATCH_CONTENT' : 'WATCH_TRAILER'}
+                        contentId={movieData.id}
+                        contentType="FILM"
+                        logType={movieData?.isSubscribed ? 'WATCH_CONTENT' : 'WATCH_TRAILER'}
                         className="rounded-lg"
                         src={movieData?.isSubscribed ? movieData?.movieFileUrl : movieData?.trailerFileUrl}
                         poster={movieData?.thumbnailImageUrl}
@@ -110,21 +183,27 @@ export default function PlayingMoviePage({ params }) {
                                     {movieData?.isSubscribed ? "Watch" : "Buy"}
                                 </button>
                             </div>
-                            <div className="flex items-center justify-center transition delay-150 duration-400 ease-linear hover:-translate-y-1 hover:scale-x-110 hover:scale-y-110">
+                            <div onClick={handleToggleLike} className="flex items-center justify-center transition delay-150 duration-400 ease-linear hover:-translate-y-1 hover:scale-x-110 hover:scale-y-110 cursor-pointer">
                                 <Image
-                                    className="focus-within:bg-purple-300"
                                     width={35}
                                     alt="logo-like"
                                     src={logoLike}
                                     priority
+                                    className={isLiked ? 'filter brightness-150 drop-shadow-[0_0_3px_#4ade80]' : ''}
                                 />
+                                <p className="montserratFont mt-1 text-base font-bold pl-2">
+                                    {totalLike}
+                                </p>
                             </div>
-                            <div className="flex items-center justify-center">
+                            {/* Tombol Dislike */}
+                            <div onClick={handleToggleDislike} className="flex items-center justify-center cursor-pointer">
                                 <Image
                                     width={35}
                                     alt="logo-dislike"
-                                    src={logoDislike}
+                                    src={logoDislike} // Selalu gunakan ikon standar
                                     priority
+                                    // Tambahkan className dinamis ini:
+                                    className={isDisliked ? 'filter brightness-150 drop-shadow-[0_0_3px_#f87171]' : ''}
                                 />
                             </div>
                             <div className="flex items-center justify-center">
@@ -216,7 +295,7 @@ export default function PlayingMoviePage({ params }) {
                                     <CarouselItem className="">
                                         <Image src={movie1} priority alt="movies-logo-banner" />
                                     </CarouselItem>
-                                </CarouselContent>
+                                    _               </CarouselContent>
                                 <CarouselPrevious />
                                 <CarouselNext />
                             </Carousel>
@@ -249,14 +328,14 @@ export default function PlayingMoviePage({ params }) {
                                 <CarouselNext />
                             </Carousel>
                         </section>
-                    </section>
+                        _             </section>
                 </section>
 
                 <section className="grid grid-flow-row">
                     <div className="grid grid-flow-row">
                         <div className="flex flex-col">
                             <p className="mx-2 font-mono text-3xl font-bold text-white">Komentar</p>
-                            <div className="flex justify-start">
+                            _                     <div className="flex justify-start">
                                 <textarea
                                     placeholder="Tell us about you, maxs 150 character."
                                     className="my-2 mt-2 h-25 max-h-screen w-full resize rounded-md bg-gray-500 px-2.5 py-2.5 text-white saturate-50 placeholder:text-white focus-visible:placeholder:invisible"
@@ -284,7 +363,7 @@ export default function PlayingMoviePage({ params }) {
                                     <div>
                                         <div>
                                             <input
-                                                placeholder="  Komen"
+                                                placeholder="  Komen"
                                                 className="placeholder:text-sm placeholder:font-semibold placeholder:text-white"
                                             />
                                             <p className="mx-2 text-lg text-blue-400">Balas</p>
@@ -314,7 +393,7 @@ export default function PlayingMoviePage({ params }) {
                                     <div>
                                         <div>
                                             <input
-                                                placeholder="  Mantap Movie Nya"
+                                                placeholder="  Mantap Movie Nya"
                                                 className="placeholder:text-sm placeholder:font-semibold placeholder:text-white"
                                             />
                                             <p className="mx-2 text-lg text-blue-400">Balas</p>
@@ -322,7 +401,7 @@ export default function PlayingMoviePage({ params }) {
                                     </div>
                                 </div>
                                 <div className="mx-3 flex flex-col">
-                                    <Image src={logoPinComment} alt="pin-commentusers" />
+                                    _         <Image src={logoPinComment} alt="pin-commentusers" />
                                 </div>
                             </div>
                         </div>
@@ -331,7 +410,7 @@ export default function PlayingMoviePage({ params }) {
                             Komentar Lainnya
                         </button>
                     </div>
-                </section>
+                    _             </section>
 
                 <SimpleModal
                     title={"Subscribe untuk menikmati seluruh episode dari konten ini selama sebulan seharga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}

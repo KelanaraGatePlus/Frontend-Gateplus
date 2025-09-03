@@ -2,18 +2,26 @@ import Video from "next-video";
 import PlayIcon from "@@/icons/icon-play.svg";
 import { useRef, useState, useCallback, useEffect } from "react";
 import Image from "next/legacy/image";
+import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 
 /* ===========================
    Komponen: YouTubeStyleVideo (JSX)
    =========================== */
-export default function DefaultVideoPlayer({ src, poster, className }) {
-  const videoRef = useRef(null);        // berharap langsung ke <video>
-  const wrapperRef = useRef(null);      // fallback: cari <video> di dalam
+export default function DefaultVideoPlayer({
+  src,
+  poster,
+  className,
+  contentType,
+  logType,
+  contentId, // <-- 1. Prop baru ditambahkan
+}) {
+  const videoRef = useRef(null);
+  const wrapperRef = useRef(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [isBuffering, setIsBuffering] = useState(false);
+  const [ createLog ] = useCreateLogMutation();
 
-  // Pastikan kita pegang elemen <video> meski ref dari next-video tidak diteruskan
   const getVideoEl = () => {
     if (videoRef.current && typeof videoRef.current.play === "function") {
       return videoRef.current;
@@ -26,6 +34,17 @@ export default function DefaultVideoPlayer({ src, poster, className }) {
   };
 
   const handlePlay = useCallback(async () => {
+    // --- PERUBAHAN DIMULAI DI SINI ---
+    // 2. Panggil backend jika logType adalah 'WATCH_TRAILER'
+    if (logType === "WATCH_TRAILER" && contentId) {
+      createLog({
+        contentType,
+        logType,
+        contentId,
+      });
+    }
+    // --- PERUBAHAN SELESAI ---
+
     const el = getVideoEl();
     if (!el) return;
     try {
@@ -36,7 +55,7 @@ export default function DefaultVideoPlayer({ src, poster, className }) {
     } finally {
       setIsBuffering(false);
     }
-  }, []);
+  }, [contentType, logType, contentId, createLog]); // <-- 3. Tambahkan dependensi
 
   useEffect(() => {
     const el = getVideoEl();
@@ -54,7 +73,8 @@ export default function DefaultVideoPlayer({ src, poster, className }) {
   return (
     <div
       ref={wrapperRef}
-      className={`relative w-screen max-w-full overflow-hidden ${className || ""}`}
+      className={`relative w-screen max-w-full overflow-hidden ${className || ""
+        }`}
     >
       {/* Video */}
       <Video
@@ -91,6 +111,7 @@ export default function DefaultVideoPlayer({ src, poster, className }) {
             height={60}
             width={60}
             className="hover:cursor-pointer"
+            alt="Play video"
           />
 
           {/* Indikator buffering (opsional) */}

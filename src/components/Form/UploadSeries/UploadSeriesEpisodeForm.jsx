@@ -149,9 +149,9 @@ export default function UploadSeriesEpisodeForm() {
                         <div>
                             <UploadLargeFile
                                 prefix="series/episode"
-                                setData={field.onChange}
-                                name={'trailer'}
-                                label="Trailer Upload"
+                                setDataUrl={field.onChange}
+                                name={'episodeFileUrl'}
+                                label="Episode Upload"
                             />
                             <input type="hidden" {...field} value={field.value || ""} />
                             {fieldState.error?.message && (

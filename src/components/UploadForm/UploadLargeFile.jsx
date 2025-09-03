@@ -1,12 +1,15 @@
+// src/components/UploadForm/UploadLargeFile.jsx
+
 "use client";
 
 import React, { useEffect } from "react";
+import Image from "next/image";
+import { XIcon } from "flowbite-react";
+
 // Sesuaikan path ke hook dan komponen LoadingOverlay Anda
 import LoadingOverlay from "@/components/LoadingOverlay/page";
-import { useUploadSessionData } from "@/hooks/helper/useUploadSession";
-import Image from "next/image";
+import { useUploadSessionData } from "@/hooks/helper/useUploadSession"; // Pastikan path ini benar
 import IconUploadGallery from "@@/icons/upload-content/icons-video-upload.svg";
-import { XIcon } from "flowbite-react";
 
 // Fungsi bantuan untuk memformat byte agar lebih mudah dibaca
 const formatBytes = (bytes) => {
@@ -14,7 +17,8 @@ const formatBytes = (bytes) => {
     return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 };
 
-export default function UploadLargeFile({ label = "Film", prefix, setData, error, name }) {
+// Terima prop 'setDuration' yang baru
+export default function UploadLargeFile({ label = "Film", prefix, setDataUrl, setDuration = null, error, name }) {
     const {
         progress,
         uploadedBytes,
@@ -29,17 +33,31 @@ export default function UploadLargeFile({ label = "Film", prefix, setData, error
         triggerResume,
         handleCancel,
         isFinish,
-        fileUrl
+        fileUrl,
+        videoDuration,
     } = useUploadSessionData({ prefix: prefix });
 
+    // Efek ini mengirimkan URL file setelah upload selesai
     useEffect(() => {
         if (isFinish && fileUrl) {
-            setData(fileUrl.location);
+            setDataUrl(fileUrl.location);
+            if (setDuration) {
+                // Jika durasi terdeteksi (bukan null) dan prop setDuration ada
+                if (videoDuration && setDuration) {
+                    // Panggil fungsi callback dengan nilai durasi yang sudah dibulatkan
+                    setDuration(Math.round(videoDuration).toString());
+                }
+            }
         }
-    }, [isFinish, fileUrl, setData]);
+    }, [isFinish, fileUrl, setDataUrl]);
+
+    // --- EFEK BARU: Mengirimkan durasi video saat terdeteksi ---
+    useEffect(() => {
+
+    }, [videoDuration, setDuration]); // Jalankan efek ini jika videoDuration atau setDuration berubah
+
 
     return (
-
         <div className="flex items-start gap-2">
             <h3 className="montserratFont flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
                 {label}
@@ -96,7 +114,6 @@ export default function UploadLargeFile({ label = "Film", prefix, setData, error
                                                 />
                                                 <span>Wait until your file uploaded</span>
                                             </div>
-
                                         </div>
                                         <div className="w-full bg-green-500 rounded-full h-max overflow-hidden">
                                             <div

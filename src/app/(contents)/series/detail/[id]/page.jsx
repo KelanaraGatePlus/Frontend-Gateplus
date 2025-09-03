@@ -20,7 +20,7 @@ import logoSubscribe from "@@/logo/logoDetailFilm/subscribe-icon-kelanara.svg";
 import movie1 from "@@/logo/logoFilm/film_1.svg";
 import movie2 from "@@/logo/logoFilm/film_2.svg";
 import movie3 from "@@/logo/logoFilm/film_3.svg";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Image from "next/legacy/image";
 import Link from "next/link";
@@ -29,6 +29,9 @@ import { useGetSeriesByIdQuery } from "@/hooks/api/seriesSliceAPI";
 import ProductEpisodeSection from "@/components/MainDetailProduct/ProductEpisodeSection";
 import { useMidtransPayment } from "@/hooks/api/midtransAPI";
 import SimpleModal from "@/components/Modal/SimpleModal";
+import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
+import { useLikeContent } from "@/lib/features/useLikeContent";
+import { useDislikeContent } from "@/lib/features/useDislikeContent";
 
 /* ===========================
    Halaman: DetailSeriesPage (JSX)
@@ -43,6 +46,15 @@ export default function DetailSeriesPage({ params }) {
     const [selectedPrice, setSelectedPrice] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedEpisode, setSelectedEpisode] = useState(null);
+    const [createLog] = useCreateLogMutation();
+    const { toggleLike } = useLikeContent();
+    const { toggleDislike } = useDislikeContent();
+
+    const [isLiked, setIsLiked] = useState(false);
+    const [idLiked, setIdLiked] = useState(null);
+    const [totalLike, setTotalLike] = useState(0);
+    const [isDisliked, setIsDisliked] = useState(false);
+    const [idDisliked, setIdDisliked] = useState(null);
 
     const seriesData = data?.data?.data || {};
     const episode_series = (seriesData.episodes || []).slice().sort((a, b) => {
@@ -90,6 +102,76 @@ export default function DetailSeriesPage({ params }) {
         setLoading(false);
     };
 
+    useEffect(() => {
+        createLog({
+            contentType: "SERIES",
+            logType: "CLICK",
+            contentId: id,
+        });
+    }, [id, createLog]);
+
+    useEffect(() => {
+        // Mengisi state dari data API saat pertama kali dimuat
+        if (seriesData && seriesData.id) {
+            setIsLiked(seriesData.isLiked || false);
+            setIdLiked(seriesData?.isLiked?.id || null);
+            setTotalLike(seriesData.likes || 0);
+            setIsDisliked(seriesData.isDisliked || false);
+            setIdDisliked(seriesData?.isDisliked?.id || null);
+        }
+    }, [seriesData]);
+
+    const handleToggleDislike = () => {
+        if (!seriesData.id) return; // Mencegah aksi jika data belum siap
+        // Jika konten sedang di-like, batalkan like terlebih dahulu
+        if (isLiked) {
+            // Panggil toggleLike untuk unlike
+            toggleLike({
+                isLiked: true, // Paksa jadi true untuk proses unlike
+                id: seriesData.id,
+                fieldKey: "seriesId",
+                idLiked,
+                setIsLiked,
+                setTotalLike,
+                setIdLiked,
+            });
+        }
+        // Lanjutkan dengan proses dislike
+        toggleDislike({
+            isDisliked,
+            id: seriesData.id,
+            fieldKey: "seriesId", // Pastikan key ini sesuai dengan backend
+            idDisliked,
+            setIsDisliked,
+            setIdDisliked,
+        });
+    };
+
+    const handleToggleLike = () => {
+        if (!seriesData.id) return; // Mencegah aksi jika data belum siap
+        // Jika konten sedang di-dislike, batalkan dislike terlebih dahulu
+        if (isDisliked) {
+            toggleDislike({
+                isDisliked: true, // Paksa jadi true untuk proses un-dislike
+                id: seriesData.id,
+                fieldKey: "seriesId",
+                idDisliked,
+                setIsDisliked,
+                setIdDisliked,
+            });
+        }
+        // Lanjutkan dengan proses like
+        toggleLike({
+            isLiked,
+            id: seriesData.id,
+            fieldKey: "seriesId", // Pastikan key ini sesuai dengan backend
+            idLiked,
+            setIsLiked,
+            setTotalLike,
+            setIdLiked,
+        });
+    };
+
     return (
         <div>
             <section className="flex justify-center rounded-md relative">
@@ -105,6 +187,9 @@ export default function DetailSeriesPage({ params }) {
                         className="rounded-lg"
                         src={seriesData?.trailerFileUrl}
                         poster={seriesData?.thumbnailImageUrl}
+                        logType={"WATCH_TRAILER"}
+                        contentType={"SERIES"}
+                        contentId={seriesData?.id}
                     />
                 </div>
             </section>
@@ -114,7 +199,7 @@ export default function DetailSeriesPage({ params }) {
                     <div className="flex flex-col gap-4 w-1/2">
                         <div className="flex flex-col gap-2">
                             <h1 className="font-black text-4xl">
-                                {seriesData?.title || "Judul Movie Tidak Tersedia"}
+                                {seriesData?.title || "Judul Series Tidak Tersedia"}
                             </h1>
                             <p className=" text-sm/normal">
                                 {seriesData?.ageRestriction} | {seriesData?.categories?.tittle}
@@ -126,21 +211,27 @@ export default function DetailSeriesPage({ params }) {
                                     {!seriesData?.canSubscribe ? 'Buy Episode To Watch' : seriesData?.isSubscribed ? "Watch" : "Buy"}
                                 </button>
                             </div>
-                            <div className="flex items-center justify-center transition delay-150 duration-400 ease-linear hover:-translate-y-1 hover:scale-x-110 hover:scale-y-110">
+                            <div onClick={handleToggleLike} className="flex items-center justify-center transition delay-150 duration-400 ease-linear hover:-translate-y-1 hover:scale-x-110 hover:scale-y-110 cursor-pointer">
                                 <Image
-                                    className="focus-within:bg-purple-300"
                                     width={35}
                                     alt="logo-like"
                                     src={logoLike}
                                     priority
+                                    className={isLiked ? 'filter brightness-150 drop-shadow-[0_0_3px_#4ade80]' : ''}
                                 />
+                                <p className="montserratFont mt-1 text-base font-bold pl-2">
+                                    {totalLike}
+                                </p>
                             </div>
-                            <div className="flex items-center justify-center">
+                            {/* Tombol Dislike */}
+                            <div onClick={handleToggleDislike} className="flex items-center justify-center cursor-pointer">
                                 <Image
                                     width={35}
                                     alt="logo-dislike"
-                                    src={logoDislike}
+                                    src={logoDislike} // Selalu gunakan ikon standar
                                     priority
+                                    // Tambahkan className dinamis ini:
+                                    className={isDisliked ? 'filter brightness-150 drop-shadow-[0_0_3px_#f87171]' : ''}
                                 />
                             </div>
                             <div className="flex items-center justify-center">

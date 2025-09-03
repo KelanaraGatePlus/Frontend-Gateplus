@@ -45,6 +45,7 @@ export default function UploadMovieForm() {
         control,
         watch,
         formState: { errors },
+        setValue,
     } = useForm({
         resolver: zodResolver(createMovieSchema),
         mode: "onChange",
@@ -132,14 +133,6 @@ export default function UploadMovieForm() {
                         placeholder="Deskripsi"
                         {...register("description")}
                         error={errors.description?.message}
-                    />
-
-                    <InputText
-                        label={"Durasi"}
-                        name="duration"
-                        placeholder="00Minute"
-                        {...register("duration")}
-                        error={errors.duration?.message}
                     />
 
                     {/* Genre */}
@@ -256,9 +249,14 @@ export default function UploadMovieForm() {
                             <div>
                                 <UploadLargeFile
                                     prefix="movie/file"
-                                    setData={field.onChange}
+                                    setDataUrl={field.onChange}
                                     name={'movie'}
                                     label="Movie Upload"
+                                    error={fieldState.error?.message}
+                                    setDuration={(durationValue) => {
+                                        // Gunakan setValue untuk mengisi field 'duration'
+                                        setValue('duration', durationValue, { shouldValidate: true });
+                                    }}
                                 />
                                 <input type="hidden" {...field} value={field.value || ""} />
                                 {fieldState.error?.message && (
@@ -267,6 +265,20 @@ export default function UploadMovieForm() {
                             </div>
                         )}
                     />
+                    {/* Input durasi disembunyikan karena nilainya diisi otomatis */}
+                    <input type="hidden" {...register("duration")} />
+
+                    {/* (Opsional) Tampilkan durasi yang terdeteksi untuk feedback ke user */}
+                    {watch("duration") && (
+                        <div className="flex items-start gap-2">
+                            <h3 className="montserratFont flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
+                                Durasi
+                            </h3>
+                            <p className="flex-4 md:flex-10 text-sm text-white mt-1">
+                                {watch("duration")} detik
+                            </p>
+                        </div>
+                    )}
 
                     {/* Trailer URL (muncul setelah movie ada) */}
                     {watch("movieFileUrl") && (
@@ -278,7 +290,7 @@ export default function UploadMovieForm() {
                                 <div>
                                     <UploadLargeFile
                                         prefix="movie/trailer"
-                                        setData={field.onChange}
+                                        setDataUrl={field.onChange}
                                         name={'trailer'}
                                         label="Trailer Upload"
                                     />

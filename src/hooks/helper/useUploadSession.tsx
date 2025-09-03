@@ -1,5 +1,5 @@
 // src/hooks/useUploadSessionData.ts
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios"; // Tetap diperlukan untuk PUT ke signed URL
 import {
     // Menggunakan hook dari alur "Get Signed URL"
@@ -41,6 +41,8 @@ export function useUploadSessionData({ chunkSize = DEFAULT_CHUNK_SIZE, prefix })
     const [resumeMeta, setResumeMeta] = useState<ResumeMeta | null>(null);
     const [isFinish, setIsFinish] = useState(false);
     const [fileUrl, setFileUrl] = useState<string | null>(null);
+    // State baru untuk menyimpan durasi video
+    const [videoDuration, setVideoDuration] = useState<number | null>(null);
 
     // State internal untuk menyimpan data sesi lengkap
     const [fullSession, setFullSession] = useState<FullUploadSession | null>(null);
@@ -76,10 +78,57 @@ export function useUploadSessionData({ chunkSize = DEFAULT_CHUNK_SIZE, prefix })
             .join("");
     };
 
-    // --- FUNGSI INTI (GABUNGAN) ---
+    // --- FUNGSI HELPER BARU UNTUK MENDETEKSI DURASI VIDEO ---
+    const getVideoDuration = (file: File): Promise<number> => {
+        return new Promise((resolve, reject) => {
+            // Membuat elemen video sementara di memori
+            const videoElement = document.createElement('video');
+            videoElement.preload = 'metadata'; // Hanya minta metadata, bukan seluruh video
 
+            // Handler ketika metadata berhasil dimuat
+            videoElement.onloadedmetadata = () => {
+                window.URL.revokeObjectURL(videoElement.src); // Hapus object URL untuk menghindari memory leak
+                resolve(videoElement.duration); // Resolve promise dengan durasi video dalam detik
+            };
+
+            // Handler jika terjadi error (misal, file bukan video atau rusak)
+            videoElement.onerror = () => {
+                window.URL.revokeObjectURL(videoElement.src);
+                reject("Gagal membaca metadata. Pastikan file adalah format video yang didukung.");
+            };
+
+            // Membuat URL sementara untuk file lokal agar bisa dibaca oleh elemen video
+            videoElement.src = URL.createObjectURL(file);
+        });
+    };
+
+
+    // --- FUNGSI INTI (GABUNGAN) ---
     const handleFile = async (file: File, resume = false) => {
         if (isUploadingRef.current) return;
+
+        // Reset state dari unggahan sebelumnya
+        setVideoDuration(null);
+        setIsFinish(false);
+        setFileUrl(null);
+        setProgress(0);
+
+        // --- LOGIKA DETEKSI DURASI VIDEO ---
+        try {
+            if (file.type.startsWith("video/")) {
+                setIsLoading(true); // Tampilkan loading saat metadata dibaca
+                const duration = await getVideoDuration(file);
+                setVideoDuration(duration); // Simpan durasi dalam detik, dibulatkan
+                console.log(`✅ Durasi video terdeteksi: ${Math.round(duration)} detik.`);
+            } else {
+                console.log("File bukan video, deteksi durasi dilewati.");
+            }
+        } catch (error) {
+            alert(error); // Tampilkan pesan error jika gagal baca metadata
+            setIsLoading(false);
+            return; // Hentikan proses jika gagal
+        }
+
         isUploadingRef.current = true;
         setIsLoading(true);
 
@@ -93,7 +142,6 @@ export function useUploadSessionData({ chunkSize = DEFAULT_CHUNK_SIZE, prefix })
                     localStorage.removeItem(UPLOAD_STATUS_KEY);
                     setFullSession(null);
                     setResumeMeta(null);
-                    // Lanjut ke proses upload baru di bawah
                 }
             } else {
                 localStorage.removeItem(UPLOAD_STATUS_KEY);
@@ -105,16 +153,15 @@ export function useUploadSessionData({ chunkSize = DEFAULT_CHUNK_SIZE, prefix })
             setIsLoading(false);
             setTotalBytes(file.size);
 
-            // Proses upload menggunakan mekanisme "Get Signed URL"
             let sessionToProcess = fullSession;
 
             // 1. Initiate atau Resume
-            if (!sessionToProcess || !resume) { // Jika sesi baru atau resume gagal validasi
+            if (!sessionToProcess || !resume) {
                 const initData = await initiateUpload({
                     fileSize: file.size, chunkSize, prefix, fileName: file.name, contentType: file.type,
                 }).unwrap();
                 sessionToProcess = { ...initData, fileName: file.name, fileHash, uploadedParts: [] };
-            } else { // Jika resume valid
+            } else {
                 const statusData = await getUploadStatus({ key: sessionToProcess.key, uploadId: sessionToProcess.uploadId }).unwrap();
                 sessionToProcess.uploadedParts = statusData.uploadedParts;
             }
@@ -139,21 +186,17 @@ export function useUploadSessionData({ chunkSize = DEFAULT_CHUNK_SIZE, prefix })
                 const start = (partNumber - 1) * chunkSize;
                 const chunk = file.slice(start, start + chunkSize);
 
-                // Dapatkan signed URL
                 const { signedUrl } = await getSignedUrlForChunk({ ...sessionToProcess, partNumber }).unwrap();
-                // Upload ke signed URL
                 const uploadResponse = await axios.put(signedUrl, chunk, { headers: { 'Content-Type': file.type } });
 
                 const newPart = { PartNumber: partNumber, ETag: uploadResponse.headers.etag.replaceAll('"', '') };
                 uploadedParts.push(newPart);
 
-                // Update state & localStorage secara immutable
                 const updatedSession = { ...sessionToProcess, uploadedParts };
                 setFullSession(updatedSession);
                 localStorage.setItem(UPLOAD_STATUS_KEY, JSON.stringify(updatedSession));
-                sessionToProcess = updatedSession; // Update variabel lokal
+                sessionToProcess = updatedSession;
 
-                // Update progress & ETA
                 bytesUploadedThisSession += chunk.size;
                 currentBytesSoFar += chunk.size;
                 setUploadedBytes(currentBytesSoFar);
@@ -227,7 +270,6 @@ export function useUploadSessionData({ chunkSize = DEFAULT_CHUNK_SIZE, prefix })
             alert("Upload dibatalkan.");
         } catch (error) {
             console.error("Gagal membatalkan sesi di server:", error);
-            // Tetap hentikan di frontend
         } finally {
             localStorage.removeItem(UPLOAD_STATUS_KEY);
             setResumeMeta(null);
@@ -239,10 +281,22 @@ export function useUploadSessionData({ chunkSize = DEFAULT_CHUNK_SIZE, prefix })
         }
     };
 
-    // Mengembalikan interface yang sama seperti template Anda
+    // Mengembalikan interface yang sama seperti template Anda, ditambah videoDuration
     return {
-        progress, uploadedBytes, totalBytes, eta, uploading, isLoading, resumeMeta, fileInputRef,
-        isFinish, fileUrl,
-        onNewFile, onResumeFile, triggerResume, handleCancel
+        progress,
+        uploadedBytes,
+        totalBytes,
+        eta,
+        uploading,
+        isLoading,
+        resumeMeta,
+        fileInputRef,
+        isFinish,
+        fileUrl,
+        videoDuration,
+        onNewFile,
+        onResumeFile,
+        triggerResume,
+        handleCancel
     };
 }
