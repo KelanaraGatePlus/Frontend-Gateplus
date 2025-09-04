@@ -59,11 +59,11 @@ export default function DetailSeriesPage({ params }) {
 
                 {/* Player bergaya YouTube */}
                 <div className="mx-auto my-auto flex w-screen justify-center rounded-lg object-cover">
-                    <DefaultVideoPlayer
+                    {episodeData && <DefaultVideoPlayer
                         className="rounded-lg"
-                        src={seriesData?.trailerFileUrl}
+                        src={episodeData?.episodeFileUrl}
                         poster={seriesData?.thumbnailImageUrl}
-                    />
+                    />}
                 </div>
             </section>
 

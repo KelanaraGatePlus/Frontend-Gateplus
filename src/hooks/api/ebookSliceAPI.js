@@ -41,6 +41,10 @@ export const ebookApi = createApi({
       }),
       invalidatesTags: ["ebook"],
     }),
+    getEbooksHomeData: builder.query({
+      query: () => `/ebooks/highlights`,
+      providesTags: ["ebook"],
+    }),
   }),
 });
 
@@ -50,4 +54,5 @@ export const {
   useGetEpisodeEbookByIdQuery,
   useCreateEbookMutation,
   useCreateEpisodeMutation,
+  useGetEbooksHomeDataQuery,
 } = ebookApi;

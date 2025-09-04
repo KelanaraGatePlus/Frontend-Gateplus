@@ -33,7 +33,11 @@ export const movieAPI = createApi({
       query: (id) => `/movies/${id}`,
       providesTags: (result, error, id) => [{ type: 'movie', id }],
     }),
+    getMoviesHomeData: builder.query({
+      query: () => "/movies/highlights",
+      providesTags: ['movie'],
+    }),
   }),
 });
 
-export const { useGetMovieQuery, useCreateMovieMutation, useGetMovieByIdQuery } = movieAPI;
+export const { useGetMovieQuery, useCreateMovieMutation, useGetMovieByIdQuery, useGetMoviesHomeDataQuery } = movieAPI;

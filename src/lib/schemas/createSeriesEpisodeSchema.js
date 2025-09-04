@@ -6,7 +6,7 @@ const maxSize = 500 * 1024;
 export const createSeriesEpisodeSchema = z.object({
     seriesId: z.string().min(1, "Judul series wajib dipilih"),
     title: z.string().min(1, "Judul wajib diisi").max(50, "Maksimal 50 karakter"),
-    description: z.string().min(1, "Deskripsi wajib diisi").max(120, "Maksimal 120 karakter"),
+    description: z.string().min(1, "Deskripsi wajib diisi"),
     price: z.string().min(1, "Harga wajib diisi"),
     coverEpisode: z
         .any()

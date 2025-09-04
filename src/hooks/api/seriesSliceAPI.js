@@ -42,7 +42,13 @@ export const seriesAPI = createApi({
       }),
       invalidatesTags: ["series"],
     }),
+    getSeriesHomeData: builder.query({
+      query: () => "/series/highlights",
+      providesTags: ['series'],
+    }),
   }),
 });
 
-export const { useGetSeriesQuery, useCreateSeriesMutation, useGetSeriesByIdQuery, useCreateEpisodeSeriesMutation } = seriesAPI;
+export const { useGetSeriesQuery, useCreateSeriesMutation, useGetSeriesByIdQuery, useCreateEpisodeSeriesMutation,
+  useGetSeriesHomeDataQuery
+} = seriesAPI;

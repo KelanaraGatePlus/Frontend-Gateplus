@@ -46,6 +46,10 @@ export const podcastApi = createApi({
             }),
             invalidatesTags: ["podcast"],
         }),
+        getPodcastHomeData: builder.query({
+            query: () => `/podcast/highlights`,
+            providesTags: ["podcast"],
+        }),
     }),
 });
 
@@ -54,4 +58,5 @@ export const {
     useGetPodcastByIdQuery,
     useCreatePodcastMutation,
     useCreateEpisodeMutation,
+    useGetPodcastHomeDataQuery,
 } = podcastApi;

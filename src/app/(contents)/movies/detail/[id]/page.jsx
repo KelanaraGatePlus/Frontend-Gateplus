@@ -328,14 +328,14 @@ export default function PlayingMoviePage({ params }) {
                                 <CarouselNext />
                             </Carousel>
                         </section>
-                        _             </section>
+                    </section>
                 </section>
 
                 <section className="grid grid-flow-row">
                     <div className="grid grid-flow-row">
                         <div className="flex flex-col">
                             <p className="mx-2 font-mono text-3xl font-bold text-white">Komentar</p>
-                            _                     <div className="flex justify-start">
+                            <div className="flex justify-start">
                                 <textarea
                                     placeholder="Tell us about you, maxs 150 character."
                                     className="my-2 mt-2 h-25 max-h-screen w-full resize rounded-md bg-gray-500 px-2.5 py-2.5 text-white saturate-50 placeholder:text-white focus-visible:placeholder:invisible"
@@ -401,7 +401,7 @@ export default function PlayingMoviePage({ params }) {
                                     </div>
                                 </div>
                                 <div className="mx-3 flex flex-col">
-                                    _         <Image src={logoPinComment} alt="pin-commentusers" />
+                                    <Image src={logoPinComment} alt="pin-commentusers" />
                                 </div>
                             </div>
                         </div>
@@ -410,7 +410,7 @@ export default function PlayingMoviePage({ params }) {
                             Komentar Lainnya
                         </button>
                     </div>
-                    _             </section>
+                </section>
 
                 <SimpleModal
                     title={"Subscribe untuk menikmati seluruh episode dari konten ini selama sebulan seharga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}

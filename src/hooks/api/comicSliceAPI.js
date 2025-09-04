@@ -46,6 +46,10 @@ export const comicApi = createApi({
             }),
             invalidatesTags: ["comic"],
         }),
+        getComicsHomeData: builder.query({
+            query: () => `/comics/highlights`,
+            providesTags: ["comic"],
+        }),
     }),
 });
 
@@ -54,4 +58,5 @@ export const {
     useGetComicByIdQuery,
     useCreateComicMutation,
     useCreateEpisodeMutation,
+    useGetComicsHomeDataQuery,
 } = comicApi;

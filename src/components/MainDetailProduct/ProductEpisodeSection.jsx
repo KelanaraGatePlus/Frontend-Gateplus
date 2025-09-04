@@ -155,13 +155,13 @@ export default function ProductEpisodeSection({
     return (
       <>
         {productEpisodes?.length > 0 ? (
-          <section className="relative mb-10 flex w-screen flex-col py-0 text-white">
+          <section className="relative mb-10 flex w-full flex-col py-0 text-white">
             {(showAll ? productEpisodes : productEpisodes.slice(0, 5))
               .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
               .map((item, index) => (
                 <div
                   key={index}
-                  className={`group flex cursor-pointer items-stretch gap-2 px-4 py-4 ${item.isPurchased || item.price == 'Free' ? "hover:bg-[#105CAC]" : "hover:bg-gray-900"} md:gap-4 md:mx-15 md:rounded-lg transition-all duration-300 ease-in-out justify-between ${currentlyPlaying?.id === item.id ? "" : ""} `}
+                  className={`group flex cursor-pointer w-full gap-2 px-4 py-4 ${item.isPurchased || item.price == 'Free' ? "hover:bg-[#105CAC]" : "hover:bg-gray-900"} md:gap-4 md:rounded-lg transition-all duration-300 ease-in-out justify-between ${currentlyPlaying?.id === item.id ? "" : ""} `}
                   onClick={item.isPurchased || item.price == 'Free' ? () => handlePlayPodcast(item) : () => { handlePayment(item.creatorId, item.id, item.price) }}
                 >
                   <div className="flex gap-2 w-[200px] md:w-2xl">
@@ -310,7 +310,7 @@ ProductEpisodeSection.propTypes = {
 
 function EpisodeUnAvailable() {
   return (
-    <div className="px-14">
+    <div className="px-14 py-6">
       <div className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#393939] py-4">
         <h4 className={`zeinFont text-xl font-semibold text-white md:text-2xl`}>
           Belum Ada Episode Tersedia

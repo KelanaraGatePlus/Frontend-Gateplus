@@ -6,7 +6,7 @@ const maxSize = 500 * 1024;
 export const createComicEpisodeSchema = z.object({
     comicId: z.string().min(1, "Judul series wajib dipilih"),
     title: z.string().min(1, "Judul wajib diisi").max(50, "Maksimal 50 karakter"),
-    description: z.string().min(1, "Deskripsi wajib diisi").max(120, "Maksimal 120 karakter"),
+    description: z.string().min(1, "Deskripsi wajib diisi"),
     price: z.string().min(1, "Harga wajib diisi"),
     notedEpisode: z
         .string()
@@ -56,8 +56,8 @@ export const createComicEpisodeSchema = z.object({
             message: "Terdapat file dengan nama yang sama",
         }),
     termAccepted: z.literal(true).refine(val => val === true, {
-            message: "Syarat dan Ketentuan harus disetujui",
-        }),
+        message: "Syarat dan Ketentuan harus disetujui",
+    }),
     agreementAccepted: z.literal(true).refine(val => val === true, {
         message: "Agreement harus disetujui",
     }),
