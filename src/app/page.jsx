@@ -16,7 +16,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col overflow-x-hidden">
       <head>
-        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+        <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" />
       </head>
       <div className="mt-15 flex flex-col md:mt-[85px]">
         <SliderBannerPage />
