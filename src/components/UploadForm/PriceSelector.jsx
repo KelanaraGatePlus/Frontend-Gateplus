@@ -1,7 +1,6 @@
 "use client";
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
 import PropTypes from "prop-types";
-import { set } from "zod";
 
 export default function PriceSelector({
     label = "Price",
@@ -151,4 +150,5 @@ PriceSelector.propTypes = {
     error: PropTypes.string,
     freeValue: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     freeLabel: PropTypes.string,
+    canFree: PropTypes.bool
 };

@@ -1,7 +1,9 @@
+import React from "react";
 import { useState } from "react";
 import logoShare from "@@/logo/logoDetailFilm/share-icons.svg";
 import Image from "next/image";
 import ShareModal from "../ShareModal/page";
+import PropTypes from "prop-types";
 
 export default function DefaultShareButton({ className, contentType }) {
     const [open, setOpen] = useState(false);
@@ -25,3 +27,8 @@ export default function DefaultShareButton({ className, contentType }) {
         </div>
     );
 }
+
+DefaultShareButton.propTypes = {
+    className: PropTypes.string,
+    contentType: PropTypes.string.isRequired,
+};

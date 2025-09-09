@@ -100,7 +100,9 @@ export default function UploadMovieForm() {
 
             try {
                 const result = await createMovie(formData).unwrap();
-                router.push(`/`);
+                if (result) {
+                    router.push(`/`);
+                }
             } catch (err) {
                 console.error("Error creating movie:", err);
             }

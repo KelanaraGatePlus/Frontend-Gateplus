@@ -1,6 +1,5 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
-import Navbar from "@/components/Navbar/page";
 import SliderBannerPage from "@/components/BannerPromoSlider/page";
 import CategoryMenu from "@/components/CategoryMenu/page";
 import CarouselNewest from "@/components/Carousel/CarouselHome/carouselNewest";
@@ -11,7 +10,6 @@ import CarouselRecommendations from "@/components/Carousel/CarouselHome/carousel
 import CarouselPopularEbooks from "@/components/Carousel/CarouselHome/carouselPopularEbooks";
 import CarouselPopularComics from "@/components/Carousel/CarouselHome/carouselPopularComics";
 import CarouselPopularPodcasts from "@/components/Carousel/CarouselHome/carouselPopularPodcasts";
-import Footer from "@/components/Footer/MainFooter";
 import "@splidejs/react-splide/css";
 
 export default function HomePage() {

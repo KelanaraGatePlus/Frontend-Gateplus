@@ -24,7 +24,7 @@ export default function DetailPodcastPage({ params }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPrice, setSelectedPrice] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { pay, snapReady } = useMidtransPayment();
+    const { pay } = useMidtransPayment();
   const [createLog] = useCreateLogMutation();
 
   useEffect(() => {

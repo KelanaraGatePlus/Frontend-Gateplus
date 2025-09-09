@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { usePathname } from 'next/navigation';
+import PropTypes from "prop-types";
 
 /*[--- COMPONENT IMPORT ---]*/
 import SearchResults from "@/components/SearchResults/page.jsx";
@@ -262,3 +263,7 @@ export default function NavbarContent({ openCreateContentModal }) {
     </>
   );
 }
+
+NavbarContent.propTypes = {
+  openCreateContentModal: PropTypes.func.isRequired,
+};

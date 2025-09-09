@@ -21,8 +21,8 @@ export default function DetailComicPage({ params }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPrice, setSelectedPrice] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { pay, snapReady } = useMidtransPayment();
-  const { pay: subscribePay, snapReady: snapReadySubscribe } = useMidtransPayment("SUBSCRIBE");
+  const { pay } = useMidtransPayment();
+  const { pay: subscribePay } = useMidtransPayment("SUBSCRIBE");
   const [selectedContentId, setSelectedContentId] = useState(null);
   const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
   const [createLog] = useCreateLogMutation();

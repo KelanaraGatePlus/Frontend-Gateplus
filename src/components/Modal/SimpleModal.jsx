@@ -1,3 +1,6 @@
+import React from "react";
+import PropTypes from "prop-types";
+
 export default function SimpleModal({ isOpen, onClose, onConfirm, title }) {
     return (
         <div className={`fixed inset-0 flex items-center justify-center z-50 ${isOpen ? '' : 'hidden'}`}>
@@ -27,3 +30,10 @@ export default function SimpleModal({ isOpen, onClose, onConfirm, title }) {
         </div>
     );
 }
+
+SimpleModal.propTypes = {
+    isOpen: PropTypes.bool.isRequired,
+    onClose: PropTypes.func.isRequired,
+    onConfirm: PropTypes.func.isRequired,
+    title: PropTypes.string.isRequired,
+};

@@ -2,12 +2,9 @@
 /* eslint-disable react/react-in-jsx-scope */
 import AreaTrendChart from "@/components/Chart/AreaChart";
 import MonthYearPicker from "@/components/Dropdown/MonthYearDropdown";
-import Footer from "@/components/Footer/MainFooter";
 import FlexModal from "@/components/Modal/FlexModal";
-import NavbarLogin from "@/components/NavbarLogin/page";
 import { useGetDashboardDataQuery } from "@/hooks/api/creatorSliceAPI";
 import { contentType } from "@/lib/constants/contentType";
-import IconsAnalytics from "@@/icons/icons-dashboard/icons-analytics.svg";
 import IconsContentComics from "@@/icons/icons-dashboard/icons-content-comics.svg";
 import IconsContentEbook from "@@/icons/icons-dashboard/icons-content-ebook.svg";
 import IconsContentFilms from "@@/icons/icons-dashboard/icons-content-films.svg";
@@ -24,7 +21,6 @@ export default function DashboardCreatorsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const dashboardData = useGetDashboardDataQuery();
 
-  console.log("Dashboard Data", dashboardData);
   return (
     <div className="montserratFont">
       {/* Dashboard Creators */}
@@ -209,7 +205,7 @@ export default function DashboardCreatorsPage() {
               <div className="flex flex-col gap-2">
                 {/* User */}
                 {dashboardData.data?.data?.data.topSpenders.map((spenders) => (
-                  <div className="flex flex-row justify-between items-center">
+                  <div key={spenders.user.id || spenders.user.username} className="flex flex-row justify-between items-center">
                     <div className="flex flex-row items-center gap-2">
                       <Image
                         src={IconsUsers}
@@ -257,7 +253,7 @@ export default function DashboardCreatorsPage() {
             </div>
             <div className="grid grid-cols-4 gap-10">
               {dashboardData.data?.data?.data?.topContents.map((content) => (
-              <div className="grid grid-cols-3 items-center gap-4">
+              <div key={content.id || content.title} className="grid grid-cols-3 items-center gap-4">
                 <div className="w-full col-span-1 aspect-[12/17]">
                   <img
                     src={content.image}

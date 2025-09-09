@@ -29,7 +29,6 @@ import LoadingOverlay from "@/components/LoadingOverlay/page";
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
 import UploadLargeFile from "@/components/UploadForm/UploadLargeFile";
-import { useCreateMovieMutation } from "@/hooks/api/movieSliceAPI";
 import PriceSelector from "@/components/UploadForm/PriceSelector";
 import { priceOption } from "@/lib/constants/priceOptions";
 import { useCreateSeriesMutation } from "@/hooks/api/seriesSliceAPI";
@@ -99,9 +98,11 @@ export default function UploadSeriesForm() {
 
             try {
                 const result = await createSeries(formData).unwrap();
-                router.push(`/`);
+                if (result) {
+                    router.push(`/`);
+                }
             } catch (err) {
-                console.error("Error creating movie:", err);
+                console.error("Error creating series:", err);
             }
         } catch (error) {
             console.error("Error preparing form data:", error);

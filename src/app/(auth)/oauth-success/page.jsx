@@ -1,10 +1,11 @@
 "use client";
 
+import React, { Suspense } from "react";
 import { useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { storeUserData } from "@/lib/helper/authHelper";
 
-export default function OAuthSuccessPage() {
+function OAuthSuccessPageInner() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -36,4 +37,12 @@ export default function OAuthSuccessPage() {
     }, []);
 
     return <p>Logging in via Google...</p>;
+}
+
+export default function OAuthSuccessPage() {
+    return (
+        <Suspense fallback={<p>Loading...</p>}>
+            <OAuthSuccessPageInner />
+        </Suspense>
+    );
 }

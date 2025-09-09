@@ -1,6 +1,7 @@
 // components/MonthYearPicker.jsx
 "use client";
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import PropTypes from "prop-types";
 
 const MONTHS = [
   "January","February","March","April","May","June",
@@ -17,7 +18,7 @@ function useOutsideClose(ref, onClose) {
   }, [ref, onClose]);
 }
 
-function Dropdown({ label, items, value, onChange }) {
+function Dropdown({ items, value, onChange }) {
   const [open, setOpen] = useState(false);
   const boxRef = useRef(null);
   useOutsideClose(boxRef, () => setOpen(false));
@@ -61,11 +62,17 @@ function Dropdown({ label, items, value, onChange }) {
   );
 }
 
+Dropdown.propTypes = {
+  items: PropTypes.arrayOf(PropTypes.string).isRequired,
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+};
+
 export default function MonthYearPicker({
   defaultYear,
-  defaultMonth = 'March', // string: "March"
-  years = [],   // optional: kirim daftar custom
-  onChange,     // (yearStr, monthStr) => void
+  defaultMonth = 'March',
+  years = [],
+  onChange,
 }) {
   const now = new Date();
   const yearList =
@@ -83,13 +90,11 @@ export default function MonthYearPicker({
   return (
     <div className="flex items-center gap-3">
       <Dropdown
-        label="Year"
         items={yearList}
         value={year}
         onChange={(val) => setYear(val)}
       />
       <Dropdown
-        label="Month"
         items={MONTHS}
         value={month}
         onChange={(val) => setMonth(val)}
@@ -97,3 +102,10 @@ export default function MonthYearPicker({
     </div>
   );
 }
+
+MonthYearPicker.propTypes = {
+  defaultYear: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  defaultMonth: PropTypes.string,
+  years: PropTypes.arrayOf(PropTypes.string),
+  onChange: PropTypes.func,
+};

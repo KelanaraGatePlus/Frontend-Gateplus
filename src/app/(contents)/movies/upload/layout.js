@@ -2,7 +2,6 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
 import HeaderUploadForm from '@/components/UploadForm/HeaderUploadForm';
-import HeaderTab from '@/components/UploadForm/HeaderTab';
 
 export default function UploadEbookLayout({ children }) {
 

@@ -140,4 +140,5 @@ ProfileCard.propTypes = {
     isReady: PropTypes.bool,
     isOwnProfile: PropTypes.bool.isRequired,
     setTotalSubs: PropTypes.func,
+    isLinkedWithGoogle: PropTypes.bool,
 };

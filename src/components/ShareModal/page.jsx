@@ -8,24 +8,14 @@ import logoTelegram from "@@/logo/logoSosmed/icons-telegram.svg";
 import iconLink from "@@/icons/icon-link.svg";
 import {
   FacebookShareButton,
-  FacebookIcon,
   TwitterShareButton,
-  TwitterIcon,
-  LineShareButton,
-  LineIcon,
   TelegramShareButton,
-  TelegramIcon,
   WhatsappShareButton,
-  WhatsappIcon,
-  FacebookMessengerShareButton,
-  FacebookMessengerIcon,
-  EmailShareButton,
-  EmailIcon,
 } from "next-share";
 import Toast from "@/components/Toast/page";
 import Image from "next/image";
 
-export default function ShareModal({ isOpen, contentType, onClose }) {
+export default function ShareModal({ isOpen, contentType }) {
   const [show, setShow] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");

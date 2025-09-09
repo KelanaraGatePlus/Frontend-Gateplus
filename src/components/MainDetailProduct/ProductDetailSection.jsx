@@ -27,7 +27,7 @@ import iconDislike from "@@/logo/logoDetailFilm/dislike-icons.svg";
 import iconDislikeSolid from "@@/logo/logoDetailFilm/dislike-icons-solid.svg";
 import iconSaveOutline from "@@/logo/logoDetailFilm/save-icons.svg";
 import iconSaveSolid from "@@/logo/logoDetailFilm/saved-icons.svg";
-import iconShare from "@@/logo/logoDetailFilm/share-icons.svg";
+
 import defaultProfileImage from "@@/logo/logoDetailFilm/subscribe-icon-kelanara.svg";
 import DefaultShareButton from "../ShareButton/DefaultShareButton";
 
@@ -497,4 +497,8 @@ ProductDetailSection.propTypes = {
   idDislikedProduct: PropTypes.any,
   idSavedProduct: PropTypes.any,
   isLoading: PropTypes.bool,
+  handleSubscribe: PropTypes.func,
+  canSubscribe: PropTypes.bool,
+  subscriptionPrice: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  isSubscribe: PropTypes.bool,
 };

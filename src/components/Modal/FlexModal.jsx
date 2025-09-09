@@ -1,3 +1,5 @@
+import React from 'react';
+import PropTypes from 'prop-types';
 import { XIcon } from "flowbite-react";
 
 export default function FlexModal({ isOpen, onClose, title, children }) {
@@ -22,3 +24,10 @@ export default function FlexModal({ isOpen, onClose, title, children }) {
         </div>
     );
 }
+
+FlexModal.propTypes = {
+    isOpen: PropTypes.bool.isRequired,
+    onClose: PropTypes.func.isRequired,
+    title: PropTypes.string,
+    children: PropTypes.node
+};

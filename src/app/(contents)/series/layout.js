@@ -1,8 +1,6 @@
-/* eslint-disable react/prop-types */
-/* eslint-disable react/react-in-jsx-scope */
 "use client";
-import HeaderUploadForm from '@/components/UploadForm/HeaderUploadForm';
-import HeaderTab from '@/components/UploadForm/HeaderTab';
+import React from 'react';
+import PropTypes from 'prop-types';
 
 export default function UploadEbookLayout({ children }) {
 
@@ -14,3 +12,7 @@ export default function UploadEbookLayout({ children }) {
         </main>
     );
 }
+
+UploadEbookLayout.propTypes = {
+    children: PropTypes.node.isRequired,
+};

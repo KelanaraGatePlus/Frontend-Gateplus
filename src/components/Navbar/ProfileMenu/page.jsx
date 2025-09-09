@@ -303,4 +303,5 @@ ProfileMenu.propTypes = {
   imageUrl: PropTypes.string,
   role: PropTypes.string,
   handleSwitchRole: PropTypes.func,
+  openCreateContentModal: PropTypes.func.isRequired,
 };

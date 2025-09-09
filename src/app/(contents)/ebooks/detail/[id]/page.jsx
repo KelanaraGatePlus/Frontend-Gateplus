@@ -1,5 +1,5 @@
 "use client";
-import React, { use } from "react";
+import React from "react";
 import { useState, useEffect } from 'react';
 
 /*[--- COMPONENT IMPORT ---]*/
@@ -24,8 +24,8 @@ export default function DetailEbookPage({ params }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
   const [selectedPrice, setSelectedPrice] = useState(null);
-  const { pay, snapReady } = useMidtransPayment();
-  const { pay: subscribePay, snapReady: snapReadySubscribe } = useMidtransPayment("SUBSCRIBE");
+  const { pay } = useMidtransPayment();
+  const { pay: subscribePay } = useMidtransPayment("SUBSCRIBE");
   const [createLog] = useCreateLogMutation();
 
   const handleModalOpen = (creatorId, episodeId, price) => {

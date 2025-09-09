@@ -5,25 +5,18 @@
 import React, { useEffect } from "react";
 import Image from "next/image";
 import { XIcon } from "flowbite-react";
+import PropTypes from "prop-types";
 
 // Sesuaikan path ke hook dan komponen LoadingOverlay Anda
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import { useUploadSessionData } from "@/hooks/helper/useUploadSession"; // Pastikan path ini benar
 import IconUploadGallery from "@@/icons/upload-content/icons-video-upload.svg";
 
-// Fungsi bantuan untuk memformat byte agar lebih mudah dibaca
-const formatBytes = (bytes) => {
-    if (!+bytes) return '0 MB';
-    return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
-};
-
 // Terima prop 'setDuration' yang baru
 export default function UploadLargeFile({ label = "Film", prefix, setDataUrl, setDuration = null, error, name }) {
     const {
         progress,
-        uploadedBytes,
         totalBytes,
-        eta,
         uploading,
         isLoading,
         resumeMeta,
@@ -163,3 +156,12 @@ export default function UploadLargeFile({ label = "Film", prefix, setDataUrl, se
         </div>
     );
 }
+
+UploadLargeFile.propTypes = {
+    label: PropTypes.string,
+    prefix: PropTypes.string.isRequired,
+    setDataUrl: PropTypes.func.isRequired,
+    setDuration: PropTypes.func,
+    name: PropTypes.string.isRequired,
+    error: PropTypes.string,
+};

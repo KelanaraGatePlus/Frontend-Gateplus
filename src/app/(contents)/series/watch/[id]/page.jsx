@@ -8,6 +8,7 @@ import {
     CarouselNext,
     CarouselPrevious,
 } from "@/components/ui/carousel";
+import PropTypes from "prop-types";
 
 import logoPinComment from "@@/icons/icon-comment.svg";
 import IconsArrowLeft from "@@/icons/icons-dashboard/icons-arrow-left.svg";
@@ -33,8 +34,8 @@ import { useGetEpisodeSeriesByIdQuery } from "@/hooks/api/contentSliceAPI";
    =========================== */
 export default function DetailSeriesPage({ params }) {
     const { id } = params;
-    const { data, error, isLoading } = useGetEpisodeSeriesByIdQuery(id);
-    const [loading, setLoading] = useState(false);
+    const { data, error } = useGetEpisodeSeriesByIdQuery(id);
+    const [loading] = useState(false);
 
     const episodeData = data?.data?.data || {};
     const seriesData = data?.data?.data?.series || {};
@@ -319,3 +320,9 @@ export default function DetailSeriesPage({ params }) {
         </div>
     );
 }
+
+DetailSeriesPage.propTypes = {
+    params: PropTypes.shape({
+        id: PropTypes.string.isRequired,
+    }).isRequired,
+};

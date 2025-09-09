@@ -1,8 +1,10 @@
+import React from "react";
 import Video from "next-video";
 import PlayIcon from "@@/icons/icon-play.svg";
 import { useRef, useState, useCallback, useEffect } from "react";
 import Image from "next/legacy/image";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
+import PropTypes from "prop-types";
 
 /* ===========================
    Komponen: YouTubeStyleVideo (JSX)
@@ -34,7 +36,6 @@ export default function DefaultVideoPlayer({
   };
 
   const handlePlay = useCallback(async () => {
-    // --- PERUBAHAN DIMULAI DI SINI ---
     // 2. Panggil backend jika logType adalah 'WATCH_TRAILER'
     if (logType === "WATCH_TRAILER" && contentId) {
       createLog({
@@ -43,19 +44,19 @@ export default function DefaultVideoPlayer({
         contentId,
       });
     }
-    // --- PERUBAHAN SELESAI ---
 
     const el = getVideoEl();
     if (!el) return;
     try {
       await el.play();
       setIsPlaying(true);
-    } catch (_) {
-      // user bisa klik lagi jika gagal karena policy autoplay
+    } catch (err) {
+      console.error("Error attempting to play", err);
+      setIsPlaying(false);
     } finally {
       setIsBuffering(false);
     }
-  }, [contentType, logType, contentId, createLog]); // <-- 3. Tambahkan dependensi
+  }, [contentType, logType, contentId, createLog]);
 
   useEffect(() => {
     const el = getVideoEl();
@@ -125,3 +126,15 @@ export default function DefaultVideoPlayer({
     </div>
   );
 }
+
+DefaultVideoPlayer.propTypes = {
+  src: PropTypes.string.isRequired,
+  poster: PropTypes.string,
+  className: PropTypes.string,
+  contentType: PropTypes.string,
+  logType: PropTypes.string,
+  contentId: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+  ]),
+};

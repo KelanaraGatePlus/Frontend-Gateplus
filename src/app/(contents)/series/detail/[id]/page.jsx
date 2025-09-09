@@ -1,6 +1,7 @@
-/* eslint-disable react/react-in-jsx-scope */
 "use client";
 
+import PropTypes from 'prop-types';
+import React from "react";
 import {
     Carousel,
     CarouselContent,
@@ -15,7 +16,6 @@ import logoUsersComment from "@@/icons/logo-users-comment.svg";
 import logoDislike from "@@/logo/logoDetailFilm/dislike-icons.svg";
 import logoLike from "@@/logo/logoDetailFilm/like-icons.svg";
 import logoSave from "@@/logo/logoDetailFilm/save-icons.svg";
-import logoShare from "@@/logo/logoDetailFilm/share-icons.svg";
 import logoSubscribe from "@@/logo/logoDetailFilm/subscribe-icon-kelanara.svg";
 import movie1 from "@@/logo/logoFilm/film_1.svg";
 import movie2 from "@@/logo/logoFilm/film_2.svg";
@@ -37,9 +37,9 @@ import DefaultShareButton from "@/components/ShareButton/DefaultShareButton";
 /* ===========================
    Halaman: DetailSeriesPage (JSX)
    =========================== */
-export default function DetailSeriesPage({ params }) {
+function DetailSeriesPage({ params }) {
     const { id } = params;
-    const { data, error, isLoading } = useGetSeriesByIdQuery(id);
+    const { data } = useGetSeriesByIdQuery(id);
     const [loading, setLoading] = useState(false);
     const [selectedContentId, setSelectedContentId] = useState(null);
     const [selectedCreatorId, setSelectedCreatorId] = useState(null);
@@ -62,8 +62,8 @@ export default function DetailSeriesPage({ params }) {
         return new Date(a.createdAt) - new Date(b.createdAt);
     });
 
-    const { pay, snapReady } = useMidtransPayment();
-    const { pay: subscribePay, snapReady: snapReadySubscribe } = useMidtransPayment("SUBSCRIBE");
+    const { pay } = useMidtransPayment();
+    const { pay: subscribePay } = useMidtransPayment("SUBSCRIBE");
 
     const handleModalSubscribeOpen = (creatorId, contentId, price) => {
         setSelectedCreatorId(creatorId);
@@ -463,4 +463,13 @@ export default function DetailSeriesPage({ params }) {
             </main>
         </div>
     );
+
 }
+
+DetailSeriesPage.propTypes = {
+    params: PropTypes.shape({
+        id: PropTypes.string.isRequired,
+    }).isRequired,
+};
+
+export default DetailSeriesPage;

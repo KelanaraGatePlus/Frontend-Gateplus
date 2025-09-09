@@ -1,5 +1,7 @@
 "use client";
 
+
+import React from "react";
 import {
   AreaChart,
   Area,
@@ -9,7 +11,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import React from "react";
+import PropTypes from "prop-types";
 
 const data = [
   { date: "01", value: 0 },
@@ -48,6 +50,16 @@ function CustomTooltip({ active, payload, label }) {
   }
   return null;
 }
+
+CustomTooltip.propTypes = {
+  active: PropTypes.bool,
+  payload: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.any,
+    })
+  ),
+  label: PropTypes.any,
+};
 
 export default function AreaTrendChart() {
   return (

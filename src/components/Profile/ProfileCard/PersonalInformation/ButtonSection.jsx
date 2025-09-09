@@ -78,4 +78,5 @@ ButtonSection.propTypes = {
     isSubscribed: PropTypes.bool.isRequired,
     isSubscribing: PropTypes.bool.isRequired,
     handleToggleSubscribe: PropTypes.func.isRequired,
+    isLinkedWithGoogle: PropTypes.bool
 }

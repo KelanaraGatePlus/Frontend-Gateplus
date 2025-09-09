@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import PropTypes from "prop-types";
 
 /*[--- UTILITY IMPORT ---]*/
@@ -306,6 +305,8 @@ ProductEpisodeSection.propTypes = {
   isLoading: PropTypes.bool,
   currentlyPlaying: PropTypes.object,
   handlePlayPodcast: PropTypes.func,
+  handlePayment: PropTypes.func,
+  isSubscribe: PropTypes.bool,
 };
 
 function EpisodeUnAvailable() {
@@ -442,6 +443,7 @@ SeeAnotherEpisodes.propTypes = {
   productEpisodes: PropTypes.array.isRequired,
   showAll: PropTypes.bool.isRequired,
   handleShowAll: PropTypes.func.isRequired,
+
 };
 
 PodcastMoreDetail.propTypes = {

@@ -1,6 +1,5 @@
 "use client";
 import React from 'react';
-import BlankPage from "@/components/WorkInProgress/page";
 import CarouselTemplate from '@/components/Carousel/carouselTemplate';
 import { useGetSeriesHomeDataQuery } from '@/hooks/api/seriesSliceAPI';
 

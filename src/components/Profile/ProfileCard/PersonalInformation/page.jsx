@@ -58,5 +58,6 @@ PersonalInformationSection.propTypes = {
     isOwnProfile: PropTypes.bool.isRequired,
     isSubscribed: PropTypes.bool.isRequired,
     isSubsribing: PropTypes.bool.isRequired,
-    handleToggleSubscribe: PropTypes.func.isRequired
+    handleToggleSubscribe: PropTypes.func.isRequired,
+    isLinkedWithGoogle: PropTypes.bool
 }

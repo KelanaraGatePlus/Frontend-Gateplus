@@ -76,4 +76,6 @@ MainTemplateLayout.propTypes = {
   isLoading: PropTypes.bool,
   currentlyPlaying: PropTypes.object,
   handlePlayPodcast: PropTypes.func,
+  handlePayment: PropTypes.func,
+  handleSubscribe: PropTypes.func,
 };

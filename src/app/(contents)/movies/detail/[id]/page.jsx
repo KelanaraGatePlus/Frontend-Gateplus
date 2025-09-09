@@ -1,4 +1,3 @@
-/* eslint-disable react/react-in-jsx-scope */
 "use client";
 
 import {
@@ -15,7 +14,6 @@ import logoUsersComment from "@@/icons/logo-users-comment.svg";
 import logoDislike from "@@/logo/logoDetailFilm/dislike-icons.svg";
 import logoLike from "@@/logo/logoDetailFilm/like-icons.svg";
 import logoSave from "@@/logo/logoDetailFilm/save-icons.svg";
-import logoShare from "@@/logo/logoDetailFilm/share-icons.svg";
 import logoSubscribe from "@@/logo/logoDetailFilm/subscribe-icon-kelanara.svg";
 import movie1 from "@@/logo/logoFilm/film_1.svg";
 import movie2 from "@@/logo/logoFilm/film_2.svg";
@@ -31,21 +29,21 @@ import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { useLikeContent } from "@/lib/features/useLikeContent";
 import { useDislikeContent } from "@/lib/features/useDislikeContent";
 import DefaultShareButton from "@/components/ShareButton/DefaultShareButton";
+import PropTypes from 'prop-types';
 
 /* ===========================
    Halaman: PlayingMoviePage (JSX)
    =========================== */
-export default function PlayingMoviePage({ params }) {
+function PlayingMoviePage({ params }) {
     const { id } = params;
-    const { data, error, isLoading } = useGetMovieByIdQuery(id);
+    const { data } = useGetMovieByIdQuery(id);
     const movieData = data?.data?.data || {}; // Pindahkan ke atas agar bisa dipakai di useEffect
 
-    const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedCreatorId, setSelectedCreatorId] = useState(null);
     const [selectedContentId, setSelectedContentId] = useState(null);
     const [selectedPrice, setSelectedPrice] = useState(null);
-    const { pay, snapReady } = useMidtransPayment();
+    const { pay } = useMidtransPayment();
     const [createLog] = useCreateLogMutation();
     const { toggleLike } = useLikeContent();
     const { toggleDislike } = useDislikeContent();
@@ -119,7 +117,6 @@ export default function PlayingMoviePage({ params }) {
     };
 
     const handleSubscribe = async () => {
-        setLoading(true);
         await pay({
             creatorId: selectedCreatorId,
             episodeId: selectedContentId,
@@ -127,7 +124,6 @@ export default function PlayingMoviePage({ params }) {
             contentType: "MOVIE",
         });
         setIsModalOpen(false);
-        setLoading(false);
     };
 
     const handleModalOpen = (creatorId, contentId, price) => {
@@ -294,7 +290,7 @@ export default function PlayingMoviePage({ params }) {
                                     <CarouselItem className="">
                                         <Image src={movie1} priority alt="movies-logo-banner" />
                                     </CarouselItem>
-                                    _               </CarouselContent>
+                                    _</CarouselContent>
                                 <CarouselPrevious />
                                 <CarouselNext />
                             </Carousel>
@@ -421,3 +417,14 @@ export default function PlayingMoviePage({ params }) {
         </div>
     );
 }
+
+PlayingMoviePage.propTypes = {
+    params: PropTypes.shape({
+        id: PropTypes.oneOfType([
+            PropTypes.string,
+            PropTypes.number,
+        ]).isRequired,
+    }).isRequired,
+};
+
+export default PlayingMoviePage;
