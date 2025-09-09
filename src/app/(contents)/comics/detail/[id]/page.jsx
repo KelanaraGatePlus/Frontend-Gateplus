@@ -1,52 +1,121 @@
 "use client";
 import React from "react";
-import axios from "axios";
 import { use, useEffect, useState } from "react";
+import PropTypes from "prop-types";
 
-/*[--- COMPONENT IMPORT ---]*/
+/*[--- API HOOKS ---]*/
+import { useGetComicByIdQuery } from "@/hooks/api/comicSliceAPI";
+
+/*[--- UI COMPONENTS ---]*/
 import MainTemplateLayout from "@/components/MainDetailProduct/page";
+import SimpleModal from "@/components/Modal/SimpleModal";
+import { useMidtransPayment } from "@/hooks/api/midtransAPI";
+import LoadingOverlay from "@/components/LoadingOverlay/page";
+import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 
-// eslint-disable-next-line react/prop-types
 export default function DetailComicPage({ params }) {
   const { id } = use(params);
-  const [comicData, setComicData] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [userId, setUserId] = useState(null);
+  const [selectedEpisode, setSelectedEpisode] = useState(null);
+  const [selectedCreatorId, setSelectedCreatorId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPrice, setSelectedPrice] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const { pay } = useMidtransPayment();
+  const { pay: subscribePay } = useMidtransPayment("SUBSCRIBE");
+  const [selectedContentId, setSelectedContentId] = useState(null);
+  const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
+  const [createLog] = useCreateLogMutation();
 
-  const getData = async () => {
-    try {
-      setIsLoading(true);
-      const userId = localStorage.getItem("users_id");
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
-        `https://backend-gateplus-api.my.id/comics/${id}?userId=${userId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-      const comicSingleData = response.data.data.data;
-      console.log("ini data komik", comicSingleData);
-      setComicData(comicSingleData);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleModalSubscribeOpen = (creatorId, contentId, price) => {
+    setSelectedCreatorId(creatorId);
+    setSelectedContentId(contentId);
+    setSelectedPrice(price);
+    setIsModalSubscribeOpen(true);
+  };
+
+  const handleModalOpen = (creatorId, episodeId, price) => {
+    setSelectedCreatorId(creatorId);
+    setSelectedEpisode(episodeId);
+    setSelectedPrice(price);
+    setIsModalOpen(true);
+  }
+
+  const handleBuy = async () => {
+    setLoading(true);
+    await pay({
+      creatorId: selectedCreatorId,
+      episodeId: selectedEpisode,
+      price: selectedPrice,
+      contentType: "COMIC",
+    });
+    setIsModalOpen(false);
+    setLoading(false);
+  };
+
+  const handleSubscribe = async () => {
+    setLoading(true);
+    await subscribePay({
+      creatorId: selectedCreatorId,
+      contentId: selectedContentId,
+      price: selectedPrice,
+      contentType: "COMIC",
+    });
+    setIsModalSubscribeOpen(false);
+    setLoading(false);
   };
 
   useEffect(() => {
-    getData();
+    if (typeof window !== "undefined") {
+      const storedUserId = localStorage.getItem("users_id");
+      setUserId(storedUserId);
+    }
   }, []);
+
+  useEffect(() => {
+    createLog({
+      contentType: "COMIC",
+      logType: "CLICK",        // atau WATCH_TRAILER / WATCH_CONTENT sesuai kebutuhan
+      contentId: id,
+    });
+  }, [id, createLog]);
+
+  const skip = !id || !userId;
+  const { data, isLoading } = useGetComicByIdQuery({ id, userId }, { skip });
+  const comicData = data?.data?.data || {};
+  const episode_comics = (comicData.episode_comics || []).slice().sort((a, b) => {
+    return new Date(a.createdAt) - new Date(b.createdAt);
+  });
 
   return (
     comicData && (
-      <MainTemplateLayout
-        productType="comic"
-        productDetail={comicData}
-        productEpisode={comicData.episode_comics}
-        isLoading={isLoading}
-      />
+      <div>
+        <MainTemplateLayout
+          productType="comic"
+          productDetail={comicData}
+          productEpisode={episode_comics}
+          isLoading={isLoading}
+          handlePayment={handleModalOpen}
+          handleSubscribe={handleModalSubscribeOpen}
+        />
+        <SimpleModal
+          title={"Konten ini masih terkunci, apakah kamu bersedia membeli nya dengan harga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onConfirm={handleBuy}
+        />
+        <SimpleModal
+          title={"Subscribe untuk menikmati seluruh episode dari konten ini selama sebulan seharga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
+          isOpen={isModalSubscribeOpen}
+          onClose={() => setIsModalSubscribeOpen(false)}
+          onConfirm={handleSubscribe}
+        />
+        {loading && <LoadingOverlay />}
+      </div>
     )
   );
+}
+
+DetailComicPage.propTypes = {
+  params: PropTypes.string,
 }

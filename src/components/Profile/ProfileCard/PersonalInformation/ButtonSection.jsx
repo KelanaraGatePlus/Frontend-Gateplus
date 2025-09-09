@@ -1,20 +1,41 @@
 import React from 'react';
 import Link from 'next/link';
 import PropTypes from 'prop-types';
+import { useState, useEffect } from 'react';
+import { BACKEND_URL } from '@/lib/constants/backendUrl';
 
 export default function ButtonSection({
     profileFor,
     isOwnProfile,
     isSubscribed,
     isSubscribing,
-    handleToggleSubscribe
+    handleToggleSubscribe,
+    isLinkedWithGoogle = false
 }) {
+    const [id, setId] = useState("");
+    useEffect(() => {
+        // Ambil id dari localStorage atau sessionStorage
+        const userId = localStorage.getItem("users_id") || sessionStorage.getItem("users_id");
+        setId(userId);
+    }, []);
+
+    const handleLinkGoogle = () => {
+        const url = `${BACKEND_URL}/auth/link/google?id=${id}`;
+        // Redirect ke backend (tanpa header)
+        window.location.href = url;
+    };
+
     return isOwnProfile ? (
-        <button className="mt-1 rounded-lg bg-[#0E5BA8] py-2 font-bold text-white hover:bg-[#0E5BA8]/80" >
-            <Link href={profileFor === "creator" ? "/creator/settings" : "/user/settings"}>
-                <p>Edit Profile</p>
-            </Link>
-        </button>
+        <div className='flex w-full flex-col gap-2'>
+            <button className="mt-1 rounded-lg bg-[#0E5BA8] py-2 font-bold text-white hover:bg-[#0E5BA8]/80" >
+                <Link href={profileFor === "creator" ? "/creator/settings" : "/user/settings"}>
+                    <p>Edit Profile</p>
+                </Link>
+            </button>
+            <button disabled={isLinkedWithGoogle} onClick={handleLinkGoogle} className="mt-1 rounded-lg bg-[#0E5BA8] py-2 font-bold text-white hover:bg-[#0E5BA8]/80" >
+                <p>{isLinkedWithGoogle ? "Linked With Google Account" : "Link With Google Account"}</p>
+            </button>
+        </div>
     ) : (
         profileFor === "creator" ? (
             <button
@@ -57,4 +78,5 @@ ButtonSection.propTypes = {
     isSubscribed: PropTypes.bool.isRequired,
     isSubscribing: PropTypes.bool.isRequired,
     handleToggleSubscribe: PropTypes.func.isRequired,
+    isLinkedWithGoogle: PropTypes.bool
 }

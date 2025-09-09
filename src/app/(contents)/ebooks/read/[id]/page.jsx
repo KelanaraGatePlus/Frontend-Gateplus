@@ -1,5 +1,5 @@
 "use client";
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,23 +9,22 @@ import PropTypes from "prop-types";
 import { formatDateTime } from "@/lib/timeFormatter";
 
 /*[--- HOOKS IMPORT ---]*/
-import { useGetEpisodeEbookByIdQuery } from "@/hooks/api/ebookSliceAPI";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
+import { useGetEpisodeEbookByIdQuery } from "@/hooks/api/contentSliceAPI";
+import { useGetCommentByEpisodeEbookQuery } from "@/hooks/api/commentSliceAPI"
 
 /*[--- COMPONENT IMPORT ---]*/
 import BackButton from "@/components/BackButton/page";
 import EpubReader from "@/components/EbookReader/page";
 import DetailPageLoadingSkeleton from "@/components/MainDetailProduct/Loading/ProductReadLoading"
+import CommentComponent from "@/components/Comment/page";
 
 /*[--- ASSETS IMPORT ---]*/
-import iconMoreMenuComment from "@@/icons/icon-comment.svg";
-import logoUsersComment from "@@/icons/logo-users-comment.svg";
 import logoArrowDownDark from "@@/icons/icons-dashboard/icons-arrow-left.svg";
 import logoArrowDownLight from "@@/icons/icons-dashboard/icons-arrow-left-light.svg";
-import IconsDislikeComment from "@@/logo/logoDetailEbook/icon-dislike-comment.svg";
-import IconsLikeComment from "@@/logo/logoDetailEbook/icon-like-comment.svg";
 
 export default function ReadEbookPage({ params }) {
-  const { id } = use(params);
+  const { id } = React.use(params);
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [ebookTitle, setEbookTitle] = useState("");
   const [ebookId, setEbookId] = useState("");
@@ -35,20 +34,15 @@ export default function ReadEbookPage({ params }) {
   const [bannerStartEpisodeUrl, setBannerStartEpisodeUrl] = useState(null);
   const [bannerEndEpisodeUrl, setBannerEndEpisodeUrl] = useState(null);
   const [ebookUrl, setEbookUrl] = useState(null);
-  const [allComments, setAllComments] = useState([]);
-  const [myComment, setMyComment] = useState("");
-  const [isUploadingComment, setIsUploadingComment] = useState(false);
   const [isDark, setIsDark] = useState(false);
-  const { data, isLoading } = useGetEpisodeEbookByIdQuery(id);
+  const { data, isLoading, error } = useGetEpisodeEbookByIdQuery(id);
+  const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByEpisodeEbookQuery(id);
+  console.log("ini data comment baru", commentData)
   console.log("ini id episode", id)
   const episodeEbookData = data?.data?.data || {};
   const ebookData = episodeEbookData.ebooks || {};
   const allEpisodes = ebookData.episode_ebooks || [];
   let hasUpdatedViews = false;
-
-  console.log("episodeEbookData", episodeEbookData);
-  console.log("ebookData", ebookData);
-  console.log("allEpisodes", allEpisodes);
 
   const currentIndex = allEpisodes.findIndex(
     (ep) => ep.id === episodeEbookData.id,
@@ -61,7 +55,7 @@ export default function ReadEbookPage({ params }) {
       if (!hasUpdatedViews) {
         console.log("Tambah Views");
         await axios.patch(
-          `https://backend-gateplus-api.my.id/episode/${id}/views`,
+          `${BACKEND_URL}/episode/${id}/views`,
         );
         hasUpdatedViews = true;
       }
@@ -91,44 +85,6 @@ export default function ReadEbookPage({ params }) {
     }
   };
 
-  const getCommentData = async () => {
-    try {
-      const response = await axios.get(
-        `https://backend-gateplus-api.my.id/comment/by-ebook-episode/${id}`,
-      );
-
-      console.log(response.data.data.data);
-      const allCommentsData = response.data.data.data;
-      setAllComments(allCommentsData);
-      console.log("ini data nya", allComments);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
-  const handleSubmitComment = async (e) => {
-    e.preventDefault();
-
-    try {
-      setIsUploadingComment(true);
-      const userId = localStorage.getItem("users_id");
-      const response = await axios.post(
-        `https://backend-gateplus-api.my.id/comment`,
-        {
-          userId: userId,
-          episodeEbookId: id,
-          message: myComment,
-        },
-      );
-      console.log(response.data);
-      setMyComment("");
-      getCommentData();
-    } catch (error) {
-      console.error("Error during post request:", error);
-    } finally {
-      setIsUploadingComment(false);
-    }
-  };
-
   const toggleTheme = () => {
     const newTheme = !isDark;
     setIsDark(newTheme);
@@ -139,12 +95,11 @@ export default function ReadEbookPage({ params }) {
     if (data && !isLoading) {
       getData();
     }
+
+    if (error && error.status === 403) {
+      window.location.href = "/";
+    }
   }, [data, isLoading]);
-
-
-  useEffect(() => {
-    getCommentData();
-  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -449,156 +404,14 @@ export default function ReadEbookPage({ params }) {
           </p>
         </section>
 
-        {/* Komentar Form*/}
-        <section
-          className={`flex w-screen flex-col px-5 py-6 ${isDark ? "text-white" : "text-[#222222]"}`}
-        >
-          <div className="flex w-full justify-start py-2">
-            <h3 className={`zeinFont text-3xl font-extrabold`}>
-              Komentar
-            </h3>
-          </div>
+        {/* Comment Baru */}
+        <CommentComponent
+          commentData={commentData?.data?.data || []}
+          isLoadingGetComment={isLoadingGetComment}
+          typeContent={"ebook"}
+          episodeId={id}
+        />
 
-          <div className="flex w-full">
-            <form
-              className="flex w-full flex-col gap-2.5"
-              onSubmit={handleSubmitComment}
-            >
-              <textarea
-                name="comment"
-                id="comment"
-                placeholder="Tell us about you, maxs 150 character."
-                className={`h-32 w-full rounded-md border p-2 text-sm transition-colors duration-300 placeholder:text-sm placeholder:font-bold ${isDark
-                  ? "border-[#F5F5F540] bg-[#686464] text-white placeholder:text-[#979797]"
-                  : "border-[#d0d0d0] bg-[#f0f0f0] text-[#444444] placeholder:text-[#555555]"
-                  }`}
-                value={myComment}
-                onChange={(e) => setMyComment(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSubmitComment(e);
-                  }
-                }}
-                required
-              />
-              <button
-                disabled={isUploadingComment}
-                type="submit"
-                className={`flex w-full items-center justify-center rounded-md border-2 py-2 text-sm font-bold ${isUploadingComment
-                  ? "cursor-not-allowed bg-gray-500"
-                  : isDark
-                    ? "cursor-pointer border-[#F5F5F540] bg-[#0E5BA8] text-white"
-                    : "cursor-pointer border-gray-300 bg-blue-600 text-white hover:bg-blue-700"
-                  }`}
-              >
-                {isUploadingComment ? "Mengirim..." : "Kirim Komentar"}
-              </button>
-            </form>
-          </div>
-        </section>
-
-        {/* Komentar  */}
-        <section
-          className={`mb-10 flex w-screen flex-col gap-1 px-5 py-6 ${isDark ? "text-white" : "text-gray-900"
-            }`}
-        >
-          {allComments.length > 0 ? (
-            [...allComments]
-              .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-              .map((comment) => (
-                <div
-                  className={`flex flex-col gap-4 rounded-lg py-4 ${isDark ? "bg-transparent" : "bg-[#e0e0e0]"}`}
-                  key={comment.id}
-                >
-                  <div className="flex flex-row items-center justify-between">
-                    <div className="flex flex-row items-center gap-2 px-4">
-                      <figure>
-                        <Image
-                          priority
-                          className="h-10 w-10 rounded-full bg-blue-300 object-cover object-center"
-                          src={
-                            comment.user.imageUrl
-                              ? comment.user.imageUrl
-                              : logoUsersComment
-                          }
-                          alt="logo-usercomment"
-                          width={40}
-                          height={40}
-                        />
-                      </figure>
-
-                      <div>
-                        <h5 className="text-xs font-medium">
-                          {comment.user.profileName
-                            ? comment.user.profileName
-                            : comment.user.username}{" "}
-                          {comment.user.creator &&
-                            comment.user.creator.id ===
-                            comment.ebook_episode.ebooks.creators.id &&
-                            "(Author)"}
-                        </h5>
-                        <p className="text-[10px] font-normal">
-                          {formatDateTime(comment.createdAt)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="px-4">
-                      <Image
-                        priority
-                        className="h-5"
-                        src={iconMoreMenuComment}
-                        alt="logo-more-menu-comment"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-2 px-4">
-                    <div className="mb-2 flex">
-                      <p className="text-base font-semibold text-[#979797]">
-                        {comment.message}
-                      </p>
-                    </div>
-
-                    <div className="flex justify-start gap-4">
-                      <button className="text-sm font-medium text-[#1DBDF5]">
-                        Balas
-                      </button>
-
-                      <div className="flex gap-4">
-                        <div className="flex items-center gap-1">
-                          <Image
-                            priority
-                            className="h-5 w-5 focus-within:bg-purple-300"
-                            width={35}
-                            alt="logo-like"
-                            src={IconsLikeComment}
-                          />
-                          <p className="text-[#1DBDF5]">Ya</p>
-                        </div>
-
-                        <div className="flex items-center gap-1">
-                          <Image
-                            priority
-                            className="h-5 w-5 focus-within:bg-purple-300"
-                            width={35}
-                            alt="logo-like"
-                            src={IconsDislikeComment}
-                          />
-                          <p className="text-[#1DBDF5]">Tidak</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
-          ) : (
-            <p className="text-center text-gray-400 italic">
-              Belum ada Komentar
-            </p>
-          )}
-        </section>
       </main>
     </div>
   );

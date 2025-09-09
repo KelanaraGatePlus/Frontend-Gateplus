@@ -20,6 +20,7 @@ import InputSelect from '@/components/UploadForm/InputSelect';
 import InputText from '@/components/UploadForm/InputText';
 import InputTextArea from '@/components/UploadForm/InputTextArea';
 import InputImageBanner from '@/components/UploadForm/InputImageBanner';
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export default function UploadEbookEpisodeContent() {
   const [createEpisode] = useCreateEpisodeMutation();
@@ -145,7 +146,7 @@ export default function UploadEbookEpisodeContent() {
     try {
       const creatorId = localStorage.getItem("creators_id");
       const response = await axios.get(
-        `https://backend-gateplus-api.my.id/creator/${creatorId}`,
+        `${BACKEND_URL}/creator/${creatorId}`,
       );
 
       const fullData = response.data.data;
@@ -219,7 +220,7 @@ export default function UploadEbookEpisodeContent() {
     <>
       <main className="mt-16 flex flex-col py-2 md:mt-[100px] lg:px-4">
         <HeaderUploadForm title={"Upload Ebook"} />
-        <HeaderTab type={"Ebook"} />
+        <HeaderTab type={"ebook"} />
 
         <div className="flex w-full flex-col px-2">
           <form className="flex flex-col gap-2 lg:gap-2" onSubmit={handleSubmit}>

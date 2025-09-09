@@ -17,6 +17,7 @@ import InputSelect from '@/components/UploadForm/InputSelect';
 import InputText from '@/components/UploadForm/InputText';
 import InputTextArea from '@/components/UploadForm/InputTextArea';
 import InputImageBanner from '@/components/UploadForm/InputImageBanner';
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export default function UploadComicEpisodeContent() {
   const router = useRouter();
@@ -159,7 +160,7 @@ export default function UploadComicEpisodeContent() {
     try {
       const creatorId = localStorage.getItem("creators_id");
       const response = await axios.get(
-        `https://backend-gateplus-api.my.id/creator/${creatorId}`,
+        `${BACKEND_URL}/creator/${creatorId}`,
       );
 
       const fullData = response.data.data;
@@ -213,7 +214,7 @@ export default function UploadComicEpisodeContent() {
 
     try {
       const response = await axios.post(
-        "https://backend-gateplus-api.my.id/episodeComics",
+        `${BACKEND_URL}/episodeComics`,
         formData,
         {
           headers: {

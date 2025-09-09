@@ -11,6 +11,7 @@ import { formatDateTime } from "@/lib/timeFormatter";
 
 /*[--- ASSETS IMPORT ---]*/
 import logoLonceng from "@@/logo/logoSosmed/lonceng_fix.svg";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export default function NotificationMenu() {
   const notificationRef = useRef(null);
@@ -40,7 +41,7 @@ export default function NotificationMenu() {
         setIsAuthorized(true);
         if (role === "Creators" && creatorId) {
           const resCreator = await axios.get(
-            `https://backend-gateplus-api.my.id/creator/${creatorId}`,
+            `${BACKEND_URL}/creator/${creatorId}`,
             {
               headers,
             },
@@ -53,7 +54,7 @@ export default function NotificationMenu() {
             ) || [];
         } else if (role === "Users" && userId) {
           const resUser = await axios.get(
-            `https://backend-gateplus-api.my.id/users/${userId}`,
+            `${BACKEND_URL}/users/${userId}`,
             {
               headers,
             },
@@ -96,7 +97,7 @@ export default function NotificationMenu() {
   const handleReadNotification = async (id) => {
     try {
       const response = await axios.patch(
-        `https://backend-gateplus-api.my.id/notifications/${id}/read`,
+        `${BACKEND_URL}/notifications/${id}/read`,
       );
       console.log("Notifikasi dibaca:", response.data);
       fetchNotifications();

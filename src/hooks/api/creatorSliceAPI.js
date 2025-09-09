@@ -5,7 +5,16 @@ export const creatorAPI = createApi({
     reducerPath: "creatorsAPI",
     refetchOnFocus: true,
     refetchOnReconnect: true,
-    baseQuery: fetchBaseQuery({ baseUrl: `${BACKEND_URL}/creator` }),
+    baseQuery: fetchBaseQuery({
+        baseUrl: `${BACKEND_URL}/creator`,
+        prepareHeaders: (headers) => {
+            const creators_id = localStorage.getItem("creators_id"); // atau sessionStorage atau cookie
+            if (creators_id) {
+                headers.set("Authorization", `Bearer ${creators_id}`);
+            }
+            return headers;
+        },
+    }),
     tagTypes: ["creatorsAPI"],
     endpoints: (builder) => ({
         getMostViewedContent: builder.query({
@@ -35,6 +44,19 @@ export const creatorAPI = createApi({
             query: ({ type, value }) => `/check?type=${type}&value=${value}`,
             keepUnusedDataFor: 0,
         }),
+        searchCreator: builder.query({
+            query: (q) => `/search?q=${q}`,
+            providesTags: ["creatorsAPI"],
+            keepUnusedDataFor: 30,
+        }),
+        getDashboardData: builder.query({
+            query: () => ({
+                url: `/creator-dashboard`,
+                method: "GET",
+            }),
+            providesTags: ["creatorsAPI"],
+            keepUnusedDataFor: 60,
+        }),
     }),
 })
 
@@ -44,4 +66,6 @@ export const {
     useGetCreatorDetailQuery,
     useRegisterCreatorMutation,
     useCheckCreatorAvailabilityQuery,
+    useSearchCreatorQuery,
+    useGetDashboardDataQuery
 } = creatorAPI;

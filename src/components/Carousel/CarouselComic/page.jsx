@@ -11,6 +11,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export default function CarouselItemComicPage() {
   const [comics, setComics] = useState([]);
@@ -23,7 +24,7 @@ export default function CarouselItemComicPage() {
       setIsLoading(true);
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `https://backend-gateplus-api.my.id/comics`,
+        `${BACKEND_URL}/comics`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

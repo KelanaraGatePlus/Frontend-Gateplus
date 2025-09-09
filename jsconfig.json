@@ -8,6 +8,7 @@
       "@@/BannerPromo/*": ["./public/images/BannerPromo/*"],
       "@@/AvatarIcons/*": ["./public/images/AvatarIcons/*"],
       "@@/IconsEbook/*": ["./public/images/IconsEbook/*"],
+      "@@/IconsContent/*": ["./public/images/IconsContent/*"],
       "@@/Law/*": ["./public/images/Law/*"],
       "@@/IconsButton/*": ["./public/images/IconsButton/*"],
       "@@@/*": ["./*"]

@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export default function SearchResults() {
   const searchParams = useSearchParams();
@@ -19,7 +20,7 @@ export default function SearchResults() {
     try {
       setLoading(true);
       const response = await axios.get(
-        `https://backend-gateplus-api.my.id/search?q=${searchQuery}`,
+        `${BACKEND_URL}/search?q=${searchQuery}`,
       );
       setCreatorsResult(response.data.creators);
       setEbooksResult(response.data.ebooks);

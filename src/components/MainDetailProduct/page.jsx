@@ -14,6 +14,10 @@ export default function MainTemplateLayout({
   productDetail,
   productEpisode,
   isLoading = true,
+  currentlyPlaying,
+  handlePlayPodcast,
+  handlePayment,
+  handleSubscribe
 }) {
   return (
     <main className="mt-16 flex flex-col md:mt-[100px]">
@@ -29,20 +33,34 @@ export default function MainTemplateLayout({
         productLanguage={productDetail.language}
         productFirstEpisode={productEpisode?.[0]}
         productIsLiked={productDetail.isLiked}
+        productIsDisliked={productDetail.isDisliked}
         productIsSaved={productDetail.isSaved}
         productTotalViews={productDetail.totalViews}
         productTotalLikes={productDetail.totalLikes}
         creatorDetail={productType === 'podcast' ? productDetail.Creator : productDetail.creators}
         creatorTotalSubscriber={productDetail.totalCount}
         creatorIsSubscribed={productDetail.isSubscribed}
+        idLikedProduct={productDetail?.isLiked?.id}
+        idDislikedProduct={productDetail?.isDisliked?.id}
+        idSavedProduct={productDetail.idSaved}
+        canSubscribe={productDetail.canSubscribe}
+        subscriptionPrice={productDetail.subscriptionPrice}
         isLoading={isLoading}
+        handleSubscribe={handleSubscribe}
+        isSubscribe={productDetail?.isSubscribe && productDetail?.canSubscribe ? true : false}
       />
 
-      <ProductEpisodeSection
-        productType={productType}
-        productEpisodes={productEpisode}
-        isLoading={isLoading}
-      />
+      <div className="px-15">
+        <ProductEpisodeSection
+          productType={productType}
+          productEpisodes={productEpisode}
+          isLoading={isLoading}
+          currentlyPlaying={currentlyPlaying}
+          handlePlayPodcast={handlePlayPodcast}
+          handlePayment={handlePayment}
+          isSubscribe={productDetail?.isSubscribe && productDetail?.canSubscribe ? true : false}
+        />
+      </div>
 
       <CarouselItemEookPage />
       <ProductDonationSection />
@@ -56,4 +74,8 @@ MainTemplateLayout.propTypes = {
   productDetail: PropTypes.object.isRequired,
   productEpisode: PropTypes.array.isRequired,
   isLoading: PropTypes.bool,
+  currentlyPlaying: PropTypes.object,
+  handlePlayPodcast: PropTypes.func,
+  handlePayment: PropTypes.func,
+  handleSubscribe: PropTypes.func,
 };

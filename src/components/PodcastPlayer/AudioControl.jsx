@@ -54,11 +54,11 @@ export default function AudioControl({
     };
 
     const toggleVolumeSlider = () => setIsVolumeVisible(!isVolumeVisible);
-    const handleOpenPodcast = (id) => {
+    const handleOpenPodcast = () => {
         if (isOpenDetailPodcast) {
             handleClosePodcast();
         } else {
-            router.push(`?podcast_detail=${id}`);
+            router.push(`?podcast_detail=${true}`);
         }
     };
     useEffect(() => {
@@ -88,7 +88,7 @@ export default function AudioControl({
                 className={`flex w-full flex-col justify-between ${isExpand && isCommentVisible ? "lg:flex-col" : "lg:flex-row lg:grid lg:grid-cols-3"}`}
             >
                 {/* detail */}
-                <div className={`mt-2 flex w-full items-center justify-center gap-3 lg:mt-0 lg:max-w-md hover:bg-blue-600/60 rounded-xl px-2 transition-all duration-300 ease-in-out cursor-pointer ${isExpand && isCommentVisible ? "lg:hidden" : ""}`} onClick={() => { handleOpenPodcast("test") }}>
+                <div className={`mt-2 flex w-full items-center justify-center gap-3 lg:mt-0 lg:max-w-md hover:bg-blue-600/60 rounded-xl px-2 transition-all duration-300 ease-in-out cursor-pointer ${isExpand && isCommentVisible ? "lg:hidden" : ""}`} onClick={() => { handleOpenPodcast() }}>
                     {!isExpand && (
                         <div className="relative h-16 w-20">
                             <Image
@@ -108,7 +108,7 @@ export default function AudioControl({
                         {/* titile */}
                         <div className="flex flex-col items-start justify-center">
                             <h3 className="zeinFont text-2xl font-extrabold text-white">
-                                {title}
+                                {title ? title : "No Playing Podcast"}
                             </h3>
                             <p className="montserratFont line-clamp-2 text-xs text-white/50">
                                 {description}

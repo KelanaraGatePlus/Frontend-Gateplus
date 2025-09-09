@@ -24,6 +24,7 @@ export async function middleware(req) {
         "/forgot-password",
         "/otp",
         "/verify-email",
+        "/oauth-success",
     ];
     if (PUBLIC_PATHS.includes(pathname)) {
         return NextResponse.next();

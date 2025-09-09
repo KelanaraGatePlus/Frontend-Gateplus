@@ -12,7 +12,6 @@ import iconsBecomeCreator from "@@/icons/icons-become-creator.svg";
 import iconsDashboard from "@@/icons/icons-dashboard.svg";
 import iconsHelp from "@@/icons/icons-help.svg";
 import iconsProfile from "@@/icons/icons-profile.svg";
-import iconsSettings from "@@/icons/icons-settings.svg";
 import iconsUploadContent from "@@/icons/icons-upload-content.svg";
 import logoUsersComment from "@@/AvatarIcons/avatar-face-2.jpg";
 import iconsArrow from "@@/icons/icon-arrow.svg";
@@ -24,6 +23,7 @@ export default function ProfileMenu({
   imageUrl,
   role,
   handleSwitchRole,
+  openCreateContentModal,
 }) {
   const router = useRouter();
   const profileRef = useRef();
@@ -96,7 +96,7 @@ export default function ProfileMenu({
       {/* Dropdown Profile */}
       {isProfileMenuOpen && (
         <div
-          className="montserratFont custom-scrollbar absolute top-11 right-0 flex max-h-[85vh] w-60 flex-col gap-3 overflow-y-auto rounded-lg bg-[#0395BC] px-3 py-4 transition-all duration-300 ease-in-out lg:top-16"
+          className="montserratFont custom-scrollbar absolute top-11 right-0 flex max-h-[85vh] w-80 flex-col gap-3 overflow-y-auto rounded-lg bg-[#0395BC] px-3 py-4 transition-all duration-300 ease-in-out lg:top-16"
           onClick={(e) => {
             e.stopPropagation();
           }}
@@ -149,8 +149,8 @@ export default function ProfileMenu({
                   </div>
                   <div
                     className={`flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${isDashboardMenuOpen
-                        ? "max-h-[500px] opacity-100"
-                        : "-mt-1 max-h-0 opacity-0"
+                      ? "max-h-[500px] opacity-100"
+                      : "-mt-1 max-h-0 opacity-0"
                       }`}
                   >
                     <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
@@ -198,27 +198,22 @@ export default function ProfileMenu({
 
                   <div
                     className={`flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${isUploadContentMenuOpen
-                        ? "max-h-[500px] opacity-100"
-                        : "-mt-1 max-h-0 opacity-0"
+                      ? "max-h-[500px] opacity-100"
+                      : "-mt-1 max-h-0 opacity-0"
                       }`}
                   >
                     <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
-                      <Link href="/ebooks/upload">
-                        <span>Upload Ebook</span>
-                      </Link>
+                      <button className="hover:cursor-pointer" onClick={() => openCreateContentModal('upload')}>
+                        <span>Upload Konten Baru</span>
+                      </button>
                     </div>
                     <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
-                      <Link href="/comics/upload">
-                        <span>Upload Komik</span>
-                      </Link>
+                      <button className="hover:cursor-pointer" onClick={() => openCreateContentModal('episode')}>
+                        <span>Upload Episode Baru</span>
+                      </button>
                     </div>
                     <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
-                      <Link href="/podcasts/upload">
-                        <span>Upload Podcast</span>
-                      </Link>
-                    </div>
-                    <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
-                      <span>Lihat Konten</span>
+                      <span>Lihat Karya</span>
                     </div>
                   </div>
                 </li>
@@ -261,20 +256,6 @@ export default function ProfileMenu({
                   />
                 </span>
                 <span>Help</span>
-              </li>
-            </Link>
-            <Link href="/user/settings">
-              <li className="flex flex-row gap-2 rounded-md p-2 font-semibold text-white hover:bg-[#F5F5F54D]">
-                <span className="relative h-6 w-6">
-                  <Image
-                    src={iconsSettings}
-                    alt="icon profile"
-                    layout="fill"
-                    objectFit="cover"
-                    className="object-cover"
-                  />
-                </span>
-                <span>Settings</span>
               </li>
             </Link>
           </ul>
@@ -322,4 +303,5 @@ ProfileMenu.propTypes = {
   imageUrl: PropTypes.string,
   role: PropTypes.string,
   handleSwitchRole: PropTypes.func,
+  openCreateContentModal: PropTypes.func.isRequired,
 };

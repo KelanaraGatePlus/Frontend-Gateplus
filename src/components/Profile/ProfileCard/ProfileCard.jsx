@@ -5,6 +5,7 @@ import PropTypes from "prop-types";
 
 /*[--- CONSTANT IMPORT ---]*/
 import { imageDefaultValue } from "@/lib/constants/imageDefaultValue";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 /*[--- COMPONENT IMPORT ---]*/
 import PersonalInformationSection from "./PersonalInformation/page";
@@ -18,6 +19,7 @@ export default function ProfileCard({
     isLoading,
     isReady = true,
     isOwnProfile,
+    isLinkedWithGoogle = false,
     setTotalSubs = () => { },
 }) {
     const [isSubscribed, setIsSubscribed] = useState(false);
@@ -36,7 +38,7 @@ export default function ProfileCard({
             console.log(userId);
             console.log(creatorId);
             const response = await axios.post(
-                `https://backend-gateplus-api.my.id/subscribers`,
+                `${BACKEND_URL}/subscribers`,
                 {
                     userId: userId,
                     creatorId: creatorId,
@@ -115,6 +117,7 @@ export default function ProfileCard({
                         isSubscribed={isSubscribed}
                         isSubsribing={isSubscribing}
                         handleToggleSubscribe={handleToggleSubscribe}
+                        isLinkedWithGoogle={isLinkedWithGoogle}
                     />)
                 }
             </div>
@@ -137,4 +140,5 @@ ProfileCard.propTypes = {
     isReady: PropTypes.bool,
     isOwnProfile: PropTypes.bool.isRequired,
     setTotalSubs: PropTypes.func,
+    isLinkedWithGoogle: PropTypes.bool,
 };

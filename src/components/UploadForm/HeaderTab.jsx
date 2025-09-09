@@ -7,15 +7,15 @@ import { usePathname } from 'next/navigation';
 
 export default function HeaderTab({ type }) {
     const pathname = usePathname();
-    const isStep1 = pathname === `/${type}/Upload${type}`;
-    const isStep2 = pathname.endsWith('/Episode');
+    const isStep1 = pathname.endsWith('/upload');
+    const isStep2 = pathname.endsWith('/episode');
 
     return (
-        <section className="mb-4 flex flex-row items-center justify-center gap-3">
+        <section className="montserratFont mb-4 flex flex-row items-center justify-center gap-3">
             {/* STEP 1 */}
-            <div className="flex flex-row items-center justify-center gap-1 rounded-full">
+            <div className="flex flex-row items-center justify-center gap-1.5 rounded-full">
                 <span
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-2xl font-extrabold ${isStep1 ? 'bg-[#1DBDF580] text-white' : 'bg-white/25 text-[#979797]'
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xl font-extrabold ${isStep1 ? 'bg-[#1DBDF580] text-white' : 'bg-white/25 text-[#979797]'
                         }`}
                 >
                     1
@@ -34,9 +34,9 @@ export default function HeaderTab({ type }) {
             </div>
 
             {/* STEP 2 */}
-            <div className="flex flex-row items-center gap-1 rounded-full">
+            <div className="flex flex-row items-center gap-1.5 rounded-full">
                 <span
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-2xl font-extrabold ${isStep2 ? 'bg-[#1DBDF580] text-white' : 'bg-white/25 text-[#979797]'
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xl font-extrabold ${isStep2 ? 'bg-[#1DBDF580] text-white' : 'bg-white/25 text-[#979797]'
                         }`}
                 >
                     2

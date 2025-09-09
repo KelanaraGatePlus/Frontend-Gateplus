@@ -3,17 +3,33 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { ebookApi } from "../api/ebookSliceAPI";
-import { filmAPI } from "../api/filmSliceAPI";
+import { comicApi } from "../api/comicSliceAPI";
+import { podcastApi } from "../api/podcastSliceAPI";
+import { movieAPI } from "../api/movieSliceAPI";
 import { userAPI } from "../api/userSliceAPI";
 import { homeAPI } from "../api/homeSliceAPI";
 import { creatorAPI } from "../api/creatorSliceAPI";
+import { contentAPI } from "../api/contentSliceAPI";
+import { genreAPI } from "../api/genreSliceAPI";
+import { commentAPI } from "../api/commentSliceAPI";
+import { uploadSessionApi } from "../api/uploadSessionAPI";
+import { seriesAPI } from "../api/seriesSliceAPI";
+import { logApi } from "../api/logSliceAPI";
 
 const rootReducer = combineReducers({
   [ebookApi.reducerPath]: ebookApi.reducer,
+  [comicApi.reducerPath]: comicApi.reducer,
+  [podcastApi.reducerPath]: podcastApi.reducer,
   [userAPI.reducerPath]: userAPI.reducer,
-  [filmAPI.reducerPath]: filmAPI.reducer,
+  [movieAPI.reducerPath]: movieAPI.reducer,
   [homeAPI.reducerPath]: homeAPI.reducer,
   [creatorAPI.reducerPath]: creatorAPI.reducer,
+  [contentAPI.reducerPath]: contentAPI.reducer,
+  [genreAPI.reducerPath]: genreAPI.reducer,
+  [commentAPI.reducerPath]: commentAPI.reducer,
+  [uploadSessionApi.reducerPath]: uploadSessionApi.reducer,
+  [seriesAPI.reducerPath]: seriesAPI.reducer,
+  [logApi.reducerPath]: logApi.reducer,
 });
 
 export const store = configureStore({
@@ -21,10 +37,18 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
       ebookApi.middleware,
+      comicApi.middleware,
+      podcastApi.middleware,
       userAPI.middleware,
-      filmAPI.middleware,
+      movieAPI.middleware,
       homeAPI.middleware,
       creatorAPI.middleware,
+      contentAPI.middleware,
+      genreAPI.middleware,
+      commentAPI.middleware,
+      uploadSessionApi.middleware,
+      seriesAPI.middleware,
+      logApi.middleware
     ),
 });
 

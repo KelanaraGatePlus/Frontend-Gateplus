@@ -11,6 +11,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useSearchCreatorQuery } from "@/hooks/api/creatorSliceAPI";
+import { useDebounce } from "use-debounce";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 /*[--- COMPONENT IMPORT ---]*/
 import HeaderUploadForm from '@/components/UploadForm/HeaderUploadForm';
@@ -33,35 +36,23 @@ export default function UploadPodcastEpisodeContent() {
     const [isTallScreen, setIsTallScreen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [ebooksCreator, setEbooksCreator] = useState([]);
-    const [selectedEbookId, setSelectedEbookId] = useState("");
+    const [selectedPodcastId, setSelectedPodcastId] = useState("");
     const [episodeTitle, setEpisodeTitle] = useState("");
     const [description, setDescription] = useState("");
     const [selectedPrice, setSelectedPrice] = useState("");
     const [creatorNotes, setCreatorNotes] = useState("");
     const seriesTitleParams = useSearchParams();
     const seriesFromUrl = seriesTitleParams.get("series");
-    const [query, setQuery] = useState("");
     const [uploadedFiles, setUploadedFiles] = useState({
         episodeCover: [],
         inputFile: [],
     });
-    const creatorsDummyData = [
-        {
-            id: 1,
-            profileName: "Mang Deden",
-            imageUrl: "https://picsum.photos/seed/profile2/200/200"
-        },
-        {
-            id: 2,
-            profileName: "Mang Uceng",
-            imageUrl: "https://picsum.photos/seed/profile1/200/200"
-        },
-        {
-            id: 3,
-            profileName: "Pak Friday",
-            imageUrl: "https://picsum.photos/seed/profile3/200/200"
-        },
-    ]
+    const [query, setQuery] = useState("");
+    const [debouncedQuery] = useDebounce(query, 500);
+    const { data: creators, isLoading: isLoadingCreator, isError: isErrorCreator } = useSearchCreatorQuery(debouncedQuery, {
+        skip: !debouncedQuery,
+    });
+    const [selectedCreators, setSelectedCreators] = useState([]);
 
     const handleFileUpload = (event, type) => {
         const files = Array.from(event.target.files);
@@ -78,8 +69,7 @@ export default function UploadPodcastEpisodeContent() {
 
         if (type === "inputFile") {
             const allowedTypes = [
-                "application/msword",
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "audio/mpeg",
             ];
 
             const isValidFormat = files.every((file) =>
@@ -87,11 +77,11 @@ export default function UploadPodcastEpisodeContent() {
             );
             const isValidFileName = files.every(
                 (file) =>
-                    (file.name.endsWith(".doc") || file.name.endsWith(".docx")) &&
+                    (file.name.endsWith(".mp3")) &&
                     !file.name.includes(" "),
             );
             if (!isValidFormat) {
-                setToastMessage("File harus berformat .doc atau .docx");
+                setToastMessage("File harus berformat .mp3");
                 setShowToast(true);
                 return;
             }
@@ -105,8 +95,6 @@ export default function UploadPodcastEpisodeContent() {
         }
 
         if (
-            type === "bannerStart" ||
-            type === "bannerEnd" ||
             type === "episodeCover"
         ) {
             const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
@@ -132,7 +120,7 @@ export default function UploadPodcastEpisodeContent() {
     };
 
     const handleSelectChange = (e) => {
-        setSelectedEbookId(e.target.value);
+        setSelectedPodcastId(e.target.value);
     };
 
     useEffect(() => {
@@ -148,7 +136,7 @@ export default function UploadPodcastEpisodeContent() {
 
     useEffect(() => {
         if (seriesFromUrl) {
-            setSelectedEbookId(seriesFromUrl);
+            setSelectedPodcastId(seriesFromUrl);
         }
     }, [seriesFromUrl]);
 
@@ -156,11 +144,11 @@ export default function UploadPodcastEpisodeContent() {
         try {
             const creatorId = localStorage.getItem("creators_id");
             const response = await axios.get(
-                `https://backend-gateplus-api.my.id/creator/${creatorId}`,
+                `${BACKEND_URL}/creator/${creatorId}`,
             );
 
             const fullData = response.data.data;
-            const creatorData = fullData.data[0];
+            const creatorData = fullData.data;
 
             setEbooksCreator(creatorData.Podcast);
         } catch (error) {
@@ -177,15 +165,13 @@ export default function UploadPodcastEpisodeContent() {
         setIsLoading(true);
 
         if (
-            !selectedEbookId ||
+            !setSelectedPodcastId ||
             !episodeTitle ||
             !description ||
             !creatorNotes ||
             !selectedPrice ||
             uploadedFiles.episodeCover.length === 0 ||
-            uploadedFiles.inputFile.length === 0 ||
-            uploadedFiles.bannerStart.length === 0 ||
-            uploadedFiles.bannerEnd.length === 0
+            uploadedFiles.inputFile.length === 0
         ) {
             setToastMessage("Semua kolom harus diisi");
             setShowToast(true);
@@ -199,21 +185,18 @@ export default function UploadPodcastEpisodeContent() {
         }
 
         const formData = new FormData();
-        const creatorId = localStorage.getItem("creators_id");
-        formData.append("creatorId", creatorId);
-        formData.append("ebookId", selectedEbookId);
+        formData.append("podcastId", selectedPodcastId);
         formData.append("title", episodeTitle);
         formData.append("description", description);
+        formData.append("coverPodcastEpisodeURL", uploadedFiles.episodeCover[0]);
+        formData.append("podcastFileURL", uploadedFiles.inputFile[0]);
+        formData.append("creatorsCollaborationId", JSON.stringify(selectedCreators.map(c => c.id)));
         formData.append("price", selectedPrice);
-        formData.append("notedEpisode", creatorNotes);
-        formData.append("coverEpisodeUrl", uploadedFiles.episodeCover[0]);
-        formData.append("bannerStartEpisodeUrl", uploadedFiles.bannerStart[0]);
-        formData.append("bannerEndEpisodeUrl", uploadedFiles.bannerEnd[0]);
-        formData.append("ebookUrl", uploadedFiles.inputFile[0]);
+        formData.append("notedPodcast", creatorNotes);
 
         try {
             const response = await axios.post(
-                "https://backend-gateplus-api.my.id/episode",
+                `${BACKEND_URL}/episodePodcast`,
                 formData,
                 {
                     headers: {
@@ -224,13 +207,13 @@ export default function UploadPodcastEpisodeContent() {
             console.log(response.data);
 
             setIsLoading(false);
-            setSelectedEbookId("");
+            setSelectedPodcastId("");
             setEpisodeTitle("");
             setDescription("");
             setSelectedPrice("");
             setCreatorNotes("");
 
-            router.push(`/podcasts/detail/${selectedEbookId}`);
+            router.push(`/podcasts/detail/${selectedPodcastId}`);
         } catch (error) {
             console.error("Error during post request:", error);
             setIsLoading(false);
@@ -241,7 +224,7 @@ export default function UploadPodcastEpisodeContent() {
         <>
             <main className="mt-16 flex flex-col py-2 md:mt-[100px] lg:px-4">
                 <HeaderUploadForm title={"Upload Podcast"} />
-                <HeaderTab type={"Podcast"} />
+                <HeaderTab type={"podcasts"} />
 
                 <div className="flex w-full flex-col px-2">
                     <form className="flex flex-col gap-2 lg:gap-2" onSubmit={handleSubmit}>
@@ -250,7 +233,7 @@ export default function UploadPodcastEpisodeContent() {
                             label="Judul"
                             name="series"
                             onChange={handleSelectChange}
-                            value={selectedEbookId}
+                            value={selectedPodcastId}
                             options={ebooksCreator}
                             placeholder="Pilih Judul Series"
                         />
@@ -303,7 +286,7 @@ export default function UploadPodcastEpisodeContent() {
                                                 name="inputFile"
                                                 hidden
                                                 ref={inputFileRef}
-                                                accept=".doc,.docx"
+                                                accept=".mp3"
                                                 onChange={(e) => handleFileUpload(e, "inputFile")}
                                             />
                                             <label htmlFor="inputFile">
@@ -348,64 +331,93 @@ export default function UploadPodcastEpisodeContent() {
                                 <h3 className="montserratFont text-base font-semibold text-[#979797] md:text-base lg:text-xl">
                                     Kreator Kolaborasi
                                 </h3>
-                                <p className="text-[10px] text-[#979797] italic md:text-sm">
-                                    Optional
-                                </p>
+                                <p className="text-[10px] text-[#979797] italic md:text-sm">Optional</p>
                             </div>
-                            <div className="flex h-full w-fit flex-4 flex-wrap items-stretch justify-start gap-x-6 text-white md:flex-10 relative">
-                                <div className="container flex w-full flex-wrap items-start gap-4 rounded-md bg-[#2a2a2a] p-2 border border-[#F5F5F540]">
-                                    <div className="flex flex-col items-center w-full gap-2">
-                                        {/* List Creator Tags */}
-                                        <div className="flex flex-row flex-wrap w-full items-center justify-start gap-2">
-                                            {creatorsDummyData.map((creator) => (
-                                                <div
-                                                    key={creator.id}
-                                                    className="p-2 montserratFont border-2 w-fit rounded-lg border-[#F5F5F559] bg-[#F5F5F540] text-sm flex gap-2 items-center"
-                                                >
-                                                    <p>@{creator.profileName}</p>
-                                                    <button className="h-6 w-6 shrink-0 rounded-full bg-black/25 text-white text-base">
-                                                        &times;
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
 
-                                        {/* Input */}
+                            <div className="flex h-full w-fit flex-4 flex-wrap items-stretch justify-start gap-x-6 text-white md:flex-10 relative">
+                                <div className={`${selectedCreators.length > 0 ? "gap-2" : "gap-0"} flex w-full flex-wrap items-start rounded-md bg-[#2a2a2a] p-2 border border-[#F5F5F540]`}>
+                                    <div className="flex flex-row flex-wrap w-full items-center justify-start gap-2">
+                                        {selectedCreators.map((creator) => (
+                                            <div
+                                                key={creator.id}
+                                                className="p-2 montserratFont border-2 w-fit rounded-lg border-[#F5F5F559] bg-[#F5F5F540] text-sm flex gap-2 items-center"
+                                            >
+                                                <div className="flex flex-row items-center gap-3">
+                                                    <div className="relative w-10 h-10 rounded-full overflow-hidden">
+                                                        <Image
+                                                            src={creator.imageUrl || "/default-profile.png"}
+                                                            alt={creator.username}
+                                                            fill
+                                                            className="object-cover"
+                                                        />
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <h3 className="text-white font-semibold text-sm">{creator.profileName}</h3>
+                                                        <p className="text-gray-300 text-xs">@{creator.username}</p>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        setSelectedCreators((prev) =>
+                                                            prev.filter((c) => c.id !== creator.id)
+                                                        )
+                                                    }
+                                                    className="h-6 w-6 shrink-0 rounded-full bg-black/25 text-white text-base cursor-pointer"
+                                                >
+                                                    &times;
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="flex flex-col items-center w-full gap-2">
+                                        {/* Input Search */}
                                         <input
                                             type="text"
                                             className="border-none outline-none w-full rounded-lg p-1 placeholder:montserratFont"
-                                            placeholder="Masukan Nama Pengguna Kreator"
+                                            placeholder="Masukan Nama Kreator atau Username Kreator"
                                             value={query}
                                             onChange={(e) => setQuery(e.target.value)}
                                         />
                                     </div>
                                 </div>
 
+                                {/* Dropdown Result */}
                                 {query && (
                                     <div className="w-full bg-[#2e2e2e] h-fit rounded-md drop-shadow-black/40 drop-shadow-2xl border border-white/50 absolute translate-y-full -bottom-2 z-10">
-                                        {creatorsDummyData
-                                            .filter((creator) =>
-                                                creator.profileName.toLowerCase().includes(query.toLowerCase())
-                                            )
-                                            .map((creator) => (
-                                                <div
-                                                    key={creator.id}
-                                                    className="px-4 py-2 cursor-pointer hover:bg-white/30"
+                                        {isLoadingCreator ? (
+                                            <div className="px-4 py-2 text-sm text-gray-300">Loading...</div>
+                                        ) : isErrorCreator ? (
+                                            <div className="px-4 py-2 text-sm text-red-400">Terjadi kesalahan</div>
+                                        ) : creators?.length > 0 ? (
+                                            creators.map((creator) => (
+                                                <div key={creator.id} className="px-4 py-2 cursor-pointer hover:bg-white/30" onClick={() => {
+                                                    if (!selectedCreators.find(c => c.id === creator.id)) {
+                                                        setSelectedCreators(prev => [...prev, creator]);
+                                                    }
+                                                    setQuery("");
+                                                }}
                                                 >
-                                                    {creator.profileName}
+                                                    <div className="flex flex-row items-center gap-3">
+                                                        <div className="relative w-10 h-10 rounded-full overflow-hidden">
+                                                            <Image
+                                                                src={creator.imageUrl || "/default-profile.png"}
+                                                                alt={creator.username}
+                                                                fill
+                                                                className="object-cover"
+                                                            />
+                                                        </div>
+                                                        <div className="flex flex-col">
+                                                            <h3 className="text-white font-semibold text-sm">{creator.profileName}</h3>
+                                                            <p className="text-gray-300 text-xs">@{creator.username}</p>
+                                                        </div>
+                                                    </div>
                                                 </div>
+
                                             ))
-                                            .concat(
-                                                creatorsDummyData.filter((creator) =>
-                                                    creator.profileName.toLowerCase().includes(query.toLowerCase())
-                                                ).length === 0
-                                                    ? [
-                                                        <div key="notfound" className="px-4 py-2 text-sm text-gray-300">
-                                                            Data tidak ditemukan
-                                                        </div>,
-                                                    ]
-                                                    : []
-                                            )}
+                                        ) : (
+                                            <div className="px-4 py-2 text-sm text-gray-300">Kreator tidak ditemukan</div>
+                                        )}
                                     </div>
                                 )}
                             </div>

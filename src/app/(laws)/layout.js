@@ -1,15 +1,15 @@
-/* eslint-disable react/prop-types */
-/* eslint-disable react/react-in-jsx-scope */
 "use client";
-import Navbar from "@/components/Navbar/page";
-import Footer from "@/components/Footer/MainFooter";
+import React from 'react';
+import PropTypes from 'prop-types';
 
 export default function LawsLayout({ children }) {
     return (
         <div className="flex flex-col overflow-x-hidden">
-            <Navbar />
             <div className="flex flex-col">{children}</div>
-            <Footer />
         </div>
     );
 }
+
+LawsLayout.propTypes = {
+    children: PropTypes.node.isRequired,
+};
