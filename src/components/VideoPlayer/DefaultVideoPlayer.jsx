@@ -13,14 +13,14 @@ export default function DefaultVideoPlayer({
   className,
   contentType,
   logType,
-  contentId, // <-- 1. Prop baru ditambahkan
+  contentId,
 }) {
   const videoRef = useRef(null);
   const wrapperRef = useRef(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [isBuffering, setIsBuffering] = useState(false);
-  const [ createLog ] = useCreateLogMutation();
+  const [createLog] = useCreateLogMutation();
 
   const getVideoEl = () => {
     if (videoRef.current && typeof videoRef.current.play === "function") {

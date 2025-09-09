@@ -29,6 +29,7 @@ import iconSaveOutline from "@@/logo/logoDetailFilm/save-icons.svg";
 import iconSaveSolid from "@@/logo/logoDetailFilm/saved-icons.svg";
 import iconShare from "@@/logo/logoDetailFilm/share-icons.svg";
 import defaultProfileImage from "@@/logo/logoDetailFilm/subscribe-icon-kelanara.svg";
+import DefaultShareButton from "../ShareButton/DefaultShareButton";
 
 export default function ProductDetailSection({
   productType,
@@ -369,12 +370,7 @@ export default function ProductDetailSection({
                     />
                   )}
                 </div>
-                <div
-                  className="flex cursor-pointer items-center justify-center transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110"
-                  onClick={() => setShowShareModal(true)}
-                >
-                  <Image priority width={35} alt="logo-share" src={iconShare} />
-                </div>
+                <DefaultShareButton contentType={productType.toUpperCase()} />
               </div>
 
               {/* uploader */}
@@ -463,6 +459,7 @@ export default function ProductDetailSection({
 
       <ShareModal
         isOpen={showShareModal}
+        contentType={productType.toUpperCase()}
         onClose={() => setShowShareModal(false)}
       />
 

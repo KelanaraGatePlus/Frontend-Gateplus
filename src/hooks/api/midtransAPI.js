@@ -1,6 +1,6 @@
 // hooks/useMidtransPayment.js
 import { useEffect, useState } from "react";
-import { BACKEND_URL } from "@/lib/constants/backendUrl";
+import { BACKEND_URL, MIDTRANS_URL } from "@/lib/constants/backendUrl";
 
 export const useMidtransPayment = (paymentType = 'ORDER') => {
     const [snapReady, setSnapReady] = useState(false);
@@ -22,8 +22,7 @@ export const useMidtransPayment = (paymentType = 'ORDER') => {
         }
 
         const script = document.createElement("script");
-        script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
-        script.setAttribute("data-client-key", process.env.MIDTRANS_CLIENT_KEY);
+        script.src = MIDTRANS_URL;
         script.async = true;
         script.onload = () => setSnapReady(true);
         script.onerror = () => console.error("Failed to load Midtrans Snap.js");

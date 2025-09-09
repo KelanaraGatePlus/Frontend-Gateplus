@@ -30,6 +30,7 @@ import { useMidtransPayment } from "@/hooks/api/midtransAPI";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { useLikeContent } from "@/lib/features/useLikeContent";
 import { useDislikeContent } from "@/lib/features/useDislikeContent";
+import DefaultShareButton from "@/components/ShareButton/DefaultShareButton";
 
 /* ===========================
    Halaman: PlayingMoviePage (JSX)
@@ -209,9 +210,7 @@ export default function PlayingMoviePage({ params }) {
                             <div className="flex items-center justify-center">
                                 <Image width={35} alt="logo-save" src={logoSave} priority />
                             </div>
-                            <div className="flex items-center justify-center">
-                                <Image width={35} alt="logo-share" src={logoShare} priority />
-                            </div>
+                            <DefaultShareButton contentType={'MOVIE'} />
                         </div>
                     </div>
                     <div className="flex flex-row items-center justify-end w-1/2 gap-3">
