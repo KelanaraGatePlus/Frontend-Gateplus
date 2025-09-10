@@ -32,7 +32,7 @@ export default function ButtonSection({
                     <p>Edit Profile</p>
                 </Link>
             </button>
-            <button disabled={isLinkedWithGoogle} onClick={handleLinkGoogle} className="mt-1 rounded-lg bg-[#0E5BA8] py-2 font-bold text-white hover:bg-[#0E5BA8]/80" >
+            <button disabled={isLinkedWithGoogle} onClick={handleLinkGoogle} className={`mt-1 rounded-lg ${isLinkedWithGoogle ? "bg-[#0E5BA8]/80" : "bg-[#0E5BA8] hover:bg-[#0E5BA8]/80"} py-2 font-bold text-white `} >
                 <p>{isLinkedWithGoogle ? "Linked With Google Account" : "Link With Google Account"}</p>
             </button>
         </div>
@@ -63,9 +63,9 @@ export default function ButtonSection({
                         <p className="flex">Subscribing...</p>
                     </div>
                 ) : isSubscribed ? (
-                    "Subscribed"
+                    "Following"
                 ) : (
-                    "Subscribe Now"
+                    "Follow Now"
                 )}
             </button>
         ) : null

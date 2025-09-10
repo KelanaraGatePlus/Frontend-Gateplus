@@ -29,6 +29,8 @@ export default function CreatorProfilePage({ params }) {
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [totalSubs, setTotalSubs] = useState(0);
   const [bannerImageUrl, setBannerImageUrl] = useState(null);
+  const [isLinkedWithGoogle, setIsLinkedWithGoogle] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -50,6 +52,8 @@ export default function CreatorProfilePage({ params }) {
       setTotalSubs(creatorDetailData.totalSubscribers);
       const storedCreatorId = localStorage.getItem("creators_id");
       setIsOwnProfile(storedCreatorId === id);
+      setIsLinkedWithGoogle(creatorDetailData.user.googleId ? true : false);
+      setIsSubscribed(creatorDetailData.isSubscribed ?? false);
     }
   }, [creatorDetailQuery.isSuccess, creatorDetailData]);
 
@@ -107,6 +111,8 @@ export default function CreatorProfilePage({ params }) {
           isReady={isReady}
           isOwnProfile={isOwnProfile}
           setTotalSubs={setTotalSubs}
+          isLinkedWithGoogle={isLinkedWithGoogle}
+          isFollowed={isSubscribed ?? false}
         />
         <section className="w-full md:min-w-[calc(100%-300px)] md:max-w-[calc(100%-300px)] transition-all duration-300 ease-out">
           <CreatorMostViewedContent

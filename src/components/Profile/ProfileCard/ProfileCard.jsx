@@ -20,9 +20,10 @@ export default function ProfileCard({
     isReady = true,
     isOwnProfile,
     isLinkedWithGoogle = false,
+    isFollowed = false,
     setTotalSubs = () => { },
 }) {
-    const [isSubscribed, setIsSubscribed] = useState(false);
+    const [isSubscribed, setIsSubscribed] = useState(isFollowed);
     const [isSubscribing, setIsSubscribing] = useState(false);
     const [showToast, setShowToast] = useState(false);
 
@@ -141,4 +142,5 @@ ProfileCard.propTypes = {
     isOwnProfile: PropTypes.bool.isRequired,
     setTotalSubs: PropTypes.func,
     isLinkedWithGoogle: PropTypes.bool,
+    isFollowed: PropTypes.bool,
 };

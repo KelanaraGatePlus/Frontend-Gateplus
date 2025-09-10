@@ -108,9 +108,9 @@ export default function UploadLargeFile({ label = "Film", prefix, setDataUrl, se
                                                 <span>Wait until your file uploaded</span>
                                             </div>
                                         </div>
-                                        <div className="w-full bg-green-500 rounded-full h-max overflow-hidden">
+                                        <div className="w-full bg-green-800 rounded-full h-max overflow-hidden">
                                             <div
-                                                className="h-4 bg-gradient-to-r bg-green-800 rounded-3xl transition-all duration-300"
+                                                className="h-4 bg-gradient-to-r bg-green-500 rounded-3xl transition-all duration-300"
                                                 style={{ width: `${progress}%` }}
                                             />
                                         </div>

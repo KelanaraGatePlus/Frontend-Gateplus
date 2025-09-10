@@ -153,9 +153,9 @@ export default function ProfileMenu({
                       : "-mt-1 max-h-0 opacity-0"
                       }`}
                   >
-                    <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
+                    <Link href={"/creator/dashboard"} className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
                       <span>Dashboard</span>
-                    </div>
+                    </Link>
                     <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
                       <span>Penarikan Saldo</span>
                     </div>

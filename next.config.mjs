@@ -3,6 +3,7 @@ import { withNextVideo } from "next-video/process";
 const nextConfig = {
   images: {
     domains: [
+      "backend-gateplus-api.my.id",
       "103.38.108.117",
       "d2lioolgjpe1s1.cloudfront.net",
       "d3670a894gi0az.cloudfront.net",

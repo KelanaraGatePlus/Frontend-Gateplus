@@ -30,7 +30,7 @@ type ResumeMeta = {
     fileHash: string;
 };
 
-export function useUploadSessionData({ chunkSize = DEFAULT_CHUNK_SIZE, prefix }) {
+export function useUploadSessionData({ chunkSize = DEFAULT_CHUNK_SIZE, prefix }: { chunkSize?: number; prefix?: string }) {
     // Semua state dari template Anda dipertahankan
     const [progress, setProgress] = useState(0);
     const [uploadedBytes, setUploadedBytes] = useState(0);
@@ -60,13 +60,18 @@ export function useUploadSessionData({ chunkSize = DEFAULT_CHUNK_SIZE, prefix })
     useEffect(() => {
         const savedSession = localStorage.getItem(UPLOAD_STATUS_KEY);
         if (savedSession) {
-            const parsed = JSON.parse(savedSession) as FullUploadSession;
-            setFullSession(parsed);
-            setResumeMeta({
-                uploadUID: parsed.uploadUID,
-                fileName: parsed.fileName,
-                fileHash: parsed.fileHash,
-            });
+            try {
+                const parsed = JSON.parse(savedSession) as FullUploadSession;
+                setFullSession(parsed);
+                setResumeMeta({
+                    uploadUID: parsed.uploadUID,
+                    fileName: parsed.fileName,
+                    fileHash: parsed.fileHash,
+                });
+            } catch (e) {
+                console.warn("Gagal parse saved upload session:", e);
+                localStorage.removeItem(UPLOAD_STATUS_KEY);
+            }
         }
     }, []);
 
@@ -74,6 +79,7 @@ export function useUploadSessionData({ chunkSize = DEFAULT_CHUNK_SIZE, prefix })
     const hashFile = async (file: File): Promise<string> => {
         const TWO_GB = 2 * 1024 * 1024 * 1024;
         if (file.size > TWO_GB) {
+            // jangan alert berulang kali saat otomatis: tetap informatif
             alert("File sangat besar (>2GB), proses hash dilewati demi stabilitas upload. Pastikan file tidak berubah selama upload.");
             // Return a pseudo hash (e.g., file size + name) for session uniqueness
             return `${file.name}-${file.size}`;
@@ -112,7 +118,11 @@ export function useUploadSessionData({ chunkSize = DEFAULT_CHUNK_SIZE, prefix })
 
     // --- FUNGSI INTI (GABUNGAN) ---
     const handleFile = async (file: File, resume = false) => {
-        if (isUploadingRef.current) return;
+        // Guard: kalau sedang upload, jangan proses lagi
+        if (isUploadingRef.current) {
+            console.warn("Upload sudah berjalan, aksi diabaikan.");
+            return;
+        }
 
         // Reset state dari unggahan sebelumnya
         setVideoDuration(null);
@@ -131,9 +141,9 @@ export function useUploadSessionData({ chunkSize = DEFAULT_CHUNK_SIZE, prefix })
                 console.log("File bukan video, deteksi durasi dilewati.");
             }
         } catch (error) {
-            alert(error); // Tampilkan pesan error jika gagal baca metadata
+            alert(error);
             setIsLoading(false);
-            return; // Hentikan proses jika gagal
+            return; // Hentikan proses jika gagal membaca metadata
         }
 
         isUploadingRef.current = true;
@@ -167,36 +177,73 @@ export function useUploadSessionData({ chunkSize = DEFAULT_CHUNK_SIZE, prefix })
                 const initData = await initiateUpload({
                     fileSize: file.size, chunkSize, prefix, fileName: file.name, contentType: file.type,
                 }).unwrap();
+                // Server harus mengembalikan minimal: key, uploadId, uploadUID (sesuaikan API)
                 sessionToProcess = { ...initData, fileName: file.name, fileHash, uploadedParts: [] };
             } else {
                 const statusData = await getUploadStatus({ key: sessionToProcess.key, uploadId: sessionToProcess.uploadId }).unwrap();
-                sessionToProcess.uploadedParts = statusData.uploadedParts;
+                sessionToProcess.uploadedParts = statusData.uploadedParts || [];
             }
 
             setFullSession(sessionToProcess);
             localStorage.setItem(UPLOAD_STATUS_KEY, JSON.stringify(sessionToProcess));
 
-            // 2. Proses Chunks
+            // 2. Proses Chunks (sekuensial, pastikan await di tiap langkah)
             const totalChunks = Math.ceil(file.size / chunkSize);
-            let uploadedParts = [...sessionToProcess.uploadedParts];
+            let uploadedParts = [...(sessionToProcess.uploadedParts || [])];
             const uploadedPartNumbers = new Set(uploadedParts.map(p => p.PartNumber));
-            let currentBytesSoFar = uploadedParts.reduce((acc, part) => acc + (part.PartNumber <= totalChunks ? chunkSize : file.size % chunkSize || chunkSize), 0);
+
+            const partSize = (partNumber: number) => {
+                if (partNumber < totalChunks) return chunkSize;
+                // last part size
+                return file.size - chunkSize * (totalChunks - 1);
+            };
+
+            let currentBytesSoFar = uploadedParts.reduce((acc, part) => acc + partSize(part.PartNumber), 0);
             setUploadedBytes(currentBytesSoFar);
 
             const t0 = Date.now();
             let bytesUploadedThisSession = 0;
 
             for (let partNumber = 1; partNumber <= totalChunks; partNumber++) {
-                if (uploadedPartNumbers.has(partNumber)) continue;
+                if (uploadedPartNumbers.has(partNumber)) {
+                    // sudah di-upload, lewati
+                    console.log(`Skip part ${partNumber} (sudah ada)`);
+                    continue;
+                }
+
                 if (!isUploadingRef.current) throw new Error("Upload dibatalkan");
 
                 const start = (partNumber - 1) * chunkSize;
-                const chunk = file.slice(start, start + chunkSize);
+                const end = Math.min(start + chunkSize, file.size);
+                const chunk = file.slice(start, end);
 
-                const { signedUrl } = await getSignedUrlForChunk({ ...sessionToProcess, partNumber }).unwrap();
-                const uploadResponse = await axios.put(signedUrl, chunk, { headers: { 'Content-Type': file.type } });
+                // Ambil signed URL sekali per part (backend hanya mengembalikan URL)
+                console.log(`Request signed URL for part ${partNumber}`);
+                const signedUrlResp = await getSignedUrlForChunk({ ...sessionToProcess, partNumber }).unwrap();
+                // signedUrlResp bisa berisi { signedUrl } atau struktur lain -> asumsi { signedUrl }
+                const signedUrl = (signedUrlResp as any).signedUrl ?? (signedUrlResp as any).url;
+                if (!signedUrl) throw new Error("Signed URL tidak diterima dari server");
 
-                const newPart = { PartNumber: partNumber, ETag: uploadResponse.headers.etag.replaceAll('"', '') };
+                console.log(`PUT chunk part ${partNumber} -> ${signedUrl}`);
+
+                // PUT ke MinIO (hanya 1x)
+                const uploadResponse = await axios.put(signedUrl, chunk, {
+                    headers: { 'Content-Type': file.type },
+                    // jangan men-trigger request lain — pastikan tidak ada fetch/xhr paralel
+                    validateStatus: () => true
+                });
+
+                // Cek status yang valid (MinIO/S3 biasanya 200 atau 204)
+                if (![200, 201, 204].includes(uploadResponse.status)) {
+                    console.error("Upload chunk gagal:", uploadResponse.status, uploadResponse.data);
+                    throw new Error(`Gagal upload chunk part ${partNumber} (status ${uploadResponse.status})`);
+                }
+
+                // Ambil ETag (beberapa server return 'etag' atau 'ETag')
+                const etagHeader = uploadResponse.headers?.etag ?? uploadResponse.headers?.ETag;
+                const etag = typeof etagHeader === "string" ? etagHeader.replace(/"/g, "") : "";
+
+                const newPart = { PartNumber: partNumber, ETag: etag };
                 uploadedParts.push(newPart);
 
                 const updatedSession = { ...sessionToProcess, uploadedParts };
@@ -204,16 +251,19 @@ export function useUploadSessionData({ chunkSize = DEFAULT_CHUNK_SIZE, prefix })
                 localStorage.setItem(UPLOAD_STATUS_KEY, JSON.stringify(updatedSession));
                 sessionToProcess = updatedSession;
 
-                bytesUploadedThisSession += chunk.size;
-                currentBytesSoFar += chunk.size;
+                // update progress/bytes
+                const thisPartSize = partSize(partNumber);
+                bytesUploadedThisSession += thisPartSize;
+                currentBytesSoFar += thisPartSize;
                 setUploadedBytes(currentBytesSoFar);
                 setProgress(Math.round((currentBytesSoFar / file.size) * 100));
 
+                // ETA
                 const elapsedSeconds = (Date.now() - t0) / 1000;
                 if (elapsedSeconds > 0) {
                     const speed = bytesUploadedThisSession / elapsedSeconds;
                     const remainingBytes = file.size - currentBytesSoFar;
-                    const etaSeconds = Math.ceil(remainingBytes / speed);
+                    const etaSeconds = speed > 0 ? Math.ceil(remainingBytes / speed) : 0;
                     if (isFinite(etaSeconds)) {
                         const minutes = String(Math.floor(etaSeconds / 60)).padStart(2, "0");
                         const seconds = String(etaSeconds % 60).padStart(2, "0");
@@ -222,19 +272,21 @@ export function useUploadSessionData({ chunkSize = DEFAULT_CHUNK_SIZE, prefix })
                 }
             }
 
-            // 3. Complete
+            // 3. Complete - beri parts ke server agar server bisa melakukan CompleteMultipartUpload
+            console.log("Memanggil completeUpload ke server...");
             const url = await completeUpload({ ...sessionToProcess, parts: uploadedParts }).unwrap();
             setFileUrl(url);
             setIsFinish(true);
             alert("Upload Selesai!");
             setProgress(100);
 
-        } catch (error) {
+        } catch (error: any) {
             if (error instanceof Error && error.message !== "Upload dibatalkan") {
                 console.error("Terjadi kesalahan saat upload:", error);
-                alert("Terjadi kesalahan saat upload.");
+                alert("Terjadi kesalahan saat upload: " + (error?.message ?? "unknown"));
             }
         } finally {
+            // Hapus session di localStorage bila upload selesai / gagal (opsional)
             localStorage.removeItem(UPLOAD_STATUS_KEY);
             setResumeMeta(null);
             setFullSession(null);
@@ -245,25 +297,23 @@ export function useUploadSessionData({ chunkSize = DEFAULT_CHUNK_SIZE, prefix })
         }
     };
 
+    // Handler file input (baru)
     const onNewFile = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) handleFile(file, false);
     };
 
+    // Handler resume (tetap ada, tapi tidak mengubah fileInputRef.onchange)
     const onResumeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) handleFile(file, true);
     };
 
+    // Trigger resume tanpa overwrite onchange (fix double-binding)
     const triggerResume = () => {
         if (fileInputRef.current) {
+            // reset value supaya memilih file yang sama tetap memicu onChange
             fileInputRef.current.value = '';
-            fileInputRef.current.onchange = (e: Event) => {
-                const target = e.target as HTMLInputElement;
-                if (target.files && target.files[0]) {
-                    handleFile(target.files[0], true);
-                }
-            };
             fileInputRef.current.click();
         }
     };

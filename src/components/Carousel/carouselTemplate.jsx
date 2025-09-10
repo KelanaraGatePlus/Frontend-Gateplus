@@ -58,7 +58,7 @@ export default function CarouselTemplate({ label, type, contents, isLoading, isT
                                                     <Link href={`/${fixedType.toLowerCase()}${fixedType.toLowerCase() !== "series" ? "s" : ""}/detail/${item.id}`}>
                                                         <div className="relative h-full w-full">
                                                             {isTopTen ? (
-                                                                <div className="bottom-0 left-0 rounded-tr-2xl bg-opacity-60 absolute z-10 bg-[#02536e] px-2 py-1 text-xs text-white h-fit w-fit drop-shadow-[0_0_2px_rgba(255,255,255,0.3)] flex items-center justify-center flex-col max-w-[65%] transition-all duration-300 ease-in-out">
+                                                                <div className="bottom-0 left-0 rounded-tr-2xl bg-opacity-60 absolute z-10 bg-[#02536e]/50 px-2 py-1 text-xs text-white h-fit w-fit drop-shadow-[0_0_2px_rgba(255,255,255,0.3)] flex items-center justify-center flex-col max-w-[65%] transition-all duration-300 ease-in-out">
                                                                     <div className="relative w-full h-full flex items-center justify-start gap-2 md:pr-2">
                                                                         <div className="relative w-[18px] h-[18px] md:w-[25px] md:h-[25px] shrink-0">
                                                                             <Image
