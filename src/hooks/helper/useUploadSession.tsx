@@ -70,7 +70,14 @@ export function useUploadSessionData({ chunkSize = DEFAULT_CHUNK_SIZE, prefix })
         }
     }, []);
 
+    // Skip hashing for files >2GB to avoid NotReadableError
     const hashFile = async (file: File): Promise<string> => {
+        const TWO_GB = 2 * 1024 * 1024 * 1024;
+        if (file.size > TWO_GB) {
+            alert("File sangat besar (>2GB), proses hash dilewati demi stabilitas upload. Pastikan file tidak berubah selama upload.");
+            // Return a pseudo hash (e.g., file size + name) for session uniqueness
+            return `${file.name}-${file.size}`;
+        }
         const buffer = await file.arrayBuffer();
         const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
         return Array.from(new Uint8Array(hashBuffer))
