@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useMidtransTipPayment } from "@/hooks/api/midtransAPI";
 import SimpleModal from "../Modal/SimpleModal";
+import PropTypes from "prop-types";
 
 export default function ProductDonationSection({ creatorId }) {
   const { pay } = useMidtransTipPayment();
@@ -93,3 +94,7 @@ export default function ProductDonationSection({ creatorId }) {
     </section>
   );
 }
+
+ProductDonationSection.propTypes = {
+  creatorId: PropTypes.string.isRequired,
+};

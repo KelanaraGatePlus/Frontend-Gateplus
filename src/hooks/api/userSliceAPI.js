@@ -33,6 +33,11 @@ export const userAPI = createApi({
       providesTags: ["usersAPI"],
       keepUnusedDataFor: 60,
     }),
+    getUserLastWatchedContent: builder.query({
+      query: () => `/save/user/last-watch`,
+      providesTags: ["usersAPI"],
+      keepUnusedDataFor: 60,
+    }),
     getMe: builder.query({
       query: () => "/users/authMe",
       providesTags: ["usersAPI"],
@@ -68,4 +73,5 @@ export const {
   useRegisterUserMutation,
   useLoginUserMutation,
   useCheckUserAvailabilityQuery,
+  useGetUserLastWatchedContentQuery,
 } = userAPI;

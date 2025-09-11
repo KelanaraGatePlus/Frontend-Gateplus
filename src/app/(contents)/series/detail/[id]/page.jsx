@@ -303,7 +303,7 @@ function DetailSeriesPage({ params }) {
 
                 <div className="px-15 mt-10 md:mt-20">
                     <ProductDonationSection
-                        creatorId={productDetail?.creatorId}
+                        creatorId={seriesData?.creatorId}
                     />
                 </div>
 

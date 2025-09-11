@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 /*[--- HOOKS IMPORT ---]*/
-import { useGetUserSavedContentQuery } from "@/hooks/api/userSliceAPI";
+import { useGetUserLastWatchedContentQuery, useGetUserSavedContentQuery } from "@/hooks/api/userSliceAPI";
 
 import { Pagination } from 'flowbite-react';
 import MenuTabs from './MenuTabs';
@@ -17,7 +17,9 @@ export default function UserLibraryTabs({ id }) {
     const [isLoadingContent, setIsLoadingContent] = useState(false);
 
     const { data, isLoading: isLoadingSavedContent, isSuccess } = useGetUserSavedContentQuery(id);
+    const { data: lastWatchedData, isLoading: isLoadingLastWatched } = useGetUserLastWatchedContentQuery();
     const userSavedContentData = data?.data?.data || [];
+    const userLastWatchedContentData = lastWatchedData?.data?.data || [];
 
     useEffect(() => {
         if (isSuccess && userSavedContentData) {
@@ -36,9 +38,8 @@ export default function UserLibraryTabs({ id }) {
             content = [];
             isLoading = false;
         } else if (switchTab === "Riwayat Tonton") {
-            const local = localStorage.getItem("last_seen_content");
-            content = local ? JSON.parse(local) : [];
-            isLoading = false;
+            content = userLastWatchedContentData;
+            isLoading = isLoadingLastWatched;
         }
 
         setActiveContent(content);
