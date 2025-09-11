@@ -13,11 +13,6 @@ import PropTypes from "prop-types";
 import logoPinComment from "@@/icons/icon-comment.svg";
 import IconsArrowLeft from "@@/icons/icons-dashboard/icons-arrow-left.svg";
 import logoUsersComment from "@@/icons/logo-users-comment.svg";
-import logoDislike from "@@/logo/logoDetailFilm/dislike-icons.svg";
-import logoLike from "@@/logo/logoDetailFilm/like-icons.svg";
-import logoSave from "@@/logo/logoDetailFilm/save-icons.svg";
-import logoShare from "@@/logo/logoDetailFilm/share-icons.svg";
-import logoSubscribe from "@@/logo/logoDetailFilm/subscribe-icon-kelanara.svg";
 import movie1 from "@@/logo/logoFilm/film_1.svg";
 import movie2 from "@@/logo/logoFilm/film_2.svg";
 import movie3 from "@@/logo/logoFilm/film_3.svg";
@@ -69,98 +64,6 @@ export default function DetailSeriesPage({ params }) {
             </section>
 
             <main className="px-5 text-white">
-                <section className="w-full flex flex-row items-center justify-between pt-2 pb-4">
-                    <div className="flex flex-col gap-4 w-1/2">
-                        <div className="flex flex-col gap-2">
-                            <h1 className="font-black text-4xl">
-                                {seriesData?.title || "Judul Movie Tidak Tersedia"}
-                            </h1>
-                            <p className=" text-sm/normal">
-                                {seriesData?.ageRestriction} | {seriesData?.categories?.tittle}
-                            </p>
-                        </div>
-                        <div className="flex flex-row gap-6">
-                            <div className="flex items-center justify-center w-48">
-                                <button className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full">
-                                    Buy
-                                </button>
-                            </div>
-                            <div className="flex items-center justify-center transition delay-150 duration-400 ease-linear hover:-translate-y-1 hover:scale-x-110 hover:scale-y-110">
-                                <Image
-                                    className="focus-within:bg-purple-300"
-                                    width={35}
-                                    alt="logo-like"
-                                    src={logoLike}
-                                    priority
-                                />
-                            </div>
-                            <div className="flex items-center justify-center">
-                                <Image
-                                    width={35}
-                                    alt="logo-dislike"
-                                    src={logoDislike}
-                                    priority
-                                />
-                            </div>
-                            <div className="flex items-center justify-center">
-                                <Image width={35} alt="logo-save" src={logoSave} priority />
-                            </div>
-                            <div className="flex items-center justify-center">
-                                <Image width={35} alt="logo-share" src={logoShare} priority />
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex flex-row items-center justify-end w-1/2 gap-3">
-                        <div className="flex items-center justify-center">
-                            <Image
-                                width={60}
-                                alt="logo-subscribers"
-                                src={logoSubscribe}
-                                priority
-                            />
-                        </div>
-                        <div className="grid grid-rows-2">
-                            <div className="flex place-content-center justify-center text-2xl font-bold text-white">
-                                {seriesData?.creator?.user?.username}
-                            </div>
-                            <div className="text-sm text-white">{seriesData?.creator?._count.subscriptions} followers</div>
-                        </div>
-                    </div>
-                </section>
-
-                <section className="flex flex-row gap-3 items-stretch">
-                    {/* Poster 3:2 */}
-                    <div className="relative aspect-[2/3] w-[220px] sm:w-[160px] lg:w-[250px] flex-shrink-0">
-                        <Image
-                            src={seriesData.posterImageUrl}
-                            alt="logo-racunsangga-movie"
-                            layout="fill"
-                            className="rounded-xl object-cover"
-                            priority
-                        />
-                    </div>
-
-                    {/* Deskripsi */}
-                    <div className="rounded-xl bg-[#393939] flex-1">
-                        <div className="mx-4 my-4 text-white h-full flex flex-col">
-                            <p>{seriesData?.description}</p>
-
-                            <div className="mt-10">
-                                <p>Judul: {seriesData.title}</p>
-                                <p>Sutradara : {seriesData.director}</p>
-                                <p>Rumah Produksi : {seriesData.productionHouse}</p>
-                                <p>Produser : {seriesData.producer}</p>
-                                <p>Penulis Cerita : {seriesData.writer}</p>
-                                <p>Pemeran : {seriesData.talent}</p>
-                                <p>Durasi : {seriesData.duration}</p>
-                                <p>Genre : {seriesData?.categories?.tittle}</p>
-                                <p>Tahun Rilis : {seriesData.releaseYear}</p>
-                                <p>Bahasa : {seriesData.language}</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
                 <ProductEpisodeSection
                     productType={'series'}
                     productEpisodes={episode_series}

@@ -34,6 +34,10 @@ import { useLikeContent } from "@/lib/features/useLikeContent";
 import { useDislikeContent } from "@/lib/features/useDislikeContent";
 import DefaultShareButton from "@/components/ShareButton/DefaultShareButton";
 import ProductDonationSection from '@/components/MainDetailProduct/ProductDonationSection';
+import iconLikeSolid from "@@/logo/logoDetailFilm/liked-icons.svg";
+import iconDislikeSolid from "@@/logo/logoDetailFilm/dislike-icons-solid.svg";
+import iconSaveSolid from "@@/logo/logoDetailFilm/saved-icons.svg";
+import { useSaveContent } from '@/lib/features/useSaveContent';
 
 /* ===========================
    Halaman: DetailSeriesPage (JSX)
@@ -51,12 +55,15 @@ function DetailSeriesPage({ params }) {
     const [createLog] = useCreateLogMutation();
     const { toggleLike } = useLikeContent();
     const { toggleDislike } = useDislikeContent();
+    const { toggleSave } = useSaveContent();
 
     const [isLiked, setIsLiked] = useState(false);
     const [idLiked, setIdLiked] = useState(null);
     const [totalLike, setTotalLike] = useState(0);
     const [isDisliked, setIsDisliked] = useState(false);
     const [idDisliked, setIdDisliked] = useState(null);
+    const [isSaved, setIsSaved] = useState(false);
+    const [idSaved, setIdSaved] = useState(null);
 
     const seriesData = data?.data?.data || {};
     const episode_series = (seriesData.episodes || []).slice().sort((a, b) => {
@@ -120,6 +127,8 @@ function DetailSeriesPage({ params }) {
             setTotalLike(seriesData.likes || 0);
             setIsDisliked(seriesData.isDisliked || false);
             setIdDisliked(seriesData?.isDisliked?.id || null);
+            setIsSaved(seriesData.isSaved || false);
+            setIdSaved(seriesData?.isSaved?.id || null);
         }
     }, [seriesData]);
 
@@ -174,6 +183,21 @@ function DetailSeriesPage({ params }) {
         });
     };
 
+    const handleToggleSave = () => {
+        toggleSave({
+            isSaved,
+            title: seriesData.title,
+            id: seriesData.id,
+            fieldKey: "seriesId",
+            idSaved,
+            setShowToast: () => {},
+            setToastMessage: () => {},
+            setToastType: () => {},
+            setIsSaved,
+            setIdSaved,
+        });
+    };
+
     return (
         <div>
             <section className="flex justify-center rounded-md relative">
@@ -214,30 +238,63 @@ function DetailSeriesPage({ params }) {
                                 </button>
                             </div>
                             <div onClick={handleToggleLike} className="flex items-center justify-center transition delay-150 duration-400 ease-linear hover:-translate-y-1 hover:scale-x-110 hover:scale-y-110 cursor-pointer">
-                                <Image
-                                    width={35}
-                                    alt="logo-like"
-                                    src={logoLike}
-                                    priority
-                                    className={isLiked ? 'filter brightness-150 drop-shadow-[0_0_3px_#4ade80]' : ''}
-                                />
+                                {isLiked ? (
+                                    <Image
+                                        priority
+                                        className="focus-within:bg-purple-300"
+                                        width={35}
+                                        alt="icon-like-solid"
+                                        src={iconLikeSolid}
+                                    />
+                                ) : (
+                                    <Image
+                                        priority
+                                        className="focus-within:bg-purple-300"
+                                        width={35}
+                                        alt="icon-like-outline"
+                                        src={logoLike}
+                                    />
+                                )}
                                 <p className="montserratFont mt-1 text-base font-bold pl-2">
                                     {totalLike}
                                 </p>
                             </div>
                             {/* Tombol Dislike */}
                             <div onClick={handleToggleDislike} className="flex items-center justify-center cursor-pointer">
-                                <Image
-                                    width={35}
-                                    alt="logo-dislike"
-                                    src={logoDislike} // Selalu gunakan ikon standar
-                                    priority
-                                    // Tambahkan className dinamis ini:
-                                    className={isDisliked ? 'filter brightness-150 drop-shadow-[0_0_3px_#f87171]' : ''}
-                                />
+                                {isDisliked ? (
+                                    <Image
+                                        priority
+                                        className="focus-within:bg-purple-300"
+                                        width={35}
+                                        alt="icon-like-solid"
+                                        src={iconDislikeSolid}
+                                    />
+                                ) : (
+                                    <Image
+                                        priority
+                                        className="focus-within:bg-purple-300"
+                                        width={35}
+                                        alt="icon-like-outline"
+                                        src={logoDislike}
+                                    />
+                                )}
                             </div>
-                            <div className="flex items-center justify-center">
-                                <Image width={35} alt="logo-save" src={logoSave} priority />
+                            <div onClick={handleToggleSave} className="flex items-center justify-center cursor-pointer">
+                                {isSaved ? (
+                                    <Image
+                                        priority
+                                        width={35}
+                                        alt="icon-saved-solid"
+                                        src={iconSaveSolid}
+                                    />
+                                ) : (
+                                    <Image
+                                        priority
+                                        width={35}
+                                        alt="logo-save"
+                                        src={logoSave}
+                                    />
+                                )}
                             </div>
                             <DefaultShareButton contentType={'SERIES'} />
                         </div>
@@ -301,7 +358,7 @@ function DetailSeriesPage({ params }) {
                     handlePayment={handleModalOpen}
                 />
 
-                <div className="px-15 mt-10 md:mt-20">
+                <div className="mt-10 md:mt-20">
                     <ProductDonationSection
                         creatorId={seriesData?.creatorId}
                     />

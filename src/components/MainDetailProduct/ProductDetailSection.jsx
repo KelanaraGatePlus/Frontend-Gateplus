@@ -164,10 +164,6 @@ export default function ProductDetailSection({
       setIsSaved,
       setIdSaved,
     });
-
-    console.log("DEBUG");
-    console.log(fieldKey[productType]);
-    console.log(productID);
   };
 
   const handleToggleSubscribe = () => {

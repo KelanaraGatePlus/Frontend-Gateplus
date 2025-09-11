@@ -31,6 +31,10 @@ import { useDislikeContent } from "@/lib/features/useDislikeContent";
 import DefaultShareButton from "@/components/ShareButton/DefaultShareButton";
 import PropTypes from 'prop-types';
 import ProductDonationSection from "@/components/MainDetailProduct/ProductDonationSection";
+import iconLikeSolid from "@@/logo/logoDetailFilm/liked-icons.svg";
+import iconDislikeSolid from "@@/logo/logoDetailFilm/dislike-icons-solid.svg";
+import iconSaveSolid from "@@/logo/logoDetailFilm/saved-icons.svg";
+import { useSaveContent } from '@/lib/features/useSaveContent';
 
 /* ===========================
    Halaman: PlayingMoviePage (JSX)
@@ -48,12 +52,15 @@ function PlayingMoviePage({ params }) {
     const [createLog] = useCreateLogMutation();
     const { toggleLike } = useLikeContent();
     const { toggleDislike } = useDislikeContent();
+    const { toggleSave } = useSaveContent();
 
     const [isLiked, setIsLiked] = useState(false);
     const [idLiked, setIdLiked] = useState(null);
     const [totalLike, setTotalLike] = useState(0);
     const [isDisliked, setIsDisliked] = useState(false);
     const [idDisliked, setIdDisliked] = useState(null);
+    const [isSaved, setIsSaved] = useState(false);
+    const [idSaved, setIdSaved] = useState(null);
 
     useEffect(() => {
         // Mengisi state dari data API saat pertama kali dimuat
@@ -63,6 +70,8 @@ function PlayingMoviePage({ params }) {
             setTotalLike(movieData.likes || 0);
             setIsDisliked(movieData.isDisliked || false);
             setIdDisliked(movieData?.isDisliked?.id || null);
+            setIsSaved(movieData.isSaved || false);
+            setIdSaved(movieData?.isSaved?.id || null);
         }
     }, [movieData]);
 
@@ -134,6 +143,21 @@ function PlayingMoviePage({ params }) {
         setIsModalOpen(true);
     };
 
+    const handleToggleSave = () => {
+        toggleSave({
+            isSaved,
+            title: movieData.title,
+            id: movieData.id,
+            fieldKey: "movieId",
+            idSaved,
+            setShowToast: () => { },
+            setToastMessage: () => { },
+            setToastType: () => { },
+            setIsSaved,
+            setIdSaved,
+        });
+    };
+
     useEffect(() => {
         createLog({
             contentType: "FILM",
@@ -182,30 +206,63 @@ function PlayingMoviePage({ params }) {
                                 </button>
                             </div>
                             <div onClick={handleToggleLike} className="flex items-center justify-center transition delay-150 duration-400 ease-linear hover:-translate-y-1 hover:scale-x-110 hover:scale-y-110 cursor-pointer">
-                                <Image
-                                    width={35}
-                                    alt="logo-like"
-                                    src={logoLike}
-                                    priority
-                                    className={isLiked ? 'filter brightness-150 drop-shadow-[0_0_3px_#4ade80]' : ''}
-                                />
+                                {isLiked ? (
+                                    <Image
+                                        priority
+                                        className="focus-within:bg-purple-300"
+                                        width={35}
+                                        alt="icon-like-solid"
+                                        src={iconLikeSolid}
+                                    />
+                                ) : (
+                                    <Image
+                                        priority
+                                        className="focus-within:bg-purple-300"
+                                        width={35}
+                                        alt="icon-like-outline"
+                                        src={logoLike}
+                                    />
+                                )}
                                 <p className="montserratFont mt-1 text-base font-bold pl-2">
                                     {totalLike}
                                 </p>
                             </div>
                             {/* Tombol Dislike */}
                             <div onClick={handleToggleDislike} className="flex items-center justify-center cursor-pointer">
-                                <Image
-                                    width={35}
-                                    alt="logo-dislike"
-                                    src={logoDislike} // Selalu gunakan ikon standar
-                                    priority
-                                    // Tambahkan className dinamis ini:
-                                    className={isDisliked ? 'filter brightness-150 drop-shadow-[0_0_3px_#f87171]' : ''}
-                                />
+                                {isDisliked ? (
+                                    <Image
+                                        priority
+                                        className="focus-within:bg-purple-300"
+                                        width={35}
+                                        alt="icon-like-solid"
+                                        src={iconDislikeSolid}
+                                    />
+                                ) : (
+                                    <Image
+                                        priority
+                                        className="focus-within:bg-purple-300"
+                                        width={35}
+                                        alt="icon-like-outline"
+                                        src={logoDislike}
+                                    />
+                                )}
                             </div>
-                            <div className="flex items-center justify-center">
-                                <Image width={35} alt="logo-save" src={logoSave} priority />
+                            <div onClick={handleToggleSave} className="flex items-center justify-center cursor-pointer">
+                                {isSaved ? (
+                                    <Image
+                                        priority
+                                        width={35}
+                                        alt="icon-saved-solid"
+                                        src={iconSaveSolid}
+                                    />
+                                ) : (
+                                    <Image
+                                        priority
+                                        width={35}
+                                        alt="logo-save"
+                                        src={logoSave}
+                                    />
+                                )}
                             </div>
                             <DefaultShareButton contentType={'MOVIE'} />
                         </div>
