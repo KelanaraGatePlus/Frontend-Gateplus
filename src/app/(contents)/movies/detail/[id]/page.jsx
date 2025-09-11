@@ -30,6 +30,7 @@ import { useLikeContent } from "@/lib/features/useLikeContent";
 import { useDislikeContent } from "@/lib/features/useDislikeContent";
 import DefaultShareButton from "@/components/ShareButton/DefaultShareButton";
 import PropTypes from 'prop-types';
+import ProductDonationSection from "@/components/MainDetailProduct/ProductDonationSection";
 
 /* ===========================
    Halaman: PlayingMoviePage (JSX)
@@ -258,6 +259,10 @@ function PlayingMoviePage({ params }) {
                             </div>
                         </div>
                     </div>
+                </section>
+
+                <section className="mt-5">
+                    <ProductDonationSection creatorId={movieData?.creator?.id} />
                 </section>
 
                 <section className="mt-5">

@@ -1,9 +1,29 @@
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
+import { useMidtransTipPayment } from "@/hooks/api/midtransAPI";
+import SimpleModal from "../Modal/SimpleModal";
 
-export default function ProductDonationSection() {
+export default function ProductDonationSection({ creatorId }) {
+  const { pay } = useMidtransTipPayment();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [amount, setAmount] = useState(0);
+
+  const handleModalOpen = (amount) => {
+    setAmount(amount);
+    setIsModalOpen(true);
+  };
+
+  const handleTip = async () => {
+    await pay({
+      creatorId: creatorId,
+      amount: amount
+    });
+
+    setIsModalOpen(false);
+  };
+
   return (
-    <section className="relative flex w-screen flex-col px-4 py-5 text-white md:px-15">
+    <section className="relative flex w-full flex-col text-white">
       <div className="w-full rounded-xl bg-[#2f2f2f] p-4 text-white">
         <h3 className="mb-2 text-xl font-bold lg:text-2xl">Sawerkuy!</h3>
         <p className="mb-2 text-justify text-sm lg:text-base">
@@ -18,25 +38,29 @@ export default function ProductDonationSection() {
         <div className="mb-2 grid grid-cols-4 gap-2">
           <button
             type="button"
-            className="flex-1 rounded-lg bg-[#175BA6] py-2 text-lg font-bold text-white"
+            onClick={() => handleModalOpen(5000)}
+            className="flex-1 rounded-lg bg-[#175BA6] py-2 text-lg font-bold text-white hover:cursor-pointer"
           >
             5K
           </button>
           <button
             type="button"
-            className="flex-1 rounded-lg bg-[#175BA6] py-2 text-lg font-bold text-white"
+            onClick={() => handleModalOpen(10000)}
+            className="flex-1 rounded-lg bg-[#175BA6] py-2 text-lg font-bold text-white hover:cursor-pointer"
           >
             10k
           </button>
           <button
             type="button"
-            className="flex-1 rounded-lg bg-[#175BA6] py-2 text-lg font-bold text-white"
+            onClick={() => handleModalOpen(25000)}
+            className="flex-1 rounded-lg bg-[#175BA6] py-2 text-lg font-bold text-white hover:cursor-pointer"
           >
             25k
           </button>
           <button
             type="button"
-            className="flex-1 rounded-lg bg-[#175BA6] py-2 text-lg font-bold text-white"
+            onClick={() => handleModalOpen(75000)}
+            className="flex-1 rounded-lg bg-[#175BA6] py-2 text-lg font-bold text-white hover:cursor-pointer"
           >
             75k
           </button>
@@ -59,6 +83,13 @@ export default function ProductDonationSection() {
           Laporkan!
         </Link>
       </p>
+
+      <SimpleModal
+        title={"Berikan tip kepada creator sebanyak Rp. " + (amount?.toLocaleString() ?? 0) + ",- ?"}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleTip}
+      />
     </section>
   );
 }

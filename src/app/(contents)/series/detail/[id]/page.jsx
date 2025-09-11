@@ -33,6 +33,7 @@ import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { useLikeContent } from "@/lib/features/useLikeContent";
 import { useDislikeContent } from "@/lib/features/useDislikeContent";
 import DefaultShareButton from "@/components/ShareButton/DefaultShareButton";
+import ProductDonationSection from '@/components/MainDetailProduct/ProductDonationSection';
 
 /* ===========================
    Halaman: DetailSeriesPage (JSX)
@@ -299,6 +300,12 @@ function DetailSeriesPage({ params }) {
                     isSubscribe={seriesData?.isSubscribed}
                     handlePayment={handleModalOpen}
                 />
+
+                <div className="px-15 mt-10 md:mt-20">
+                    <ProductDonationSection
+                        creatorId={productDetail?.creatorId}
+                    />
+                </div>
 
                 <section className="mt-5">
                     <section className="my-10 flex flex-col">

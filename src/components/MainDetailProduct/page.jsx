@@ -63,7 +63,11 @@ export default function MainTemplateLayout({
       </div>
 
       <CarouselItemEookPage />
-      <ProductDonationSection />
+      <div className="px-15 mt-10 md:mt-20">
+        <ProductDonationSection
+          creatorId={productDetail?.creatorId}
+        />
+      </div>
       <ProductCommentUnavailable />
     </main>
   );
