@@ -9,6 +9,8 @@ import { formatDateTime } from "@/lib/timeFormatter";
 import { useGetEpisodeComicsByIdQuery } from "@/hooks/api/contentSliceAPI";
 import CommentModalComic from "@/components/CommentModalComic/page";
 import PropTypes from "prop-types";
+import CommentComponent from "@/components/Comment/page";
+import { useGetCommentByEpisodeComicQuery } from "@/hooks/api/commentSliceAPI";
 
 export default function ReadComicPage({ params }) {
   const { id } = params;
@@ -19,6 +21,9 @@ export default function ReadComicPage({ params }) {
   const [showMoreOptions, setShowMoreOptions] = useState(false);
 
   const { data, isLoading, error } = useGetEpisodeComicsByIdQuery(id);
+  const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByEpisodeComicQuery(id, {
+    skip: !id,
+  });
 
   const comicSingleData = data?.data;
   const comicData = comicSingleData?.fileImageComics || [];
@@ -134,13 +139,12 @@ export default function ReadComicPage({ params }) {
         </div>
       </div>
 
-      {/* Navigasi bawah */}
-      {/* ... (bagian navigasi dan komentar sama persis) ... */}
-
-      <CommentModalComic
+      {/* Comment Baru */}
+      <CommentComponent
+        commentData={commentData?.data?.data || []}
+        isLoadingGetComment={isLoadingGetComment}
+        typeContent={"comic"}
         episodeId={id}
-        isCommentVisible={isCommentVisible}
-        setIsCommentVisible={setIsCommentVisible}
       />
     </div>
   );

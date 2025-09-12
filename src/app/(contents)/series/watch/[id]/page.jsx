@@ -10,9 +10,7 @@ import {
 } from "@/components/ui/carousel";
 import PropTypes from "prop-types";
 
-import logoPinComment from "@@/icons/icon-comment.svg";
 import IconsArrowLeft from "@@/icons/icons-dashboard/icons-arrow-left.svg";
-import logoUsersComment from "@@/icons/logo-users-comment.svg";
 import movie1 from "@@/logo/logoFilm/film_1.svg";
 import movie2 from "@@/logo/logoFilm/film_2.svg";
 import movie3 from "@@/logo/logoFilm/film_3.svg";
@@ -23,6 +21,8 @@ import Link from "next/link";
 import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
 import ProductEpisodeSection from "@/components/MainDetailProduct/ProductEpisodeSection";
 import { useGetEpisodeSeriesByIdQuery } from "@/hooks/api/contentSliceAPI";
+import CommentComponent from "@/components/Comment/page";
+import { useGetCommentByEpisodeSeriesQuery } from "@/hooks/api/commentSliceAPI";
 
 /* ===========================
    Halaman: DetailSeriesPage (JSX)
@@ -36,6 +36,9 @@ export default function DetailSeriesPage({ params }) {
     const seriesData = data?.data?.data?.series || {};
     const episode_series = (seriesData.episodes || []).slice().sort((a, b) => {
         return new Date(a.createdAt) - new Date(b.createdAt);
+    });
+    const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByEpisodeSeriesQuery(id, {
+        skip: !id,
     });
 
     useEffect(() => {
@@ -139,86 +142,13 @@ export default function DetailSeriesPage({ params }) {
                     </section>
                 </section>
 
-                <section className="grid grid-flow-row">
-                    <div className="grid grid-flow-row">
-                        <div className="flex flex-col">
-                            <p className="mx-2 font-mono text-3xl font-bold text-white">Komentar</p>
-                            <div className="flex justify-start">
-                                <textarea
-                                    placeholder="Tell us about you, maxs 150 character."
-                                    className="my-2 mt-2 h-25 max-h-screen w-full resize rounded-md bg-gray-500 px-2.5 py-2.5 text-white saturate-50 placeholder:text-white focus-visible:placeholder:invisible"
-                                />
-                            </div>
-                            <button className="w-full rounded-md bg-blue-500 py-2 text-white">Kirim</button>
-                        </div>
-
-                        <div className="mt-10 flex flex-col gap-10">
-                            <div className="flex justify-between text-3xl">
-                                <div className="flex w-1/3 flex-col">
-                                    <div className="flex flex-row">
-                                        <div className="mx-2">
-                                            <Image
-                                                className="rounded-full bg-white"
-                                                src={logoUsersComment}
-                                                alt="logo-usercomment"
-                                            />
-                                        </div>
-                                        <div className="flex flex-col text-sm font-medium text-white">
-                                            <div className="text-lg font-semibold">Cetul Leather Hearth</div>
-                                            <div>11 Mar 2025</div>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div>
-                                            <input
-                                                placeholder="  Komen"
-                                                className="placeholder:text-sm placeholder:font-semibold placeholder:text-white"
-                                            />
-                                            <p className="mx-2 text-lg text-blue-400">Balas</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="mx-3 flex flex-col">
-                                    <Image alt="pin-comment" src={logoPinComment} />
-                                </div>
-                            </div>
-
-                            <div className="flex justify-between text-3xl">
-                                <div className="flex w-1/3 flex-col">
-                                    <div className="flex flex-row">
-                                        <div className="mx-2">
-                                            <Image
-                                                className="rounded-full bg-blue-300"
-                                                src={logoUsersComment}
-                                                alt="logo-usercomment"
-                                            />
-                                        </div>
-                                        <div className="flex flex-col text-sm font-medium text-white">
-                                            <div className="text-lg font-semibold">User Premium</div>
-                                            <div>11 Mar 2025</div>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div>
-                                            <input
-                                                placeholder="  Mantap Movie Nya"
-                                                className="placeholder:text-sm placeholder:font-semibold placeholder:text-white"
-                                            />
-                                            <p className="mx-2 text-lg text-blue-400">Balas</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="mx-3 flex flex-col">
-                                    <Image src={logoPinComment} alt="pin-commentusers" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <button className="mt-5 rounded-xl border border-gray-400 py-2 font-mono font-semibold text-white">
-                            Komentar Lainnya
-                        </button>
-                    </div>
-                </section>
+                {/* Comment Baru */}
+                <CommentComponent
+                    commentData={commentData?.data?.data || []}
+                    isLoadingGetComment={isLoadingGetComment}
+                    typeContent={"series"}
+                    episodeId={id}
+                />
             </main>
         </div>
     );

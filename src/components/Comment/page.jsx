@@ -68,6 +68,8 @@ export default function CommentComponent({
               episodeEbookId={typeContent === "ebook" ? episodeId : null}
               episodeComicsId={typeContent === "comic" ? episodeId : null}
               episode_podcastId={typeContent === "podcast" ? episodeId : null}
+              episodeSeriesId={typeContent === "series" ? episodeId : null}
+              movieId={typeContent === "movie" ? episodeId : null}
             />
           }
         </div>

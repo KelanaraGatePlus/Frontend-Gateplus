@@ -16,6 +16,8 @@ export default function CommentForm({
   episodeEbookId = null,
   episodeComicsId = null,
   episode_podcastId = null,
+  episodeSeriesId = null,
+  movieId = null
 }) {
   const userId = useGetUserId();
   const [createComment, { isLoading, error }] = useCreateCommentMutation();
@@ -39,6 +41,8 @@ export default function CommentForm({
       episodeEbookId,
       episodeComicsId,
       episode_podcastId,
+      episodeSeriesId,
+      movieId
     };
 
     try {
@@ -58,7 +62,7 @@ export default function CommentForm({
             name="comment"
             id="comment"
             placeholder="Tell us about you, maxs 150 character."
-            className={`${errors.message ? "border-red-500" : "border-[#F5F5F540]"} h-32 w-full rounded-md border p-2 text-sm text-white transition-colors duration-300 placeholder:text-sm placeholder:font-bold placeholder:text-[#979797]`}
+            className={`${errors.message ? "border-red-500" : "border-[#F5F5F540]"} h-32 w-full rounded-md border p-2 text-sm text-white transition-colors duration-300 placeholder:text-sm placeholder:font-bold placeholder:text-[#979797] bg-[#F5F5F54D]`}
             {...register("message")}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
@@ -87,4 +91,6 @@ CommentForm.propTypes = {
   episodeEbookId: propTypes.string,
   episodeComicsId: propTypes.string,
   episode_podcastId: propTypes.string,
+  episodeSeriesId: propTypes.string,
+  movieId: propTypes.string,
 };

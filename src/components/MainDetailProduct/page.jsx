@@ -68,7 +68,6 @@ export default function MainTemplateLayout({
           creatorId={productDetail?.creatorId}
         />
       </div>
-      <ProductCommentUnavailable />
     </main>
   );
 }
