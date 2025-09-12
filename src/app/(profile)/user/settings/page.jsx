@@ -10,6 +10,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BACKEND_URL } from "@/lib/constants/backendUrl";
+import { useUpdateUserMutation } from "@/hooks/api/userSliceAPI";
 
 export default function UserSettingsPage() {
   const router = useRouter();
@@ -31,6 +32,8 @@ export default function UserSettingsPage() {
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState("");
   const [token, setToken] = useState("");
+  const [canChangeUsername, setCanChangeUsername] = useState(true);
+  const [updateUser, { isSuccess, isError, error }] = useUpdateUserMutation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -61,23 +64,14 @@ export default function UserSettingsPage() {
         formData.append("imageUrl", imageFile);
       }
 
-      const response = await axios.patch(
-        `${BACKEND_URL}/users/${userId}`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        },
-      );
+      const response = await updateUser(formData);
 
       localStorage.setItem("image_users", response.data.data.imageUrl);
       setShowToast(true);
       setToastMessage("Profil berhasil diupdate!");
       setToastType("success");
       setIsLoading(false);
-      router.push(`/Users/${id}`);
+      router.push(`/user/${id}`);
     } catch (error) {
       setIsLoading(false);
       console.error("Error during patch request:", error);
@@ -119,6 +113,8 @@ export default function UserSettingsPage() {
       setdateOfBirth(usersData.dateOfBirth || "");
       setRegion(usersData.region || "");
       setId(usersData.id || "");
+      setCanChangeUsername(usersData.canChangeUsername || false);
+      setImageUrl(usersData.imageUrl || null);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -126,11 +122,9 @@ export default function UserSettingsPage() {
 
   useEffect(() => {
     const userIdFromSession = localStorage.getItem("users_id");
-    const imageFromSession = localStorage.getItem("image_users");
     const tokenFromSession = localStorage.getItem("token");
 
     setUserId(userIdFromSession);
-    setImageUrl(imageFromSession);
     setToken(tokenFromSession);
     console.log(token);
   }, []);
@@ -227,13 +221,23 @@ export default function UserSettingsPage() {
                     {" *"}
                   </span>
                 </h3>
-                <div className="flex w-full flex-4 text-white md:flex-10">
+                <div className="relative group flex w-full flex-4 text-white md:flex-10">
+                  {/* Tooltip yang hanya muncul jika input disabled */}
+                  {!canChangeUsername && (
+                    <span className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black px-3 py-1.5 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">
+                      Username hanya bisa diubah 3 bulan sekali
+                    </span>
+                  )}
+
                   <input
                     type="text"
-                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
+                    className={`w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1 
+                 transition-colors 
+                 disabled:bg-zinc-800 disabled:cursor-not-allowed disabled:text-gray-400`}
                     onChange={(e) => setUsername(e.target.value)}
                     value={username}
                     placeholder="Masukan username"
+                    disabled={!canChangeUsername}
                     required
                   />
                 </div>

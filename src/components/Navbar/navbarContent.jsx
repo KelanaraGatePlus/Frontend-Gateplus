@@ -41,10 +41,10 @@ export default function NavbarContent({ openCreateContentModal }) {
     setRole(localStorage.getItem("role"));
     setCreatorId(localStorage.getItem("creators_id"));
     setIsCreator(JSON.parse(localStorage.getItem("isCreator")));
-    if (isCreator && role === "Creator") {
-      setImageUrl(localStorage.getItem("image_users"));
-    } else {
+    if (isCreator && role === "Creators") {
       setImageUrl(localStorage.getItem("image_creators"));
+    } else {
+      setImageUrl(localStorage.getItem("image_users"));
     }
   }, []);
 
@@ -64,9 +64,9 @@ export default function NavbarContent({ openCreateContentModal }) {
     setRole(newRole);
     localStorage.setItem("role", newRole);
     if (newRole === "Creators") {
-      setImageUrl(localStorage.getItem("image_users"));
-    } else {
       setImageUrl(localStorage.getItem("image_creators"));
+    } else {
+      setImageUrl(localStorage.getItem("image_users"));
     }
   };
 

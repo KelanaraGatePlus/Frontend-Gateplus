@@ -62,6 +62,14 @@ export const userAPI = createApi({
       query: ({ type, value }) => `/users/check?type=${type}&value=${value}`,
       keepUnusedDataFor: 0,
     }),
+    updateUser: builder.mutation({
+      query: (formData) => ({
+        url: "users/",
+        method: "PATCH",
+        body: formData,
+      }),
+      invalidatesTags: ["usersAPI"],
+    }),
   }),
 });
 
@@ -74,4 +82,5 @@ export const {
   useLoginUserMutation,
   useCheckUserAvailabilityQuery,
   useGetUserLastWatchedContentQuery,
+  useUpdateUserMutation,
 } = userAPI;
