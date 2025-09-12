@@ -36,12 +36,14 @@ export default function NavbarContent({ openCreateContentModal }) {
   const [role, setRole] = useState(null);
 
   useEffect(() => {
+    const myIsCreator = JSON.parse(localStorage.getItem("isCreator"));
+    const myRole = localStorage.getItem("role");
     setIsAuthenticated(!!localStorage.getItem("token"));
     setUserId(localStorage.getItem("users_id"));
-    setRole(localStorage.getItem("role"));
+    setRole(myRole);
     setCreatorId(localStorage.getItem("creators_id"));
-    setIsCreator(JSON.parse(localStorage.getItem("isCreator")));
-    if (isCreator && role === "Creators") {
+    setIsCreator(myIsCreator);
+    if (myIsCreator == true && myRole === "Creators") {
       setImageUrl(localStorage.getItem("image_creators"));
     } else {
       setImageUrl(localStorage.getItem("image_users"));

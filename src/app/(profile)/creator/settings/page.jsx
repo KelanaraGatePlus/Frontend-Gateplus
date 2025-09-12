@@ -97,7 +97,7 @@ export default function CreatorSettingsPage() {
       console.log("Update success:", response.data);
       localStorage.setItem("image_users", response.data.data.imageUrl);
       setIsLoading(false);
-      router.push(`/Creators/${id}`);
+      router.push(`/creator/${id}`);
     } catch (error) {
       setIsLoading(false);
       console.error("Error during patch request:", error);
@@ -110,7 +110,7 @@ export default function CreatorSettingsPage() {
         `${BACKEND_URL}/creator/${id}`,
       );
 
-      const creatorData = response.data.data.data[0];
+      const creatorData = response.data.data.data;
 
       setProfilePictureUrl(creatorData.imageUrl);
       setBannerProfileUrl(creatorData.bannerImageUrl);
@@ -133,6 +133,7 @@ export default function CreatorSettingsPage() {
 
   useEffect(() => {
     const creatorId = localStorage.getItem("creators_id");
+    console.log("Creator ID:", creatorId);
     if (creatorId) {
       setId(creatorId);
       getData(creatorId);
