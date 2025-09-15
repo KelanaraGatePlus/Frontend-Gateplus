@@ -33,7 +33,7 @@ export default function UserSettingsPage() {
   const [toastType, setToastType] = useState("");
   const [token, setToken] = useState("");
   const [canChangeUsername, setCanChangeUsername] = useState(true);
-  const [updateUser, { isSuccess, isError, error }] = useUpdateUserMutation();
+  const [ updateUser ] = useUpdateUserMutation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();

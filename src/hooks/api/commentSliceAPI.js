@@ -54,6 +54,17 @@ export const commentAPI = createApi({
             }),
             invalidatesTags: ["comment"],
         }),
+        replyComment: builder.mutation({
+            query: (payload) => ({
+                url: "/replyComment",
+                method: "POST",
+                body: payload,
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }),
+            invalidatesTags: ["comment"],
+        }),
     }),
 });
 
@@ -64,4 +75,5 @@ export const {
     useCreateCommentMutation,
     useGetCommentByEpisodeSeriesQuery,
     useGetCommentByMovieQuery,
+    useReplyCommentMutation,
 } = commentAPI;

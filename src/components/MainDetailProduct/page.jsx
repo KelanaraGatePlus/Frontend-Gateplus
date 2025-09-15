@@ -6,7 +6,6 @@ import PropTypes from "prop-types";
 import ProductDetailSection from "@/components/MainDetailProduct/ProductDetailSection";
 import ProductEpisodeSection from "@/components/MainDetailProduct/ProductEpisodeSection";
 import ProductDonationSection from "@/components/MainDetailProduct/ProductDonationSection";
-import ProductCommentUnavailable from "@/components/MainDetailProduct/ProductCommentUnavailable";
 import CarouselItemEookPage from "@/components/Carousel/CarouselEbook/page";
 
 export default function MainTemplateLayout({
