@@ -21,10 +21,10 @@ export default function ProfileModal({
             {/* Modal Box */}
             <div className="relative flex max-h-3/4 flex-col rounded-2xl bg-[#222222]">
                 {/* Scrollable Area */}
-                <div className="overflow-y-auto">
+                <div className="overflow-y-auto custom-scrollbar">
                     {/* Padding wrapper */}
                     <div className="p-16">
-                        <div className="grid grid-cols-7 gap-8">
+                        <div className="grid sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-8">
                             {/* Upload Image */}
                             <label className="relative h-16 w-16 cursor-pointer lg:h-24 lg:w-24">
                                 <div className="group relative h-full w-full cursor-pointer overflow-hidden rounded-full bg-amber-600">
