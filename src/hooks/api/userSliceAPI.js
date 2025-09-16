@@ -64,7 +64,7 @@ export const userAPI = createApi({
     }),
     updateUser: builder.mutation({
       query: (formData) => ({
-        url: "users/",
+        url: "users",
         method: "PATCH",
         body: formData,
       }),
