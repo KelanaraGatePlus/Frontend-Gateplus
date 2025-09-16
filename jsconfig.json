@@ -4,6 +4,7 @@
       "@/*": ["./src/*"],
       "@@/logo/*": ["./public/images/logo/*"],
       "@@/icons/*": ["./public/images/icons/*"],
+      "@@/profileIcons/*": ["./public/images/ProfileIcon/*"],
       "@@/poster/*": ["./public/images/poster/*"],
       "@@/BannerPromo/*": ["./public/images/BannerPromo/*"],
       "@@/AvatarIcons/*": ["./public/images/AvatarIcons/*"],

@@ -33,9 +33,30 @@ export const commentAPI = createApi({
             providesTags: ["comment"],
             keepUnusedDataFor: 6000,
         }),
+        getCommentByEpisodeSeries: builder.query({
+            query: (id) => `/comment/episode-series/${id}`,
+            providesTags: ["comment"],
+            keepUnusedDataFor: 6000,
+        }),
+        getCommentByMovie: builder.query({
+            query: (id) => `/comment/movie/${id}`,
+            providesTags: ["comment"],
+            keepUnusedDataFor: 6000,
+        }),
         createComment: builder.mutation({
             query: (payload) => ({
                 url: "/comment",
+                method: "POST",
+                body: payload,
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }),
+            invalidatesTags: ["comment"],
+        }),
+        replyComment: builder.mutation({
+            query: (payload) => ({
+                url: "/replyComment",
                 method: "POST",
                 body: payload,
                 headers: {
@@ -52,4 +73,7 @@ export const {
     useGetCommentByEpisodeComicQuery,
     useGetCommentByEpisodePodcastQuery,
     useCreateCommentMutation,
+    useGetCommentByEpisodeSeriesQuery,
+    useGetCommentByMovieQuery,
+    useReplyCommentMutation,
 } = commentAPI;

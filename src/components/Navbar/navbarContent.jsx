@@ -36,15 +36,17 @@ export default function NavbarContent({ openCreateContentModal }) {
   const [role, setRole] = useState(null);
 
   useEffect(() => {
+    const myIsCreator = JSON.parse(localStorage.getItem("isCreator"));
+    const myRole = localStorage.getItem("role");
     setIsAuthenticated(!!localStorage.getItem("token"));
     setUserId(localStorage.getItem("users_id"));
-    setRole(localStorage.getItem("role"));
+    setRole(myRole);
     setCreatorId(localStorage.getItem("creators_id"));
-    setIsCreator(JSON.parse(localStorage.getItem("isCreator")));
-    if (isCreator && role === "Creator") {
-      setImageUrl(localStorage.getItem("image_users"));
-    } else {
+    setIsCreator(myIsCreator);
+    if (myIsCreator == true && myRole === "Creators") {
       setImageUrl(localStorage.getItem("image_creators"));
+    } else {
+      setImageUrl(localStorage.getItem("image_users"));
     }
   }, []);
 
@@ -64,9 +66,9 @@ export default function NavbarContent({ openCreateContentModal }) {
     setRole(newRole);
     localStorage.setItem("role", newRole);
     if (newRole === "Creators") {
-      setImageUrl(localStorage.getItem("image_users"));
-    } else {
       setImageUrl(localStorage.getItem("image_creators"));
+    } else {
+      setImageUrl(localStorage.getItem("image_users"));
     }
   };
 

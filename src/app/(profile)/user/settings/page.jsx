@@ -10,6 +10,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BACKEND_URL } from "@/lib/constants/backendUrl";
+import { useUpdateUserMutation } from "@/hooks/api/userSliceAPI";
+import ProfileModal from "@/components/Modal/ProfileModal";
 
 export default function UserSettingsPage() {
   const router = useRouter();
@@ -31,6 +33,17 @@ export default function UserSettingsPage() {
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState("");
   const [token, setToken] = useState("");
+  const [canChangeUsername, setCanChangeUsername] = useState(true);
+  const [updateUser] = useUpdateUserMutation();
+  const [isShowProfileModal, setIsShowProfileModal] = useState(false);
+  const [selectedIconUrl, setSelectedIconUrl] = useState(null);
+
+  const handleIconSelect = (icon, url) => {
+    setuploadedPhotoProfile(icon); // Set preview gambar dengan URL ikon
+    setSelectedIconUrl(url); // Simpan URL ikon untuk dikirim ke backend
+    setImageFile(null); // Hapus file jika sebelumnya user sudah memilih file
+    setIsShowProfileModal(false); // Langsung tutup modal
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,7 +62,6 @@ export default function UserSettingsPage() {
       formData.append("profileName", profileName);
       formData.append("username", username);
       formData.append("bio", bio);
-      console.log("ini gender", gender);
       if (gender !== "" && gender !== null) {
         formData.append("gender", gender);
       }
@@ -59,31 +71,27 @@ export default function UserSettingsPage() {
       formData.append("region", region);
       if (imageFile) {
         formData.append("imageUrl", imageFile);
+      } else if (selectedIconUrl) {
+        console.log('Appending selected icon URL to formData:', selectedIconUrl);
+        formData.append("iconUrl", selectedIconUrl);
       }
-
-      const response = await axios.patch(
-        `${BACKEND_URL}/users/${userId}`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        },
-      );
+      console.log('Image File:', imageFile);
+      console.log('Selected Icon URL:', selectedIconUrl);
+      const response = await updateUser(formData);
 
       localStorage.setItem("image_users", response.data.data.imageUrl);
       setShowToast(true);
       setToastMessage("Profil berhasil diupdate!");
       setToastType("success");
       setIsLoading(false);
-      router.push(`/Users/${id}`);
+      router.push(`/user/${id}`);
     } catch (error) {
       setIsLoading(false);
       console.error("Error during patch request:", error);
       setShowToast(true);
       setToastMessage(
-        `${error.response.data.message} - ${error.response.data.error}`,
+        `${error.response?.data?.message || "Update gagal"} - ${error.response?.data?.error || "Terjadi kesalahan"
+        }`
       );
       setToastType("failed");
     }
@@ -95,18 +103,14 @@ export default function UserSettingsPage() {
       setuploadedPhotoProfile(URL.createObjectURL(file));
       setImageFile(file);
     }
+    setIsShowProfileModal(false);
   };
 
   const getData = async () => {
     try {
-      const response = await axios.get(
-        `${BACKEND_URL}/users/${userId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+      const response = await axios.get(`${BACKEND_URL}/users/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       const usersData = response.data.data.data;
 
@@ -119,6 +123,8 @@ export default function UserSettingsPage() {
       setdateOfBirth(usersData.dateOfBirth || "");
       setRegion(usersData.region || "");
       setId(usersData.id || "");
+      setCanChangeUsername(usersData.canChangeUsername || false);
+      setImageUrl(usersData.imageUrl || null);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -126,13 +132,10 @@ export default function UserSettingsPage() {
 
   useEffect(() => {
     const userIdFromSession = localStorage.getItem("users_id");
-    const imageFromSession = localStorage.getItem("image_users");
     const tokenFromSession = localStorage.getItem("token");
 
     setUserId(userIdFromSession);
-    setImageUrl(imageFromSession);
     setToken(tokenFromSession);
-    console.log(token);
   }, []);
 
   useEffect(() => {
@@ -149,11 +152,7 @@ export default function UserSettingsPage() {
 
         {/* Settings Form */}
         <div className="flex w-full flex-col px-2">
-          {/* form */}
-          <form
-            onSubmit={handleSubmit}
-            className="flex flex-col gap-4 lg:gap-0"
-          >
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4 lg:gap-0">
             <div className="flex flex-col gap-2">
               {/* profile */}
               <div className="flex items-center gap-2">
@@ -161,12 +160,12 @@ export default function UserSettingsPage() {
                   Profile Picture
                 </h3>
                 <div className="flex flex-4 text-white md:flex-10">
-                  <label className="relative h-16 w-16 cursor-pointer lg:h-24 lg:w-24">
-                    <div className="group relative h-16 w-16 cursor-pointer overflow-hidden rounded-full bg-amber-600 lg:h-24 lg:w-24">
-                      {imageUrl &&
-                        imageUrl !== "null" &&
-                        imageUrl !== "" &&
-                        uploadedPhotoProfile === null ? (
+                  <label
+                    className="relative h-16 w-16 cursor-pointer lg:h-24 lg:w-24"
+                    onClick={() => setIsShowProfileModal(true)}
+                  >
+                    <div className="group relative h-16 w-16 overflow-hidden rounded-full bg-amber-600 lg:h-24 lg:w-24">
+                      {imageUrl && imageUrl !== "null" && !uploadedPhotoProfile ? (
                         <Image
                           src={imageUrl}
                           alt="profile"
@@ -181,7 +180,7 @@ export default function UserSettingsPage() {
                           className="h-full w-full rounded-full bg-white object-cover"
                         />
                       )}
-                      <div className="absolute right-0 bottom-0 left-0 flex h-[28%] items-center justify-center bg-black/40">
+                      <div className="absolute bottom-0 left-0 right-0 flex h-[28%] items-center justify-center bg-black/40">
                         <Image
                           src={IconsCameraAdd}
                           alt="camera icon"
@@ -191,22 +190,13 @@ export default function UserSettingsPage() {
                         />
                       </div>
                     </div>
-                    <input
-                      type="file"
-                      accept="image/png, image/jpeg"
-                      className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
-                      onChange={(e) => handleFileUpload(e)}
-                    />
                   </label>
                 </div>
               </div>
               {/* name */}
               <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                  Profile Name
-                  <span className="align-super text-[12px] text-red-700">
-                    {" *"}
-                  </span>
+                <h3 className="flex-2 text-base font-semibold text-[#979797] lg:text-xl">
+                  Profile Name<span className="text-red-700"> *</span>
                 </h3>
                 <div className="flex w-full flex-4 text-white md:flex-10">
                   <input
@@ -219,50 +209,50 @@ export default function UserSettingsPage() {
                   />
                 </div>
               </div>
-              {/* Username */}
+              {/* username */}
               <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                  Username
-                  <span className="align-super text-[12px] text-red-700">
-                    {" *"}
-                  </span>
+                <h3 className="flex-2 text-base font-semibold text-[#979797] lg:text-xl">
+                  Username<span className="text-red-700"> *</span>
                 </h3>
-                <div className="flex w-full flex-4 text-white md:flex-10">
+                <div className="relative group flex w-full flex-4 text-white md:flex-10">
+                  {!canChangeUsername && (
+                    <span className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black px-3 py-1.5 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">
+                      Username hanya bisa diubah 3 bulan sekali
+                    </span>
+                  )}
                   <input
                     type="text"
-                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
+                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-gray-400"
                     onChange={(e) => setUsername(e.target.value)}
                     value={username}
                     placeholder="Masukan username"
+                    disabled={!canChangeUsername}
                     required
                   />
                 </div>
               </div>
-              {/* Bio */}
+              {/* bio */}
               <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
+                <h3 className="flex-2 text-base font-semibold text-[#979797] lg:text-xl">
                   Bio
                 </h3>
                 <div className="flex w-full flex-4 text-white md:flex-10">
                   <textarea
-                    name="about"
                     className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                    id="about"
-                    cols="30"
-                    rows="4"
-                    placeholder="Tell us about you, maxs 150 character."
+                    placeholder="Tell us about you, max 150 characters."
                     onChange={(e) => setBio(e.target.value)}
                     value={bio}
+                    rows={4}
                   />
                 </div>
               </div>
-              {/* Gender */}
+              {/* gender */}
               <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
+                <h3 className="flex-2 text-base font-semibold text-[#979797] lg:text-xl">
                   Gender
                 </h3>
-                <div className="flex w-fit flex-4 justify-start gap-6 text-white md:flex-10">
-                  <label className="flex w-fit cursor-pointer items-center gap-1">
+                <div className="flex gap-6 text-white">
+                  <label className="flex items-center gap-1 cursor-pointer">
                     <input
                       type="radio"
                       name="gender"
@@ -273,7 +263,7 @@ export default function UserSettingsPage() {
                     />
                     <span>Male</span>
                   </label>
-                  <label className="flex w-full cursor-pointer items-center gap-1">
+                  <label className="flex items-center gap-1 cursor-pointer">
                     <input
                       type="radio"
                       name="gender"
@@ -286,13 +276,10 @@ export default function UserSettingsPage() {
                   </label>
                 </div>
               </div>
-              {/* Email */}
+              {/* email */}
               <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                  Email
-                  <span className="align-super text-[12px] text-red-700">
-                    {" *"}
-                  </span>
+                <h3 className="flex-2 text-base font-semibold text-[#979797] lg:text-xl">
+                  Email<span className="text-red-700"> *</span>
                 </h3>
                 <div className="flex w-full flex-4 text-white md:flex-10">
                   <input
@@ -305,9 +292,9 @@ export default function UserSettingsPage() {
                   />
                 </div>
               </div>
-              {/* Phone */}
+              {/* phone */}
               <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
+                <h3 className="flex-2 text-base font-semibold text-[#979797] lg:text-xl">
                   Phone
                 </h3>
                 <div className="flex w-full flex-4 text-white md:flex-10">
@@ -320,10 +307,10 @@ export default function UserSettingsPage() {
                   />
                 </div>
               </div>
-              {/* Date Of Birthday */}
+              {/* dob */}
               <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                  Date Of Birthday
+                <h3 className="flex-2 text-base font-semibold text-[#979797] lg:text-xl">
+                  Date Of Birth
                 </h3>
                 <div className="flex w-full flex-4 text-white md:flex-10">
                   <input
@@ -331,13 +318,12 @@ export default function UserSettingsPage() {
                     className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
                     onChange={(e) => setdateOfBirth(e.target.value)}
                     value={dateOfBirth}
-                    placeholder="Masukan Nomor Telepon"
                   />
                 </div>
               </div>
-              {/* Country */}
+              {/* region */}
               <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
+                <h3 className="flex-2 text-base font-semibold text-[#979797] lg:text-xl">
                   Country / Region
                 </h3>
                 <div className="flex w-full flex-4 text-white md:flex-10">
@@ -385,6 +371,13 @@ export default function UserSettingsPage() {
           onClose={() => setShowToast(false)}
         />
       )}
+
+      <ProfileModal
+        isShow={isShowProfileModal}
+        setIsShow={setIsShowProfileModal}
+        onImageUpload={handleFileUpload}
+        onIconSelect={handleIconSelect}
+      />
     </>
   );
 }
