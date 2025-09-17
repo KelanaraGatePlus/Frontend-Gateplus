@@ -10,7 +10,6 @@ import { createCommentSchema } from "@/lib/schemas/createCommentSchema";
 
 /*[--- API HOOKS & FEATURES ---]*/
 import { useCreateCommentMutation } from "@/hooks/api/commentSliceAPI";
-import { useGetUserId } from "@/lib/features/useGetUserId";
 
 export default function CommentForm({
   episodeEbookId = null,
@@ -19,7 +18,6 @@ export default function CommentForm({
   episodeSeriesId = null,
   movieId = null
 }) {
-  const userId = useGetUserId();
   const [createComment, { isLoading, error }] = useCreateCommentMutation();
   const {
     register,
@@ -36,7 +34,6 @@ export default function CommentForm({
 
   const onSubmit = async (data) => {
     const payload = {
-      userId,
       message: data.message,
       episodeEbookId,
       episodeComicsId,
@@ -72,7 +69,9 @@ export default function CommentForm({
             }}
             required
           />
-          {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message}</p>}
+          {errors.message?.message && (
+            <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>
+          )}
           <button
             type="submit"
             disabled={isLoading}
