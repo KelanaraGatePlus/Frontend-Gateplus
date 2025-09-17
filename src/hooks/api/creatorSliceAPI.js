@@ -8,9 +8,9 @@ export const creatorAPI = createApi({
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_URL}/creator`,
         prepareHeaders: (headers) => {
-            const creators_id = localStorage.getItem("creators_id"); // atau sessionStorage atau cookie
-            if (creators_id) {
-                headers.set("Authorization", `Bearer ${creators_id}`);
+            const token = localStorage.getItem("token"); // atau sessionStorage atau cookie
+            if (token) {
+                headers.set("Authorization", `Bearer ${token}`);
             }
             return headers;
         },
@@ -36,6 +36,14 @@ export const creatorAPI = createApi({
             query: (payload) => ({
                 url: `/`,
                 method: "POST",
+                body: payload,
+            }),
+            invalidatesTags: ["creatorsAPI"],
+        }),
+        updateCreator: builder.mutation({
+            query: (payload) => ({
+                url: `/`,
+                method: "PATCH",
                 body: payload,
             }),
             invalidatesTags: ["creatorsAPI"],
@@ -67,5 +75,6 @@ export const {
     useRegisterCreatorMutation,
     useCheckCreatorAvailabilityQuery,
     useSearchCreatorQuery,
-    useGetDashboardDataQuery
+    useGetDashboardDataQuery,
+    useUpdateCreatorMutation,
 } = creatorAPI;
