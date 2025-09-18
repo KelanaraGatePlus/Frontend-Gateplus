@@ -228,7 +228,7 @@ export default function DefaultVideoPlayer({
             <span className="text-xs text-gray-400">{formatDuration(duration)} | {ageRestriction} | {genre} </span>
           </div>
         </div>
-        <Link href="/">
+        <Link href={`/report/${contentType == "film" ? "movie" : "episode_series"}/${contentId}`} className="p-2 bg-white/20 rounded-full hover:bg-white/40 transition">
           <Image src={iconFlag} alt="icons-flag" width={32} height={32} />
         </Link>
       </div>
