@@ -15,6 +15,8 @@ import { commentAPI } from "../api/commentSliceAPI";
 import { uploadSessionApi } from "../api/uploadSessionAPI";
 import { seriesAPI } from "../api/seriesSliceAPI";
 import { logApi } from "../api/logSliceAPI";
+import { progressWatchAPI } from "../api/progressWatchAPI";
+import { reportContentAPI } from "../api/reportContentAPI";
 
 const rootReducer = combineReducers({
   [ebookApi.reducerPath]: ebookApi.reducer,
@@ -30,6 +32,8 @@ const rootReducer = combineReducers({
   [uploadSessionApi.reducerPath]: uploadSessionApi.reducer,
   [seriesAPI.reducerPath]: seriesAPI.reducer,
   [logApi.reducerPath]: logApi.reducer,
+  [progressWatchAPI.reducerPath]: progressWatchAPI.reducer,
+  [reportContentAPI.reducerPath]: reportContentAPI.reducer,
 });
 
 export const store = configureStore({
@@ -48,7 +52,9 @@ export const store = configureStore({
       commentAPI.middleware,
       uploadSessionApi.middleware,
       seriesAPI.middleware,
-      logApi.middleware
+      logApi.middleware,
+      progressWatchAPI.middleware,
+      reportContentAPI.middleware
     ),
 });
 

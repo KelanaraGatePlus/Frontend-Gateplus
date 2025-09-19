@@ -8,7 +8,6 @@ import {
     CarouselPrevious,
 } from "@/components/ui/carousel";
 
-import IconsArrowLeft from "@@/icons/icons-dashboard/icons-arrow-left.svg";
 import logoDislike from "@@/logo/logoDetailFilm/dislike-icons.svg";
 import logoLike from "@@/logo/logoDetailFilm/like-icons.svg";
 import logoSave from "@@/logo/logoDetailFilm/save-icons.svg";
@@ -17,7 +16,6 @@ import movie1 from "@@/logo/logoFilm/film_1.svg";
 import movie2 from "@@/logo/logoFilm/film_2.svg";
 import movie3 from "@@/logo/logoFilm/film_3.svg";
 import Image from "next/legacy/image";
-import Link from "next/link";
 import { useGetMovieByIdQuery } from "@/hooks/api/movieSliceAPI";
 import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
 import React, { useEffect, useState } from "react";
@@ -35,6 +33,7 @@ import iconSaveSolid from "@@/logo/logoDetailFilm/saved-icons.svg";
 import { useSaveContent } from '@/lib/features/useSaveContent';
 import CommentComponent from "@/components/Comment/page";
 import { useGetCommentByMovieQuery } from "@/hooks/api/commentSliceAPI";
+import formatDuration from "@/lib/helper/formatDurationHelper";
 
 /* ===========================
    Halaman: PlayingMoviePage (JSX)
@@ -172,12 +171,6 @@ function PlayingMoviePage({ params }) {
     return (
         <div>
             <section className="flex justify-center rounded-md relative">
-                <p className="absolute top-0 left-0 z-10 mx-2.5 flex flex-row items-center justify-start gap-2 text-2xl font-semibold text-white">
-                    <Link href="/">
-                        <Image src={IconsArrowLeft} alt="icons-arrow-left" />
-                    </Link>
-                </p>
-
                 {/* Player bergaya YouTube */}
                 <div className="mx-auto my-auto flex w-screen justify-center rounded-lg object-cover">
                     {movieData?.id && <DefaultVideoPlayer
@@ -187,6 +180,10 @@ function PlayingMoviePage({ params }) {
                         className="rounded-lg"
                         src={movieData?.isSubscribed ? movieData?.movieFileUrl : movieData?.trailerFileUrl}
                         poster={movieData?.thumbnailImageUrl}
+                        startFrom={movieData.WatchProgress[0].progressSeconds}
+                        title={movieData?.title}
+                        genre={movieData?.categories?.tittle}
+                        ageRestriction={movieData?.ageRestriction}
                     />}
                 </div>
             </section>
@@ -199,7 +196,7 @@ function PlayingMoviePage({ params }) {
                                 {movieData?.title || "Judul Movie Tidak Tersedia"}
                             </h1>
                             <p className=" text-sm/normal">
-                                {movieData?.duration} | {movieData?.ageRestriction} | {movieData?.categories?.tittle}
+                                {formatDuration(movieData?.duration)} | {movieData?.ageRestriction} | {movieData?.categories?.tittle}
                             </p>
                         </div>
                         <div className="flex flex-row gap-6">
@@ -312,7 +309,7 @@ function PlayingMoviePage({ params }) {
                                 <p>Produser : {movieData.producer}</p>
                                 <p>Penulis Cerita : {movieData.writer}</p>
                                 <p>Pemeran : {movieData.talent}</p>
-                                <p>Durasi : {movieData.duration}</p>
+                                <p>Durasi : {formatDuration(movieData.duration)}</p>
                                 <p>Genre : {movieData?.categories?.tittle}</p>
                                 <p>Tahun Rilis : {movieData.releaseYear}</p>
                                 <p>Bahasa : {movieData.language}</p>
@@ -392,12 +389,12 @@ function PlayingMoviePage({ params }) {
                 </section>
 
                 {/* Comment Baru */}
-                <CommentComponent
+                {commentData && <CommentComponent
                     commentData={commentData?.data?.data || []}
                     isLoadingGetComment={isLoadingGetComment}
                     typeContent={"movie"}
                     episodeId={id}
-                />
+                />}
 
                 <SimpleModal
                     title={"Subscribe untuk menikmati seluruh episode dari konten ini selama sebulan seharga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}

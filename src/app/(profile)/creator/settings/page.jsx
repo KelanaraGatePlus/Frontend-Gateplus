@@ -12,6 +12,9 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BACKEND_URL } from "@/lib/constants/backendUrl";
+import ProfileModal from "@/components/Modal/ProfileModal";
+import { useUpdateCreatorMutation } from "@/hooks/api/creatorSliceAPI";
+import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 export default function CreatorSettingsPage() {
   const router = useRouter();
@@ -34,10 +37,13 @@ export default function CreatorSettingsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState("");
+  const [selectedIconUrl, setSelectedIconUrl] = useState(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   const [profilePicturePreview, setProfilePicturePreview] = useState(null);
   const [bannerProfilePicturePreview, setBannerProfilePicturePreview] =
     useState(null);
+  const [updateCreator, { isLoading: isUpdateCreatorLoading }] = useUpdateCreatorMutation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,7 +52,7 @@ export default function CreatorSettingsPage() {
       profileName === "" ||
       username === "" ||
       email === "" ||
-      profilePictureUrl === null
+      (profilePictureUrl === null && selectedIconUrl === null)
     ) {
       setShowToast(true);
       setToastMessage(
@@ -76,26 +82,20 @@ export default function CreatorSettingsPage() {
       formData.append("facebookUrl", facebookUrl);
       if (profilePictureUrl) {
         formData.append("imageUrl", profilePictureUrl);
+      } else if (selectedIconUrl) {
+        formData.append("iconUrl", selectedIconUrl);
       }
+
       if (bannerProfileUrl) {
         formData.append("bannerImageUrl", bannerProfileUrl);
       }
 
-      const response = await axios.patch(
-        `${BACKEND_URL}/creator/${id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        },
-      );
-
+      const response = await updateCreator(formData).unwrap();
       setShowToast(true);
       setToastMessage("Profil berhasil diupdate!");
       setToastType("success");
       console.log("Update success:", response.data);
-      localStorage.setItem("image_users", response.data.data.imageUrl);
+      localStorage.setItem("image_creators", response.data.imageUrl);
       setIsLoading(false);
       router.push(`/creator/${id}`);
     } catch (error) {
@@ -140,12 +140,16 @@ export default function CreatorSettingsPage() {
     }
   }, []);
 
-  const handleFileUpload = (event) => {
-    if (event.target.id === "profile-picture") {
+  const handleFileUpload = (event, type) => {
+    console.log("Profile image upload");
+    if (type == "profile") {
+      console.log("Profile image upload");
       const file = event.target.files[0];
       if (file) {
+        console.log("Profile image upload");
         setProfilePicturePreview(URL.createObjectURL(file));
         setProfilePictureUrl(file);
+        setSelectedIconUrl(null); // reset kalau user upload foto
       }
     }
 
@@ -189,7 +193,11 @@ export default function CreatorSettingsPage() {
                   </span>
                 </h3>
                 <div className="flex flex-4 text-white md:flex-10">
-                  <label className="relative h-16 w-16 cursor-pointer lg:h-24 lg:w-24">
+                  <label className="relative h-16 w-16 cursor-pointer lg:h-24 lg:w-24"
+                    onClick={() => {
+                      setShowProfileModal(true);
+                      console.log("open modal");
+                    }}>
                     <div className="group relative h-16 w-16 cursor-pointer overflow-hidden rounded-full lg:h-24 lg:w-24">
                       {profilePictureUrl &&
                         profilePictureUrl !== "null" &&
@@ -219,14 +227,6 @@ export default function CreatorSettingsPage() {
                         />
                       </div>
                     </div>
-
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
-                      id="profile-picture"
-                      onChange={(e) => handleFileUpload(e)}
-                    />
                   </label>
                 </div>
               </div>
@@ -521,6 +521,27 @@ export default function CreatorSettingsPage() {
             </button>
           </form>
         </div>
+
+        <ProfileModal
+          isShow={showProfileModal}
+          setIsShow={setShowProfileModal}
+          onImageUpload={(e) => {
+            const file = e.target.files[0];
+            if (file) {
+              setProfilePicturePreview(URL.createObjectURL(file));
+              setProfilePictureUrl(file);
+              setSelectedIconUrl(null); // reset icon kalau upload foto
+              setShowProfileModal(false);
+            }
+          }}
+          onIconSelect={(iconImage, iconUrl) => {
+            setSelectedIconUrl(iconUrl);
+            setProfilePicturePreview(iconImage);
+            setProfilePictureUrl(null); // reset file kalau pilih icon
+            setShowProfileModal(false);
+          }}
+        />
+
       </main>
 
 
@@ -530,6 +551,10 @@ export default function CreatorSettingsPage() {
           type={toastType}
           onClose={() => setShowToast(false)}
         />
+      )}
+
+      {(isLoading || isUpdateCreatorLoading) && (
+        <LoadingOverlay />
       )}
     </>
   );

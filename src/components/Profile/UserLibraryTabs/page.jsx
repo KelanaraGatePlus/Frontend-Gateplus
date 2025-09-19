@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 /*[--- HOOKS IMPORT ---]*/
-import { useGetUserLastWatchedContentQuery, useGetUserSavedContentQuery } from "@/hooks/api/userSliceAPI";
+import { useGetUserLastWatchedContentQuery, useGetUserPurchasedContentQuery, useGetUserSavedContentQuery } from "@/hooks/api/userSliceAPI";
 
 import { Pagination } from 'flowbite-react';
 import MenuTabs from './MenuTabs';
@@ -18,8 +18,10 @@ export default function UserLibraryTabs({ id }) {
 
     const { data, isLoading: isLoadingSavedContent, isSuccess } = useGetUserSavedContentQuery(id);
     const { data: lastWatchedData, isLoading: isLoadingLastWatched } = useGetUserLastWatchedContentQuery();
+    const { data: purchasedData, isLoading: isLoadingPurchased } = useGetUserPurchasedContentQuery();
     const userSavedContentData = data?.data?.data || [];
     const userLastWatchedContentData = lastWatchedData?.data?.data || [];
+    const userPurchasedContentData = purchasedData?.data?.data || [];
 
     useEffect(() => {
         if (isSuccess && userSavedContentData) {
@@ -35,8 +37,8 @@ export default function UserLibraryTabs({ id }) {
             content = userSavedContentData;
             isLoading = isLoadingSavedContent;
         } else if (switchTab === "Dibeli") {
-            content = [];
-            isLoading = false;
+            content = userPurchasedContentData;
+            isLoading = isLoadingPurchased;
         } else if (switchTab === "Riwayat Tonton") {
             content = userLastWatchedContentData;
             isLoading = isLoadingLastWatched;

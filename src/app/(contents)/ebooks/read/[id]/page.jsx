@@ -22,6 +22,7 @@ import CommentComponent from "@/components/Comment/page";
 /*[--- ASSETS IMPORT ---]*/
 import logoArrowDownDark from "@@/icons/icons-dashboard/icons-arrow-left.svg";
 import logoArrowDownLight from "@@/icons/icons-dashboard/icons-arrow-left-light.svg";
+import iconFlag from "@@/icons/icon-flag.svg";
 
 export default function ReadEbookPage({ params }) {
   const { id } = React.use(params);
@@ -121,7 +122,7 @@ export default function ReadEbookPage({ params }) {
 
   return (
     <div
-      className={`flex flex-col overflow-x-hidden ${isDark ? "bg-[#222222]" : "bg-[#fff]"}`}
+      className={`flex flex-colmt-16 md:mt-[100px] overflow-x-hidden ${isDark ? "bg-[#222222]" : "bg-[#fff]"}`}
     >
       <main className="flex flex-col">
         <div
@@ -138,49 +139,54 @@ export default function ReadEbookPage({ params }) {
               {ebookTitle || "Loading..."}
             </Link>
           </h4>
-          {/* toggle dark and light */}
-          <label className="inline-flex cursor-pointer items-center">
-            <input
-              type="checkbox"
-              checked={isDark}
-              onChange={toggleTheme}
-              className="peer sr-only"
-            />
-            <div
-              className={`relative h-7 w-14 rounded-full transition-colors duration-300 ${isDark
-                ? "bg-indigo-900 peer-focus:ring-2 peer-focus:ring-violet-800"
-                : "bg-amber-200 peer-focus:ring-2 peer-focus:ring-amber-400"
-                } `}
-            >
+          <div className="flex flex-row items-center justify-end">
+            <Link href={'/report/episode_ebook/' + id} className="mr-4">
+              <Image src={iconFlag} alt="Report" className="w-8 h-8" />
+            </Link>
+            {/* toggle dark and light */}
+            <label className="inline-flex cursor-pointer items-center">
+              <input
+                type="checkbox"
+                checked={isDark}
+                onChange={toggleTheme}
+                className="peer sr-only"
+              />
               <div
-                className={`absolute top-1/2 left-[2px] flex h-5 w-5 -translate-y-1/2 transform items-center justify-center rounded-full bg-white shadow-md transition-transform duration-300 ${isDark ? "translate-x-7" : "translate-x-1"}`}
+                className={`relative h-7 w-14 rounded-full transition-colors duration-300 ${isDark
+                  ? "bg-indigo-900 peer-focus:ring-2 peer-focus:ring-violet-800"
+                  : "bg-amber-200 peer-focus:ring-2 peer-focus:ring-amber-400"
+                  } `}
               >
-                {isDark ? (
-                  <svg
-                    className="h-4 w-4 text-violet-700"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-                  </svg>
-                ) : (
-                  <svg
-                    className="h-4 w-4 text-yellow-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                      d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-                    />
-                  </svg>
-                )}
+                <div
+                  className={`absolute top-1/2 left-[2px] flex h-5 w-5 -translate-y-1/2 transform items-center justify-center rounded-full bg-white shadow-md transition-transform duration-300 ${isDark ? "translate-x-7" : "translate-x-1"}`}
+                >
+                  {isDark ? (
+                    <svg
+                      className="h-4 w-4 text-violet-700"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                    </svg>
+                  ) : (
+                    <svg
+                      className="h-4 w-4 text-yellow-400"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                      />
+                    </svg>
+                  )}
+                </div>
               </div>
-            </div>
-          </label>
+            </label>
+          </div>
         </div>
         {/* Bagian Header */}
         <section className="relative mt-16 w-full">

@@ -15,9 +15,9 @@ export default function InputSelect({
 }) {
     return (
         <div className="flex items-start gap-2">
-            <h3 className="montserratFont flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
+            {label && <h3 className="montserratFont flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
                 {label}
-            </h3>
+            </h3>}
             <div className="relative flex w-full flex-4 text-white md:flex-10 montserratFont flex-col">
                 <div className='relative'>
                     <select

@@ -12,6 +12,7 @@ import { useState } from "react";
 import FlexModal from "@/components/Modal/FlexModal";
 import Image from "next/image";
 import { contentType } from "@/lib/constants/contentType";
+import Script from "next/script";
 
 export default function RootLayout({ children }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,6 +40,21 @@ export default function RootLayout({ children }) {
   return (
     <Provider store={store}>
       <html lang="en">
+        <head>
+          {/* Google Analytics */}
+          <Script
+            src="https://www.googletagmanager.com/gtag/js?id=G-JRSR883RSP"
+            strategy="afterInteractive"
+          />
+          <Script id="google-analytics" strategy="afterInteractive">
+            {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-JRSR883RSP');
+          `}
+          </Script>
+        </head>
         <body className={`antialiased overflow-x-hidden`}>
           <Navbar openCreateContentModal={(objective) => {
             setObjective(objective);

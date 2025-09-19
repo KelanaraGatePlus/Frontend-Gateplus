@@ -11,6 +11,7 @@ import CommentModalComic from "@/components/CommentModalComic/page";
 import PropTypes from "prop-types";
 import CommentComponent from "@/components/Comment/page";
 import { useGetCommentByEpisodeComicQuery } from "@/hooks/api/commentSliceAPI";
+import iconFlag from "@@/icons/icon-flag.svg";
 
 export default function ReadComicPage({ params }) {
   const { id } = params;
@@ -27,7 +28,7 @@ export default function ReadComicPage({ params }) {
 
   const comicSingleData = data?.data;
   const comicData = comicSingleData?.fileImageComics || [];
-  const title = comicSingleData?.title || "";
+  const title = comicSingleData?.data?.comics?.title || "";
   const creatorNotes = comicSingleData?.notedEpisode || "";
   const updatedAt = comicSingleData
     ? formatDateTime(comicSingleData.updatedAt, "short")
@@ -63,6 +64,8 @@ export default function ReadComicPage({ params }) {
       }
       localStorage.setItem("last_seen_content", JSON.stringify(updated));
     }
+
+    console.log("comicSingleData", comicSingleData);
   }, [comicSingleData]);
 
   const handleNext = () => {
@@ -101,15 +104,18 @@ export default function ReadComicPage({ params }) {
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-[#222222]">
+    <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-[#222222] ">
       {/* Header */}
-      <div className="fixed top-0 right-0 left-0 z-10 flex h-[60px] w-full items-center gap-2 bg-[#222222]/80 px-4 py-2 text-2xl font-semibold text-[#FAFAFA] backdrop-blur">
+      <div className="fixed mt-16 md:mt-[100px] top-0 right-0 left-0 z-10 flex flex-row justify-between h-[60px] w-full items-center gap-2 bg-[#222222]/80 px-4 py-2 text-2xl font-semibold text-[#FAFAFA] backdrop-blur">
         <BackButton />
-        <h4 className="zeinFont line-clamp-1 w-full overflow-hidden text-left text-xl font-extrabold text-ellipsis md:text-2xl">
+        <h4 className="zeinFont line-clamp-1 w-full overflow-hidden text-center text-xl font-extrabold text-ellipsis md:text-2xl">
           <Link href="/" className="hover:underline">
             {title}
           </Link>
         </h4>
+        <Link href={'/report/episode_comic/' + id} className="ml-4">
+          <Image src={iconFlag} alt="Report" className="w-8 h-8" />
+        </Link>
       </div>
 
       {/* Komik View */}

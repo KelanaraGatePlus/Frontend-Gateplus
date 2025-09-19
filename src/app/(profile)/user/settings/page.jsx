@@ -72,11 +72,8 @@ export default function UserSettingsPage() {
       if (imageFile) {
         formData.append("imageUrl", imageFile);
       } else if (selectedIconUrl) {
-        console.log('Appending selected icon URL to formData:', selectedIconUrl);
         formData.append("iconUrl", selectedIconUrl);
       }
-      console.log('Image File:', imageFile);
-      console.log('Selected Icon URL:', selectedIconUrl);
       const response = await updateUser(formData);
 
       localStorage.setItem("image_users", response.data.data.imageUrl);

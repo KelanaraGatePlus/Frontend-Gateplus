@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/carousel";
 
 import logoPinComment from "@@/icons/icon-comment.svg";
-import IconsArrowLeft from "@@/icons/icons-dashboard/icons-arrow-left.svg";
 import logoUsersComment from "@@/icons/logo-users-comment.svg";
 import logoDislike from "@@/logo/logoDetailFilm/dislike-icons.svg";
 import logoLike from "@@/logo/logoDetailFilm/like-icons.svg";
@@ -23,7 +22,6 @@ import movie3 from "@@/logo/logoFilm/film_3.svg";
 import { useEffect, useState } from "react";
 
 import Image from "next/legacy/image";
-import Link from "next/link";
 import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
 import { useGetSeriesByIdQuery } from "@/hooks/api/seriesSliceAPI";
 import ProductEpisodeSection from "@/components/MainDetailProduct/ProductEpisodeSection";
@@ -201,12 +199,6 @@ function DetailSeriesPage({ params }) {
     return (
         <div>
             <section className="flex justify-center rounded-md relative">
-                <p className="absolute top-0 left-0 z-10 mx-2.5 flex flex-row items-center justify-start gap-2 text-2xl font-semibold text-white">
-                    <Link href="/">
-                        <Image src={IconsArrowLeft} alt="icons-arrow-left" />
-                    </Link>
-                </p>
-
                 {/* Player bergaya YouTube */}
                 <div className="mx-auto my-auto flex w-screen justify-center rounded-lg object-cover">
                     <DefaultVideoPlayer
