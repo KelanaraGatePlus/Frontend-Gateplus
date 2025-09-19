@@ -180,7 +180,7 @@ function PlayingMoviePage({ params }) {
                         className="rounded-lg"
                         src={movieData?.isSubscribed ? movieData?.movieFileUrl : movieData?.trailerFileUrl}
                         poster={movieData?.thumbnailImageUrl}
-                        startFrom={movieData.WatchProgress[0].progressSeconds}
+                        startFrom={movieData?.WatchProgress?.[0]?.progressSeconds || 0}
                         title={movieData?.title}
                         genre={movieData?.categories?.tittle}
                         ageRestriction={movieData?.ageRestriction}
