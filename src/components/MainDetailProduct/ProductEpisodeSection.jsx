@@ -16,6 +16,8 @@ import iconLocked from "@@/icons/icons-locked.svg";
 import iconSaveOutline from "@@/logo/logoDetailFilm/save-icons.svg";
 import iconMore from "@@/icons/icons-more.svg";
 import iconPlay from "@@/icons/icons-play.svg";
+import iconFlag from "@@/icons/icons-flag.svg";
+import Link from "next/link";
 // import iconPause from "@@/icons/icons-pause.svg";
 
 export default function ProductEpisodeSection({
@@ -242,6 +244,15 @@ export default function ProductEpisodeSection({
                         height={16}
                       />
                     </div>
+                    <Link href={'/report/episode_podcast/' + item.id} className="relative h-6 w-6 cursor-pointer transition-transform duration-150 active:scale-90">
+                      <Image
+                        priority
+                        src={iconFlag}
+                        alt="icon-save-outline"
+                        className="rounded object-cover object-center"
+                        fill
+                      />
+                    </Link>
                     <div className="relative h-6 w-6 cursor-pointer transition-transform duration-150 active:scale-90">
                       <Image
                         priority

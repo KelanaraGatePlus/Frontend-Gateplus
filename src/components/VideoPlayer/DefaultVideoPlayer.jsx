@@ -35,6 +35,7 @@ export default function DefaultVideoPlayer({
   const [showControls, setShowControls] = useState(true);
   const [hoverTime, setHoverTime] = useState(null);
   const [hoverPos, setHoverPos] = useState(0);
+  const [isStarted, setIsStarted] = useState(false);
   const hideTimeout = useRef(null);
   const hasSeekedRef = useRef(false);
 
@@ -164,7 +165,7 @@ export default function DefaultVideoPlayer({
   return (
     <div
       ref={playerWrapperRef}
-      className={`relative w-screen max-w-full md:h-[500px] 2xl:h-[800px] overflow-hidden bg-black ${className || ""}`}
+      className={`relative w-screen max-w-full h-[500px] 2xl:h-[800px] overflow-hidden bg-black ${className || ""}`}
     >
       <ReactPlayer
         ref={videoRef}
@@ -174,6 +175,10 @@ export default function DefaultVideoPlayer({
         playing={isPlaying}
         light={poster}
         controls={false}
+        onClickPreview={() => {
+          setIsStarted(true);
+          handleFullscreen();
+        }}
         config={{
           file: {
             attributes: {
@@ -187,7 +192,6 @@ export default function DefaultVideoPlayer({
           if (logType == "WATCH_TRAILER") {
             createLog({ logType, contentId, contentType });
           }
-
         }}
         onProgress={({ played, playedSeconds }) => {
           const dur = videoRef.current.getDuration();
@@ -214,7 +218,7 @@ export default function DefaultVideoPlayer({
       />
 
       {/* Custom Header */}
-      <div
+      {isStarted && <div
         className={`absolute top-0 left-0 right-0 transition-opacity duration-500 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"
           } bg-gradient-to-b from-black to-transparent py-4 px-16 flex items-center gap-4 justify-between`}
       >
@@ -228,13 +232,13 @@ export default function DefaultVideoPlayer({
             <span className="text-xs text-gray-400">{formatDuration(duration)} | {ageRestriction} | {genre} </span>
           </div>
         </div>
-        <Link href={`/report/${contentType == "film" ? "movie" : "episode_series"}/${contentId}`} className="p-2 bg-white/20 rounded-full hover:bg-white/40 transition">
+        <Link href={`/report/${contentType == "FILM" ? "movie" : "episode_series"}/${contentId}`} className="p-2 bg-white/20 rounded-full hover:bg-white/40 transition">
           <Image src={iconFlag} alt="icons-flag" width={32} height={32} />
         </Link>
-      </div>
+      </div>}
 
       {/* Custom Controller */}
-      <div
+      {isStarted && <div
         className={`absolute bottom-0 left-0 right-0 transition-opacity duration-500 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"
           } bg-gradient-to-t from-black to-transparent py-4 px-16 flex items-center gap-4`}
       >
@@ -308,7 +312,7 @@ export default function DefaultVideoPlayer({
         >
           <Maximize className="w-6 h-6 text-white" />
         </button>
-      </div>
+      </div>}
     </div>
   );
 }
