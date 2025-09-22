@@ -25,9 +25,18 @@ export const logApi = createApi({
             }),
             invalidatesTags: ["logContent"], // optional: biar refresh data terkait log
         }),
+        getCreatorLogAnalytics: builder.query({
+            query: (logType) => ({
+                // URL dan method sudah benar
+                url: `/logs/analytics/${logType}`,
+                method: "GET",
+            }),
+            providesTags: ["logContent"], // Gunakan providesTags untuk query
+        }),
     }),
 });
 
 export const {
     useCreateLogMutation,
+    useGetCreatorLogAnalyticsQuery,
 } = logApi;

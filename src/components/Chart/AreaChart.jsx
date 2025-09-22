@@ -13,29 +13,6 @@ import {
 } from "recharts";
 import PropTypes from "prop-types";
 
-const data = [
-  { date: "01", value: 0 },
-  { date: "02", value: 400 },
-  { date: "03", value: 500 },
-  { date: "04", value: 700 },
-  { date: "05", value: 1100 },
-  { date: "06", value: 1600 },
-  { date: "07", value: 2000 },
-  { date: "08", value: 1900 },
-  { date: "09", value: 1700 },
-  { date: "10", value: 1400 },
-  { date: "11", value: 1300 },
-  { date: "12", value: 900 },
-  { date: "13", value: 500 },
-  { date: "14", value: 200 },
-  { date: "15", value: 250 },
-  { date: "16", value: 350 },
-  { date: "17", value: 0 },
-  { date: "18", value: 0 },
-  { date: "19", value: 0 },
-  { date: "30", value: 0 },
-];
-
 // Tooltip custom (hover)
 function CustomTooltip({ active, payload, label }) {
   if (active && payload?.length) {
@@ -61,7 +38,7 @@ CustomTooltip.propTypes = {
   label: PropTypes.any,
 };
 
-export default function AreaTrendChart() {
+export default function AreaTrendChart({ data }) {
   return (
     <div className="w-full h-full flex justify-center items-center">
       <div className="h-full w-full">
@@ -115,3 +92,12 @@ export default function AreaTrendChart() {
     </div>
   );
 }
+
+AreaTrendChart.propTypes = {
+  data: PropTypes.arrayOf(
+    PropTypes.shape({
+      date: PropTypes.string.isRequired,
+      value: PropTypes.number.isRequired,
+    })
+  ).isRequired,
+};

@@ -2,8 +2,10 @@
 /* eslint-disable react/react-in-jsx-scope */
 import AreaTrendChart from "@/components/Chart/AreaChart";
 import MonthYearPicker from "@/components/Dropdown/MonthYearDropdown";
+import LoadingOverlay from "@/components/LoadingOverlay/page";
 import FlexModal from "@/components/Modal/FlexModal";
 import { useGetDashboardDataQuery } from "@/hooks/api/creatorSliceAPI";
+import { useGetCreatorLogAnalyticsQuery } from "@/hooks/api/logSliceAPI";
 import { contentType } from "@/lib/constants/contentType";
 import IconsContentComics from "@@/icons/icons-dashboard/icons-content-comics.svg";
 import IconsContentEbook from "@@/icons/icons-dashboard/icons-content-ebook.svg";
@@ -20,6 +22,22 @@ import { useState } from "react";
 export default function DashboardCreatorsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const dashboardData = useGetDashboardDataQuery();
+  const {
+    data: clickData,
+    isLoading: isAnalyticsLoading,
+  } = useGetCreatorLogAnalyticsQuery("CLICK");
+
+  // JANGAN proses data di sini
+
+  if (isAnalyticsLoading) {
+    return <LoadingOverlay />;
+  }
+
+  // ✅ Proses data HANYA setelah loading selesai
+  const chartData = clickData?.data?.data?.logsByDay.map(item => ({
+    date: item.date,
+    value: item.count
+  }));
 
   return (
     <div className="montserratFont">
@@ -188,7 +206,7 @@ export default function DashboardCreatorsPage() {
             </div>
             <div className="flex flex-row justify-between w-full items-center text-xs">
               <h3>Total Dislike</h3>
-              <p>1.000</p>
+              <p>{dashboardData?.data?.data?.data?.totalDislike}</p>
             </div>
             <div className="flex flex-col gap-1">
               <h3 className="text-lg font-bold">Video Teratas</h3>
@@ -244,7 +262,7 @@ export default function DashboardCreatorsPage() {
             <div className="flex flex-row w-full">
               <h1 className="text-lg font-bold">Rasio Klik Tayang</h1>
             </div>
-            <AreaTrendChart />
+            <AreaTrendChart data={chartData} />
           </div>
           <div className="col-span-4 flex flex-col gap-4 mt-10">
             <div className="flex flex-row justify-between items-center">
@@ -253,35 +271,35 @@ export default function DashboardCreatorsPage() {
             </div>
             <div className="grid grid-cols-4 gap-10">
               {dashboardData.data?.data?.data?.topContents.map((content) => (
-              <div key={content.id || content.title} className="grid grid-cols-3 items-center gap-4">
-                <div className="w-full col-span-1 aspect-[12/17]">
-                  <img
-                    src={content.image}
-                    className="rounded-lg w-full h-full"
-                  />
-                </div>
-                <div className="flex flex-col w-full col-span-2 gap-6">
-                  <p className="font-semibold">{content.title}</p>
-                  <div className="flex flex-col gap-2">
-                    <div className="flex flex-row justify-between items-center w-full">
-                      <p className="text-sm">Pembelian</p>
-                      <p className="text-sm">Rp {content.totalRevenue.toLocaleString()}</p>
-                    </div>
-                    <div className="flex flex-row justify-between items-center w-full">
-                      <p className="text-sm">Penayangan Trailer</p>
-                      <p className="text-sm">{content.trailerViews.toLocaleString()}</p>
-                    </div>
-                    <div className="flex flex-row justify-between items-center w-full">
-                      <p className="text-sm">Total Like</p>
-                      <p className="text-sm">{content.likes.toLocaleString()}</p>
-                    </div>
-                    <div className="flex flex-row justify-between items-center w-full">
-                      <p className="text-sm">Total Dislike</p>
-                      <p className="text-sm">150</p>
+                <div key={content.id || content.title} className="grid grid-cols-3 items-center gap-4">
+                  <div className="w-full col-span-1 aspect-[12/17]">
+                    <img
+                      src={content.image}
+                      className="rounded-lg w-full h-full"
+                    />
+                  </div>
+                  <div className="flex flex-col w-full col-span-2 gap-6">
+                    <p className="font-semibold">{content.title}</p>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex flex-row justify-between items-center w-full">
+                        <p className="text-sm">Pembelian</p>
+                        <p className="text-sm">Rp {content.totalRevenue.toLocaleString()}</p>
+                      </div>
+                      <div className="flex flex-row justify-between items-center w-full">
+                        <p className="text-sm">Penayangan Trailer</p>
+                        <p className="text-sm">{content.trailerViews.toLocaleString()}</p>
+                      </div>
+                      <div className="flex flex-row justify-between items-center w-full">
+                        <p className="text-sm">Total Like</p>
+                        <p className="text-sm">{content.likes.toLocaleString()}</p>
+                      </div>
+                      <div className="flex flex-row justify-between items-center w-full">
+                        <p className="text-sm">Total Dislike</p>
+                        <p className="text-sm">{content.dislikes.toLocaleString()}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
               ))}
             </div>
           </div>
