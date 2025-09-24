@@ -1,16 +1,60 @@
 "use client";
-import React from 'react';
+import React, { Suspense } from 'react';
 import CarouselTemplate from '@/components/Carousel/carouselTemplate';
 import { useGetEbooksHomeDataQuery } from '@/hooks/api/ebookSliceAPI';
+import StaticBannerPromo from '@/components/BannerPromoSlider/StaticBannerPromo';
+import BackButton from '@/components/BackButton/page';
+import Filter from '@/components/FilterComponent/FIlter';
+import { useSearchParams } from 'next/navigation';
+import LoadingOverlay from '@/components/LoadingOverlay/page';
 
 export default function EbooksPage() {
-    const { data, isLoading } = useGetEbooksHomeDataQuery();
+    return (
+        <main className="relative mt-16 flex flex-col md:mt-[100px] lg:px-4">
+            <div className="absolute left-13 top-2">
+                <BackButton />
+            </div>
+            <div className='w-full h-full flex flex-col gap-10'>
+                <div className='w-full h-max flex flex-col gap-6'>
+                    <StaticBannerPromo
+                        title="eBook"
+                        subtitle="Koleksi buku digital untuk pembelajaran dan hiburan"
+                        bgColor="#F4A2614D"
+                        titleColor="#F07F26"
+                    />
+                    <div className="px-24">
+                        <Suspense fallback={<LoadingOverlay />}>
+                            <Filter
+                                contentType="eBook"
+                                textColor="#F07F26"
+                                buttonColor={
+                                    {
+                                        activeFrom: "#F07F26",
+                                        activeTo: "#FFB479"
+                                    }
+                                }
+                            />
+                        </Suspense>
+                    </div>
+                </div>
+                <Suspense fallback={<LoadingOverlay />}>
+                    <EbookContent />
+                </Suspense>
+            </div>
+        </main>
+    )
+}
+
+
+function EbookContent() {
+    const searchParams = useSearchParams();
+    const { data, isLoading } = useGetEbooksHomeDataQuery(searchParams.get("cat") || "");
     const newestData = data?.data?.newReleaseEbooks || [];
     const topTenData = data?.data?.topTenEbooks || [];
     const highlightedData = data?.data?.highlightsEbooks || [];
 
     return (
-        <div className='w-full h-full my-40 flex flex-col gap-10'>
+        <>
             <CarouselTemplate
                 label={"Highlight Ebooks"}
                 contents={highlightedData}
@@ -30,6 +74,6 @@ export default function EbooksPage() {
                 isLoading={isLoading}
                 type={"ebook"}
             />
-        </div>
-    )
+        </>
+    );
 }

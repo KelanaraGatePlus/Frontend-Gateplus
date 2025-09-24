@@ -1,24 +1,59 @@
 "use client";
-import React from 'react';
+import React, { Suspense } from 'react';
 import CarouselTemplate from '@/components/Carousel/carouselTemplate';
 import { useGetMoviesHomeDataQuery } from '@/hooks/api/movieSliceAPI';
+import StaticBannerPromo from '@/components/BannerPromoSlider/StaticBannerPromo';
+import BackButton from '@/components/BackButton/page';
+import Filter from '@/components/FilterComponent/FIlter';
+import { useSearchParams } from 'next/navigation';
+import LoadingOverlay from '@/components/LoadingOverlay/page';
 
 export default function MoviesPage() {
-    const { data, isLoading } = useGetMoviesHomeDataQuery();
+    return (
+        <div className='w-full h-full flex flex-col gap-10'>
+            <div className="absolute left-13 top-2">
+                <BackButton />
+            </div>
+            <div className='w-full h-max flex flex-col gap-6'>
+                <StaticBannerPromo
+                    title="Movies"
+                    subtitle="Koleksi film terbaik untuk hiburan Anda"
+                    bgColor="#156EB74D"
+                    titleColor="#219BFF"
+                />
+                <div className="px-24">
+                    <Suspense fallback={<LoadingOverlay />}>
+                        <Filter
+                            contentType="Movie"
+                            textColor="#219BFF"
+                        />
+                    </Suspense>
+                </div>
+            </div>
+            <Suspense fallback={<LoadingOverlay />}>
+                <MovieContent />
+            </Suspense>
+        </div>
+    )
+}
+
+function MovieContent() {
+    const searchParams = useSearchParams();
+    const { data, isLoading } = useGetMoviesHomeDataQuery(searchParams.get("cat") || "");
     const newestData = data?.data?.newReleaseMovies || [];
     const topTenData = data?.data?.topTenMovies || [];
     const highlightedData = data?.data?.highlightsMovies || [];
 
     return (
-        <div className='w-full h-full my-40 flex flex-col gap-10'>
+        <>
             <CarouselTemplate
-                label={"Highlight Movie"}
+                label={"Best Seller"}
                 contents={highlightedData}
                 isLoading={isLoading}
                 type={"movie"}
             />
             <CarouselTemplate
-                label={"Top 10 Movie"}
+                label={"Top Rated Movie"}
                 contents={topTenData}
                 isLoading={isLoading}
                 type={"movie"}
@@ -30,6 +65,6 @@ export default function MoviesPage() {
                 isLoading={isLoading}
                 type={"movie"}
             />
-        </div>
+        </>
     )
 }
