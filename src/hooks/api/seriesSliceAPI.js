@@ -43,7 +43,7 @@ export const seriesAPI = createApi({
       invalidatesTags: ["series"],
     }),
     getSeriesHomeData: builder.query({
-      query: () => "/series/highlights",
+      query: (category) => category ? `/series/highlights?category=${category}` : "/series/highlights",
       providesTags: ['series'],
     }),
   }),

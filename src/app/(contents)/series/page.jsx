@@ -1,16 +1,57 @@
 "use client";
-import React from 'react';
+import React, { Suspense } from 'react';
 import CarouselTemplate from '@/components/Carousel/carouselTemplate';
 import { useGetSeriesHomeDataQuery } from '@/hooks/api/seriesSliceAPI';
+import StaticBannerPromo from '@/components/BannerPromoSlider/StaticBannerPromo';
+import BackButton from '@/components/BackButton/page';
+import Filter from '@/components/FilterComponent/FIlter';
+import { useSearchParams } from 'next/navigation';
+import LoadingOverlay from '@/components/LoadingOverlay/page';
 
 export default function SeriesPage() {
-    const { data, isLoading } = useGetSeriesHomeDataQuery();
+    return (
+        <div className='w-full h-full flex flex-col gap-10'>
+            <div className="absolute left-13 top-2">
+                <BackButton />
+            </div>
+            <div className='w-full h-max flex flex-col gap-6'>
+                <StaticBannerPromo
+                    title="Series"
+                    subtitle="Serial TV dan series terbaik untuk binge watching"
+                    bgColor="#5856D64D"
+                    titleColor="#6A67FF"
+                />
+                <div className='px-24'>
+                    <Suspense fallback={<LoadingOverlay />}>
+                        <Filter
+                            contentType="Series"
+                            textColor="#6A67FF"
+                            buttonColor={
+                                {
+                                    activeFrom: "#5856D6",
+                                    activeTo: "#6A67FF"
+                                }
+                            }
+                        />
+                    </Suspense>
+                </div>
+            </div>
+            <Suspense fallback={<LoadingOverlay />}>
+                <SeriesContent />
+            </Suspense>
+        </div>
+    )
+}
+
+function SeriesContent() {
+    const searchParams = useSearchParams();
+    const { data, isLoading } = useGetSeriesHomeDataQuery(searchParams.get("cat") || "");
     const newestData = data?.data?.newReleaseSeries || [];
     const topTenData = data?.data?.topTenSeries || [];
     const highlightedData = data?.data?.highlightsSeries || [];
 
     return (
-        <div className='w-full h-full my-40 flex flex-col gap-10'>
+        <>
             <CarouselTemplate
                 label={"Highlight Series"}
                 contents={highlightedData}
@@ -30,6 +71,6 @@ export default function SeriesPage() {
                 isLoading={isLoading}
                 type={"series"}
             />
-        </div>
+        </>
     )
 }

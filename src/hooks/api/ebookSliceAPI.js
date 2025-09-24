@@ -42,7 +42,7 @@ export const ebookApi = createApi({
       invalidatesTags: ["ebook"],
     }),
     getEbooksHomeData: builder.query({
-      query: () => `/ebooks/highlights`,
+      query: (category) => category ? `/ebooks/highlights?category=${category}` : "/ebooks/highlights",
       providesTags: ["ebook"],
     }),
   }),

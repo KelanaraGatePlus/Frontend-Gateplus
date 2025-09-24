@@ -34,8 +34,10 @@ export const movieAPI = createApi({
       providesTags: (result, error, id) => [{ type: 'movie', id }],
     }),
     getMoviesHomeData: builder.query({
-      query: () => "/movies/highlights",
-      providesTags: ['movie'],
+      query: (category) => {
+        return category ? `/movies/highlights?category=${category}` : "/movies/highlights";
+      },
+      providesTags: ["movie"],
     }),
   }),
 });
