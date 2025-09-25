@@ -1,27 +1,20 @@
 "use client";
 
-
 import React from "react";
 import {
   AreaChart,
   Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
 import PropTypes from "prop-types";
 
-// Tooltip custom (hover)
-function CustomTooltip({ active, payload, label }) {
+// Tooltip tidak berubah
+function CustomTooltip({ active, payload }) {
   if (active && payload?.length) {
     return (
-      <div className="rounded-md border border-[#8b8b8b] bg-[#0f1a1e] px-3 py-2 shadow-lg">
-        <div className="text-xs text-neutral-400">Date: {label}</div>
-        <div className="text-sm font-semibold text-[#3BC6F6]">
-          {payload[0].value}
-        </div>
+      <div className="rounded-md bg-gray-700 px-3 py-1 text-sm font-semibold text-white shadow-lg">
+        {payload[0].value}
       </div>
     );
   }
@@ -35,69 +28,63 @@ CustomTooltip.propTypes = {
       value: PropTypes.any,
     })
   ),
-  label: PropTypes.any,
 };
 
-export default function AreaTrendChart({ data }) {
+export default function CustomizableAreaChart({
+  data,
+  strokeColor = "#16a34a",
+  gradientColors = ["#22c55e", "#22c55e"],
+  gradientOpacity = [1, 1],
+  noFill = false,
+}) {
+  // Gunakan ID unik untuk gradient agar tidak bentrok jika ada beberapa chart di satu halaman
+  const gradientId = `gradient-${Math.random().toString(36).substr(2, 9)}`;
+
   return (
-    <div className="w-full h-full flex justify-center items-center">
-      <div className="h-full w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
-            data={data}
-          >
-            {/* GRID abu-abu */}
-            <CartesianGrid stroke="#8b8b8b" strokeDasharray="6 6" vertical />
+    <ResponsiveContainer width="100%" height="100%">
+      <AreaChart
+        data={data}
+        margin={{
+          top: 5,
+          right: 0,
+          left: 0,
+          bottom: 5,
+        }}
+      >
+        {/* Definisi Gradient hanya dirender jika `noFill` adalah false */}
+        {!noFill && (
+          <defs>
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={gradientColors[0]} stopOpacity={gradientOpacity[0]} />
+              <stop offset="95%" stopColor={gradientColors[1]} stopOpacity={gradientOpacity[1]} />
+            </linearGradient>
+          </defs>
+        )}
 
-            {/* Axis */}
-            <XAxis
-              dataKey="date"
-              scale="point"   // titik merata
-              tick={{ fill: "#8b8b8b", fontSize: 12 }}
-              axisLine={{ stroke: "#8b8b8b" }}
-              tickLine={{ stroke: "#8b8b8b" }}
-            />
+        <Tooltip content={<CustomTooltip />} cursor={false} />
 
-            <YAxis
-              tick={{ fill: "#8b8b8b", fontSize: 12 }}
-              axisLine={{ stroke: "#8b8b8b" }}
-              tickLine={{ stroke: "#8b8b8b" }}
-              width={40}
-            />
-
-            {/* Tooltip */}
-            <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#8b8b8b" }} />
-
-            {/* Gradien area */}
-            <defs>
-              <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#3BC6F6" stopOpacity={0.5} />
-                <stop offset="100%" stopColor="#3BC6F6" stopOpacity={0.1} />
-              </linearGradient>
-            </defs>
-
-            {/* Area + stroke + titik biru */}
-            <Area
-              type="linear"
-              dataKey="value"
-              stroke="#3BC6F6"
-              strokeWidth={2}
-              fill="url(#areaFill)"
-              activeDot={{ r: 6, strokeWidth: 2, stroke: "#3BC6F6", fill: "#fff" }}
-              dot={{ r: 4, fill: "#3BC6F6", stroke: "#fff", strokeWidth: 1 }}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
+        <Area
+          type="monotone"
+          dataKey="value"
+          stroke={strokeColor}
+          strokeWidth={5}
+          // Secara kondisional mengatur 'fill'
+          // Jika noFill true, maka 'fill' transparan. Jika false, gunakan gradient.
+          fill={noFill ? "transparent" : `url(#${gradientId})`}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
   );
 }
 
-AreaTrendChart.propTypes = {
+CustomizableAreaChart.propTypes = {
   data: PropTypes.arrayOf(
     PropTypes.shape({
-      date: PropTypes.string.isRequired,
       value: PropTypes.number.isRequired,
     })
   ).isRequired,
+  strokeColor: PropTypes.string,
+  gradientColors: PropTypes.arrayOf(PropTypes.string),
+  gradientOpacity: PropTypes.arrayOf(PropTypes.number),
+  noFill: PropTypes.bool,
 };
