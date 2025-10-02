@@ -18,6 +18,9 @@ import { logApi } from "../api/logSliceAPI";
 import { progressWatchAPI } from "../api/progressWatchAPI";
 import { reportContentAPI } from "../api/reportContentAPI";
 import { categoryAPI } from "../api/categorySliceAPI";
+import { bankAPI } from "../api/bankSliceAPI";
+import { bankAccountAPI } from "../api/bankAccountAPI";
+import { withdrawalAPI } from "../api/withdrawalAPI";
 
 const rootReducer = combineReducers({
   [ebookApi.reducerPath]: ebookApi.reducer,
@@ -36,6 +39,9 @@ const rootReducer = combineReducers({
   [progressWatchAPI.reducerPath]: progressWatchAPI.reducer,
   [reportContentAPI.reducerPath]: reportContentAPI.reducer,
   [categoryAPI.reducerPath]: categoryAPI.reducer,
+  [bankAPI.reducerPath]: bankAPI.reducer,
+  [bankAccountAPI.reducerPath]: bankAccountAPI.reducer,
+  [withdrawalAPI.reducerPath]: withdrawalAPI.reducer,
 });
 
 export const store = configureStore({
@@ -57,7 +63,10 @@ export const store = configureStore({
       logApi.middleware,
       progressWatchAPI.middleware,
       reportContentAPI.middleware,
-      categoryAPI.middleware
+      categoryAPI.middleware,
+      bankAPI.middleware,
+      bankAccountAPI.middleware,
+      withdrawalAPI.middleware,
     ),
 });
 

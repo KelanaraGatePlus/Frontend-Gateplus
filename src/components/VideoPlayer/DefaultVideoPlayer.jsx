@@ -10,6 +10,7 @@ import Image from "next/image";
 import IconsArrowLeft from "@@/icons/icons-dashboard/icons-arrow-left.svg";
 import formatDuration from "@/lib/helper/formatDurationHelper";
 import iconFlag from "@@/icons/icon-flag.svg";
+import { useDeviceType } from "@/hooks/helper/deviceType";
 
 export default function DefaultVideoPlayer({
   src,
@@ -38,6 +39,7 @@ export default function DefaultVideoPlayer({
   const [isStarted, setIsStarted] = useState(false);
   const hideTimeout = useRef(null);
   const hasSeekedRef = useRef(false);
+  const device = useDeviceType();
 
   const progressRef = useRef({ playedSeconds: 0, percentage: 0 });
 
@@ -73,6 +75,7 @@ export default function DefaultVideoPlayer({
       progressSeconds: progressRef.current.playedSeconds,
       progressPercentage: percentage,
       isCompleted: percentage >= 80,
+      device
     };
 
     createProgressWatch(payload);

@@ -19,3 +19,26 @@ export function storeUserData(data) {
         throw new Error("Token not found in response");
     }
 }
+
+export function getUserData() {
+    const token = localStorage.getItem("token");
+    const image_users = localStorage.getItem("image_users");
+    const role = localStorage.getItem("role");
+    const isCreator = JSON.parse(localStorage.getItem("isCreator") || "false");
+    const creators_id = localStorage.getItem("creators_id");
+    const image_creators = localStorage.getItem("image_creators");
+    const users_id = localStorage.getItem("users_id");
+    return { token, image_users, role, isCreator, creators_id, image_creators, users_id };
+}
+
+export function clearUserData() {
+    const lastSeen = localStorage.getItem("last_seen_content");
+    localStorage.clear();
+    if (lastSeen) {
+        localStorage.setItem("last_seen_content", lastSeen);
+    }
+    document.cookie.split(";").forEach((cookie) => {
+        const name = cookie.split("=")[0].trim();
+        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
+    });
+}

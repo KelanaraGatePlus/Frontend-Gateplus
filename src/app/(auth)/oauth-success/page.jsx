@@ -3,11 +3,12 @@
 import React, { Suspense } from "react";
 import { useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { storeUserData } from "@/lib/helper/authHelper";
+import { useAuth } from "@/components/Context/AuthContext";
 
 function OAuthSuccessPageInner() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { login } = useAuth();
 
     console.log("OAuth Success Page Loaded");
     useEffect(() => {
@@ -30,9 +31,7 @@ function OAuthSuccessPageInner() {
                 }
                 : null,
         };
-
-        console.log("OAuth Success Data:", data);
-        storeUserData(data);
+        login(data);
         router.push("/"); // Ganti ke dashboard kalau perlu
     }, []);
 

@@ -14,14 +14,14 @@ export default function SimpleModal({ isOpen, onClose, onConfirm, title }) {
                 <div className="flex justify-between w-full">
                     <button
                         onClick={onConfirm}
-                        className="text-white font-semibold w-full hover:cursor-pointer"
+                        className="bg-[#163D91] text-white font-semibold w-full hover:cursor-pointer"
                     >
                         Ya
                     </button>
 
                     <button
                         onClick={onClose}
-                        className="bg-[#163D91] text-white font-semibold py-1 px-4 rounded-md w-full hover:cursor-pointer"
+                        className="text-white font-semibold py-1 px-4 rounded-md w-full hover:cursor-pointer"
                     >
                         Batal
                     </button>

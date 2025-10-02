@@ -1,20 +1,25 @@
 // hooks/useMidtransPayment.js
 import { useEffect, useState } from "react";
-import { BACKEND_URL, MIDTRANS_URL } from "@/lib/constants/backendUrl";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
+import { useAuth } from "@/components/Context/AuthContext";
 
-export const useMidtransPayment = (paymentType = 'ORDER') => {
+// pakai constant langsung, jangan ambil dari backendUrl
+// ganti ke app.midtrans.com untuk production
+const MIDTRANS_URL = "https://app.sandbox.midtrans.com/snap/snap.js";
+
+export const useMidtransPayment = (paymentType = "ORDER") => {
     const [snapReady, setSnapReady] = useState(false);
-    const [token, setToken] = useState('');
+    const { user } = useAuth();
     let midtransURL;
 
     switch (paymentType) {
-        case 'ORDER':
+        case "ORDER":
             midtransURL = `${BACKEND_URL}/api/payment/create`;
             break;
-        case 'TIP':
+        case "TIP":
             midtransURL = `${BACKEND_URL}/api/payment/create-tip`;
             break;
-        case 'SUBSCRIPTION':
+        case "SUBSCRIPTION":
             midtransURL = `${BACKEND_URL}/api/payment/create-subscription`;
             break;
         default:
@@ -22,13 +27,7 @@ export const useMidtransPayment = (paymentType = 'ORDER') => {
             break;
     }
 
-    useEffect(() => {
-        if (typeof window !== "undefined") {
-            setToken(localStorage.getItem("token") || '');
-        }
-    }, []);
-
-    // Load Snap.js once
+    // Load Snap.js sekali saja
     useEffect(() => {
         if (window.snap) {
             setSnapReady(true);
@@ -42,24 +41,18 @@ export const useMidtransPayment = (paymentType = 'ORDER') => {
         script.onerror = () => console.error("Failed to load Midtrans Snap.js");
         document.body.appendChild(script);
 
-        return () => document.body.removeChild(script);
+        // ⚠️ jangan remove script saat cleanup
+        return undefined;
     }, []);
 
-    const pay = async ({ creatorId, episodeId, contentId, price, contentType = "PODCAST" }) => {
-        const body = paymentType === 'ORDER' ? JSON.stringify({
-            creatorId,
-            episodeId,
-            contentType,
-            price,
-        }) : JSON.stringify({
-            creatorId,
-            contentId,
-            contentType,
-            price,
-        });
+    const pay = async ({ episodeId, contentId, contentType = "PODCAST" }) => {
+        const body =
+            paymentType === "ORDER"
+                ? JSON.stringify({ episodeId, contentType })
+                : JSON.stringify({ contentId, contentType });
 
-        if (!snapReady || !window.snap) {
-            alert("Midtrans Snap belum siap.");
+        if (!snapReady || !window.snap || typeof window.snap.pay !== "function") {
+            alert("Midtrans Snap belum siap, coba lagi.");
             return;
         }
 
@@ -67,7 +60,7 @@ export const useMidtransPayment = (paymentType = 'ORDER') => {
             const res = await fetch(midtransURL, {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${user.token}`,
                     "Content-Type": "application/json",
                 },
                 body: body,
@@ -79,7 +72,10 @@ export const useMidtransPayment = (paymentType = 'ORDER') => {
             window.snap.pay(data.snapToken, {
                 onSuccess: () => console.log("Pembayaran sukses"),
                 onPending: () => alert("Pembayaran masih pending."),
-                onError: () => alert("Pembayaran gagal."),
+                onError: (err) => {
+                    console.error("Midtrans error:", err);
+                    alert("Pembayaran gagal.");
+                },
                 onClose: () => alert("Popup ditutup."),
             });
         } catch (error) {
@@ -93,16 +89,10 @@ export const useMidtransPayment = (paymentType = 'ORDER') => {
 
 export const useMidtransTipPayment = () => {
     const [snapReady, setSnapReady] = useState(false);
-    const [token, setToken] = useState('');
     const midtransURL = `${BACKEND_URL}/api/payment/create-tip`;
+    const { user } = useAuth();
 
-    useEffect(() => {
-        if (typeof window !== "undefined") {
-            setToken(localStorage.getItem("token") || '');
-        }
-    }, []);
-
-    // Load Snap.js once
+    // Load Snap.js sekali saja
     useEffect(() => {
         if (window.snap) {
             setSnapReady(true);
@@ -116,17 +106,14 @@ export const useMidtransTipPayment = () => {
         script.onerror = () => console.error("Failed to load Midtrans Snap.js");
         document.body.appendChild(script);
 
-        return () => document.body.removeChild(script);
+        return undefined; // jangan remove script
     }, []);
 
     const pay = async ({ creatorId, amount }) => {
-        const body = JSON.stringify({
-            creatorId,
-            amount,
-        });
+        const body = JSON.stringify({ creatorId, amount });
 
-        if (!snapReady || !window.snap) {
-            alert("Midtrans Snap belum siap.");
+        if (!snapReady || !window.snap || typeof window.snap.pay !== "function") {
+            alert("Midtrans Snap belum siap, coba lagi.");
             return;
         }
 
@@ -134,7 +121,7 @@ export const useMidtransTipPayment = () => {
             const res = await fetch(midtransURL, {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${user.token}`,
                     "Content-Type": "application/json",
                 },
                 body: body,
@@ -146,7 +133,10 @@ export const useMidtransTipPayment = () => {
             window.snap.pay(data.snapToken, {
                 onSuccess: () => console.log("Pembayaran sukses"),
                 onPending: () => alert("Pembayaran masih pending."),
-                onError: () => alert("Pembayaran gagal."),
+                onError: (err) => {
+                    console.error("Midtrans error:", err);
+                    alert("Pembayaran gagal.");
+                },
                 onClose: () => alert("Popup ditutup."),
             });
         } catch (error) {
@@ -156,4 +146,4 @@ export const useMidtransTipPayment = () => {
     };
 
     return { pay, snapReady };
-}
+};

@@ -14,6 +14,7 @@ import { storeCreatorData } from "@/lib/helper/creatorRegistHelper";
 
 /*[--- API HOOKS ---]*/
 import { useCheckCreatorAvailabilityQuery, useRegisterCreatorMutation } from "@/hooks/api/creatorSliceAPI";
+import { useAuth } from "@/components/Context/AuthContext";
 
 export default function FormRegisterCreator() {
     const router = useRouter();
@@ -30,6 +31,7 @@ export default function FormRegisterCreator() {
         mode: "onChange",
         reValidateMode: "onBlur",
     });
+    const { refreshUser } = useAuth();
     
     const [debouncedUsername] = useDebounce(watch("username"), 500);
     const [debouncedEmail] = useDebounce(watch("email"), 500);
@@ -75,6 +77,7 @@ export default function FormRegisterCreator() {
 
             const response = await registerCreator(payload).unwrap();
             storeCreatorData(response.data.data);
+            refreshUser();
             reset();
             router.push("/");
         } catch (error) {

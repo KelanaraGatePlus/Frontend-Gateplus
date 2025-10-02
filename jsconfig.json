@@ -12,6 +12,7 @@
       "@@/IconsContent/*": ["./public/images/IconsContent/*"],
       "@@/Law/*": ["./public/images/Law/*"],
       "@@/IconsButton/*": ["./public/images/IconsButton/*"],
+      "@@/AdditionalImages/*": ["./public/images/Additional/*"],
       "@@@/*": ["./*"]
     }
   }
