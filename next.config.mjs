@@ -20,6 +20,14 @@ const nextConfig = {
         pathname: "/**",
       },
     ],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "minio.gateplus.id",
+        port: "9000",
+        pathname: "/**",
+      },
+    ],
   },
 };
 

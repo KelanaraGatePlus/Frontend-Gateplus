@@ -11,7 +11,7 @@ import logoSave from "@@/logo/logoDetailFilm/save-icons.svg";
 import logoSubscribe from "@@/logo/logoDetailFilm/subscribe-icon-kelanara.svg";
 import { useEffect, useState } from "react";
 
-import Image from "next/legacy/image";
+import Image from "next/image";
 import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
 import { useGetSeriesByIdQuery } from "@/hooks/api/seriesSliceAPI";
 import ProductEpisodeSection from "@/components/MainDetailProduct/ProductEpisodeSection";
@@ -300,13 +300,13 @@ function DetailSeriesPage({ params }) {
                 <section className="flex flex-row gap-3 items-stretch">
                     {/* Poster 3:2 */}
                     <div className="relative aspect-[2/3] w-[220px] sm:w-[160px] lg:w-[250px] flex-shrink-0">
-                        <Image
+                        {seriesData.posterImageUrl && <Image
                             src={seriesData.posterImageUrl}
                             alt="logo-racunsangga-movie"
                             layout="fill"
                             className="rounded-xl object-cover"
                             priority
-                        />
+                        />}
                     </div>
 
                     {/* Deskripsi */}

@@ -4,7 +4,7 @@ import logoDislike from "@@/logo/logoDetailFilm/dislike-icons.svg";
 import logoLike from "@@/logo/logoDetailFilm/like-icons.svg";
 import logoSave from "@@/logo/logoDetailFilm/save-icons.svg";
 import logoSubscribe from "@@/logo/logoDetailFilm/subscribe-icon-kelanara.svg";
-import Image from "next/legacy/image";
+import Image from "next/image";
 import { useGetMovieByIdQuery } from "@/hooks/api/movieSliceAPI";
 import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
 import React, { useEffect, useState } from "react";
@@ -278,13 +278,13 @@ function PlayingMoviePage({ params }) {
                 <section className="flex flex-row gap-3 items-stretch">
                     {/* Poster 3:2 */}
                     <div className="relative aspect-[2/3] w-[220px] sm:w-[160px] lg:w-[250px] flex-shrink-0">
-                        <Image
+                        {movieData.posterImageUrl && <Image
                             src={movieData.posterImageUrl}
                             alt="logo-racunsangga-movie"
                             layout="fill"
                             className="rounded-xl object-cover"
                             priority
-                        />
+                        />}
                     </div>
 
                     {/* Deskripsi */}
