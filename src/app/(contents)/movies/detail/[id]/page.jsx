@@ -1,20 +1,9 @@
 "use client";
 
-import {
-    Carousel,
-    CarouselContent,
-    CarouselItem,
-    CarouselNext,
-    CarouselPrevious,
-} from "@/components/ui/carousel";
-
 import logoDislike from "@@/logo/logoDetailFilm/dislike-icons.svg";
 import logoLike from "@@/logo/logoDetailFilm/like-icons.svg";
 import logoSave from "@@/logo/logoDetailFilm/save-icons.svg";
 import logoSubscribe from "@@/logo/logoDetailFilm/subscribe-icon-kelanara.svg";
-import movie1 from "@@/logo/logoFilm/film_1.svg";
-import movie2 from "@@/logo/logoFilm/film_2.svg";
-import movie3 from "@@/logo/logoFilm/film_3.svg";
 import Image from "next/legacy/image";
 import { useGetMovieByIdQuery } from "@/hooks/api/movieSliceAPI";
 import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
@@ -34,6 +23,7 @@ import { useSaveContent } from '@/lib/features/useSaveContent';
 import CommentComponent from "@/components/Comment/page";
 import { useGetCommentByMovieQuery } from "@/hooks/api/commentSliceAPI";
 import formatDuration from "@/lib/helper/formatDurationHelper";
+import CarouselTemplate from "@/components/Carousel/carouselTemplate";
 
 /* ===========================
    Halaman: PlayingMoviePage (JSX)
@@ -325,65 +315,21 @@ function PlayingMoviePage({ params }) {
                 <section className="mt-5">
                     <section className="my-10 flex flex-col">
                         <section className="mt-10">
-                            <Carousel className="">
-                                <div className="flex justify-between text-white">
-                                    <p className="mb-5 text-[20px] font-bold md:ml-3">Dari Creator</p>
-                                    <p className="mb-5 text-[20px] font-bold md:ml-3">Lainnya</p>
-                                </div>
-                                <CarouselContent className="">
-                                    <CarouselItem className="">
-                                        <Image src={movie1} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie2} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie1} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie3} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie1} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie3} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie1} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    _</CarouselContent>
-                                <CarouselPrevious />
-                                <CarouselNext />
-                            </Carousel>
+                            <CarouselTemplate 
+                                label="Banyak Dilihat"
+                                type="movie"
+                                contents={data?.data?.topContent || []}
+                                isLoading={!data}
+                            />
                         </section>
 
                         <section className="mt-10">
-                            <Carousel className="sm:max-h-auto sm:max-w-auto">
-                                <div className="flex justify-between text-white">
-                                    <p className="mb-5 text-[20px] font-bold md:ml-3">Rekomendasi Serupa</p>
-                                    <p className="mb-5 text-[20px] font-bold md:ml-3">Lainnya</p>
-                                </div>
-                                <CarouselContent>
-                                    <CarouselItem>
-                                        <Image src={movie1} priority alt="logo-movie-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem>
-                                        <Image src={movie2} priority alt="logo-movie-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem>
-                                        <Image src={movie1} priority alt="logo-movie-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem>
-                                        <Image src={movie3} priority alt="logo-movie-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem>
-                                        <Image src={movie2} priority alt="logo-movie-banner" />
-                                    </CarouselItem>
-                                </CarouselContent>
-                                <CarouselPrevious />
-                                <CarouselNext />
-                            </Carousel>
+                            <CarouselTemplate 
+                                label="Rekomendasi Serupa"
+                                type="movie"
+                                contents={data?.data?.recommendation || []}
+                                isLoading={!data}
+                            />
                         </section>
                     </section>
                 </section>

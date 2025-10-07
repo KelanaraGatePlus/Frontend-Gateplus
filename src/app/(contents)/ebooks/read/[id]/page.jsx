@@ -23,6 +23,8 @@ import CommentComponent from "@/components/Comment/page";
 import logoArrowDownDark from "@@/icons/icons-dashboard/icons-arrow-left.svg";
 import logoArrowDownLight from "@@/icons/icons-dashboard/icons-arrow-left-light.svg";
 import iconFlag from "@@/icons/icon-flag.svg";
+import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
+import { useDeviceType } from "@/hooks/helper/deviceType";
 
 export default function ReadEbookPage({ params }) {
   const { id } = React.use(params);
@@ -38,18 +40,39 @@ export default function ReadEbookPage({ params }) {
   const [isDark, setIsDark] = useState(false);
   const { data, isLoading, error } = useGetEpisodeEbookByIdQuery(id);
   const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByEpisodeEbookQuery(id);
-  console.log("ini data comment baru", commentData)
-  console.log("ini id episode", id)
+  const [createLog] = useCreateLogMutation();
   const episodeEbookData = data?.data?.data || {};
   const ebookData = episodeEbookData.ebooks || {};
   const allEpisodes = ebookData.episode_ebooks || [];
   let hasUpdatedViews = false;
+  const device = useDeviceType();
 
   const currentIndex = allEpisodes.findIndex(
     (ep) => ep.id === episodeEbookData.id,
   );
   const prevEpisode = allEpisodes[currentIndex - 1];
   const nextEpisode = allEpisodes[currentIndex + 1];
+
+  useEffect(() => {
+    if (!id) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        await createLog({
+          contentId: id,
+          logType: "WATCH_CONTENT", // misalnya tipe konten
+          contentType: "EBOOK", // misalnya log aksi
+          deviceType: device,
+        }).unwrap();
+
+        console.log("✅ Log berhasil dibuat setelah 2 menit");
+      } catch (err) {
+        console.error("❌ Gagal membuat log:", err);
+      }
+    }, 2 * 60 * 1000); // 1 menit = 60000 ms
+
+    return () => clearTimeout(timer); // clear kalau user keluar sebelum 1 menit
+  }, [id, createLog]);
 
   const getData = async () => {
     try {

@@ -2,13 +2,6 @@
 
 import PropTypes from 'prop-types';
 import React from "react";
-import {
-    Carousel,
-    CarouselContent,
-    CarouselItem,
-    CarouselNext,
-    CarouselPrevious,
-} from "@/components/ui/carousel";
 
 import logoPinComment from "@@/icons/icon-comment.svg";
 import logoUsersComment from "@@/icons/logo-users-comment.svg";
@@ -16,9 +9,6 @@ import logoDislike from "@@/logo/logoDetailFilm/dislike-icons.svg";
 import logoLike from "@@/logo/logoDetailFilm/like-icons.svg";
 import logoSave from "@@/logo/logoDetailFilm/save-icons.svg";
 import logoSubscribe from "@@/logo/logoDetailFilm/subscribe-icon-kelanara.svg";
-import movie1 from "@@/logo/logoFilm/film_1.svg";
-import movie2 from "@@/logo/logoFilm/film_2.svg";
-import movie3 from "@@/logo/logoFilm/film_3.svg";
 import { useEffect, useState } from "react";
 
 import Image from "next/legacy/image";
@@ -36,10 +26,8 @@ import iconLikeSolid from "@@/logo/logoDetailFilm/liked-icons.svg";
 import iconDislikeSolid from "@@/logo/logoDetailFilm/dislike-icons-solid.svg";
 import iconSaveSolid from "@@/logo/logoDetailFilm/saved-icons.svg";
 import { useSaveContent } from '@/lib/features/useSaveContent';
+import CarouselTemplate from '@/components/Carousel/carouselTemplate';
 
-/* ===========================
-   Halaman: DetailSeriesPage (JSX)
-   =========================== */
 function DetailSeriesPage({ params }) {
     const { id } = params;
     const { data } = useGetSeriesByIdQuery(id);
@@ -188,9 +176,9 @@ function DetailSeriesPage({ params }) {
             id: seriesData.id,
             fieldKey: "seriesId",
             idSaved,
-            setShowToast: () => {},
-            setToastMessage: () => {},
-            setToastType: () => {},
+            setShowToast: () => { },
+            setToastMessage: () => { },
+            setToastType: () => { },
             setIsSaved,
             setIdSaved,
         });
@@ -359,65 +347,21 @@ function DetailSeriesPage({ params }) {
                 <section className="mt-5">
                     <section className="my-10 flex flex-col">
                         <section className="mt-10">
-                            <Carousel className="">
-                                <div className="flex justify-between text-white">
-                                    <p className="mb-5 text-[20px] font-bold md:ml-3">Dari Creator</p>
-                                    <p className="mb-5 text-[20px] font-bold md:ml-3">Lainnya</p>
-                                </div>
-                                <CarouselContent className="">
-                                    <CarouselItem className="">
-                                        <Image src={movie1} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie2} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie1} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie3} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie1} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie3} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie1} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                </CarouselContent>
-                                <CarouselPrevious />
-                                <CarouselNext />
-                            </Carousel>
+                            <CarouselTemplate
+                                label="Banyak Dilihat"
+                                type="series"
+                                contents={data?.data?.topContent || []}
+                                isLoading={!data}
+                            />
                         </section>
 
                         <section className="mt-10">
-                            <Carousel className="sm:max-h-auto sm:max-w-auto">
-                                <div className="flex justify-between text-white">
-                                    <p className="mb-5 text-[20px] font-bold md:ml-3">Rekomendasi Serupa</p>
-                                    <p className="mb-5 text-[20px] font-bold md:ml-3">Lainnya</p>
-                                </div>
-                                <CarouselContent>
-                                    <CarouselItem>
-                                        <Image src={movie1} priority alt="logo-movie-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem>
-                                        <Image src={movie2} priority alt="logo-movie-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem>
-                                        <Image src={movie1} priority alt="logo-movie-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem>
-                                        <Image src={movie3} priority alt="logo-movie-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem>
-                                        <Image src={movie2} priority alt="logo-movie-banner" />
-                                    </CarouselItem>
-                                </CarouselContent>
-                                <CarouselPrevious />
-                                <CarouselNext />
-                            </Carousel>
+                            <CarouselTemplate
+                                label="Rekomendasi Serupa"
+                                type="movie"
+                                contents={data?.data?.recommendation || []}
+                                isLoading={!data}
+                            />
                         </section>
                     </section>
                 </section>

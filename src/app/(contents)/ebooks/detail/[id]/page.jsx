@@ -90,6 +90,8 @@ export default function DetailEbookPage({ params }) {
         isLoading={isLoading}
         handlePayment={handleModalOpen}
         handleSubscribe={handleModalSubscribeOpen}
+        topContentData={data?.data?.topContent || []}
+        recomendationData={data?.data?.recommendation || []}
       />
       <SimpleModal
         title={"Konten ini masih terkunci, apakah kamu bersedia membeli nya dengan harga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}

@@ -8,7 +8,7 @@ import blur from "@@/poster/blur.svg";
 import iconMore from "@@/icons/icon_more.svg";
 import PropTypes from "prop-types";
 
-export default function SeriesCard({ title, id, coverUrl, rank = null }) {
+export default function SeriesCard({ title, id, coverUrl, rank = null, isOriginal = false }) {
     return (
         <Link href={`/${contentType.series.pluralName}/detail/${id}`} className="h-full w-full">
             <div className="relative h-full w-full rounded-[6px] overflow-hidden group">
@@ -51,9 +51,8 @@ export default function SeriesCard({ title, id, coverUrl, rank = null }) {
                     />
 
                     {/* Text "Original" → muncul saat hover */}
-                    <div
-                        className="flex items-center self-end text-white px-2 py-1 rounded-sm bg-[#22222233] backdrop-blur-xs 
-                                   opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out"
+                    {isOriginal &&<div
+                        className="flex items-center self-end text-white px-2 py-1 rounded-sm bg-[#22222233] backdrop-blur-xs"
                     >
                         <Image
                             priority
@@ -64,7 +63,7 @@ export default function SeriesCard({ title, id, coverUrl, rank = null }) {
                             className="mr-1"
                         />
                         <p className="zeinFont text-xs">Original</p>
-                    </div>
+                    </div>}
 
                     {/* Bookmark icon → hanya muncul saat hover */}
                     <Image
@@ -107,4 +106,5 @@ SeriesCard.propTypes = {
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     coverUrl: PropTypes.string.isRequired,
     rank: PropTypes.number,
+    isOriginal: PropTypes.bool,
 };

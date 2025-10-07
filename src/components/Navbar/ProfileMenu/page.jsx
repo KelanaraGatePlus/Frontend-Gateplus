@@ -15,6 +15,7 @@ import iconsProfile from "@@/icons/icons-profile.svg";
 import iconsUploadContent from "@@/icons/icons-upload-content.svg";
 import logoUsersComment from "@@/AvatarIcons/avatar-face-2.jpg";
 import iconsArrow from "@@/icons/icon-arrow.svg";
+import { useAuth } from "@/components/Context/AuthContext";
 
 export default function ProfileMenu({
   creatorId,
@@ -32,6 +33,7 @@ export default function ProfileMenu({
   const [isUploadContentMenuOpen, setIsUploadContentMenuOpen] = useState(false);
   const linkHref =
     role === "Creators" ? `/creator/${creatorId}` : `/user/${userId}`;
+  const { logout } = useAuth();
 
   const toggleProfile = () => {
     setIsProfileMenuOpen(!isProfileMenuOpen);
@@ -44,15 +46,7 @@ export default function ProfileMenu({
   };
 
   const handleLogout = () => {
-    const lastSeen = localStorage.getItem("last_seen_content");
-    localStorage.clear();
-    if (lastSeen) {
-      localStorage.setItem("last_seen_content", lastSeen);
-    }
-    document.cookie.split(";").forEach((cookie) => {
-      const name = cookie.split("=")[0].trim();
-      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
-    });
+    logout();
     router.push("/login");
   };
 

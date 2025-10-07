@@ -6,7 +6,7 @@ import PropTypes from "prop-types";
 import ProductDetailSection from "@/components/MainDetailProduct/ProductDetailSection";
 import ProductEpisodeSection from "@/components/MainDetailProduct/ProductEpisodeSection";
 import ProductDonationSection from "@/components/MainDetailProduct/ProductDonationSection";
-import CarouselItemEookPage from "@/components/Carousel/CarouselEbook/page";
+import CarouselTemplate from "../Carousel/carouselTemplate";
 
 export default function MainTemplateLayout({
   productType,
@@ -16,7 +16,9 @@ export default function MainTemplateLayout({
   currentlyPlaying,
   handlePlayPodcast,
   handlePayment,
-  handleSubscribe
+  handleSubscribe,
+  topContentData,
+  recomendationData,
 }) {
   return (
     <main className="mt-16 flex flex-col md:mt-[100px]">
@@ -61,7 +63,19 @@ export default function MainTemplateLayout({
         />
       </div>
 
-      <CarouselItemEookPage />
+      <CarouselTemplate
+        label="Banyak Dilihat"
+        type={productType}
+        contents={topContentData}
+        isLoading={isLoading}
+      />
+
+      <CarouselTemplate
+        label="Rekomendasi Serupa"
+        type={productType}
+        contents={recomendationData}
+        isLoading={isLoading}
+      />
       <div className="px-15 mt-10 md:mt-20">
         <ProductDonationSection
           creatorId={productDetail?.creatorId}
@@ -80,4 +94,6 @@ MainTemplateLayout.propTypes = {
   handlePlayPodcast: PropTypes.func,
   handlePayment: PropTypes.func,
   handleSubscribe: PropTypes.func,
+  topContentData: PropTypes.array.isRequired,
+  recomendationData: PropTypes.array.isRequired,
 };

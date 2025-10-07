@@ -65,6 +65,15 @@ export const creatorAPI = createApi({
             providesTags: ["creatorsAPI"],
             keepUnusedDataFor: 60,
         }),
+        getCreatorEarned: builder.query({
+            query: () => ({
+                url: `/earned`,
+                method: "GET",
+            }),
+            providesTags: ["creatorsAPI"],
+            keepUnusedDataFor: 300,
+        }),
+
     }),
 })
 
@@ -77,4 +86,5 @@ export const {
     useSearchCreatorQuery,
     useGetDashboardDataQuery,
     useUpdateCreatorMutation,
+    useGetCreatorEarnedQuery,
 } = creatorAPI;

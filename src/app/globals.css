@@ -72,6 +72,19 @@ body {
   scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
 }
 
+/* 1. Atur kondisi default untuk titiknya (sembunyi/scale 0) */
+.inner-dot {
+  transform: scale(0);
+}
+
+/* 2. Atur kondisi ketika radio button dicentang */
+/* Ini artinya: "Cari input dengan kelas .peer yang sedang :checked, 
+   lalu cari saudaranya (~) yaitu <label>, 
+   dan di dalamnya cari elemen dengan kelas .inner-dot" */
+.peer:checked ~ label .inner-dot {
+  transform: scale(1);
+}
+
 .range-slider {
   -webkit-appearance: none;
   appearance: none;

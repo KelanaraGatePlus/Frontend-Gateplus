@@ -16,6 +16,7 @@ import ComicCard from "../Card/ComicCard";
 import MovieCard from "../Card/MovieCard";
 import SeriesCard from "../Card/SeriesCard";
 import PodcastCard from "../Card/PodcastCard";
+import PodcastUniqueCard from "../Card/PodcastUniqueCard";
 
 export default function CarouselTemplate({ label, type, contents, isLoading, isTopTen = false, isOnCreatorProfile = false }) {
     const [showAll, setShowAll] = useState(false);
@@ -47,13 +48,13 @@ export default function CarouselTemplate({ label, type, contents, isLoading, isT
                                             )
                                         }
                                     </div>
-                                    <CarouselContent className="">
+                                    <CarouselContent>
                                         {contents.map((item, index) => {
                                             const fixedType = item.type || type;
                                             return (
                                                 <CarouselItem
                                                     key={index}
-                                                    className={`overflow-hidden group relative ${isTopTen ? "w-[240px] sm:w-[180px] md:w-[460px]" : "w-[120px] sm:w-[140px] md:w-[230px] aspect-[2/3]"} cursor-pointer rounded-lg group`}
+                                                    className={`overflow-hidden group relative flex items-center ${isTopTen ? "w-[240px] sm:w-[180px] md:w-[460px]" : "w-[120px] sm:w-[140px] md:w-[230px] aspect-[2/3]"} cursor-pointer rounded-lg group`}
                                                 >
                                                     {fixedType == 'ebook' && !isTopTen && (
                                                         <EbookCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
@@ -71,8 +72,12 @@ export default function CarouselTemplate({ label, type, contents, isLoading, isT
                                                         <SeriesCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
                                                     )}
 
-                                                    {fixedType == 'podcast' && !isTopTen && (
+                                                    {fixedType == 'podcast' && type == null && !isTopTen && (
                                                         <PodcastCard title={item.title} id={item.id} coverUrl={item.coverPodcastImage} />
+                                                    )}
+
+                                                    {fixedType == 'podcast' && type && !isTopTen && (
+                                                        <PodcastUniqueCard title={item.title} id={item.id} coverUrl={item.coverPodcastImage} creatorName={item.Creator.profileName} releaseDate={item.createdAt}  />
                                                     )}
 
                                                     <div className={`${isTopTen ? "grid grid-cols-2" : ""}`}>
@@ -84,23 +89,33 @@ export default function CarouselTemplate({ label, type, contents, isLoading, isT
                                                             </div>
                                                         )}
                                                         {fixedType == 'ebook' && isTopTen && (
-                                                            <EbookCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
+                                                            <div className="aspect-[2/3] rounded-lg overflow-hidden">
+                                                                <EbookCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
+                                                            </div>
                                                         )}
 
                                                         {fixedType == 'comic' && isTopTen && (
-                                                            <ComicCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
+                                                            <div className="aspect-[2/3] rounded-lg overflow-hidden">
+                                                                <ComicCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
+                                                            </div>
                                                         )}
 
                                                         {fixedType == 'movie' && isTopTen && (
-                                                            <MovieCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
+                                                            <div className="aspect-[2/3] rounded-lg overflow-hidden">
+                                                                <MovieCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
+                                                            </div>
                                                         )}
 
                                                         {fixedType == 'series' && isTopTen && (
-                                                            <SeriesCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
+                                                            <div className="aspect-[2/3] rounded-lg overflow-hidden">
+                                                                <SeriesCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
+                                                            </div>
                                                         )}
 
                                                         {fixedType == 'podcast' && isTopTen && (
-                                                            <PodcastCard title={item.title} id={item.id} coverUrl={item.coverPodcastImage} />
+                                                            <div className="aspect-[2/3] rounded-lg overflow-hidden">
+                                                                <PodcastCard title={item.title} id={item.id} coverUrl={item.coverPodcastImage} />
+                                                            </div>
                                                         )}
                                                     </div>
                                                 </CarouselItem>

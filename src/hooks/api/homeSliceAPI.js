@@ -43,6 +43,16 @@ export const homeAPI = createApi({
             providesTags: ["homeAPI"],
             keepUnusedDataFor: 86400,
         }),
+        getPopularSeries: builder.query({
+            query: () => "/home/popular-series",
+            providesTags: ["homeAPI"],
+            keepUnusedDataFor: 86400,
+        }),
+        getPopularMovies: builder.query({
+            query: () => "/home/popular-movies",
+            providesTags: ["homeAPI"],
+            keepUnusedDataFor: 86400,
+        }),
     }),
 })
 
@@ -54,4 +64,6 @@ export const {
     useGetPopularEbooksQuery,
     useGetPopularComicsQuery,
     useGetPopularPodcastsQuery,
+    useGetPopularSeriesQuery,
+    useGetPopularMoviesQuery,
 } = homeAPI;

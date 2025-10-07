@@ -14,6 +14,7 @@ import BottomSheet from "@/components/BottomSheet/page";
 import SwipeableBottomSheet from "@/components/SwipeableBottomSheet/page";
 import CloseCircleButton from "@/components/CloseCircleButton/page";
 import { formatDateTime } from "@/lib/timeFormatter";
+import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 
 export default function PodcastPlayback({
   isOpen,
@@ -35,19 +36,101 @@ export default function PodcastPlayback({
   const [volume, setVolume] = useState(1);
   const audioRef = useRef(null);
   const [episodePodcastData, setEpisodePodcastData] = useState({});
+  const [createLog] = useCreateLogMutation();
 
+  // Refs untuk melacak apakah log sudah dikirim untuk episode saat ini
+  const clickLogSentRef = useRef(false);
+  const watchLogSentRef = useRef(false);
+
+  // Efek untuk update data episode & reset status log saat episode berganti
   useEffect(() => {
     setEpisodePodcastData(currentlyPlaying || {});
+    // Reset status log jika ada episode baru yang dimainkan
+    if (currentlyPlaying?.id) {
+      clickLogSentRef.current = false;
+      watchLogSentRef.current = false;
+    }
   }, [currentlyPlaying]);
-  console.log("Currently Playing:", currentlyPlaying);
 
+  // Efek untuk membuka/menutup player berdasarkan URL search params
   useEffect(() => {
     setIsOpen(!!podcastId);
   }, [podcastId]);
 
+  // Efek untuk mendeteksi perangkat mobile saat komponen dimuat
   useEffect(() => {
     setIsMobile(detectMobile);
   }, []);
+
+  // Efek untuk mengirim log 'CLICK' saat player terbuka untuk episode baru
+  useEffect(() => {
+    if (isOpen && episodePodcastData.id && !clickLogSentRef.current) {
+      const payload = {
+        contentType: "EPISODE_PODCAST",
+        logType: "CLICK",
+        contentId: episodePodcastData.id,
+        deviceType: isMobile ? "MOBILE" : "DESKTOP",
+      };
+
+      console.log("Sending CLICK log:", payload);
+      createLog(payload)
+        .unwrap()
+        .then(() => {
+          clickLogSentRef.current = true; // Tandai log CLICK sudah terkirim
+        })
+        .catch((err) => {
+          console.error("Failed to send CLICK log:", err);
+        });
+    }
+  }, [isOpen, episodePodcastData.id, isMobile, createLog]);
+
+  // Efek untuk memantau waktu putar & mengirim log 'WATCH_CONTENT' saat mencapai 70%
+  useEffect(() => {
+    const audio = audioRef.current?.audio?.current;
+    if (!audio) return;
+
+    const updateTime = () => {
+      const current_Time = audio.currentTime;
+      const total_Duration = audio.duration || 0;
+
+      setCurrentTime(current_Time);
+      setDuration(total_Duration);
+
+      // Cek jika durasi valid, log 'WATCH_CONTENT' belum dikirim, dan ada episode ID
+      if (total_Duration > 0 && !watchLogSentRef.current && episodePodcastData.id) {
+        const playbackPercent = (current_Time / total_Duration) * 100;
+
+        // Jika persentase mencapai 70% atau lebih
+        if (playbackPercent >= 70) {
+          const payload = {
+            contentType: "EPISODE_PODCAST",
+            logType: "WATCH_CONTENT",
+            contentId: episodePodcastData.id,
+            deviceType: isMobile ? "MOBILE" : "DESKTOP",
+          };
+
+          console.log("Sending WATCH_CONTENT log (70% reached):", payload);
+          createLog(payload)
+            .unwrap()
+            .then(() => {
+              watchLogSentRef.current = true; // Tandai log WATCH_CONTENT sudah terkirim
+            })
+            .catch((err) => {
+              console.error("Failed to send WATCH_CONTENT log:", err);
+            });
+        }
+      }
+    };
+
+    audio.addEventListener("timeupdate", updateTime);
+    audio.addEventListener("loadedmetadata", updateTime);
+
+    return () => {
+      audio.removeEventListener("timeupdate", updateTime);
+      audio.removeEventListener("loadedmetadata", updateTime);
+    };
+  }, [episodePodcastData.id, isMobile, createLog]);
+
 
   const handleClosePodcast = () => {
     const updatedParams = new URLSearchParams(searchParams);
@@ -140,25 +223,7 @@ export default function PodcastPlayback({
       handleDecreaseVolume();
     }
   };
-
-  useEffect(() => {
-    const audio = audioRef.current?.audio?.current;
-    if (!audio) return;
-
-    const updateTime = () => {
-      setCurrentTime(audio.currentTime);
-      setDuration(audio.duration || 0);
-    };
-
-    audio.addEventListener("timeupdate", updateTime);
-    audio.addEventListener("loadedmetadata", updateTime);
-
-    return () => {
-      audio.removeEventListener("timeupdate", updateTime);
-      audio.removeEventListener("loadedmetadata", updateTime);
-    };
-  }, []);
-
+  
   const handleSeek = (e) => {
     const value = parseFloat(e.target.value);
     if (audioRef.current?.audio?.current) {
@@ -168,6 +233,8 @@ export default function PodcastPlayback({
 
   useEffect(() => {
     const getBlobAudio = async () => {
+      // Pastikan ada URL sebelum fetch
+      if (!episodePodcastData.podcastFileURL) return;
       try {
         const res = await fetch(episodePodcastData.podcastFileURL);
         const blob = await res.blob();
@@ -208,7 +275,7 @@ export default function PodcastPlayback({
 
               {isExpand ? (
                 <ExpandPodcast
-                episodeId={episodePodcastData.id}
+                  episodeId={episodePodcastData.id}
                   coverEpisodeUrl={episodePodcastData.coverPodcastEpisodeURL}
                   title={episodePodcastData.title}
                   description={episodePodcastData.description}
@@ -241,7 +308,7 @@ export default function PodcastPlayback({
         )}
 
         {/* Kontrol dan Detail */}
-        <div className="absolute bottom-0 w-full z-30  pointer-events-auto">
+        <div className="absolute bottom-0 w-full z-30 pointer-events-auto">
           <AudioControl
             coverEpisodeUrl={episodePodcastData.coverPodcastEpisodeURL}
             title={episodePodcastData.title}
@@ -292,4 +359,4 @@ PodcastPlayback.propTypes = {
   handlePlayPodcast: PropTypes.func,
   podcast: PropTypes.object,
   episodePodcasts: PropTypes.array,
-}
+};

@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 /*[--- THIRD PARTY LIBRARIES ---]*/
 import PropTypes from "prop-types";
@@ -12,7 +12,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 /*[--- SCHEMAS & HELPER ---]*/
 import { loginSchema } from "@/lib/schemas/loginSchema";
-import { storeUserData } from "@/lib/helper/authHelper";
 
 /*[--- API HOOKS & FEATURES ---]*/
 import { useLoginUserMutation } from "@/hooks/api/userSliceAPI";
@@ -23,14 +22,16 @@ import IconsEyeClose from "@@/icons/icons-eyes-close.svg";
 import IconsEyeOpen from "@@/icons/icons-eyes-open.svg";
 import LogoGoogle from "@@/logo/logoGoogle/icons-google.svg";
 import { BACKEND_URL } from "@/lib/constants/backendUrl";
+import { useAuth } from "@/components/Context/AuthContext";
 
-export default function FormLogin({ setIsError, setError, setIsSuccess, }) {
+export default function FormLogin({ setIsError, setError, setIsSuccess }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
   const { isVisible: isPasswordVisible, toggle: toggleShowPassword } = useTogglePassword();
-  const [login, { isLoading, isSuccess, isError, error }] = useLoginUserMutation();
-  const { register, handleSubmit, formState: { errors }, reset, } = useForm({
+  const [loginMutation, { isLoading, isSuccess, isError, error }] = useLoginUserMutation();
+
+  const { login } = useAuth(); // ambil dari context
+
+  const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: zodResolver(loginSchema),
     mode: "onChange",
     reValidateMode: "onBlur",
@@ -44,19 +45,18 @@ export default function FormLogin({ setIsError, setError, setIsSuccess, }) {
 
   const onSubmit = async (data) => {
     try {
-      const response = await login(data).unwrap();
-      storeUserData(response.data);
+      const response = await loginMutation(data).unwrap();
+      login(response.data);
       reset();
-      router.push(callbackUrl);
+      router.push('/');
     } catch (err) {
       console.error("Login failed:", err);
     }
   };
 
-  
-  
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex w-full flex-col gap-2">
+      {/* Email */}
       <div className="relative w-full">
         <input
           id="email"
@@ -76,6 +76,8 @@ export default function FormLogin({ setIsError, setError, setIsSuccess, }) {
           <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
         )}
       </div>
+
+      {/* Password */}
       <div className="flex flex-col w-full">
         <div className="relative flex w-full">
           <input
@@ -107,6 +109,8 @@ export default function FormLogin({ setIsError, setError, setIsSuccess, }) {
           <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
         )}
       </div>
+
+      {/* Links */}
       <span className="zeinFont flex justify-between text-xl text-[#1DBDF5]">
         <Link href="/register" className="text-left">
           <span>Create new account</span>
@@ -115,6 +119,8 @@ export default function FormLogin({ setIsError, setError, setIsSuccess, }) {
           <span>Forgot Password?</span>
         </Link>
       </span>
+
+      {/* Submit */}
       <button
         disabled={isLoading}
         className="zeinFont mt-4 cursor-pointer rounded-lg bg-[#156EB7] py-2 text-2xl font-bold text-white hover:bg-[#156EB7CC]"
@@ -122,14 +128,16 @@ export default function FormLogin({ setIsError, setError, setIsSuccess, }) {
         {isLoading ? "Logging in ..." : "Log In"}
       </button>
 
-      <Link href={`${BACKEND_URL}/auth/google`} className="zeinFont flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-blue-900 py-2 text-2xl font-bold text-white hover:bg-blue-950">
+      {/* Google Sign In */}
+      <Link
+        href={`${BACKEND_URL}/auth/google`}
+        className="zeinFont flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-blue-900 py-2 text-2xl font-bold text-white hover:bg-blue-950"
+      >
         <Image priority src={LogoGoogle} alt="logo-google" />
-        <p>
-          <span>Sign In with Google</span>
-        </p>
+        <p><span>Sign In with Google</span></p>
       </Link>
     </form>
-  )
+  );
 }
 
 FormLogin.propTypes = {
