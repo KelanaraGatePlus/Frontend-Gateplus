@@ -11,6 +11,8 @@ import CarouselPopularEbooks from "@/components/Carousel/CarouselHome/carouselPo
 import CarouselPopularComics from "@/components/Carousel/CarouselHome/carouselPopularComics";
 import CarouselPopularPodcasts from "@/components/Carousel/CarouselHome/carouselPopularPodcasts";
 import "@splidejs/react-splide/css";
+import CarouselPopularMovies from "@/components/Carousel/CarouselHome/carouselPopularMovie";
+import CarouselPopularSeries from "@/components/Carousel/CarouselHome/carouselPopularSeries";
 
 export default function HomePage() {
   return (
@@ -30,6 +32,8 @@ export default function HomePage() {
           <CarouselPopularEbooks />
           <CarouselPopularComics />
           <CarouselPopularPodcasts />
+          <CarouselPopularMovies />
+          <CarouselPopularSeries />
         </main>
       </div>
     </div>

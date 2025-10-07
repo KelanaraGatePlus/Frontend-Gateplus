@@ -4,7 +4,7 @@ import CarouselTemplate from "../carouselTemplate";
 
 export default function CarouselPopularEbooks() {
     const { data, isLoading } = useGetPopularEbooksQuery();
-    const popularEbooks = data?.data?.data || [];
+    const popularEbooks = data?.data || [];
 
     return (
         <CarouselTemplate
