@@ -11,7 +11,7 @@ export default function CarouselPopularEbooks() {
             label={"Popular Podcasts"}
             contents={popularPodcasts}
             isLoading={isLoading}
-            type="ebook"
+            type="podcast"
         />
     );
 

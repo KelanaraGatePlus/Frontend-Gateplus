@@ -84,6 +84,8 @@ export default function DetailPodcastPage({ params }) {
           currentlyPlaying={currentlyPlaying}
           handlePlayPodcast={handlePlayPodcast}
           handlePayment={handleModalOpen}
+          topContentData={data?.data?.topContent || []}
+          recomendationData={data?.data?.recommendation || []}
         />
 
         <BottomSpacer height="h-42" />

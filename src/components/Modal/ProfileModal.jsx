@@ -1,10 +1,34 @@
-import React from "react";
+import React, { useState } from "react";
 import { profileIconData } from "@/lib/constants/profileIcon";
 import IconsCameraAdd from "@@/icons/icons-camera-add.svg";
 import logoUsersComment from "@@/icons/logo-users-comment.svg";
 import PropTypes from "prop-types";
 import { XIcon } from "lucide-react";
 import Image from "next/image";
+
+function IconItem({ icon, onClick }) {
+    const [loaded, setLoaded] = useState(false);
+
+    return (
+        <div
+            className="relative h-16 w-16 cursor-pointer lg:h-24 lg:w-24"
+            onClick={onClick}
+        >
+            {/* Skeleton Loader */}
+            {!loaded && (
+                <div className="absolute inset-0 animate-pulse rounded-full bg-gray-700" />
+            )}
+            <Image
+                src={icon.image}
+                alt="profile"
+                fill
+                className={`rounded-full object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"
+                    }`}
+                onLoadingComplete={() => setLoaded(true)}
+            />
+        </div>
+    );
+}
 
 // Ubah props dari { setImage } menjadi { onImageUpload, onIconSelect }
 export default function ProfileModal({
@@ -54,25 +78,13 @@ export default function ProfileModal({
 
                             {/* Profile Icon List */}
                             {profileIconData.map((icon, idx) => (
-                                // GANTI <label> MENJADI <div> dan tambahkan onClick
-                                <div
+                                <IconItem
                                     key={idx}
-                                    className="relative h-16 w-16 cursor-pointer lg:h-24 lg:w-24"
+                                    icon={icon}
                                     onClick={() => {
-                                        onIconSelect(icon.image, icon.url)
-                                        console.log('Icon selected:', icon.image);
-                                        console.log('Icon URL:', icon.url);
-                                    }} // LOGIKA UTAMA ADA DI SINI
-                                >
-                                    <div className="group relative h-full w-full cursor-pointer overflow-hidden rounded-full bg-amber-600">
-                                        <Image
-                                            src={icon.image}
-                                            alt="profile"
-                                            fill
-                                            className="h-full w-full rounded-full bg-white object-cover"
-                                        />
-                                    </div>
-                                </div>
+                                        onIconSelect(icon.image, icon.url);
+                                    }}
+                                />
                             ))}
                         </div>
                     </div>
@@ -95,4 +107,12 @@ ProfileModal.propTypes = {
     setIsShow: PropTypes.func.isRequired,
     onImageUpload: PropTypes.func.isRequired,
     onIconSelect: PropTypes.func.isRequired,
+};
+
+IconItem.propTypes = {
+    icon: PropTypes.shape({
+        image: PropTypes.string.isRequired,
+        url: PropTypes.string.isRequired,
+    }).isRequired,
+    onClick: PropTypes.func.isRequired,
 };

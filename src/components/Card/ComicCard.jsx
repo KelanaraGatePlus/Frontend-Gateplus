@@ -10,7 +10,7 @@ import PropTypes from "prop-types";
 
 export default function ComicCard({ title, id, coverUrl, rank = null }) {
     return (
-        <Link href={`/${contentType.comics.pluralName}/detail/${id}`}>
+        <Link href={`/${contentType.comics.pluralName}/detail/${id}`} className="h-full w-full">
             <div className="relative h-full w-full rounded-[6px] overflow-hidden group">
                 {/* Banner Atas */}
                 <div className="absolute top-0 left-0 w-full flex justify-between items-center z-20 px-2 py-1">
@@ -46,7 +46,7 @@ export default function ComicCard({ title, id, coverUrl, rank = null }) {
                         width={45}
                         height={45}
                         src={contentType.comics.icon}
-                        alt="ebook-icon"
+                        alt="comic-icon"
                         className="drop-shadow-lg"
                     />
 

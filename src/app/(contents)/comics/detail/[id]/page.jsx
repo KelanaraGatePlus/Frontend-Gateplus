@@ -86,6 +86,8 @@ export default function DetailComicPage({ params }) {
   const episode_comics = (comicData.episode_comics || []).slice().sort((a, b) => {
     return new Date(a.createdAt) - new Date(b.createdAt);
   });
+  const topContent = data?.data?.topContent || [];
+  const recommendedContent = data?.data?.recommendation || [];
 
   return (
     comicData && (
@@ -97,6 +99,8 @@ export default function DetailComicPage({ params }) {
           isLoading={isLoading}
           handlePayment={handleModalOpen}
           handleSubscribe={handleModalSubscribeOpen}
+          topContentData={topContent}
+          recomendationData={recommendedContent}
         />
         <SimpleModal
           title={"Konten ini masih terkunci, apakah kamu bersedia membeli nya dengan harga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}

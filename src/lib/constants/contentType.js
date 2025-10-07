@@ -9,30 +9,35 @@ export const contentType = {
         singleName: 'movie',
         pluralName: 'movies',
         icon: IconsMovie,
-        haveEpisodes: false
+        haveEpisodes: false,
+        capitalizedLabel: 'Movie'
     },
     series: {
         singleName: 'series',
         pluralName: 'series',
         icon: IconsSeries,
-        haveEpisodes: true
+        haveEpisodes: true,
+        capitalizedLabel: 'Series'
     },
     podcasts: {
         singleName: 'podcast',
         pluralName: 'podcasts',
         icon: IconsPodcast,
-        haveEpisodes: true
+        haveEpisodes: true,
+        capitalizedLabel: 'Podcast'
     },
     ebooks: {
         singleName: 'ebook',
         pluralName: 'ebooks',
         icon: IconsEbook,
-        haveEpisodes: true
+        haveEpisodes: true,
+        capitalizedLabel: 'Ebook'
     },
     comics: {
         singleName: 'comic',
         pluralName: 'comics',
         icon: IconsComic,
-        haveEpisodes: true
+        haveEpisodes: true,
+        capitalizedLabel: 'Comic'
     }
 }

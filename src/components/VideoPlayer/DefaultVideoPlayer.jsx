@@ -103,6 +103,10 @@ export default function DefaultVideoPlayer({
   };
 
   const handlePlayPause = () => {
+    // Jangan lakukan apa-apa jika video belum dimulai (masih ada poster)
+    // onClickPreview dari ReactPlayer akan menanganinya
+    if (!isStarted) return;
+
     if (showPoster) {
       setShowPoster(false);
       setIsPlaying(true);
@@ -133,24 +137,24 @@ export default function DefaultVideoPlayer({
   const resetHideControls = () => {
     setShowControls(true);
     if (hideTimeout.current) clearTimeout(hideTimeout.current);
-    hideTimeout.current = setTimeout(() => {
-      setShowControls(false);
-    }, 3000);
+    if(isPlaying) { // Sembunyikan kontrol hanya jika video sedang berputar
+        hideTimeout.current = setTimeout(() => {
+            setShowControls(false);
+        }, 3000);
+    }
   };
 
   useEffect(() => {
-    resetHideControls();
     const wrapper = playerWrapperRef.current;
     if (!wrapper) return;
 
     wrapper.addEventListener("mousemove", resetHideControls);
-    wrapper.addEventListener("click", resetHideControls);
+    // Kita pindahkan logic click dari sini ke `handlePlayPause` di div utama
 
     return () => {
       wrapper.removeEventListener("mousemove", resetHideControls);
-      wrapper.removeEventListener("click", resetHideControls);
     };
-  }, []);
+  }, [isPlaying]); // Tambahkan isPlaying sebagai dependency agar timeout berjalan dengan benar
 
   // ====== PREVIEW WAKTU ======
   const handleMouseMoveProgress = (e) => {
@@ -168,7 +172,8 @@ export default function DefaultVideoPlayer({
   return (
     <div
       ref={playerWrapperRef}
-      className={`relative w-screen max-w-full h-[500px] 2xl:h-[800px] overflow-hidden bg-black ${className || ""}`}
+      className={`relative w-screen max-w-full h-[500px] 2xl:h-[800px] overflow-hidden bg-black cursor-pointer ${className || ""}`}
+      onClick={handlePlayPause} // <<< PERUBAHAN DI SINI (1): Menambahkan onClick ke pembungkus utama
     >
       <ReactPlayer
         ref={videoRef}
@@ -181,6 +186,7 @@ export default function DefaultVideoPlayer({
         onClickPreview={() => {
           setIsStarted(true);
           handleFullscreen();
+          // setIsPlaying(true) akan dijalankan secara otomatis oleh ReactPlayer
         }}
         config={{
           file: {
@@ -217,11 +223,14 @@ export default function DefaultVideoPlayer({
           };
           throttledSaveProgress();
         }}
+        onPlay={() => setIsPlaying(true)} // Sinkronkan state jika player play (misal: setelah preview)
         onPause={handlePause}
       />
 
       {/* Custom Header */}
       {isStarted && <div
+        // <<< PERUBAHAN DI SINI (2): Hentikan propagasi klik agar tidak trigger play/pause
+        onClick={(e) => e.stopPropagation()} 
         className={`absolute top-0 left-0 right-0 transition-opacity duration-500 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"
           } bg-gradient-to-b from-black to-transparent py-4 px-16 flex items-center gap-4 justify-between`}
       >
@@ -242,12 +251,14 @@ export default function DefaultVideoPlayer({
 
       {/* Custom Controller */}
       {isStarted && <div
+        // <<< PERUBAHAN DI SINI (3): Hentikan propagasi klik agar tidak trigger play/pause
+        onClick={(e) => e.stopPropagation()}
         className={`absolute bottom-0 left-0 right-0 transition-opacity duration-500 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"
           } bg-gradient-to-t from-black to-transparent py-4 px-16 flex items-center gap-4`}
       >
         {/* Play / Pause */}
         <button
-          onClick={handlePlayPause}
+          onClick={() => setIsPlaying(prev => !prev)} // Langsung toggle state di sini
           className="p-2 bg-white/20 rounded-full hover:bg-white/40 transition"
         >
           {isPlaying ? (
