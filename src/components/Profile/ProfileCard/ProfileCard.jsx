@@ -36,8 +36,6 @@ export default function ProfileCard({
             setIsSubscribing(true);
             const userId = localStorage.getItem("users_id");
             const creatorId = data.id;
-            console.log(userId);
-            console.log(creatorId);
             const response = await axios.post(
                 `${BACKEND_URL}/subscribers`,
                 {
