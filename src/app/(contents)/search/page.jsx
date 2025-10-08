@@ -14,9 +14,11 @@ import PropTypes from 'prop-types';
 
 
 export default function SearchPage() {
-    <Suspense fallback={<LoadingOverlay />}>
-        <SearchPageComponent />
-    </Suspense>
+    return (
+        <Suspense fallback={<LoadingOverlay />}>
+            <SearchPageComponent />
+        </Suspense>
+    );
 }
 
 function SearchPageComponent() {
@@ -175,7 +177,6 @@ function SearchPageComponent() {
     );
 }
 
-// 🔸 Hapus satu filter helper
 function removeParam(key, value) {
     const params = new URLSearchParams(window.location.search);
     const updated = params.getAll(key).filter(v => v !== value);
@@ -213,11 +214,6 @@ function FilterCard({ label, onRemove }) {
 PodcastContent.propTypes = {
     searchResults: PropTypes.object.isRequired,
     loading: PropTypes.bool.isRequired,
-};
-
-FilterCard.propTypes = {
-    label: PropTypes.string.isRequired,
-    onRemove: PropTypes.func.isRequired,
 };
 
 FilterCard.propTypes = {
