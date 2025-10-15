@@ -14,7 +14,6 @@ import ProfileMenu from "@/components/Navbar/ProfileMenu/page.jsx";
 import { navbarOptions } from "@/lib/constants/navbarOptions";
 
 /*[--- ASSETS IMPORT ---]*/
-import iconMenuBars from "@@/icons/icon-menubars.svg";
 import iconMenuClose from "@@/icons/icon-menuclose.svg";
 import logoHome from "@@/icons/logoHome.svg";
 import logoSearch from "@@/logo/logoSearch/nav-search.svg";
@@ -33,7 +32,7 @@ export default function NavbarContent({ openCreateContentModal }) {
 
   const [role, setRole] = useState(user?.role || "Users");
   const [imageUrl, setImageUrl] = useState(null);
-  const [isMenuBarsOpen, setIsMenuBarsOpen] = useState(false);
+  const [isMenuBarsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchActive, setIsSearchActive] = useState(false);
   const { data } = useGetSearchHistoryByUserQuery();
@@ -41,13 +40,12 @@ export default function NavbarContent({ openCreateContentModal }) {
 
   const isAuthenticated = !!user?.token;
 
-  const toggleMenuBars = () => setIsMenuBarsOpen((prev) => !prev);
-
   const handleSearchChange = (e) => setSearchQuery(e.target.value);
 
   const handleSearchSubmit = () => {
     if (searchQuery.trim()) {
       router.push(`/search?search=${encodeURIComponent(searchQuery)}`);
+      setIsSearchActive(false); // [SARAN] Tutup search setelah submit
     }
   };
 
@@ -71,16 +69,10 @@ export default function NavbarContent({ openCreateContentModal }) {
   return (
     <Fragment>
       <nav
-        // [PERBAIKAN] z-index diturunkan agar di bawah overlay konten search
         className={`${isMenuBarsOpen ? "rounded-b-xl" : ""} fixed z-30 w-full bg-white/5 backdrop-blur`}
       >
-        <section className="flex items-center justify-between px-4 py-4 md:flex md:justify-between md:bg-fixed">
-          <div className="flex w-1/3 md:hidden">
-            <button className="flex h-6 w-6 cursor-pointer hover:drop-shadow-[0_0_2px_rgba(255,255,255,0.4)]" onClick={toggleMenuBars}>
-              <Image className="h-auto w-auto" src={isMenuBarsOpen ? iconMenuClose : iconMenuBars} alt="menu-icon" priority />
-            </button>
-          </div>
-
+        {/* [MODIFIKASI] Navbar utama disembunyikan di mobile jika search aktif */}
+        <section className={`${isSearchActive ? "hidden md:flex" : "flex"} items-center justify-between px-4 py-4 md:flex md:justify-between md:bg-fixed`}>
           <div className="-mt-3 w-fit -translate-x-8 ps-0 md:mt-0 md:-translate-x-0 md:place-items-start lg:ps-6">
             <Link href="/"><div className="flex aspect-auto justify-center"><Image className="ml-6 h-auto w-auto" src={logoHome} alt="logo-gate+" priority /></div></Link>
           </div>
@@ -150,14 +142,41 @@ export default function NavbarContent({ openCreateContentModal }) {
           </div>
         </section>
 
+        {/* [PENAMBAHAN] Section khusus untuk search bar di mobile */}
+        {isSearchActive && (
+          <section className="flex items-center gap-2 px-4 py-4 md:hidden">
+            <div className="flex items-center gap-3 rounded-full px-4 py-2 border border-white/20 w-full bg-white/10">
+              <button onClick={handleSearchSubmit} className="flex-shrink-0" aria-label="Cari">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              </button>
+              <input
+                type="text"
+                className="w-full flex-grow bg-transparent text-lg text-white placeholder:text-white/60 focus:outline-none"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit()}
+                autoFocus
+              />
+            </div>
+            <button
+              className="flex h-8 w-8 flex-shrink-0 cursor-pointer items-center justify-center"
+              onClick={() => setIsSearchActive(false)}
+              aria-label="Tutup Pencarian"
+            >
+              <Image className="h-auto w-auto" src={iconMenuClose} alt="close-search-icon" priority />
+            </button>
+          </section>
+        )}
+
         {isMenuBarsOpen && (
           <SideBarMenu searchQuery={searchQuery} pathname={pathname} handleSearchChange={handleSearchChange} handleBlur={handleSearchSubmit} logoSearch={logoSearch} isAuthenticated={isAuthenticated} />
         )}
       </nav>
 
+      {/* Overlay di bawah search bar */}
       {isSearchActive && (
         <div
-          // [PERBAIKAN] z-index dinaikkan agar di atas navbar
           className="fixed left-0 right-0 z-40 mt-[76px] mx-auto w-full max-w-3xl rounded-b-2xl border-x border-b border-white/20 bg-[#0395BC80] text-white backdrop-blur-xl"
           onClick={(e) => e.stopPropagation()}
         >

@@ -83,7 +83,7 @@ export default function CarouselTemplate({ label, type, contents, isLoading, isT
                                                     <div className={`${isTopTen ? "grid grid-cols-2" : ""}`}>
                                                         {isTopTen && (
                                                             <div className="relative w-full h-full">
-                                                                <p className="absolute bottom-0 -right-6 text-6xl md:text-[300px]/46.5 font-extrabold zeinFont flex leading-none -mb-4 md:-mb-8 text-[#1297DC] [text-shadow:2px_2px_5px_rgba(0,0,0,0.4)]">
+                                                                <p className="absolute -bottom-10 md:-bottom-0 md:-right-6 -right-4 text-[180px] md:text-[300px]/46.5 font-extrabold zeinFont flex leading-none -mb-4 md:-mb-8 text-[#1297DC] [text-shadow:2px_2px_5px_rgba(0,0,0,0.4)]">
                                                                     {index + 1}
                                                                 </p>
                                                             </div>

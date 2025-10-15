@@ -12,6 +12,7 @@ import iconCheckedCircle from "@@/icons/icons-dashboard/icons-checked-circle.svg
 import iconClock from "@@/icons/icons-dashboard/icon-clock.svg";
 import Image from "next/image";
 import PropTypes from "prop-types";
+import Link from "next/link";
 
 export default function TransactionTable({ data }) {
     const dataDummy = React.useMemo(
@@ -118,10 +119,10 @@ export default function TransactionTable({ data }) {
             {
                 id: "aksi",
                 header: "Aksi",
-                cell: () => (
-                    <button className="text-blue-400 hover:underline">
+                cell: (info) => (
+                    <Link href={'/creator/withdrawal/detail/' + info.row.original.id} className="text-blue-400 hover:underline">
                         Lihat Rincian
-                    </button>
+                    </Link>
                 ),
             },
         ],

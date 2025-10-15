@@ -11,6 +11,9 @@ import IconsArrowLeft from "@@/icons/icons-dashboard/icons-arrow-left.svg";
 import formatDuration from "@/lib/helper/formatDurationHelper";
 import iconFlag from "@@/icons/icon-flag.svg";
 import { useDeviceType } from "@/hooks/helper/deviceType";
+import { FaPlay } from "react-icons/fa";
+import forwardTenSecondIcon from "@@/icons/forward-ten-second.svg";
+import backwardTenSecondIcon from "@@/icons/backward-ten-second.svg";
 
 export default function DefaultVideoPlayer({
   src,
@@ -32,7 +35,6 @@ export default function DefaultVideoPlayer({
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [buffered, setBuffered] = useState(0);
-  const [showPoster, setShowPoster] = useState(!!poster);
   const [showControls, setShowControls] = useState(true);
   const [hoverTime, setHoverTime] = useState(null);
   const [hoverPos, setHoverPos] = useState(0);
@@ -42,11 +44,12 @@ export default function DefaultVideoPlayer({
   const device = useDeviceType();
 
   const progressRef = useRef({ playedSeconds: 0, percentage: 0 });
+  const lastTap = useRef(0);
+  const tapTimeout = useRef(null);
 
   const [createLog] = useCreateLogMutation();
   const [createProgressWatch] = useCreateProgressWatchMutation();
 
-  // ====== FORMAT TIME ======
   const formatTime = (secs) => {
     if (!secs || isNaN(secs)) return "00:00";
     const minutes = Math.floor(secs / 60);
@@ -59,11 +62,10 @@ export default function DefaultVideoPlayer({
   const handleStartFrom = () => {
     if (startFrom > 0 && !hasSeekedRef.current && videoRef.current) {
       videoRef.current.seekTo(startFrom, "seconds");
-      hasSeekedRef.current = true; // Supaya cuma sekali
+      hasSeekedRef.current = true;
     }
   };
 
-  // ====== PROGRESS SAVE ======
   const handleSaveProgress = useCallback(() => {
     if (!contentId || progressRef.current.playedSeconds === 0) return;
     if (logType !== "WATCH_CONTENT") return;
@@ -79,7 +81,7 @@ export default function DefaultVideoPlayer({
     };
 
     createProgressWatch(payload);
-  }, [contentId, contentType, createProgressWatch, logType]);
+  }, [contentId, contentType, createProgressWatch, logType, device]);
 
   const throttledSaveProgress = useCallback(
     throttle(handleSaveProgress, 60000, { leading: false, trailing: true }),
@@ -96,23 +98,14 @@ export default function DefaultVideoPlayer({
     };
   }, [handleSaveProgress, throttledSaveProgress]);
 
-  // ====== PLAY/PAUSE & SEEK ======
   const handlePause = () => {
     setIsPlaying(false);
     throttledSaveProgress.flush();
   };
 
   const handlePlayPause = () => {
-    // Jangan lakukan apa-apa jika video belum dimulai (masih ada poster)
-    // onClickPreview dari ReactPlayer akan menanganinya
     if (!isStarted) return;
-
-    if (showPoster) {
-      setShowPoster(false);
-      setIsPlaying(true);
-    } else {
-      setIsPlaying((prev) => !prev);
-    }
+    setIsPlaying((prev) => !prev);
   };
 
   const handleSeek = (e) => {
@@ -122,41 +115,53 @@ export default function DefaultVideoPlayer({
     }
   };
 
-  // ====== FULLSCREEN ======
   const handleFullscreen = () => {
     const element = playerWrapperRef.current;
     if (!element) return;
     if (!document.fullscreenElement) {
-      element.requestFullscreen?.();
+      element.requestFullscreen?.().catch(err => {
+        console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+      });
     } else {
       document.exitFullscreen?.();
     }
   };
 
-  // ====== AUTO-HIDE CONTROLS ======
-  const resetHideControls = () => {
-    setShowControls(true);
-    if (hideTimeout.current) clearTimeout(hideTimeout.current);
-    if(isPlaying) { // Sembunyikan kontrol hanya jika video sedang berputar
-        hideTimeout.current = setTimeout(() => {
-            setShowControls(false);
-        }, 3000);
+  const handleForward = () => {
+    if (videoRef.current) {
+      const currentTime = videoRef.current.getCurrentTime();
+      const dur = videoRef.current.getDuration();
+      videoRef.current.seekTo(Math.min(dur, currentTime + 10));
     }
   };
 
+  const handleBackward = () => {
+    if (videoRef.current) {
+      const currentTime = videoRef.current.getCurrentTime();
+      videoRef.current.seekTo(Math.max(0, currentTime - 10));
+    }
+  }
+
+  const resetHideControls = useCallback(() => {
+    setShowControls(true);
+    if (hideTimeout.current) clearTimeout(hideTimeout.current);
+    if (isPlaying) {
+      hideTimeout.current = setTimeout(() => {
+        setShowControls(false);
+      }, 3000);
+    }
+  }, [isPlaying]);
+
   useEffect(() => {
     const wrapper = playerWrapperRef.current;
-    if (!wrapper) return;
+    if (!wrapper || device === 'mobile') return;
 
     wrapper.addEventListener("mousemove", resetHideControls);
-    // Kita pindahkan logic click dari sini ke `handlePlayPause` di div utama
-
     return () => {
       wrapper.removeEventListener("mousemove", resetHideControls);
     };
-  }, [isPlaying]); // Tambahkan isPlaying sebagai dependency agar timeout berjalan dengan benar
+  }, [isPlaying, device, resetHideControls]);
 
-  // ====== PREVIEW WAKTU ======
   const handleMouseMoveProgress = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const pos = e.clientX - rect.left;
@@ -169,11 +174,51 @@ export default function DefaultVideoPlayer({
     setHoverTime(null);
   };
 
+  const handleDoubleTap = (e) => {
+    const playerRect = playerWrapperRef.current.getBoundingClientRect();
+    const tapX = e.clientX - playerRect.left;
+    const midpoint = playerRect.width / 2;
+    const seekAmount = 10;
+
+    if (videoRef.current) {
+      const currentTime = videoRef.current.getCurrentTime();
+      let newTime;
+      if (tapX < midpoint) {
+        newTime = Math.max(0, currentTime - seekAmount);
+      } else {
+        newTime = Math.min(duration, currentTime + seekAmount);
+      }
+      videoRef.current.seekTo(newTime);
+    }
+  };
+
+  const handleWrapperClick = (e) => {
+    if (device !== "mobile") {
+      handlePlayPause();
+      return;
+    }
+
+    clearTimeout(tapTimeout.current);
+    const now = Date.now();
+    const DOUBLE_TAP_DELAY = 300;
+
+    if (now - lastTap.current < DOUBLE_TAP_DELAY) {
+      handleDoubleTap(e);
+    } else {
+      tapTimeout.current = setTimeout(() => {
+        if (isStarted) {
+            setShowControls(prev => !prev);
+        }
+      }, DOUBLE_TAP_DELAY);
+    }
+    lastTap.current = now;
+  };
+
   return (
     <div
       ref={playerWrapperRef}
       className={`relative w-screen max-w-full h-[500px] 2xl:h-[800px] overflow-hidden bg-black cursor-pointer ${className || ""}`}
-      onClick={handlePlayPause} // <<< PERUBAHAN DI SINI (1): Menambahkan onClick ke pembungkus utama
+      onClick={handleWrapperClick}
     >
       <ReactPlayer
         ref={videoRef}
@@ -185,8 +230,7 @@ export default function DefaultVideoPlayer({
         controls={false}
         onClickPreview={() => {
           setIsStarted(true);
-          handleFullscreen();
-          // setIsPlaying(true) akan dijalankan secara otomatis oleh ReactPlayer
+          handleFullscreen(); // <<< PERUBAHAN ADA DI SINI
         }}
         config={{
           file: {
@@ -198,22 +242,24 @@ export default function DefaultVideoPlayer({
         }}
         onStart={() => {
           handleStartFrom();
-          if (logType == "WATCH_TRAILER") {
+          if (logType === "WATCH_TRAILER") {
             createLog({ logType, contentId, contentType });
           }
+          resetHideControls();
         }}
         onProgress={({ played, playedSeconds }) => {
           const dur = videoRef.current.getDuration();
-          setProgress(played * 100);
-          setCurrentTime(playedSeconds);
-          setDuration(dur);
-
-          // buffered range
-          if (videoRef.current.getInternalPlayer) {
-            const internal = videoRef.current.getInternalPlayer();
-            if (internal && internal.buffered && internal.buffered.length) {
-              const end = internal.buffered.end(internal.buffered.length - 1);
-              setBuffered((end / dur) * 100);
+          if (!isNaN(dur)) {
+            setProgress(played * 100);
+            setCurrentTime(playedSeconds);
+            setDuration(dur);
+            
+            if (videoRef.current.getInternalPlayer) {
+              const internal = videoRef.current.getInternalPlayer();
+              if (internal && internal.buffered && internal.buffered.length > 0) {
+                const end = internal.buffered.end(internal.buffered.length - 1);
+                setBuffered((end / dur) * 100);
+              }
             }
           }
 
@@ -223,18 +269,36 @@ export default function DefaultVideoPlayer({
           };
           throttledSaveProgress();
         }}
-        onPlay={() => setIsPlaying(true)} // Sinkronkan state jika player play (misal: setelah preview)
+        onPlay={() => {
+          setIsPlaying(true);
+          resetHideControls();
+        }}
         onPause={handlePause}
       />
+      
+      {isStarted && showControls && (
+        <div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
+          onClick={(e) => {
+            e.stopPropagation();
+            handlePlayPause();
+          }}
+        >
+          <button>
+            {isPlaying ? (
+              <Pause className="w-12 h-12 lg:w-16 lg:h-16 text-white hover:cursor-pointer" />
+            ) : (
+              <FaPlay className="w-12 h-12 lg:w-16 lg:h-16 text-white" />
+            )}
+          </button>
+        </div>
+      )}
 
-      {/* Custom Header */}
       {isStarted && <div
-        // <<< PERUBAHAN DI SINI (2): Hentikan propagasi klik agar tidak trigger play/pause
         onClick={(e) => e.stopPropagation()} 
-        className={`absolute top-0 left-0 right-0 transition-opacity duration-500 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"
-          } bg-gradient-to-b from-black to-transparent py-4 px-16 flex items-center gap-4 justify-between`}
+        className={`absolute top-0 left-0 right-0 transition-opacity duration-300 z-20 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"
+          } bg-gradient-to-b from-black/70 to-transparent py-4 px-4 sm:px-16 flex items-center gap-4 justify-between`}
       >
-
         <div className="flex flex-row gap-4 items-center justify-center">
           <Link href="/">
             <Image src={IconsArrowLeft} alt="icons-arrow-left" width={32} height={32} />
@@ -244,54 +308,67 @@ export default function DefaultVideoPlayer({
             <span className="text-xs text-gray-400">{formatDuration(duration)} | {ageRestriction} | {genre} </span>
           </div>
         </div>
-        <Link href={`/report/${contentType == "FILM" ? "movie" : "episode_series"}/${contentId}`} className="p-2 bg-white/20 rounded-full hover:bg-white/40 transition">
+        <Link href={`/report/${contentType === "FILM" ? "movie" : "episode_series"}/${contentId}`} className="p-2 bg-white/20 rounded-full hover:bg-white/40 transition">
           <Image src={iconFlag} alt="icons-flag" width={32} height={32} />
         </Link>
       </div>}
 
-      {/* Custom Controller */}
       {isStarted && <div
-        // <<< PERUBAHAN DI SINI (3): Hentikan propagasi klik agar tidak trigger play/pause
         onClick={(e) => e.stopPropagation()}
-        className={`absolute bottom-0 left-0 right-0 transition-opacity duration-500 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"
-          } bg-gradient-to-t from-black to-transparent py-4 px-16 flex items-center gap-4`}
+        className={`absolute bottom-0 left-0 right-0 transition-opacity duration-300 z-20 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"
+          } bg-gradient-to-t from-black/70 to-transparent py-2 px-4 sm:px-16 flex items-center gap-4`}
       >
-        {/* Play / Pause */}
-        <button
-          onClick={() => setIsPlaying(prev => !prev)} // Langsung toggle state di sini
-          className="p-2 bg-white/20 rounded-full hover:bg-white/40 transition"
-        >
-          {isPlaying ? (
-            <Pause className="w-6 h-6 text-white" />
-          ) : (
-            <Play className="w-6 h-6 text-white" />
-          )}
-        </button>
+        <div>
+          <button
+            onClick={handleBackward}
+            className="p-2 bg-transparent rounded-full hover:bg-white/20 transition"
+          >
+            <Image 
+              src={backwardTenSecondIcon}
+              alt="rewind-icon"
+              className="w-6 h-6 text-white"
+            />
+          </button>
+          <button
+            onClick={handlePlayPause}
+            className="p-2 bg-transparent rounded-full hover:bg-white/20 transition"
+          >
+            {isPlaying ? (
+              <Pause className="w-6 h-6 text-white" />
+            ) : (
+              <Play className="w-6 h-6 text-white" />
+            )}
+          </button>
+          <button
+            onClick={handleForward}
+            className="p-2 bg-transparent rounded-full hover:bg-white/20 transition"
+          >
+            <Image 
+              src={forwardTenSecondIcon}
+              alt="rewind-icon"
+              className="w-6 h-6 text-white"
+            />
+          </button>
+        </div>
 
-        {/* Progress Bar */}
         <div
           className="relative flex-1 h-3 cursor-pointer group"
           onMouseMove={handleMouseMoveProgress}
           onMouseLeave={handleMouseLeaveProgress}
         >
-          {/* Track dasar */}
           <div className="absolute top-1/2 left-0 w-full h-1 rounded-full bg-gray-700 -translate-y-1/2" />
-          {/* Buffered */}
           <div
             className="absolute top-1/2 left-0 h-1 rounded-full bg-gray-400 -translate-y-1/2"
             style={{ width: `${buffered}%` }}
           />
-          {/* Progress */}
           <div
             className="absolute top-1/2 left-0 h-1 rounded-full bg-[#1297DC] -translate-y-1/2"
             style={{ width: `${progress}%` }}
           />
-          {/* Knob */}
           <div
             className="absolute top-1/2 w-4 h-4 rounded-full bg-[#1297DC] border-[#1297DC] -translate-y-1/2 -translate-x-1/2 pointer-events-none transition"
             style={{ left: `${progress}%` }}
           />
-          {/* Input range transparan */}
           <input
             type="range"
             min="0"
@@ -300,7 +377,6 @@ export default function DefaultVideoPlayer({
             onChange={handleSeek}
             className="absolute top-0 left-0 w-full h-3 opacity-0 cursor-pointer"
           />
-          {/* Hover Preview */}
           {hoverTime !== null && (
             <div
               className="absolute -top-10 px-2 py-1 bg-black/80 text-white text-xs rounded"
@@ -311,18 +387,15 @@ export default function DefaultVideoPlayer({
           )}
         </div>
 
-        {/* Time Display */}
         <span className="text-xs text-white">{formatTime(currentTime)} / {formatTime(duration)}</span>
 
-        {/* Volume (dummy) */}
-        <button className="p-2 bg-white/20 rounded-full hover:bg-white/40 transition">
+        <button className="p-2 bg-transparent rounded-full hover:bg-white/20 transition">
           <Volume2 className="w-6 h-6 text-white" />
         </button>
 
-        {/* Fullscreen */}
         <button
           onClick={handleFullscreen}
-          className="p-2 bg-white/20 rounded-full hover:bg-white/40 transition"
+          className="p-2 bg-transparent rounded-full hover:bg-white/20 transition"
         >
           <Maximize className="w-6 h-6 text-white" />
         </button>

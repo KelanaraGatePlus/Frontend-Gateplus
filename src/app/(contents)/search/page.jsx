@@ -15,9 +15,11 @@ import PropTypes from 'prop-types';
 
 export default function SearchPage() {
     return (
-        <Suspense fallback={<LoadingOverlay />}>
-            <SearchPageComponent />
-        </Suspense>
+        <div className='overflow-hidden'>
+            <Suspense fallback={<LoadingOverlay />}>
+                <SearchPageComponent />
+            </Suspense>
+        </div>
     );
 }
 
@@ -77,7 +79,7 @@ function SearchPageComponent() {
 
     return (
         <main className="relative mt-16 flex flex-col md:mt-[100px] lg:px-4">
-            <div className="absolute left-13 top-2">
+            <div className="absolute left-2 md:left-13 top-2">
                 <BackButton />
             </div>
             <div className='w-full h-full flex flex-col gap-10'>
@@ -115,35 +117,35 @@ function SearchPageComponent() {
 
                 {/* 🔸 Filter Aktif */}
                 {(searchParams.get("category") || searchParams.get("genre") || searchParams.get("relevance")) && (
-                    <div className='flex flex-row gap-4 items-center mx-[60px] p-8 border text-white border-white/20 bg-[#DEDEDE1A] rounded-md mb-4'>
+                    <div className='flex flex-col md:flex-row gap-4 md:items-center md:justify-between mx-2 md:mx-[60px] p-8 border text-white border-white/20 bg-[#DEDEDE1A] rounded-md mb-4'>
                         <h2>Filter Aktif:</h2>
 
-                        {searchParams.getAll("category").map((val, index) => (
-                            <FilterCard
-                                key={`cat-${index}`}
-                                label={getLabelFromValue(contentCategories, val)}
-                                onRemove={() => removeParam("category", val, query)}
-                            />
-                        ))}
-
-                        {searchParams.getAll("genre").map((val, index) => (
-                            <FilterCard
-                                key={`gen-${index}`}
-                                label={getLabelFromValue(genreOptions, val)}
-                                onRemove={() => removeParam("genre", val, query)}
-                            />
-                        ))}
-
-                        {searchParams.getAll("relevance").map((val, index) => (
-                            <FilterCard
-                                key={`rel-${index}`}
-                                label={getLabelFromValue(relevanceOptions, val)}
-                                onRemove={() => removeParam("relevance", val, query)}
-                            />
-                        ))}
+                        <div className='grid grid-cols-4 lg:grid-cols-6 gap-2'>
+                            {searchParams.getAll("category").map((val, index) => (
+                                <FilterCard
+                                    key={`cat-${index}`}
+                                    label={getLabelFromValue(contentCategories, val)}
+                                    onRemove={() => removeParam("category", val, query)}
+                                />
+                            ))}
+                            {searchParams.getAll("genre").map((val, index) => (
+                                <FilterCard
+                                    key={`gen-${index}`}
+                                    label={getLabelFromValue(genreOptions, val)}
+                                    onRemove={() => removeParam("genre", val, query)}
+                                />
+                            ))}
+                            {searchParams.getAll("relevance").map((val, index) => (
+                                <FilterCard
+                                    key={`rel-${index}`}
+                                    label={getLabelFromValue(relevanceOptions, val)}
+                                    onRemove={() => removeParam("relevance", val, query)}
+                                />
+                            ))}
+                        </div>
 
                         <button
-                            className='text-white underline'
+                            className='text-white text-end md:text-center underline'
                             onClick={() => {
                                 const params = new URLSearchParams(window.location.search);
                                 params.delete("category");
@@ -160,7 +162,7 @@ function SearchPageComponent() {
 
                 <div>
                     {/* 🔸 Hasil Pencarian */}
-                    <div className="px-[60px] flex flex-row justify-between text-white font-bold">
+                    <div className=" px-2 md:px-[60px] flex flex-row justify-between text-white font-bold">
                         <h2 className='text-2xl zeinFont'>
                             Hasil Search Untuk <b>{query}</b>
                         </h2>
@@ -202,9 +204,9 @@ function PodcastContent({ searchResults, loading }) {
 
 function FilterCard({ label, onRemove }) {
     return (
-        <div className="flex items-center gap-2.5 bg-[#0395BC59] text-white px-2 py-1 rounded-full">
-            <span className='font-medium'>{label}</span>
-            <button onClick={onRemove} className="text-white hover:cursor-pointer hover:text-gray-200 p-1.5 rounded-full bg-[#F5F5F5]/50">
+        <div className="flex items-center justify-center gap-1 md:gap-2.5 bg-[#0395BC59] text-white px-1 md:px-2 py-1 rounded-full w-full">
+            <span className='font-medium text-xs md:text-[16px]'>{label}</span>
+            <button onClick={onRemove} className="text-white hover:cursor-pointer hover:text-gray-200 p-0.5 md:p-1.5 rounded-full bg-[#F5F5F5]/50">
                 <XIcon size={10} />
             </button>
         </div>

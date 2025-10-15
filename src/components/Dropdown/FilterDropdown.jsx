@@ -79,7 +79,7 @@ export default function FilterDropdown({
         <div className="relative" ref={dropdownRef}>
             {/* Tombol Filter */}
             <div
-                className={`rounded-md border text-white border-white/20 px-4 py-2 flex flex-row items-center gap-2 cursor-pointer transition ${currentValues.length > 0
+                className={`rounded-md border text-white border-white/20 px-4 py-2 flex flex-row items-center justify-between gap-2 cursor-pointer transition ${currentValues.length > 0
                     ? "bg-blue-500/80 hover:bg-blue-500/90"
                     : "bg-white/10 hover:bg-white/20"
                     }`}

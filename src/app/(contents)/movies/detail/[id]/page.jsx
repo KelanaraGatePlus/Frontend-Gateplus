@@ -179,8 +179,8 @@ function PlayingMoviePage({ params }) {
             </section>
 
             <main className="px-5 text-white">
-                <section className="w-full flex flex-row items-center justify-between pt-2 pb-4">
-                    <div className="flex flex-col gap-4 w-1/2">
+                <section className="w-full flex flex-col gap-4 md:gap-0 md:flex-row md:items-center justify-between pt-2 pb-4">
+                    <div className="flex flex-col gap-4 md:w-1/2 w-full">
                         <div className="flex flex-col gap-0">
                             <h1 className="font-black text-4xl">
                                 {movieData?.title || "Judul Movie Tidak Tersedia"}
@@ -257,7 +257,7 @@ function PlayingMoviePage({ params }) {
                             <DefaultShareButton contentType={'MOVIE'} />
                         </div>
                     </div>
-                    <div className="flex flex-row items-center justify-end w-1/2 gap-3">
+                    <div className="flex flex-row items-center md:justify-end w-full md:w-1/2 gap-3">
                         <div className="flex items-center justify-center">
                             <Image
                                 width={60}
@@ -268,7 +268,7 @@ function PlayingMoviePage({ params }) {
                         </div>
                         <div className="grid grid-rows-2">
                             <div className="flex place-content-center justify-center text-2xl font-bold text-white">
-                                {movieData?.creator?.user?.username}
+                                {movieData?.creator?.profileName}
                             </div>
                             <div className="text-sm text-white">{movieData?.creator?._count.subscriptions} followers</div>
                         </div>

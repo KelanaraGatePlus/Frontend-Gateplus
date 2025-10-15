@@ -35,10 +35,19 @@ export const withdrawalAPI = createApi({
             providesTags: ["withdrawal"],
             keepUnusedDataFor: 300,
         }),
+        getCreatorWithdrawalById: builder.query({
+            query: (id) => ({
+                url: `/withdrawal/${id}`,
+                method: "GET",
+            }),
+            providesTags: ["withdrawal"],
+            keepUnusedDataFor: 300,
+        }),
     }),
 });
 
 export const {
     useCreateWithdrawalMutation,
     useGetCreatorWithdrawalQuery,
+    useGetCreatorWithdrawalByIdQuery,
 } = withdrawalAPI;

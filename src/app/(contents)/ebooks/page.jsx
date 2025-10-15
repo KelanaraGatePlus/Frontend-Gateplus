@@ -10,8 +10,8 @@ import LoadingOverlay from '@/components/LoadingOverlay/page';
 
 export default function EbooksPage() {
     return (
-        <main className="relative mt-16 flex flex-col md:mt-[100px] lg:px-4">
-            <div className="absolute left-13 top-2">
+        <main className="relative mt-16 flex flex-col md:mt-[100px] lg:px-4 w-full h-full gap-4 md:gap-10">
+            <div className="absolute left-2 md:left-13 top-2">
                 <BackButton />
             </div>
             <div className='w-full h-full flex flex-col gap-10'>

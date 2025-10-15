@@ -5,6 +5,12 @@ import Link from "next/link";
 import PropTypes from "prop-types";
 
 export default function PodcastUniqueCard({ title, id, coverUrl, creatorName, releaseDate }) {
+    const formattedDate = new Date(releaseDate).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+    });
+
     return (
         <Link
             href={`/${contentType.podcasts.pluralName}/detail/${id}`}
@@ -21,12 +27,12 @@ export default function PodcastUniqueCard({ title, id, coverUrl, creatorName, re
                 />
             </div>
 
-            <div className="w-full flex-shrink-0  text-start rounded-b-lg">
-                <h1 className="text-white font-bold line-clamp-1 zeinFont text-lg">
+            <div className="w-full flex-shrink-0 mt-1 text-start rounded-b-lg">
+                <h1 className="text-white font-bold line-clamp-1 zeinFont text-sm md:text-lg">
                     {title}
                 </h1>
                 <p className="text-[#808080] text-xs line-clamp-1">{creatorName}</p>
-                <p className="text-[#808080] text-xs line-clamp-1 mt-2">{releaseDate}</p>
+                <p className="text-[#808080] text-xs line-clamp-1d mt-0.5 md:mt-2">{formattedDate}</p>
             </div>
         </Link>
     );
