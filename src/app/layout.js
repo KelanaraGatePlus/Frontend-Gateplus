@@ -65,7 +65,7 @@ export default function RootLayout({ children }) {
             <FlexModal isOpen={isModalOpen} onClose={() => {
               setIsModalOpen(false);
             }} title={"Kategori Upload Karya"}>
-              <div className="flex flex-row items-center text-white text-md px-52">
+              <div className="flex flex-row items-center text-white text-xs md:text-sm xl:text-md xl:px-52">
                 {Object.values(contentType)
                   .filter((content) => {
                     if (objective === "episode") {
@@ -80,12 +80,11 @@ export default function RootLayout({ children }) {
                         window.location.href = redirect(content.pluralName, objective);
                       }}
                       key={content.singleName}
-                      className="flex flex-col items-center justify-center mr-4 hover:cursor-pointer"
+                      className="flex flex-col items-center justify-center mr-4 hover:cursor-pointer w-12 md:w-28 xl:w-[148px]"
                     >
                       <Image
                         src={content.icon}
                         alt={content.singleName}
-                        width={148}
                       />
                       <p>{content.pluralName.toUpperCase()}</p>
                     </button>

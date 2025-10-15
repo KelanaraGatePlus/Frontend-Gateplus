@@ -9,7 +9,7 @@ export default function FlexModal({ isOpen, onClose, title, children }) {
             <div className="fixed inset-0 bg-black opacity-40" onClick={onClose}></div>
 
             {/* Modal Box */}
-            <div className="bg-[#515151] rounded-lg p-4 z-50 relative min-w-2xl w-max">
+            <div className="bg-[#515151] rounded-lg p-4 z-50 relative min-w-screen/2 w-max">
                 <div className="flex flex-row w-full justify-between items-center py-1">
                     <h2 className="text-white text-lg font-semibold ">{title}</h2>
                     <button onClick={onClose} className="bg-[#979797] hover:cursor-pointer w-8 h-8 flex items-center justify-center rounded-full">

@@ -10,8 +10,8 @@ import LoadingOverlay from '@/components/LoadingOverlay/page';
 
 export default function SeriesPage() {
     return (
-        <div className='w-full h-full flex flex-col gap-10'>
-            <div className="absolute left-13 top-2">
+        <div className='w-full h-full flex flex-col gap-4 md:gap-10'>
+            <div className="absolute left-2 md:left-13 top-2">
                 <BackButton />
             </div>
             <div className='w-full h-max flex flex-col gap-6'>
@@ -21,7 +21,7 @@ export default function SeriesPage() {
                     bgColor="#5856D64D"
                     titleColor="#6A67FF"
                 />
-                <div className='px-24'>
+                <div className='px-2 md:px-24'>
                     <Suspense fallback={<LoadingOverlay />}>
                         <Filter
                             contentType="Series"

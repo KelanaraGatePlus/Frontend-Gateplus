@@ -41,3 +41,5 @@ export const contentType = {
         capitalizedLabel: 'Comic'
     }
 }
+
+export const contentTypeArray = Object.keys(contentType).map(key => contentType[key]);

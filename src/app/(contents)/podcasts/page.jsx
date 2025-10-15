@@ -10,8 +10,8 @@ import LoadingOverlay from '@/components/LoadingOverlay/page';
 
 export default function PodcastsPage() {
     return (
-        <main className="relative mt-16 flex flex-col md:mt-[100px] lg:px-4">
-            <div className="absolute left-13 top-2">
+        <main className="relative mt-16 flex flex-col md:mt-[100px] lg:px-4 w-full h-full gap-4 md:gap-10">
+            <div className="absolute left-2 md:left-13 top-2">
                 <BackButton />
             </div>
             <div className='w-full h-full flex flex-col gap-10'>
@@ -22,7 +22,7 @@ export default function PodcastsPage() {
                         bgColor="#AF52DE4D"
                         titleColor="#CB65FF"
                     />
-                    <div className="px-24">
+                    <div className="px-2 md:px-24">
                         <Suspense fallback={<LoadingOverlay />}>
                             <Filter
                                 contentType="Podcast"

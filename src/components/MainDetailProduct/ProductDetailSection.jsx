@@ -277,9 +277,15 @@ export default function ProductDetailSection({
                     </button>
                   )}
 
-                  {productType === "podcast" ? (
-                    <button className="w-full cursor-pointer rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white hover:bg-[#0076E999]/80 md:w-auto">
-                      Subscribe
+                  {productType === "podcast" && canSubscribe ? (
+                    console.log("productID", productID),
+                    <button
+                      onClick={() => handleSubscribe(creatorDetail.id, productID, subscriptionPrice)}
+                      disabled={isSubscribe}
+                      className={`w-full cursor-pointer rounded-3xl px-12 py-3 font-bold text-white md:w-auto 
+                      ${isSubscribe ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#0076E999] hover:bg-[#0076E999]/80'}`}
+                    >
+                      {isSubscribe ? 'Subscribed' : 'Subscribe'}
                     </button>
                   ) : productFirstEpisode ? (
                     <Link href={`/${productType}/read/${productFirstEpisode.id}`}>

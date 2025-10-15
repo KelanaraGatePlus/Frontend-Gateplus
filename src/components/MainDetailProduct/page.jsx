@@ -20,6 +20,7 @@ export default function MainTemplateLayout({
   topContentData,
   recomendationData,
 }) {
+  console.log("productDetail", productDetail);
   return (
     <main className="mt-16 flex flex-col md:mt-[100px]">
       <ProductDetailSection
@@ -51,7 +52,7 @@ export default function MainTemplateLayout({
         isSubscribe={productDetail?.isSubscribe && productDetail?.canSubscribe ? true : false}
       />
 
-      <div className="px-15">
+      <div className="px-4 pmd:px-15">
         <ProductEpisodeSection
           productType={productType}
           productEpisodes={productEpisode}

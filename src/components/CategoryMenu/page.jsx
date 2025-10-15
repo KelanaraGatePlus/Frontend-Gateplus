@@ -8,14 +8,10 @@ import Cookies from "js-cookie";
 import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 /*[--- ASSETS IMPORT ---]*/
-import logoEComics from "@@/logo/logo-icons-comic-news.svg";
-import logoEbook from "@@/logo/logo-icons-ebook-news.svg";
-import logoMovie from "@@/logo/logo-icons-film-news.svg";
-import logoPodcast from "@@/logo/logo-icons-podcast-news.svg";
-import logoSeries from "@@/logo/logo-icons-series-news.svg";
+import { contentTypeArray } from "@/lib/constants/contentType";
 
 export default function CategoryMenu() {
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategory] = useState(null);
   const [ebookGenres, setEbookGenres] = useState([]);
   const [isAuthorized, setIsAuthorized] = useState(false);
 
@@ -140,101 +136,25 @@ export default function CategoryMenu() {
     <div className="block md:hidden">
       <section className="my-5 md:my-10">
         <div className="grid grid-cols-5 md:grid-cols-5 justify-between">
-          <div
-            className={`flex transform cursor-pointer flex-col items-center justify-between gap-0 transition duration-100 ease-linear md:gap-2 ${
-              selectedCategory === "Movie"
+          {contentTypeArray.map((content, index) =>
+            <Link
+              key={index}
+              className={`flex transform cursor-pointer flex-col items-center justify-between gap-0 transition duration-100 ease-linear md:gap-2 ${selectedCategory === "Comic"
                 ? "scale-110 rounded-lg bg-[#04475E] grayscale-35"
                 : "hover:scale-105 hover:grayscale-50"
-            }`}
-            onClick={() => setSelectedCategory("Movie")}
-          >
-            <div className="flex h-full w-full flex-col items-center">
-              <div className="aspect-auto scale-90 md:scale-100 relative w-16 h-16 ">
-                <Image priority alt="logo-movie" src={logoMovie} fill className="w-full h-full object-cover"/>
+                }`}
+              href={`/${content.pluralName}`}
+            >
+              <div className="flex h-full w-full flex-col items-center">
+                <div className="aspect-auto scale-90 md:scale-100 relative w-16 h-16 ">
+                  <Image priority alt="logo-comic" src={content.icon} fill className="w-full h-full object-cover scale-125" />
+                </div>
+                <div className="montserratFont w-full text-center font-medium text-white ">
+                  <span className="text-sm md:text-base">{content.capitalizedLabel}</span>
+                </div>
               </div>
-              <div className="montserratFont w-full text-center font-medium text-white">
-                <span className="text-sm md:text-base">MOVIE</span>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className={`flex transform cursor-pointer flex-col items-center justify-between gap-0 transition duration-100 ease-linear md:gap-2 ${
-              selectedCategory === "Series"
-                ? "scale-110 rounded-lg bg-[#04475E] grayscale-35"
-                : "hover:scale-105 hover:grayscale-50"
-            }`}
-            onClick={() => setSelectedCategory("Series")}
-          >
-            <div className="flex h-full w-full flex-col items-center">
-              <div className="aspect-auto scale-90 md:scale-100 relative w-16 h-16 ">
-                <Image priority alt="logo-series" src={logoSeries} fill className="w-full h-full object-cover scale-105" />
-              </div>
-              <div className="montserratFont w-full text-center font-medium text-white">
-                <span className="text-sm md:text-base">SERIES</span>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className={`flex transform cursor-pointer flex-col items-center justify-between gap-0 transition duration-100 ease-linear md:gap-2 ${
-              selectedCategory === "Podcast"
-                ? "scale-110 rounded-lg bg-[#04475E] grayscale-35"
-                : "hover:scale-105 hover:grayscale-50"
-            }`}
-            onClick={() => setSelectedCategory("Podcast")}
-          >
-            <div className="flex h-full w-full flex-col items-center">
-              <div className="aspect-auto scale-90 md:scale-100 relative w-16 h-16 ">
-                <Image priority alt="logo-podcast" src={logoPodcast} fill className="w-full h-full object-cover scale-105 ml-1" />
-              </div>
-              <div className="montserratFont w-full text-center font-medium text-white">
-                <span className="text-sm md:text-base">PODCAST</span>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className={`flex transform cursor-pointer flex-col items-center justify-between gap-0 transition duration-100 ease-linear md:gap-2 ${
-              selectedCategory === "e-Book"
-                ? "scale-110 rounded-lg bg-[#04475E] grayscale-35"
-                : "hover:scale-105 hover:grayscale-50"
-            }`}
-            onClick={() => {
-              if (!selectedCategory) {
-                setSelectedCategory("e-Book");
-              } else {
-                setSelectedCategory(null);
-              }
-            }}
-          >
-            <div className="flex h-full w-full flex-col items-center">
-              <div className="aspect-auto scale-90 md:scale-100 relative w-16 h-16 ">
-                <Image priority alt="logo-ebook" src={logoEbook} fill className="w-full h-full object-cover scale-125"/>
-              </div>
-              <div className="montserratFont w-full text-center font-medium text-white">
-                <span className="text-sm md:text-base">EBOOK</span>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className={`flex transform cursor-pointer flex-col items-center justify-between gap-0 transition duration-100 ease-linear md:gap-2 ${
-              selectedCategory === "Comic"
-                ? "scale-110 rounded-lg bg-[#04475E] grayscale-35"
-                : "hover:scale-105 hover:grayscale-50"
-            }`}
-            onClick={() => setSelectedCategory("Comic")}
-          >
-            <div className="flex h-full w-full flex-col items-center">
-              <div className="aspect-auto scale-90 md:scale-100 relative w-16 h-16 ">
-                <Image priority alt="logo-comic" src={logoEComics} fill className="w-full h-full object-cover scale-125" />
-              </div>
-              <div className="montserratFont w-full text-center font-medium text-white ">
-                <span className="text-sm md:text-base">COMIC</span>
-              </div>
-            </div>
-          </div>
+            </Link>
+          )}
         </div>
       </section>
       {selectedCategory === "e-Book" && renderContent()}

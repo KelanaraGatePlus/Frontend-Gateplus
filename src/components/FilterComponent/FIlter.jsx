@@ -42,7 +42,7 @@ export default function Filter({ contentType, textColor, buttonColor }) {
                         height={32}
                     />
                     <p className="font-bold text-[16px] text-white">
-                            Filter <span style={{ color: textColor }} className="text-lg">{contentType}</span>
+                        Filter <span style={{ color: textColor }} className="text-lg">{contentType}</span>
                     </p>
                 </div>
                 <div className="flex flex-row gap-2 items-center">
@@ -61,19 +61,20 @@ export default function Filter({ contentType, textColor, buttonColor }) {
     const genres = ["Semua", ...categories.map((c) => c.tittle)];
 
     return (
-        <div className="w-full h-max flex flex-row justify-between items-center gap-10 px-10 py-8 bg-[#DEDEDE1A] rounded-[6px] border-gray-600 border-[1px]">
-            <div className="flex flex-row gap-1 items-center">
+        <div className="w-full h-max flex flex-col md:flex-row justify-between md:items-center gap-6 md:gap-10 px-2 py-4 md:px-10 md:py-8 bg-[#DEDEDE1A] rounded-[6px] border-gray-600 border-[1px]">
+            <div className="flex flex-row gap-1 items-center w-max">
                 <Image
                     src={IconFilter}
                     alt="icon-filter"
                     width={32}
                     height={32}
                 />
-                <p className="font-bold text-[16px] text-white">
+                <p className="font-bold text-[16px] text-white flex items-center gap-1">
                     Filter <span style={{ color: textColor }} className="text-lg">{contentType}</span>
                 </p>
             </div>
-            <div className="flex flex-row gap-2 items-center flex-wrap">
+            <div className="grid w-full grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2 items-center" style={{ direction: 'rtl' }}
+            >
                 {genres.map((genre) => (
                     <button
                         key={genre}
@@ -84,7 +85,7 @@ export default function Filter({ contentType, textColor, buttonColor }) {
                                 : "#686868", // default color
                             color: "white",
                         }}
-                        className={"rounded-full px-6 py-2 font-semibold text-[14px] transition hover:cursor-pointer"}
+                        className={"rounded-full text-center py-1 md:py-2 font-semibold text-[14px] transition hover:cursor-pointer"}
                     >
                         {genre}
                     </button>

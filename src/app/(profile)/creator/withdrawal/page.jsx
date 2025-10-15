@@ -19,6 +19,7 @@ import IconDocs from "@@/icons/icon-docs.svg";
 import iconDanger from "@@/icons/icons-dashboard/icon-danger.svg";
 import Image from "next/image";
 import Link from "next/link";
+import HeaderUploadForm from "@/components/UploadForm/HeaderUploadForm";
 
 export default function WithdrawalPage() {
     const [selectedMethod, setSelectedMethod] = useState("");
@@ -31,6 +32,7 @@ export default function WithdrawalPage() {
     const [errorMessage, setErrorMessage] = useState("");
     const [modalType, setModalType] = useState(null);
     const [createWithdrawalData, setCreateWithdrawalData] = useState(null);
+    
 
     const bankOption = bankData?.data.map((item) => ({
         id: item.id,
@@ -93,228 +95,223 @@ export default function WithdrawalPage() {
     };
 
     return (
-        <div className="montserratFont flex flex-col gap-8 text-white">
-            {/* Penghasilan */}
-            <h1 className="zeinFont font-black text-4xl">Penghasilan</h1>
-            <div className="grid grid-cols-3 gap-4">
-                <div className="flex flex-col gap-2 border border-[#1FC16B] bg-gradient-to-r from-[#1FC16BB2] to-[#0F5B32B2] p-4 rounded-md">
-                    <h2 className="text-[16px] font-semibold">Saldo Tersedia</h2>
-                    <div className="flex flex-col gap-0">
-                        <h3 className="text-[#F5F5F5]">Total</h3>
-                        <div className="flex flex-row items-end">
-                            <p className="text-[16px] font-bold">Rp</p>
-                            <p className="text-3xl font-bold">{earnedData?.data?.data?.currentBalance.toLocaleString()}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="flex flex-col gap-2 border border-[#DFB400] bg-gradient-to-r from-[#FFD633B2] to-[#7D6400B2] p-4 rounded-md">
-                    <h2 className="text-[16px] font-semibold">Dalam Proses</h2>
-                    <div className="flex flex-col gap-0">
-                        <h3 className="text-[#F5F5F5]">Minggu ini</h3>
-                        <div className="flex flex-row items-end">
-                            <p className="text-[16px] font-bold">Rp</p>
-                            <p className="text-3xl font-bold">{earnedData?.data?.data?.pendingWithdrawalNoFee.toLocaleString()}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="flex flex-col gap-2 border border-[#979797] bg-[#393939] p-4 rounded-md">
-                    <h2 className="text-[16px] font-semibold">Total Saldo</h2>
-                    <div className="flex flex-col gap-0">
-                        <h3 className="text-[#F5F5F5]">Dalam Proses</h3>
-                        <div className="flex flex-row items-end">
-                            <p className="text-[16px] font-bold">Rp</p>
-                            <p className="text-3xl font-bold">{(earnedData?.data?.data?.currentBalance + earnedData?.data?.data?.pendingWithdrawalNoFee)?.toLocaleString()}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Form Penarikan Saldo */}
-            <div className="grid grid-cols-3 gap-8">
-                <div className="flex flex-col gap-6 col-span-2">
-                    <h1 className="zeinFont font-black text-4xl">Penarikan Saldo</h1>
-                    <form onSubmit={handleSubmit(onSubmit)}>
-                        {/* Payment Methods */}
-                        <div className="space-y-4">
-                            <label className="text-white block font-bold text-[16px] mb-2">
-                                Metode Pembayaran
-                            </label>
-                            {bankAccountData?.data?.map((item) => (
-                                <WithdrawalBank
-                                    key={item.id}
-                                    id={item.id}
-                                    selectedMethod={selectedMethod}
-                                    setSelectedMethod={(val) => {
-                                        setSelectedMethod(val);
-                                        setValue("bankAccountId", val);
-                                    }}
-                                    bank={item.bank.name}
-                                    accountNumber={item.accountNumber}
-                                    processTime={item.bank.processTime}
-                                    isVerified={item.isVerified}
-                                    fee={item.bank.fee}
-                                />
-                            ))}
-                            {errors.bankAccountId && (
-                                <p className="text-red-400 text-sm">
-                                    {errors.bankAccountId.message}
-                                </p>
-                            )}
-                        </div>
-
-                        {/* Withdrawal Amount */}
-                        <div className="mt-6">
-                            <div className="flex justify-between items-center">
-                                <label className="text-white block font-bold text-[16px] mb-2">
-                                    Jumlah Penarikan
-                                </label>
-                                <p className="text-[#AFAFAF] text-sm">Min: Rp 50.000 Max: Rp 25.000.000</p>
+        <div>
+            <HeaderUploadForm title={"Penarikan Dana"} />
+            <div className="montserratFont flex flex-col gap-8 text-white">
+                {/* Penghasilan */}
+                <h1 className="zeinFont font-black text-4xl">Penghasilan</h1>
+                <div className="grid grid-cols-3 gap-4">
+                    <div className="flex flex-col gap-2 border border-[#1FC16B] bg-gradient-to-r from-[#1FC16BB2] to-[#0F5B32B2] p-4 rounded-md">
+                        <h2 className="text-[16px] font-semibold">Saldo Tersedia</h2>
+                        <div className="flex flex-col gap-0">
+                            <h3 className="text-[#F5F5F5]">Total</h3>
+                            <div className="flex flex-row items-end">
+                                <p className="text-[16px] font-bold">Rp</p>
+                                <p className="text-3xl font-bold">{earnedData?.data?.data?.currentBalance.toLocaleString()}</p>
                             </div>
-                            <div className="flex flex-col gap-2">
-                                <div className="py-4 px-8 flex flex-row gap-2 items-center bg-[#393939] rounded-md text-[16px]">
-                                    <span>Rp</span>
-                                    <input
-                                        type="number"
-                                        min={50000}
-                                        max={25000000}
-                                        {...register("withdrawalAmount", {
-                                            valueAsNumber: true,
-                                        })}
-                                        required
-                                        className="w-full rounded-md bg-transparent border-none outline-none text-white"
-                                        placeholder="Masukkan Jumlah"
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-2 border border-[#DFB400] bg-gradient-to-r from-[#FFD633B2] to-[#7D6400B2] p-4 rounded-md">
+                        <h2 className="text-[16px] font-semibold">Dalam Proses</h2>
+                        <div className="flex flex-col gap-0">
+                            <h3 className="text-[#F5F5F5]">Minggu ini</h3>
+                            <div className="flex flex-row items-end">
+                                <p className="text-[16px] font-bold">Rp</p>
+                                <p className="text-3xl font-bold">{earnedData?.data?.data?.pendingWithdrawalNoFee.toLocaleString()}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-2 border border-[#979797] bg-[#393939] p-4 rounded-md">
+                        <h2 className="text-[16px] font-semibold">Total Saldo</h2>
+                        <div className="flex flex-col gap-0">
+                            <h3 className="text-[#F5F5F5]">Dalam Proses</h3>
+                            <div className="flex flex-row items-end">
+                                <p className="text-[16px] font-bold">Rp</p>
+                                <p className="text-3xl font-bold">{(earnedData?.data?.data?.currentBalance + earnedData?.data?.data?.pendingWithdrawalNoFee)?.toLocaleString()}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {/* Form Penarikan Saldo */}
+                <div className="grid grid-cols-3 gap-8">
+                    <div className="flex flex-col gap-6 col-span-2">
+                        <h1 className="zeinFont font-black text-4xl">Penarikan Saldo</h1>
+                        <form onSubmit={handleSubmit(onSubmit)}>
+                            {/* Payment Methods */}
+                            <div className="space-y-4">
+                                <label className="text-white block font-bold text-[16px] mb-2">
+                                    Metode Pembayaran
+                                </label>
+                                {bankAccountData?.data?.map((item) => (
+                                    <WithdrawalBank
+                                        key={item.id}
+                                        id={item.id}
+                                        selectedMethod={selectedMethod}
+                                        setSelectedMethod={(val) => {
+                                            setSelectedMethod(val);
+                                            setValue("bankAccountId", val);
+                                        }}
+                                        bank={item.bank.name}
+                                        accountNumber={item.accountNumber}
+                                        processTime={item.bank.processTime}
+                                        isVerified={item.isVerified}
+                                        fee={item.bank.fee}
                                     />
-                                </div>
-                                {errors.withdrawalAmount && (
+                                ))}
+                                {errors.bankAccountId && (
                                     <p className="text-red-400 text-sm">
-                                        {errors.withdrawalAmount.message}
+                                        {errors.bankAccountId.message}
                                     </p>
                                 )}
-                                <p className="text-[#AFAFAF] text-sm">
-                                    Gate+ mengenakan <span className="font-bold">biaya layanan sebesar 10%</span> yang akan dipotong secara otomatis pada saat penarikan dana.
-                                </p>
+                            </div>
+                            {/* Withdrawal Amount */}
+                            <div className="mt-6">
+                                <div className="flex justify-between items-center">
+                                    <label className="text-white block font-bold text-[16px] mb-2">
+                                        Jumlah Penarikan
+                                    </label>
+                                    <p className="text-[#AFAFAF] text-sm">Min: Rp 50.000 Max: Rp 25.000.000</p>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <div className="py-4 px-8 flex flex-row gap-2 items-center bg-[#393939] rounded-md text-[16px]">
+                                        <span>Rp</span>
+                                        <input
+                                            type="number"
+                                            min={50000}
+                                            max={25000000}
+                                            {...register("withdrawalAmount", {
+                                                valueAsNumber: true,
+                                            })}
+                                            required
+                                            className="w-full rounded-md bg-transparent border-none outline-none text-white"
+                                            placeholder="Masukkan Jumlah"
+                                        />
+                                    </div>
+                                    {errors.withdrawalAmount && (
+                                        <p className="text-red-400 text-sm">
+                                            {errors.withdrawalAmount.message}
+                                        </p>
+                                    )}
+                                    <p className="text-[#AFAFAF] text-sm">
+                                        Gate+ mengenakan <span className="font-bold">biaya layanan sebesar 10%</span> yang akan dipotong secara otomatis pada saat penarikan dana.
+                                    </p>
+                                </div>
+                            </div>
+                            {/* Submit Button */}
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="mt-6 w-full py-4 bg-[#175BA6] text-white rounded-md hover:bg-[#0E4A8B] focus:outline-none"
+                            >
+                                {isLoading ? "Memproses..." : "Tarik Dana"}
+                            </button>
+                        </form>
+                    </div>
+                    {/* Form Mendaftarkan Rekening */}
+                    <div className="flex flex-col gap-6">
+                        <div>
+                            <h1 className="zeinFont font-black text-4xl">Tambah Metode Pembayaran Baru</h1>
+                            <p className="text-[#AFAFAF] text-[16px]">
+                                Tambahkan rekening bank atau e-wallet baru untuk penarikan dana.
+                            </p>
+                        </div>
+                        <form onSubmit={handleSubmitBank(onSubmitBankAccount)} className="bg-[#393939] p-4 gap-4 flex flex-col rounded-lg">
+                            <Controller
+                                name="bankId"
+                                control={controlBank}
+                                rules={{ required: "Nama bank wajib dipilih" }}
+                                render={({ field, fieldState }) => (
+                                    <InputSelect
+                                        label="Nama Bank / E-Wallet"
+                                        name="bankId"
+                                        options={bankOption || []}
+                                        placeholder="Pilih Nama Bank / E-Wallet"
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        onBlur={field.onBlur}
+                                        error={fieldState.error?.message}
+                                    />
+                                )}
+                            />
+                            <InputText
+                                label="Nama Lengkap"
+                                name="accountName"
+                                placeholder="Masukkan Nama Lengkap"
+                                {...registerBank("accountName", { required: "Nama lengkap wajib diisi" })}
+                                error={errorsBank.accountName?.message}
+                            />
+                            <InputText
+                                label="Nomor Rekening"
+                                name="accountNumber"
+                                placeholder="Masukkan Nomor Rekening"
+                                {...registerBank("accountNumber", { required: "Nomor rekening wajib diisi" })}
+                                error={errorsBank.accountNumber?.message}
+                            />
+                            <button
+                                type="submit"
+                                disabled={isAddingBank}
+                                className="border-[#1482C9] border-2 rounded-lg py-4 font-semibold text-[#1482C9] hover:cursor-pointer"
+                            >
+                                {isAddingBank ? "Menambahkan..." : "Tambah Metode Baru"}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {/* Riwayat Penarikan */}
+                <div className="flex flex-col mt-4">
+                    <h1 className="zeinFont font-black text-4xl">Riwayat Penarikan</h1>
+                    <p className="text-[#AFAFAF] text-[16px] mb-2">
+                        Kelola dan analisis riwayat penarikan dana Anda
+                    </p>
+                    <div className="grid grid-cols-4 gap-4">
+                        <div className="border border-[#1FC16BB2] bg-gradient-to-r from-[#1FC16BB2] to-[#0F5B32B2] p-4 rounded-lg flex flex-col gap-2 items-center justify-center">
+                            <h2 className="font-bold text-[16px]">Total Ditarik</h2>
+                            <div className="flex flex-row items-end">
+                                <p className="text-[16px] font-bold">Rp</p>
+                                <p className="text-3xl font-bold">{earnedData?.data?.data?.successWithdrawalNoFee.toLocaleString()}</p>
                             </div>
                         </div>
-
-                        {/* Submit Button */}
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="mt-6 w-full py-4 bg-[#175BA6] text-white rounded-md hover:bg-[#0E4A8B] focus:outline-none"
-                        >
-                            {isLoading ? "Memproses..." : "Tarik Dana"}
-                        </button>
-                    </form>
-                </div>
-
-                {/* Form Mendaftarkan Rekening */}
-                <div className="flex flex-col gap-6">
-                    <div>
-                        <h1 className="zeinFont font-black text-4xl">Tambah Metode Pembayaran Baru</h1>
-                        <p className="text-[#AFAFAF] text-[16px]">
-                            Tambahkan rekening bank atau e-wallet baru untuk penarikan dana.
-                        </p>
+                        <div className="border border-white bg-[#393939] p-4 rounded-lg flex flex-col gap-2 items-center justify-center">
+                            <h2 className="font-bold text-[16px]">Total Transaksi</h2>
+                            <p className="font-bold text-3xl">{earnedData?.data?.data?.totalWithdrawalRequests.toLocaleString()}</p>
+                        </div>
+                        <div className="border border-white bg-[#393939] p-4 rounded-lg flex flex-col gap-2 items-center justify-center">
+                            <h2 className="font-bold text-[16px]">Biaya Potongan</h2>
+                            <div className="flex flex-row items-end">
+                                <p className="text-[16px] font-bold">Rp</p>
+                                <p className="text-3xl font-bold">{earnedData?.data?.data?.successFee.toLocaleString()}</p>
+                            </div>
+                        </div>
+                        <div className="border border-white bg-[#393939] p-4 rounded-lg flex flex-col gap-2 items-center justify-center">
+                            <h2 className="font-bold text-[16px]">Rata Rata Penarikan</h2>
+                            <div className="flex flex-row items-end">
+                                <p className="text-[16px] font-bold">Rp</p>
+                                <p className="text-3xl font-bold">10.000.000</p>
+                            </div>
+                        </div>
                     </div>
-                    <form onSubmit={handleSubmitBank(onSubmitBankAccount)} className="bg-[#393939] p-4 gap-4 flex flex-col rounded-lg">
-                        <Controller
-                            name="bankId"
-                            control={controlBank}
-                            rules={{ required: "Nama bank wajib dipilih" }}
-                            render={({ field, fieldState }) => (
-                                <InputSelect
-                                    label="Nama Bank / E-Wallet"
-                                    name="bankId"
-                                    options={bankOption || []}
-                                    placeholder="Pilih Nama Bank / E-Wallet"
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                    onBlur={field.onBlur}
-                                    error={fieldState.error?.message}
-                                />
-                            )}
-                        />
-
-                        <InputText
-                            label="Nama Lengkap"
-                            name="accountName"
-                            placeholder="Masukkan Nama Lengkap"
-                            {...registerBank("accountName", { required: "Nama lengkap wajib diisi" })}
-                            error={errorsBank.accountName?.message}
-                        />
-
-                        <InputText
-                            label="Nomor Rekening"
-                            name="accountNumber"
-                            placeholder="Masukkan Nomor Rekening"
-                            {...registerBank("accountNumber", { required: "Nomor rekening wajib diisi" })}
-                            error={errorsBank.accountNumber?.message}
-                        />
-
-                        <button
-                            type="submit"
-                            disabled={isAddingBank}
-                            className="border-[#1482C9] border-2 rounded-lg py-4 font-semibold text-[#1482C9] hover:cursor-pointer"
-                        >
-                            {isAddingBank ? "Menambahkan..." : "Tambah Metode Baru"}
-                        </button>
-                    </form>
+                    <div className="mt-4">
+                        <TransactionTable data={withdrawalData?.data.map((item) => ({
+                            id: item.id,
+                            midtransRef: item.midtransRef,
+                            createdAt: Date(item.createdAt).toString().slice(0, 15),
+                            completedAt: Date(item.completedAt).toString().slice(0, 15),
+                            platformFee: item.platformFee + item.adminFee + item.taxFee,
+                            method: item.bankAccount.bank.name,
+                            status: item.status == 'PENDING' ? 'Diproses' : item.status == 'SUCCESS' ? 'Sudah Dibayar' : 'Gagal',
+                            accountNumber: item.bankAccount.accountNumber,
+                        }))} />
+                    </div>
                 </div>
+                {modalType === "success" && <ModalSuccess
+                    data={createWithdrawalData}
+                    onClose={() => {
+                        setModalType(null);
+                        setCreateWithdrawalData(null);
+                    }}
+                />}
+                {modalType === "failed" && <ModalFailed currentBalance={earnedData?.data?.data?.currentBalance.toLocaleString()} errorMessage={errorMessage} onClose={() => setModalType(null)} />}
             </div>
-
-            {/* Riwayat Penarikan */}
-            <div className="flex flex-col mt-4">
-                <h1 className="zeinFont font-black text-4xl">Riwayat Penarikan</h1>
-                <p className="text-[#AFAFAF] text-[16px] mb-2">
-                    Kelola dan analisis riwayat penarikan dana Anda
-                </p>
-                <div className="grid grid-cols-4 gap-4">
-                    <div className="border border-[#1FC16BB2] bg-gradient-to-r from-[#1FC16BB2] to-[#0F5B32B2] p-4 rounded-lg flex flex-col gap-2 items-center justify-center">
-                        <h2 className="font-bold text-[16px]">Total Ditarik</h2>
-                        <div className="flex flex-row items-end">
-                            <p className="text-[16px] font-bold">Rp</p>
-                            <p className="text-3xl font-bold">{earnedData?.data?.data?.successWithdrawalNoFee.toLocaleString()}</p>
-                        </div>
-                    </div>
-                    <div className="border border-white bg-[#393939] p-4 rounded-lg flex flex-col gap-2 items-center justify-center">
-                        <h2 className="font-bold text-[16px]">Total Transaksi</h2>
-                        <p className="font-bold text-3xl">{earnedData?.data?.data?.totalWithdrawalRequests.toLocaleString()}</p>
-                    </div>
-                    <div className="border border-white bg-[#393939] p-4 rounded-lg flex flex-col gap-2 items-center justify-center">
-                        <h2 className="font-bold text-[16px]">Biaya Potongan</h2>
-                        <div className="flex flex-row items-end">
-                            <p className="text-[16px] font-bold">Rp</p>
-                            <p className="text-3xl font-bold">{earnedData?.data?.data?.successFee.toLocaleString()}</p>
-                        </div>
-                    </div>
-                    <div className="border border-white bg-[#393939] p-4 rounded-lg flex flex-col gap-2 items-center justify-center">
-                        <h2 className="font-bold text-[16px]">Rata Rata Penarikan</h2>
-                        <div className="flex flex-row items-end">
-                            <p className="text-[16px] font-bold">Rp</p>
-                            <p className="text-3xl font-bold">10.000.000</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="mt-4">
-                    <TransactionTable data={withdrawalData?.data.map((item) => ({
-                        id: item.id,
-                        midtransRef: item.midtransRef,
-                        createdAt: Date(item.createdAt).toString().slice(0, 15),
-                        completedAt: Date(item.completedAt).toString().slice(0, 15),
-                        platformFee: item.platformFee + item.adminFee + item.taxFee,
-                        method: item.bankAccount.bank.name,
-                        status: item.status == 'PENDING' ? 'Diproses' : item.status == 'SUCCESS' ? 'Sudah Dibayar' : 'Gagal',
-                        accountNumber: item.bankAccount.accountNumber,
-                    }))} />
-                </div>
-            </div>
-            {modalType === "success" && <ModalSuccess
-                data={createWithdrawalData}
-                onClose={() => {
-                    setModalType(null);
-                    setCreateWithdrawalData(null);
-                }}
-            />}
-            {modalType === "failed" && <ModalFailed currentBalance={earnedData?.data?.data?.currentBalance.toLocaleString()} errorMessage={errorMessage} onClose={() => setModalType(null)} />}
         </div>
     );
 }
@@ -435,7 +432,7 @@ function ModalSuccess({ data, onClose }) {
                             <p className="text-xs text-[#AFAFAF] font-normal"> Estimasi {data?.bankAccount?.bank?.withdrawalDuration} Hari Kerja</p>
                         </div>
                         <div className="flex flex-row gap-2 items-center mt-4">
-                            <button className="flex flex-row gap-2 px-4 py-2.5 rounded-lg border border-[#175BA6] hover:cursor-pointer">
+                            <Link href={`/creator/withdrawal/detail/${data?.newWithdrawal?.id}`} className="flex flex-row gap-2 px-4 py-2.5 rounded-lg border border-[#175BA6] hover:cursor-pointer">
                                 <Image
                                     src={IconDocs}
                                     alt="icon clock"
@@ -443,7 +440,7 @@ function ModalSuccess({ data, onClose }) {
                                     height={16}
                                 />
                                 <span className="text-white text-sm font-semibold">Download Invoice</span>
-                            </button>
+                            </Link>
                             <button onClick={() => { onClose() }} className="bg-[#1482C9B2] border border-[#175BA6] font-semibold text-white text-sm px-4 py-2.5 rounded-lg hover:cursor-pointer">
                                 Selesai
                             </button>
@@ -498,19 +495,6 @@ function ModalFailed({ errorMessage, currentBalance, onClose }) {
                         <h3 className="zeinFont font-black text-3xl text-center">Penarikan Gagal Diproses</h3>
                         <p className="text-xs text-[#AFAFAF] text-center">Penarikan Gaga! Silahkan coba ulangi proses penarikan atau hubungi bantuan kami</p>
                     </div>
-                    {/* <div className="flex flex-row justify-between items-center font-bold text-sm">
-                        <h4>15-09-2024, 14:30</h4>
-                        <div className="flex flex-row gap-2 items-center">
-                            <p>WD-20240715-001</p>
-                            <Image
-                                src={IconCopy}
-                                alt="Copy"
-                                width={16}
-                                height={16}
-                                className="hover:cursor-pointer"
-                            />
-                        </div>
-                    </div> */}
                     <div className="flex flex-col gap-2 items-center justify-center">
                         <p className="zeinFont font-black text-5xl">{errorMessage}</p>
                         <p className="text-sm">BCA - 1234567890</p>

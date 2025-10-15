@@ -150,11 +150,11 @@ export default function ProfileMenu({
                     <Link href={"/creator/dashboard"} className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
                       <span>Dashboard</span>
                     </Link>
-                    <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
+                    <Link href={"/creator/withdrawal"} className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
                       <span>Penarikan Saldo</span>
-                    </div>
+                    </Link>
                     <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
-                      <Link href="/Creators/Dashboard">
+                      <Link href="/creator/dashboard">
                         <span>Analytic</span>
                       </Link>
                     </div>

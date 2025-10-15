@@ -196,13 +196,16 @@ function DetailSeriesPage({ params }) {
                         logType={"WATCH_TRAILER"}
                         contentType={"SERIES"}
                         contentId={seriesData?.id}
+                        ageRestriction={seriesData?.ageRestriction}
+                        title={'Trailer ' + seriesData?.title}
+                        genre={seriesData?.categories?.tittle}
                     />
                 </div>
             </section>
 
             <main className="px-5 text-white">
-                <section className="w-full flex flex-row items-center justify-between pt-2 pb-4">
-                    <div className="flex flex-col gap-4 w-1/2">
+                <section className="w-full flex flex-col gap-4 md:gap-0 md:flex-row md:items-center justify-between pt-2 pb-4">
+                    <div className="flex flex-col gap-4 md:w-1/2 w-full">
                         <div className="flex flex-col gap-2">
                             <h1 className="font-black text-4xl">
                                 {seriesData?.title || "Judul Series Tidak Tersedia"}
@@ -279,7 +282,7 @@ function DetailSeriesPage({ params }) {
                             <DefaultShareButton contentType={'SERIES'} />
                         </div>
                     </div>
-                    <div className="flex flex-row items-center justify-end w-1/2 gap-3">
+                    <div className="flex flex-row items-center md:justify-end w-full md:w-1/2 gap-3">
                         <div className="flex items-center justify-center">
                             <Image
                                 width={60}
@@ -290,7 +293,7 @@ function DetailSeriesPage({ params }) {
                         </div>
                         <div className="grid grid-rows-2">
                             <div className="flex place-content-center justify-center text-2xl font-bold text-white">
-                                {seriesData?.creator?.username}
+                                {seriesData?.creator?.profileName}
                             </div>
                             <div className="text-sm text-white">{seriesData?.creator?._count.subscriptions} followers</div>
                         </div>

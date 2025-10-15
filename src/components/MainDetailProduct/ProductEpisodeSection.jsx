@@ -162,8 +162,8 @@ export default function ProductEpisodeSection({
               .map((item, index) => (
                 <div
                   key={index}
-                  className={`group flex cursor-pointer w-full gap-2 px-4 py-4 ${item.isPurchased || item.price == 'Free' ? "hover:bg-[#105CAC]" : "hover:bg-gray-900"} md:gap-4 md:rounded-lg transition-all duration-300 ease-in-out justify-between ${currentlyPlaying?.id === item.id ? "" : ""} `}
-                  onClick={item.isPurchased || item.price == 'Free' ? () => handlePlayPodcast(item) : () => { handlePayment(item.creatorId, item.id, item.price) }}
+                  className={`group flex cursor-pointer w-full gap-2 px-4 py-4 ${item.isPurchased || item.price == 'Free' || isSubscribe ? "hover:bg-[#105CAC]" : "hover:bg-gray-900"} md:gap-4 md:rounded-lg transition-all duration-300 ease-in-out justify-between ${currentlyPlaying?.id === item.id ? "" : ""} `}
+                  onClick={item.isPurchased || item.price == 'Free' || isSubscribe ? () => handlePlayPodcast(item) : () => { handlePayment(item.creatorId, item.id, item.price) }}
                 >
                   <div className="flex gap-2 w-[200px] md:w-2xl">
                     <div className="h-24 w-24 overflow-hidden rounded-lg bg-[#DEDEDE] md:h-36 md:w-36 relative group">
@@ -175,7 +175,7 @@ export default function ProductEpisodeSection({
                         width={144}
                         height={144}
                       />
-                      {item.isPurchased || item.price == 'Free' ? (
+                      {item.isPurchased || item.price == 'Free' || isSubscribe ? (
                         <div className="group-hover:opacity-100 opacity-0 transition-all duration-300 ease-in-out absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center h-full w-full">
                           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center bg-[radial-gradient(circle,_#193B89BF_0%,_transparent_80%)] h-20 w-20" />
                           <div className="relative h-32 w-32">
@@ -237,7 +237,7 @@ export default function ProductEpisodeSection({
                     <div className="rounded border-2 border-[#F5F5F524] bg-[#F5F5F524] p-1">
                       <Image
                         priority
-                        src={item.isPurchased || item.price == 'Free' ? iconUnlocked : iconLocked}
+                        src={item.isPurchased || item.price == 'Free' || isSubscribe ? iconUnlocked : iconLocked}
                         alt="icon-locked"
                         className="h-full w-full rounded object-cover object-center"
                         width={16}

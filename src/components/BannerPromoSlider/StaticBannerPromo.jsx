@@ -5,13 +5,13 @@ import PropTypes from "prop-types";
 export default function StaticBannerPromo({ title, bgColor, titleColor, subtitle }) {
     return (
         <div
-            className="my-auto h-60 flex w-screen flex-col bg-gradient-to-r from-[#156EB74D]/0 to-[#156EB74D]/0 justify-center px-16"
+            className="my-auto h-60 flex w-screen flex-col bg-gradient-to-r from-[#156EB74D]/0 to-[#156EB74D]/0 justify-center px-4 md:px-16"
             style={{
                 backgroundImage: `linear-gradient(to right, rgba(21,110,183,0), ${bgColor || '#156EB74D'}, rgba(21,110,183,0))`
             }}
         >
             <h1
-                className="font-black zeinFont text-5xl"
+                className="font-black zeinFont text-5xl text-2xl"
                 style={{ color: titleColor || '#219BFF' }}
             >
                 {title}

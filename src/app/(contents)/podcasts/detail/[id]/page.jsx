@@ -20,11 +20,14 @@ export default function DetailPodcastPage({ params }) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
   const [selectedEpisode, setSelectedEpisode] = useState(null);
+  const [selectedContentId, setSelectedContentId] = useState(null);
+  const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
   const [selectedCreatorId, setSelectedCreatorId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPrice, setSelectedPrice] = useState(null);
   const [loading, setLoading] = useState(false);
-    const { pay } = useMidtransPayment();
+  const { pay } = useMidtransPayment();
+  const { pay: subscribePay } = useMidtransPayment("SUBSCRIBE");
   const [createLog] = useCreateLogMutation();
 
   useEffect(() => {
@@ -65,6 +68,18 @@ export default function DetailPodcastPage({ params }) {
     setLoading(false);
   };
 
+  const handleSubscribe = async () => {
+    setLoading(true);
+    await subscribePay({
+      creatorId: selectedCreatorId,
+      contentId: selectedContentId,
+      price: selectedPrice,
+      contentType: "PODCAST",
+    });
+    setIsModalSubscribeOpen(false);
+    setLoading(false);
+  };
+
   useEffect(() => {
     createLog({
       contentType: "PODCAST",
@@ -72,6 +87,12 @@ export default function DetailPodcastPage({ params }) {
       contentId: id,
     });
   }, [id, createLog]);
+
+  useEffect(() => {
+    if (podcastData && podcastData.id) {
+      setSelectedContentId(podcastData.id);
+    }
+  }, [podcastData]);
 
   return (
     podcastData && (
@@ -84,6 +105,7 @@ export default function DetailPodcastPage({ params }) {
           currentlyPlaying={currentlyPlaying}
           handlePlayPodcast={handlePlayPodcast}
           handlePayment={handleModalOpen}
+          handleSubscribe={handleSubscribe}
           topContentData={data?.data?.topContent || []}
           recomendationData={data?.data?.recommendation || []}
         />
@@ -108,6 +130,13 @@ export default function DetailPodcastPage({ params }) {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onConfirm={handleBuy}
+        />
+
+        <SimpleModal
+          title={"Konten ini masih terkunci, apakah kamu bersedia membeli nya dengan harga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
+          isOpen={isModalSubscribeOpen}
+          onClose={() => setIsModalSubscribeOpen(false)}
+          onConfirm={handleSubscribe}
         />
 
         {loading && <LoadingOverlay />}
