@@ -238,7 +238,7 @@ export default function ProfileMenu({
               </span>
               <span>Accounts & Privacy</span>
             </li>
-            <Link href="/faq">
+            <Link href="/help">
               <li className="flex flex-row gap-2 rounded-md p-2 font-semibold text-white hover:bg-[#F5F5F54D]">
                 <span className="relative h-6 w-6">
                   <Image

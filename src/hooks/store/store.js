@@ -22,6 +22,7 @@ import { bankAPI } from "../api/bankSliceAPI";
 import { bankAccountAPI } from "../api/bankAccountAPI";
 import { withdrawalAPI } from "../api/withdrawalAPI";
 import { searchAPI } from "../api/searchAPI";
+import { faqArticleAPI } from "../api/faqArticleAPI";
 
 const rootReducer = combineReducers({
   [ebookApi.reducerPath]: ebookApi.reducer,
@@ -44,6 +45,7 @@ const rootReducer = combineReducers({
   [bankAccountAPI.reducerPath]: bankAccountAPI.reducer,
   [withdrawalAPI.reducerPath]: withdrawalAPI.reducer,
   [searchAPI.reducerPath]: searchAPI.reducer,
+  [faqArticleAPI.reducerPath]: faqArticleAPI.reducer,
 });
 
 export const store = configureStore({
@@ -69,7 +71,8 @@ export const store = configureStore({
       bankAPI.middleware,
       bankAccountAPI.middleware,
       withdrawalAPI.middleware,
-      searchAPI.middleware
+      searchAPI.middleware,
+      faqArticleAPI.middleware
     ),
 });
 
