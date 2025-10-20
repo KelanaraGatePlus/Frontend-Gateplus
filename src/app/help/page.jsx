@@ -20,7 +20,7 @@ export default function HelpPage() {
 
     function defaultContent(href, subtitle, key) {
         return (
-            <Link href={href} className="text-[#F5F5F5] montserratFont flex flex-row font-normal text-sm items-center underline hover:text-[#1DBDF5]">
+            <Link key={key} href={href} className="text-[#F5F5F5] montserratFont flex flex-row font-normal text-sm items-center underline hover:text-[#1DBDF5]">
                 <FileIcon className="w-6 h-6 mr-4 mt-1" />
                 <p>
                     {subtitle}
@@ -57,11 +57,12 @@ export default function HelpPage() {
 
             {/* Item */}
             <div className="flex flex-col gap-16 mt-20">
-                {faqArticles && faqArticles.data.map((item) => (<div className="border border-[#F5F5F580] rounded-lg px-2 py-6 flex flex-col gap-2" ref={firstItemRef}>
-                    <div className="flex flex-row gap-4 px-4 mx-2 items-center border-white border-b pb-4">
-                        <ShoppingCartIcon className="w-8 h-8 text-white" />
-                        <h2 className="text-3xl text-white font-black zeinFont">{capitilizeFirstWord(item.name.toLowerCase())}</h2>
-                    </div>
+                {faqArticles && faqArticles.data.map((item) => (
+                    <div key={item.id} className="border border-[#F5F5F580] rounded-lg px-2 py-6 flex flex-col gap-2" ref={firstItemRef}>
+                        <div className="flex flex-row gap-4 px-4 mx-2 items-center border-white border-b pb-4">
+                            <ShoppingCartIcon className="w-8 h-8 text-white" />
+                            <h2 className="text-3xl text-white font-black zeinFont">{capitilizeFirstWord(item.name.toLowerCase())}</h2>
+                        </div>
                     <Accordion
                         variant="bordered"
                         className="text-white border-white"
@@ -95,8 +96,8 @@ export default function HelpPage() {
                             )
                         ))}
                     </Accordion>
-                </div>)
-                )}
+                </div>
+                ))}
             </div>
             {/* End Item */}
 

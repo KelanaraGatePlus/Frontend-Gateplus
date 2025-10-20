@@ -5,6 +5,7 @@ import formatDate from "@/lib/helper/formatDateHelper";
 import { FileIcon } from "lucide-react";
 import Link from "next/link";
 import React from "react";
+import PropTypes from "prop-types";
 
 export default function DetailPage({ params }) {
     const { id } = React.use(params);
@@ -46,3 +47,7 @@ export default function DetailPage({ params }) {
 
     );
 }
+
+DetailPage.propTypes = {
+    params: PropTypes.object.isRequired,
+};

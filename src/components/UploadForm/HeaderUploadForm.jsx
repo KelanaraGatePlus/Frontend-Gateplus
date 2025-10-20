@@ -24,4 +24,6 @@ export default function HeaderUploadForm({ title, children, subtitle = null, tit
 HeaderUploadForm.propTypes = {
     title: PropTypes.string,
     children: PropTypes.node,
+    subtitle: PropTypes.string,
+    titlePosition: PropTypes.oneOf(['center', 'start']),
 }
