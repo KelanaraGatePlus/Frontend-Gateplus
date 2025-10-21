@@ -83,7 +83,7 @@ export default function ProductEpisodeSection({
             {(showAll ? productEpisodes : productEpisodes.slice(0, 5))
               .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
               .map((item, index) => (
-                <button key={index} onClick={item.isPurchased || item.price == 'Free' || isSubscribe ? () => { window.location.href = `${parentPath}/${item.id}` } : () => { handlePayment(item.creatorId, item.id, item.price, 'EBOOK') }}>
+                <button key={index} onClick={item.isPurchased || item.price == 'Free' || isSubscribe ? () => { window.location.href = `${parentPath}/${item.id}` } : () => { handlePayment(item.id, item.price, 'EBOOK') }}>
                   <div className="group flex cursor-pointer items-stretch gap-2 px-4 py-2 hover:bg-[#1F6E8A] md:gap-4">
                     {/* Book Container */}
                     <div className="h-24 w-24 overflow-hidden rounded-lg md:h-36 md:w-36">
@@ -163,7 +163,7 @@ export default function ProductEpisodeSection({
                 <div
                   key={index}
                   className={`group flex cursor-pointer w-full gap-2 px-4 py-4 ${item.isPurchased || item.price == 'Free' || isSubscribe ? "hover:bg-[#105CAC]" : "hover:bg-gray-900"} md:gap-4 md:rounded-lg transition-all duration-300 ease-in-out justify-between ${currentlyPlaying?.id === item.id ? "" : ""} `}
-                  onClick={item.isPurchased || item.price == 'Free' || isSubscribe ? () => handlePlayPodcast(item) : () => { handlePayment(item.creatorId, item.id, item.price) }}
+                  onClick={item.isPurchased || item.price == 'Free' || isSubscribe ? () => handlePlayPodcast(item) : () => { handlePayment(item.id, item.price) }}
                 >
                   <div className="flex gap-2 w-[200px] md:w-2xl">
                     <div className="h-24 w-24 overflow-hidden rounded-lg bg-[#DEDEDE] md:h-36 md:w-36 relative group">

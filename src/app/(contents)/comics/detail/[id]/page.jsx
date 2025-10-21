@@ -9,7 +9,6 @@ import { useGetComicByIdQuery } from "@/hooks/api/comicSliceAPI";
 /*[--- UI COMPONENTS ---]*/
 import MainTemplateLayout from "@/components/MainDetailProduct/page";
 import SimpleModal from "@/components/Modal/SimpleModal";
-import { useMidtransPayment } from "@/hooks/api/midtransAPI";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 
@@ -17,25 +16,20 @@ export default function DetailComicPage({ params }) {
   const { id } = use(params);
   const [userId, setUserId] = useState(null);
   const [selectedEpisode, setSelectedEpisode] = useState(null);
-  const [selectedCreatorId, setSelectedCreatorId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPrice, setSelectedPrice] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { pay } = useMidtransPayment();
-  const { pay: subscribePay } = useMidtransPayment("SUBSCRIBE");
   const [selectedContentId, setSelectedContentId] = useState(null);
   const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
   const [createLog] = useCreateLogMutation();
 
-  const handleModalSubscribeOpen = (creatorId, contentId, price) => {
-    setSelectedCreatorId(creatorId);
+  const handleModalSubscribeOpen = (contentId, price) => {
     setSelectedContentId(contentId);
     setSelectedPrice(price);
     setIsModalSubscribeOpen(true);
   };
 
-  const handleModalOpen = (creatorId, episodeId, price) => {
-    setSelectedCreatorId(creatorId);
+  const handleModalOpen = (episodeId, price) => {
     setSelectedEpisode(episodeId);
     setSelectedPrice(price);
     setIsModalOpen(true);
@@ -43,24 +37,14 @@ export default function DetailComicPage({ params }) {
 
   const handleBuy = async () => {
     setLoading(true);
-    await pay({
-      creatorId: selectedCreatorId,
-      episodeId: selectedEpisode,
-      price: selectedPrice,
-      contentType: "COMIC",
-    });
+    window.location.href = `/checkout/purchase/comic/${id}/${selectedEpisode}`;
     setIsModalOpen(false);
     setLoading(false);
   };
 
   const handleSubscribe = async () => {
     setLoading(true);
-    await subscribePay({
-      creatorId: selectedCreatorId,
-      contentId: selectedContentId,
-      price: selectedPrice,
-      contentType: "COMIC",
-    });
+    window.location.href = `/checkout/subscribe/comic/${selectedContentId}`;
     setIsModalSubscribeOpen(false);
     setLoading(false);
   };

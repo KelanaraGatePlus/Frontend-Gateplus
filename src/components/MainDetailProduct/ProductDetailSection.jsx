@@ -268,7 +268,7 @@ export default function ProductDetailSection({
                 <div className="flex w-fit flex-1 gap-3 items-center justify-center md:flex-none montserratFont">
                   {(productType === 'ebook' || productType === 'comic') && canSubscribe && (
                     <button
-                      onClick={() => handleSubscribe(creatorDetail.id, productID, subscriptionPrice)}
+                      onClick={() => handleSubscribe(productID, subscriptionPrice)}
                       disabled={isSubscribe}
                       className={`w-full cursor-pointer rounded-3xl px-12 py-3 font-bold text-white md:w-auto 
                       ${isSubscribe ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#0076E999] hover:bg-[#0076E999]/80'}`}

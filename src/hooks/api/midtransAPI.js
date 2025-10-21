@@ -16,9 +16,6 @@ export const useMidtransPayment = (paymentType = "ORDER") => {
         case "ORDER":
             midtransURL = `${BACKEND_URL}/api/payment/create`;
             break;
-        case "TIP":
-            midtransURL = `${BACKEND_URL}/api/payment/create-tip`;
-            break;
         case "SUBSCRIPTION":
             midtransURL = `${BACKEND_URL}/api/payment/create-subscription`;
             break;
@@ -45,11 +42,11 @@ export const useMidtransPayment = (paymentType = "ORDER") => {
         return undefined;
     }, []);
 
-    const pay = async ({ episodeId, contentId, contentType = "PODCAST" }) => {
+    const pay = async ({ episodeId, contentId, contentType = "PODCAST", tip = null }) => {
         const body =
             paymentType === "ORDER"
-                ? JSON.stringify({ episodeId, contentType })
-                : JSON.stringify({ contentId, contentType });
+                ? JSON.stringify({ episodeId, contentType, tip })
+                : JSON.stringify({ contentId, contentType, tip });
 
         if (!snapReady || !window.snap || typeof window.snap.pay !== "function") {
             alert("Midtrans Snap belum siap, coba lagi.");

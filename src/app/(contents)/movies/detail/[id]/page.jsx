@@ -9,7 +9,6 @@ import { useGetMovieByIdQuery } from "@/hooks/api/movieSliceAPI";
 import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
 import React, { useEffect, useState } from "react";
 import SimpleModal from "@/components/Modal/SimpleModal";
-import { useMidtransPayment } from "@/hooks/api/midtransAPI";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { useLikeContent } from "@/lib/features/useLikeContent";
 import { useDislikeContent } from "@/lib/features/useDislikeContent";
@@ -34,10 +33,8 @@ function PlayingMoviePage({ params }) {
     const movieData = data?.data?.data || {}; // Pindahkan ke atas agar bisa dipakai di useEffect
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedCreatorId, setSelectedCreatorId] = useState(null);
     const [selectedContentId, setSelectedContentId] = useState(null);
     const [selectedPrice, setSelectedPrice] = useState(null);
-    const { pay } = useMidtransPayment();
     const [createLog] = useCreateLogMutation();
     const { toggleLike } = useLikeContent();
     const { toggleDislike } = useDislikeContent();
@@ -68,12 +65,10 @@ function PlayingMoviePage({ params }) {
     }, [movieData]);
 
     const handleToggleDislike = () => {
-        if (!movieData.id) return; // Mencegah aksi jika data belum siap
-        // Jika konten sedang di-like, batalkan like terlebih dahulu
+        if (!movieData.id) return;
         if (isLiked) {
-            // Panggil toggleLike untuk unlike
             toggleLike({
-                isLiked: true, // Paksa jadi true untuk proses unlike
+                isLiked: true,
                 id: movieData.id,
                 fieldKey: "movieId",
                 idLiked,
@@ -119,17 +114,10 @@ function PlayingMoviePage({ params }) {
     };
 
     const handleSubscribe = async () => {
-        await pay({
-            creatorId: selectedCreatorId,
-            episodeId: selectedContentId,
-            price: selectedPrice,
-            contentType: "MOVIE",
-        });
-        setIsModalOpen(false);
+        window.location.href = `/checkout/subscribe/movie/${selectedContentId}`;
     };
 
-    const handleModalOpen = (creatorId, contentId, price) => {
-        setSelectedCreatorId(creatorId);
+    const handleModalOpen = (contentId, price) => {
         setSelectedContentId(contentId);
         setSelectedPrice(price);
         setIsModalOpen(true);
@@ -191,7 +179,7 @@ function PlayingMoviePage({ params }) {
                         </div>
                         <div className="flex flex-row gap-6">
                             <div className="flex items-center justify-center w-48">
-                                <button onClick={movieData?.isSubscribed ? null : () => { handleModalOpen(movieData?.creator?.id, movieData?.id, movieData?.price) }} className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
+                                <button onClick={movieData?.isSubscribed ? null : () => { handleModalOpen(movieData?.id, movieData?.price) }} className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
                                     {movieData?.isSubscribed ? "Watch" : "Buy"}
                                 </button>
                             </div>

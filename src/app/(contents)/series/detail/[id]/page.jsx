@@ -15,7 +15,6 @@ import Image from "next/image";
 import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
 import { useGetSeriesByIdQuery } from "@/hooks/api/seriesSliceAPI";
 import ProductEpisodeSection from "@/components/MainDetailProduct/ProductEpisodeSection";
-import { useMidtransPayment } from "@/hooks/api/midtransAPI";
 import SimpleModal from "@/components/Modal/SimpleModal";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { useLikeContent } from "@/lib/features/useLikeContent";
@@ -33,7 +32,6 @@ function DetailSeriesPage({ params }) {
     const { data } = useGetSeriesByIdQuery(id);
     const [loading, setLoading] = useState(false);
     const [selectedContentId, setSelectedContentId] = useState(null);
-    const [selectedCreatorId, setSelectedCreatorId] = useState(null);
     const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
     const [selectedPrice, setSelectedPrice] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -56,18 +54,13 @@ function DetailSeriesPage({ params }) {
         return new Date(a.createdAt) - new Date(b.createdAt);
     });
 
-    const { pay } = useMidtransPayment();
-    const { pay: subscribePay } = useMidtransPayment("SUBSCRIBE");
-
-    const handleModalSubscribeOpen = (creatorId, contentId, price) => {
-        setSelectedCreatorId(creatorId);
+    const handleModalSubscribeOpen = (contentId, price) => {
         setSelectedContentId(contentId);
         setSelectedPrice(price);
         setIsModalSubscribeOpen(true);
     };
 
-    const handleModalOpen = (creatorId, episodeId, price) => {
-        setSelectedCreatorId(creatorId);
+    const handleModalOpen = (episodeId, price) => {
         setSelectedEpisode(episodeId);
         setSelectedPrice(price);
         setIsModalOpen(true);
@@ -75,24 +68,14 @@ function DetailSeriesPage({ params }) {
 
     const handleBuy = async () => {
         setLoading(true);
-        await pay({
-            creatorId: selectedCreatorId,
-            episodeId: selectedEpisode,
-            price: selectedPrice,
-            contentType: "SERIES",
-        });
+        window.location.href = `/checkout/purchase/series/${id}/${selectedEpisode}`;
         setIsModalOpen(false);
         setLoading(false);
     };
 
     const handleSubscribe = async () => {
         setLoading(true);
-        await subscribePay({
-            creatorId: selectedCreatorId,
-            contentId: selectedContentId,
-            price: selectedPrice,
-            contentType: "SERIES",
-        });
+        window.location.href = `/checkout/subscribe/series/${selectedContentId}`;
         setIsModalSubscribeOpen(false);
         setLoading(false);
     };
@@ -216,7 +199,7 @@ function DetailSeriesPage({ params }) {
                         </div>
                         <div className="flex flex-row gap-6">
                             <div className="flex items-center justify-center w-48">
-                                <button onClick={!seriesData?.isSubscribed && seriesData?.canSubscribe ? () => { handleModalSubscribeOpen(seriesData?.creator?.id, seriesData?.id, seriesData?.subscriptionPrice) } : null} className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
+                                <button onClick={!seriesData?.isSubscribed && seriesData?.canSubscribe ? () => { handleModalSubscribeOpen(seriesData?.id, seriesData?.subscriptionPrice) } : null} className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
                                     {!seriesData?.canSubscribe ? 'Buy Episode To Watch' : seriesData?.isSubscribed ? "Watch" : "Buy"}
                                 </button>
                             </div>
