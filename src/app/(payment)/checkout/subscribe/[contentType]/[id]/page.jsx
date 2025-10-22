@@ -13,15 +13,19 @@ import { useGetComicByIdQuery } from "@/hooks/api/comicSliceAPI";
 import { useGetSeriesByIdQuery } from "@/hooks/api/seriesSliceAPI";
 import { useGetPodcastByIdQuery } from "@/hooks/api/podcastSliceAPI";
 import { fee } from "@/lib/constants/fee";
+import { useGetDiscountByVoucherDiscountCodeMutation } from "@/hooks/api/discountVoucherAPI";
 
 export default function PaymentCheckoutPage({ params }) {
     const resolvedParams = React.use(params);
     const { contentType, id } = resolvedParams;
     const [isShowInput, setIsShowInput] = useState(true);
+    const [totalDiscount, setTotalDiscount] = useState(0);
+    const [voucherCode, setVoucherCode] = useState("");
 
     const [selectedTip, setSelectedTip] = useState(null);
     const { pay: subscribePay } = useMidtransPayment('SUBSCRIBE');
     const { pay } = useMidtransPayment();
+    const [getDiscount] = useGetDiscountByVoucherDiscountCodeMutation();
 
     // Simulasi userId kalau diperlukan
     const userId = 1;
@@ -83,9 +87,9 @@ export default function PaymentCheckoutPage({ params }) {
         try {
             setIsShowInput(false);
             if (contentType == 'movie') {
-                await pay({ episodeId: id, contentType: contentType.toUpperCase(), tip: selectedTip });
+                await pay({ episodeId: id, contentType: contentType.toUpperCase(), tip: selectedTip, voucherCode });
             } else {
-                await subscribePay({ contentId: id, contentType: contentType.toUpperCase(), tip: selectedTip });
+                await subscribePay({ contentId: id, contentType: contentType.toUpperCase(), tip: selectedTip, voucherCode });
             }
         } catch (error) {
             console.error("Pembayaran gagal:", error);
@@ -99,6 +103,15 @@ export default function PaymentCheckoutPage({ params }) {
                 Loading...
             </div>
         );
+    }
+
+    async function handleApplyVoucher(code, amount) {
+        try {
+            const response = await getDiscount({ code, amount }).unwrap();
+            setTotalDiscount(response.data.data || 0);
+        } catch (err) {
+            console.error("Failed to get discount:", err);
+        }
     }
 
     const isSubscribe = contentType !== 'movie' ? contentData?.isSubscribe : contentData?.isSubscribed;
@@ -135,16 +148,19 @@ export default function PaymentCheckoutPage({ params }) {
 
                     {/* Voucher & Tip Section */}
                     <div className="flex flex-col px-8 gap-8">
-                        <div className="flex flex-row bg-[#DEDEDE4D] rounded-lg overflow-hidden">
-                            <button className="px-6 md:px-12 py-3 bg-[#0075e9c4] font-semibold whitespace-nowrap rounded-sm">
+                        {price && <div className="flex flex-row bg-[#DEDEDE4D] rounded-lg overflow-hidden">
+                            <button onClick={() => handleApplyVoucher(voucherCode, Number(price))} className="px-6 md:px-12 py-3 bg-[#0075e9c4] font-semibold whitespace-nowrap rounded-sm hover:cursor-pointer">
                                 Gunakan Voucher
                             </button>
                             <input
                                 type="text"
                                 className="flex-1 text-center placeholder:text-center px-2 py-3 outline-none"
                                 placeholder="Gunakan / Masukan Kode Voucher"
+                                onChange={
+                                    (e) => setVoucherCode(e.target.value)
+                                }
                             />
-                        </div>
+                        </div>}
 
                         <div className="flex flex-col gap-2">
                             <div className="bg-[#2222224D] p-4 rounded-md">
@@ -185,20 +201,20 @@ export default function PaymentCheckoutPage({ params }) {
                         </div>
                         <div className="flex flex-row justify-between">
                             <p>Voucher</p>
-                            <p className="font-bold">Rp 0</p>
+                            <p className="font-bold text-red-600">- Rp {Math.round(totalDiscount).toLocaleString("id-ID")}</p>
                         </div>
                         <div className="flex flex-row justify-between">
                             <p>Biaya Admin</p>
-                            <p className="font-bold">Rp {((Number(price) + (Number(selectedTip) || 0)) * fee.serviceFee).toLocaleString("id-ID")}</p>
+                            <p className="font-bold">Rp {Math.round(((Number(price) - totalDiscount + (Number(selectedTip) || 0)) * fee.serviceFee)).toLocaleString("id-ID")}</p>
                         </div>
                         <div className="flex flex-row justify-between border-b border-white pb-2">
                             <p>Pajak</p>
-                            <p className="font-bold">Rp {((Number(price) + (Number(selectedTip) || 0)) * fee.taxFee).toLocaleString("id-ID")}</p>
+                            <p className="font-bold">Rp {Math.round(((Number(price) - totalDiscount + (Number(selectedTip) || 0)) * fee.taxFee)).toLocaleString("id-ID")}</p>
                         </div>
                         <div className="flex flex-row justify-between border-white pb-2 text-xl">
                             <p>Total</p>
                             <p className="font-bold">
-                                Rp {(Number(price) + (Number(selectedTip) || 0) + ((Number(price) + (Number(selectedTip) || 0)) * (fee.taxFee + fee.serviceFee))).toLocaleString("id-ID")}
+                                Rp {Math.round((Number(price) - totalDiscount + (Number(selectedTip) || 0) + ((Number(price) - totalDiscount + (Number(selectedTip) || 0)) * (fee.taxFee + fee.serviceFee)))).toLocaleString("id-ID")}
                             </p>
                         </div>
                     </div>

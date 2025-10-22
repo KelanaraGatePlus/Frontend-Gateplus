@@ -23,6 +23,7 @@ import { bankAccountAPI } from "../api/bankAccountAPI";
 import { withdrawalAPI } from "../api/withdrawalAPI";
 import { searchAPI } from "../api/searchAPI";
 import { faqArticleAPI } from "../api/faqArticleAPI";
+import { discountVoucherAPI } from "../api/discountVoucherAPI";
 
 const rootReducer = combineReducers({
   [ebookApi.reducerPath]: ebookApi.reducer,
@@ -46,6 +47,7 @@ const rootReducer = combineReducers({
   [withdrawalAPI.reducerPath]: withdrawalAPI.reducer,
   [searchAPI.reducerPath]: searchAPI.reducer,
   [faqArticleAPI.reducerPath]: faqArticleAPI.reducer,
+  [discountVoucherAPI.reducerPath]: discountVoucherAPI.reducer,
 });
 
 export const store = configureStore({
@@ -72,7 +74,8 @@ export const store = configureStore({
       bankAccountAPI.middleware,
       withdrawalAPI.middleware,
       searchAPI.middleware,
-      faqArticleAPI.middleware
+      faqArticleAPI.middleware,
+      discountVoucherAPI.middleware,
     ),
 });
 

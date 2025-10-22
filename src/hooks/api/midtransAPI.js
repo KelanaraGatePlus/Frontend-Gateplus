@@ -42,11 +42,11 @@ export const useMidtransPayment = (paymentType = "ORDER") => {
         return undefined;
     }, []);
 
-    const pay = async ({ episodeId, contentId, contentType = "PODCAST", tip = null }) => {
+    const pay = async ({ episodeId, contentId, contentType = "PODCAST", tip = null, voucherCode = null }) => {
         const body =
             paymentType === "ORDER"
-                ? JSON.stringify({ episodeId, contentType, tip })
-                : JSON.stringify({ contentId, contentType, tip });
+                ? JSON.stringify({ episodeId, contentType, tip, voucherCode })
+                : JSON.stringify({ contentId, contentType, tip, voucherCode });
 
         if (!snapReady || !window.snap || typeof window.snap.pay !== "function") {
             alert("Midtrans Snap belum siap, coba lagi.");
