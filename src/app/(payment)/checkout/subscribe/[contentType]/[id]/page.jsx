@@ -100,7 +100,7 @@ export default function PaymentCheckoutPage({ params }) {
                             setSuccessModal(true);
                         },
                         onPending: (result) => console.log("⌛ Pending:", result),
-                        onError: (err) => alert("❌ Pembayaran gagal."),
+                        onError: () => alert("❌ Pembayaran gagal."),
                         onClose: () => console.log("Popup ditutup."),
                     }
                 );
@@ -112,7 +112,7 @@ export default function PaymentCheckoutPage({ params }) {
                             setSuccessModal(true);
                         },
                         onPending: (result) => console.log("⌛ Pending:", result),
-                        onError: (err) => alert("❌ Pembayaran gagal."),
+                        onError: () => alert("❌ Pembayaran gagal."),
                         onClose: () => console.log("Popup ditutup."),
                     });
             }
