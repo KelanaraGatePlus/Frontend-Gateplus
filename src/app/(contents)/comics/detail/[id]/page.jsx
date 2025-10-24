@@ -37,14 +37,14 @@ export default function DetailComicPage({ params }) {
 
   const handleBuy = async () => {
     setLoading(true);
-    window.location.href = `/checkout/purchase/comic/${id}/${selectedEpisode}`;
+    window.location.href = `/checkout/purchase/comics/${id}/${selectedEpisode}`;
     setIsModalOpen(false);
     setLoading(false);
   };
 
   const handleSubscribe = async () => {
     setLoading(true);
-    window.location.href = `/checkout/subscribe/comic/${selectedContentId}`;
+    window.location.href = `/checkout/subscribe/comics/${selectedContentId}`;
     setIsModalSubscribeOpen(false);
     setLoading(false);
   };

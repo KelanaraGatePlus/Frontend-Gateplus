@@ -6,7 +6,7 @@ export default function CheckoutPageLayout({ children }) {
     return (
         <div className="flex flex-col overflow-x-hidden">
             <div className="flex flex-col">
-                <main className="relative flex flex-col">
+                <main className="relative mt-16 flex flex-col md:mt-[100px]">
                     <div className="flex w-full flex-col">
                         {children}
                     </div>

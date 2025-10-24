@@ -53,14 +53,14 @@ export default function DetailPodcastPage({ params }) {
 
   const handleBuy = async () => {
     setLoading(true);
-    window.location.href = `/checkout/purchase/podcast/${id}/${selectedEpisode}`;
+    window.location.href = `/checkout/purchase/podcasts/${id}/${selectedEpisode}`;
     setIsModalOpen(false);
     setLoading(false);
   };
 
   const handleSubscribe = async () => {
     setLoading(true);
-    window.location.href = `/checkout/subscribe/podcast/${selectedContentId}`;
+    window.location.href = `/checkout/subscribe/podcasts/${selectedContentId}`;
     setIsModalSubscribeOpen(false);
     setLoading(false);
   };

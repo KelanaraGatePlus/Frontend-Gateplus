@@ -14,6 +14,11 @@ import { useGetSeriesByIdQuery } from "@/hooks/api/seriesSliceAPI";
 import { useGetPodcastByIdQuery } from "@/hooks/api/podcastSliceAPI";
 import { fee } from "@/lib/constants/fee";
 import { useGetDiscountByVoucherDiscountCodeMutation } from "@/hooks/api/discountVoucherAPI";
+import LoadingOverlay from "@/components/LoadingOverlay/page";
+import FlexModal from "@/components/Modal/FlexModal";
+import PaymentSuccessImage from "@@/AdditionalImages/payment-success.svg";
+import Link from "next/link";
+import { contentType as contentTypeConst } from "@/lib/constants/contentType";
 
 export default function PaymentCheckoutPage({ params }) {
     const resolvedParams = React.use(params);
@@ -21,6 +26,7 @@ export default function PaymentCheckoutPage({ params }) {
     const [isShowInput, setIsShowInput] = useState(true);
     const [totalDiscount, setTotalDiscount] = useState(0);
     const [voucherCode, setVoucherCode] = useState("");
+    const [successModal, setSuccessModal] = useState(false);
 
     const [selectedTip, setSelectedTip] = useState(null);
     const { pay: subscribePay } = useMidtransPayment('SUBSCRIBE');
@@ -37,12 +43,12 @@ export default function PaymentCheckoutPage({ params }) {
 
     const { data: ebookData, isLoading: ebookLoading } = useGetEbookByIdQuery(
         { id, userId },
-        { skip: contentType !== "ebook" }
+        { skip: contentType !== "ebooks" }
     );
 
     const { data: comicData, isLoading: comicLoading } = useGetComicByIdQuery(
         { id, userId },
-        { skip: contentType !== "comic" }
+        { skip: contentType !== "comics" }
     );
 
     const { data: seriesData, isLoading: seriesLoading } = useGetSeriesByIdQuery(id, {
@@ -51,7 +57,7 @@ export default function PaymentCheckoutPage({ params }) {
 
     const { data: podcastData, isLoading: podcastLoading } = useGetPodcastByIdQuery(
         { id, userId },
-        { skip: contentType !== "podcast" }
+        { skip: contentType !== "podcasts" }
     );
 
     // Gabungkan data & loading berdasarkan contentType yang aktif
@@ -63,11 +69,11 @@ export default function PaymentCheckoutPage({ params }) {
             contentData = movieData?.data?.data;
             isLoading = movieLoading;
             break;
-        case "ebook":
+        case "ebooks":
             contentData = ebookData?.data?.data;
             isLoading = ebookLoading;
             break;
-        case "comic":
+        case "comics":
             contentData = comicData?.data?.data;
             isLoading = comicLoading;
             break;
@@ -75,7 +81,7 @@ export default function PaymentCheckoutPage({ params }) {
             contentData = seriesData?.data?.data;
             isLoading = seriesLoading;
             break;
-        case "podcast":
+        case "podcasts":
             contentData = podcastData?.data?.data;
             isLoading = podcastLoading;
             break;
@@ -87,9 +93,28 @@ export default function PaymentCheckoutPage({ params }) {
         try {
             setIsShowInput(false);
             if (contentType == 'movie') {
-                await pay({ episodeId: id, contentType: contentType.toUpperCase(), tip: selectedTip, voucherCode });
+                await pay({ episodeId: id, contentType: contentTypeConst[contentType]['singleName'].toUpperCase(), tip: selectedTip, voucherCode },
+                    {
+                        onSuccess: (result) => {
+                            console.log("✅ Sukses:", result);
+                            setSuccessModal(true);
+                        },
+                        onPending: (result) => console.log("⌛ Pending:", result),
+                        onError: (err) => alert("❌ Pembayaran gagal."),
+                        onClose: () => console.log("Popup ditutup."),
+                    }
+                );
             } else {
-                await subscribePay({ contentId: id, contentType: contentType.toUpperCase(), tip: selectedTip, voucherCode });
+                await subscribePay({ contentId: id, contentType: contentTypeConst[contentType]['singleName'].toUpperCase(), tip: selectedTip, voucherCode },
+                    {
+                        onSuccess: (result) => {
+                            console.log("✅ Sukses:", result);
+                            setSuccessModal(true);
+                        },
+                        onPending: (result) => console.log("⌛ Pending:", result),
+                        onError: (err) => alert("❌ Pembayaran gagal."),
+                        onClose: () => console.log("Popup ditutup."),
+                    });
             }
         } catch (error) {
             console.error("Pembayaran gagal:", error);
@@ -99,9 +124,7 @@ export default function PaymentCheckoutPage({ params }) {
 
     if (isLoading) {
         return (
-            <div className="w-full h-screen flex justify-center items-center text-white">
-                Loading...
-            </div>
+            <LoadingOverlay />
         );
     }
 
@@ -114,41 +137,41 @@ export default function PaymentCheckoutPage({ params }) {
         }
     }
 
-    const isSubscribe = contentType !== 'movie' ? contentData?.isSubscribe : contentData?.isSubscribed;
+    const isSubscribe = (contentType !== 'movie' && contentType !== 'series') ? contentData?.isSubscribe : contentData?.isSubscribed;
     const price = contentType === 'movie' ? contentData?.price : contentData?.subscriptionPrice;
 
     return (
-        <div className="w-full h-screen flex justify-center items-center">
-            {isShowInput && <div className="bg-[#0881AB] min-w-6xl max-w-max rounded-md montserratFont text-white">
+        <div className="w-full h-max flex justify-center items-center mt-10">
+            {isShowInput && <div className="bg-[#0881AB] sm:w-min-w-2xl md:min-w-3xl xl:min-w-5xl 2xl:min-w-6xl text-xs md:text-[16px] max-w-max rounded-md montserratFont text-white">
                 <div className="px-8 pt-4 pb-10 flex flex-col gap-8">
-                    <h1 className="zeinFont font-black text-3xl text-center">Konfirmasi Pesanan</h1>
+                    <h1 className="zeinFont font-black text-xl md:text-3xl text-center">Konfirmasi Pesanan</h1>
 
                     {/* Produk */}
                     <div className="flex flex-row gap-2">
                         <Image
-                            src={RacunSangga}
+                            src={contentData?.coverImageUrl || RacunSangga}
                             alt="Poster"
                             width={100}
                             height={150}
                         />
                         <div className="flex flex-col gap-4">
                             <div>
-                                <h2 className="font-bold text-xl">
+                                <h2 className="font-bold text-[16px] md:text-xl">
                                     {contentData?.title || "Judul Konten"}
                                 </h2>
                                 <p className="font-normal text-sm">
                                     {contentType === "movie" ? `Durasi: ${contentData?.duration || 0} menit` : "Durasi: 48 Jam"}
                                 </p>
                             </div>
-                            <p className="text-xl font-bold">
+                            <p className="text-[16px] md:text-xl font-bold">
                                 Harga: Rp {(Number(price) || 0).toLocaleString("id-ID")}
                             </p>
                         </div>
                     </div>
 
                     {/* Voucher & Tip Section */}
-                    <div className="flex flex-col px-8 gap-8">
-                        {price && <div className="flex flex-row bg-[#DEDEDE4D] rounded-lg overflow-hidden">
+                    <div className="flex flex-col px-0 md:px-8 gap-8">
+                        {price && <div className="flex md:flex-row flex-col bg-[#DEDEDE4D] rounded-lg overflow-hidden">
                             <button onClick={() => handleApplyVoucher(voucherCode, Number(price))} className="px-6 md:px-12 py-3 bg-[#0075e9c4] font-semibold whitespace-nowrap rounded-sm hover:cursor-pointer">
                                 Gunakan Voucher
                             </button>
@@ -166,7 +189,7 @@ export default function PaymentCheckoutPage({ params }) {
                             <div className="bg-[#2222224D] p-4 rounded-md">
                                 <p><b>Sawerkuy!</b> kasih tip biar kreator hepi</p>
                             </div>
-                            <div className="grid grid-cols-4 gap-2.5">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
                                 {[5000, 10000, 15000, 20000].map((amount) => {
                                     const isSelected = selectedTip === amount;
                                     return (
@@ -234,6 +257,24 @@ export default function PaymentCheckoutPage({ params }) {
                     }
                 </div>
             </div>}
+            <FlexModal isOpen={successModal} onClose={() => { setSuccessModal(false) }}>
+                <div className="flex flex-col gap-6 px-4">
+                    <Image
+                        src={PaymentSuccessImage}
+                        alt="Payment Success"
+                        width={700}
+                        height={500}
+                        className="mx-auto"
+                    />
+                    <h2 className="text-center font-bold text-2xl text-[#C6C6C6]">Pembayaran Berhasil!</h2>
+                    <Link href={`/${contentTypeConst[contentType]['pluralName']}/detail/${id}`}
+                        onClick={() => { setSuccessModal(false) }}
+                        className="rounded-4xl bg-[#0076E9CC] py-4 min-w-4xl font-semibold hover:cursor-pointer text-center text-white"
+                    >
+                        Lanjut Menonton
+                    </Link>
+                </div>
+            </FlexModal>
         </div>
     );
 }

@@ -38,14 +38,14 @@ export default function DetailEbookPage({ params }) {
 
   const handleBuy = async () => {
     setLoading(true);
-    window.location.href = `/checkout/purchase/ebook/${id}/${selectedEpisode}`;
+    window.location.href = `/checkout/purchase/ebooks/${id}/${selectedEpisode}`;
     setIsModalOpen(false);
     setLoading(false);
   };
 
   const handleSubscribe = async () => {
     setLoading(true);
-    window.location.href = `/checkout/subscribe/ebook/${selectedContentId}`;
+    window.location.href = `/checkout/subscribe/ebooks/${selectedContentId}`;
     setIsModalSubscribeOpen(false);
     setLoading(false);
   };
