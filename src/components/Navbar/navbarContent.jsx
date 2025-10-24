@@ -25,7 +25,7 @@ import { useAuth } from "../Context/AuthContext";
 import { contentType } from "@/lib/constants/contentType";
 import { useGetPopularSearchesQuery, useGetSearchHistoryByUserQuery } from "@/hooks/api/searchAPI";
 
-export default function NavbarContent({ openCreateContentModal }) {
+export default function NavbarContent({ openCreateContentModal, openRedeemVoucherModal }) {
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useAuth();
@@ -132,7 +132,7 @@ export default function NavbarContent({ openCreateContentModal }) {
             </button>
             <NotificationMenu key={role} />
             {isAuthenticated ? (
-              <ProfileMenu creatorId={user.creators_id} userId={user.users_id} isCreator={user.isCreator} imageUrl={imageUrl} role={role} handleSwitchRole={handleSwitchRole} openCreateContentModal={openCreateContentModal} />
+              <ProfileMenu creatorId={user.creators_id} userId={user.users_id} isCreator={user.isCreator} imageUrl={imageUrl} role={role} handleSwitchRole={handleSwitchRole} openCreateContentModal={openCreateContentModal} openRedeemVoucherModal={openRedeemVoucherModal} />
             ) : (
               <>
                 <div className="hidden md:flex md:flex-col md:py-3"><Link href="/login"><div className="flex justify-center rounded-full bg-linear-to-t from-[#0E5BA8] to-[#0395BC] py-2 font-semibold sm:px-2 md:px-4 lg:px-6 xl:px-8"><span className="zeinFont mt-0.5 text-center text-lg leading-tight drop-shadow-[0_0_2px_rgba(255,255,255,0.4)]">Log In</span></div></Link></div>
@@ -227,4 +227,5 @@ export default function NavbarContent({ openCreateContentModal }) {
 
 NavbarContent.propTypes = {
   openCreateContentModal: PropTypes.func.isRequired,
+  openRedeemVoucherModal: PropTypes.func.isRequired,
 };
