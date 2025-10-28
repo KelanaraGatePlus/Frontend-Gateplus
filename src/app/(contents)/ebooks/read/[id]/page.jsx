@@ -145,7 +145,7 @@ export default function ReadEbookPage({ params }) {
 
   return (
     <div
-      className={`flex flex-colmt-16 md:mt-[100px] overflow-x-hidden ${isDark ? "bg-[#222222]" : "bg-[#fff]"}`}
+      className={`flex flex-col overflow-x-hidden ${isDark ? "bg-[#222222]" : "bg-[#fff]"}`}
     >
       <main className="flex flex-col">
         <div

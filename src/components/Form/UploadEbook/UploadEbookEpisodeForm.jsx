@@ -67,7 +67,6 @@ export default function UploadEbookEpisodeForm() {
 
     const onSubmit = async (data) => {
         const formData = new FormData();
-        formData.append("creatorId", creatorId);
         formData.append("ebookId", data.ebookId);
         formData.append("title", data.title);
         formData.append("description", data.description);

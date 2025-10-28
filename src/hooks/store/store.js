@@ -25,6 +25,7 @@ import { searchAPI } from "../api/searchAPI";
 import { faqArticleAPI } from "../api/faqArticleAPI";
 import { discountVoucherAPI } from "../api/discountVoucherAPI";
 import { redeemVoucherAPI } from "../api/redeemVoucherAPI";
+import { savedContentAPI } from "../api/savedContentAPI";
 
 const rootReducer = combineReducers({
   [ebookApi.reducerPath]: ebookApi.reducer,
@@ -50,6 +51,7 @@ const rootReducer = combineReducers({
   [faqArticleAPI.reducerPath]: faqArticleAPI.reducer,
   [discountVoucherAPI.reducerPath]: discountVoucherAPI.reducer,
   [redeemVoucherAPI.reducerPath]: redeemVoucherAPI.reducer,
+  [savedContentAPI.reducerPath]: savedContentAPI.reducer
 });
 
 export const store = configureStore({
@@ -78,7 +80,8 @@ export const store = configureStore({
       searchAPI.middleware,
       faqArticleAPI.middleware,
       discountVoucherAPI.middleware,
-      redeemVoucherAPI.middleware
+      redeemVoucherAPI.middleware,
+      savedContentAPI.middleware
     ),
 });
 

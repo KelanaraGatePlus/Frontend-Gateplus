@@ -44,7 +44,7 @@ export default function MainTemplateLayout({
         creatorIsSubscribed={productDetail.isSubscribed}
         idLikedProduct={productDetail?.isLiked?.id}
         idDislikedProduct={productDetail?.isDisliked?.id}
-        idSavedProduct={productDetail.idSaved}
+        idSavedProduct={productDetail?.savedBy?.[0]?.id}
         canSubscribe={productDetail.canSubscribe}
         subscriptionPrice={productDetail.subscriptionPrice}
         isLoading={isLoading}

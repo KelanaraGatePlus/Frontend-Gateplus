@@ -36,7 +36,6 @@ import { priceOption } from "@/lib/constants/priceOptions";
 
 export default function UploadMovieForm() {
     const router = useRouter();
-    const creatorId = useGetCreatorId();
     const posterBannerInputRef = useRef(null);
     const coverBookInputRef = useRef(null);
     const {
@@ -77,7 +76,6 @@ export default function UploadMovieForm() {
         console.log("Form Data:", data);
         try {
             const formData = new FormData();
-            formData.append("creatorId", creatorId);
             formData.append("title", data.title);
             formData.append("description", data.description);
             formData.append("categoriesId", data.genre);
