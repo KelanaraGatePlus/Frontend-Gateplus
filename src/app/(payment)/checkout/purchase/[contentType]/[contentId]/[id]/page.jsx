@@ -31,7 +31,7 @@ export default function PurchaseContentPaymentPage({ params }) {
 
     const [selectedTip, setSelectedTip] = useState(null);
     const { pay } = useMidtransPayment();
-    const [getDiscount] = useGetDiscountByVoucherDiscountCodeMutation();
+    const [getDiscount, { isLoading: getDiscountLoading, error: getDiscountError, isSuccess }] = useGetDiscountByVoucherDiscountCodeMutation();
 
     // Simulasi userId kalau diperlukan
     const userId = 1;
@@ -130,7 +130,7 @@ export default function PurchaseContentPaymentPage({ params }) {
     async function handleApplyVoucher(code, amount) {
         try {
             const response = await getDiscount({ code, amount }).unwrap();
-            setTotalDiscount(response.data.data || 0);
+            setTotalDiscount(response.data || 0);
         } catch (err) {
             console.error("Failed to get discount:", err);
         }
@@ -173,19 +173,26 @@ export default function PurchaseContentPaymentPage({ params }) {
 
                     {/* Voucher & Tip Section */}
                     <div className="flex flex-col px-0 md:px-8 gap-8">
-                        {price && <div className="flex md:flex-row flex-col bg-[#DEDEDE4D] rounded-lg overflow-hidden">
-                            <button onClick={() => handleApplyVoucher(voucherCode, Number(price))} className="px-6 md:px-12 py-3 bg-[#0075e9c4] font-semibold whitespace-nowrap rounded-sm hover:cursor-pointer">
-                                Gunakan Voucher
-                            </button>
-                            <input
-                                type="text"
-                                className="flex-1 text-center placeholder:text-center px-2 py-3 outline-none"
-                                placeholder="Gunakan / Masukan Kode Voucher"
-                                onChange={
-                                    (e) => setVoucherCode(e.target.value)
-                                }
-                            />
-                        </div>}
+                        <div className="flex flex-col gap-2">
+                            {price && <div className="flex md:flex-row flex-col bg-[#DEDEDE4D] rounded-lg overflow-hidden">
+                                <button disabled={!voucherCode} onClick={() => handleApplyVoucher(voucherCode, Number(price))} className="px-6 md:px-12 py-3 bg-[#0075e9c4] font-semibold whitespace-nowrap rounded-sm hover:cursor-pointer">
+                                    Gunakan Voucher
+                                </button>
+                                <input
+                                    type="text"
+                                    className="flex-1 text-center placeholder:text-center px-2 py-3 outline-none"
+                                    placeholder="Gunakan / Masukan Kode Voucher"
+                                    onChange={
+                                        (e) => setVoucherCode(e.target.value)
+                                    }
+                                />
+                            </div>}
+                            <div className="flex items-center">
+                                {getDiscountLoading && <LoadingOverlay />}
+                                {getDiscountError && <p className="text-red-500">{getDiscountError.data.message}</p>}
+                                {isSuccess && <p className="text-green-500">Voucher applied successfully!</p>}
+                            </div>
+                        </div>
 
                         <div className="flex flex-col gap-2">
                             <div className="bg-[#2222224D] p-4 rounded-md">

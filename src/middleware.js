@@ -6,14 +6,16 @@ const MAINTENANCE_MODE = false;
 export async function middleware(req) {
     const { pathname } = req.nextUrl;
 
+    // 🧩 Maintenance Mode
     if (MAINTENANCE_MODE && pathname !== "/maintenance") {
         return NextResponse.redirect(new URL("/maintenance", req.url));
     }
-
     if (!MAINTENANCE_MODE && pathname === "/maintenance") {
         return NextResponse.redirect(new URL("/", req.url));
     }
 
+    // 🧩 Path publik & verifikasi
+    const VERIFICATION_PATHS = ["/otp", "/verify-email"];
     const PUBLIC_PATHS = [
         "/",
         "/maintenance",
@@ -22,39 +24,48 @@ export async function middleware(req) {
         "/faq",
         "/blank",
         "/forgot-password",
-        "/otp",
-        "/verify-email",
         "/oauth-success",
+        "/login",
+        "/register",
     ];
-    if (PUBLIC_PATHS.includes(pathname)) {
+
+    // 🧩 Ambil token
+    const token = req.cookies.get("token")?.value;
+
+    if (PUBLIC_PATHS.includes(pathname) && !token) {
         return NextResponse.next();
     }
 
-    const token = req.cookies.get("token")?.value;
-    if (!token && !PUBLIC_PATHS.includes(pathname) && pathname !== "/login" && pathname !== "/register") {
-        return NextResponse.redirect(
-            new URL(`/login?callbackUrl=${encodeURIComponent(pathname)}`, req.url),
-        );
-    }
-
-    if (token && (pathname === "/login" || pathname === "/register")) {
-        return NextResponse.redirect(new URL("/", req.url));
+    // 🧩 Jika tidak ada token → redirect login
+    if (!token || token.trim() === "") {
+        return NextResponse.redirect(new URL("/login", req.url));
     }
 
     try {
-        // eslint-disable-next-line no-undef
         const secret = new TextEncoder().encode(process.env.JWT_SECRET);
         const { payload } = await jose.jwtVerify(token, secret);
+        console.log("Token payload:", payload);
 
         const now = Math.floor(Date.now() / 1000);
         if (payload.exp && payload.exp < now) {
             return NextResponse.redirect(new URL("/session-expired", req.url));
         }
 
+        if (payload.isVerified && VERIFICATION_PATHS.includes(pathname)) {
+            return NextResponse.redirect(new URL("/", req.url));
+        }
+
+        if (payload.isVerified === false && !VERIFICATION_PATHS.includes(pathname)) {
+            return NextResponse.redirect(new URL("/otp", req.url));
+        }
+
         return NextResponse.next();
     } catch (err) {
         console.error("Token invalid:", err);
-        return NextResponse.next();
+        // Hapus cookie rusak biar gak stuck loop
+        const res = NextResponse.redirect(new URL("/login", req.url));
+        res.cookies.delete("token");
+        return res;
     }
 }
 
