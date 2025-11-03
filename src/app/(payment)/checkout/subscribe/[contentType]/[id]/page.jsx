@@ -70,11 +70,11 @@ export default function PaymentCheckoutPage({ params }) {
             isLoading = movieLoading;
             break;
         case "ebooks":
-            contentData = ebookData?.data?.data;
+            contentData = ebookData?.data;
             isLoading = ebookLoading;
             break;
         case "comics":
-            contentData = comicData?.data?.data;
+            contentData = comicData?.data;
             isLoading = comicLoading;
             break;
         case "series":
@@ -82,7 +82,7 @@ export default function PaymentCheckoutPage({ params }) {
             isLoading = seriesLoading;
             break;
         case "podcasts":
-            contentData = podcastData?.data?.data;
+            contentData = podcastData?.data;
             isLoading = podcastLoading;
             break;
         default:

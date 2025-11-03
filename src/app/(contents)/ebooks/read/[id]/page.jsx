@@ -77,7 +77,6 @@ export default function ReadEbookPage({ params }) {
   const getData = async () => {
     try {
       if (!hasUpdatedViews) {
-        console.log("Tambah Views");
         await axios.patch(
           `${BACKEND_URL}/episode/${id}/views`,
         );
@@ -225,8 +224,11 @@ export default function ReadEbookPage({ params }) {
               />
             )}
             <div
-              className={`absolute top-0 left-0 z-0 h-full w-full ${isDark ? "bg-[linear-gradient(to_bottom,_#FFFFFF00,_#FFFFFF00,_#FFFFFF00,_#FFFFFF00,_#737373A1,_#595959BF,_#3F3F3FDE,_#303030ED,_#222222FF)]" : "bg-[linear-gradient(to_bottom,_#00000000,_#00000000,_#00000000,_#00000000,_#E5E5E5A1,_#E0E0E0BF,_#D4D4D4DE,_#CCCCCCED,_#FFFFFF)]"}`}
-            />
+              className={`absolute top-0 left-0 z-0 h-full w-full ${isDark
+                ? "bg-[linear-gradient(to_bottom,#FFFFFF00,#FFFFFF00,#737373A1,#595959BF,#3F3F3FDE,#303030ED,#222222FF)]"
+                : "bg-[linear-gradient(to_bottom,#00000000,#00000000,#E5E5E5A1,#E0E0E0BF,#D4D4D4DE,#CCCCCCED,#FFFFFF)]"
+                }`}
+            ></div>
           </div>
         </section>
         {/* Isi Ebook */}
@@ -266,7 +268,10 @@ export default function ReadEbookPage({ params }) {
             />
           )}
           <div
-            className={`absolute top-0 left-0 z-0 h-full w-full ${isDark ? "bg-[linear-gradient(to_bottom,_#FFFFFF00,_#FFFFFF00,_#FFFFFF00,_#FFFFFF00,_#737373A1,_#595959BF,_#3F3F3FDE,_#303030ED,_#222222FF)]" : "bg-[linear-gradient(to_bottom,_#00000000,_#00000000,_#00000000,_#00000000,_#E5E5E5A1,_#E0E0E0BF,_#D4D4D4DE,_#CCCCCCED,_#FFFFFF)]"}`}
+            className={`absolute top-0 left-0 z-0 h-full w-full ${isDark
+                ? "bg-[linear-gradient(to_top,#FFFFFF00,#FFFFFF00,#737373A1,#595959BF,#3F3F3FDE,#303030ED,#222222FF)]"
+                : "bg-[linear-gradient(to_top,#00000000,#00000000,#E5E5E5A1,#E0E0E0BF,#D4D4D4DE,#CCCCCCED,#FFFFFF)]"
+              }`}
           />
         </div>
         {/* Catatan Kreator */}

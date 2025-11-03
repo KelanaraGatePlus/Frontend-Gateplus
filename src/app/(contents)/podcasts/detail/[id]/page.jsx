@@ -35,8 +35,8 @@ export default function DetailPodcastPage({ params }) {
 
   const skip = !id || !userId;
   const { data, isLoading } = useGetPodcastByIdQuery({ id, userId }, { skip });
-  const podcastData = data?.data?.data || {};
-  const episode_podcasts = (podcastData.episode_podcasts || []).slice().sort((a, b) => {
+  const podcastData = data?.data || {};
+  const episode_podcasts = (podcastData?.episode_podcasts?.episodes || []).slice().sort((a, b) => {
     return new Date(a.createdAt) - new Date(b.createdAt);
   });
 

@@ -40,8 +40,8 @@ export default function MainTemplateLayout({
         productTotalViews={productDetail.totalViews}
         productTotalLikes={productDetail.totalLikes}
         creatorDetail={productType === 'podcast' ? productDetail.Creator : productDetail.creators}
-        creatorTotalSubscriber={productDetail.totalCount}
-        creatorIsSubscribed={productDetail.isSubscribed}
+        creatorTotalSubscriber={productDetail?.totalSubscribers}
+        creatorIsSubscribed={productDetail?.isSubscribedToCreator?.data?.length > 0 ? true : false}
         idLikedProduct={productDetail?.isLiked?.id}
         idDislikedProduct={productDetail?.isDisliked?.id}
         idSavedProduct={productDetail?.savedBy?.[0]?.id}

@@ -66,8 +66,8 @@ export default function DetailComicPage({ params }) {
 
   const skip = !id || !userId;
   const { data, isLoading } = useGetComicByIdQuery({ id, userId }, { skip });
-  const comicData = data?.data?.data || {};
-  const episode_comics = (comicData.episode_comics || []).slice().sort((a, b) => {
+  const comicData = data?.data || {};
+  const episode_comics = (comicData?.episode_comics?.episodes || []).slice().sort((a, b) => {
     return new Date(a.createdAt) - new Date(b.createdAt);
   });
   const topContent = data?.data?.topContent || [];

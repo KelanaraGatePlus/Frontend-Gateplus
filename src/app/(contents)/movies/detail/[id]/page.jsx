@@ -53,6 +53,7 @@ function PlayingMoviePage({ params }) {
 
     useEffect(() => {
         // Mengisi state dari data API saat pertama kali dimuat
+        console.log("Movie Data:", movieData); // Debugging line
         if (movieData && movieData.id) {
             setIsLiked(movieData.isLiked || false);
             setIdLiked(movieData?.isLiked?.id || null);
@@ -258,7 +259,7 @@ function PlayingMoviePage({ params }) {
                             <div className="flex place-content-center justify-center text-2xl font-bold text-white">
                                 {movieData?.creator?.profileName}
                             </div>
-                            <div className="text-sm text-white">{movieData?.creator?._count.subscriptions} followers</div>
+                            <div className="text-sm text-white">{movieData?.creator?.totalSubscribers} followers</div>
                         </div>
                     </div>
                 </section>

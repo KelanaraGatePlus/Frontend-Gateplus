@@ -66,7 +66,7 @@ export const useMidtransPayment = (paymentType = "ORDER") => {
 
             const data = await res.json();
             if (data.isPromoFree && data.isPromoFree === true) {
-                alert("Transaksi berhasil! Episode dapat diakses gratis dengan voucher.");
+                callbacks.onSuccess?.(data);
                 return;
             }
             if (!data.snapToken) throw new Error("snapToken tidak ditemukan");

@@ -50,7 +50,7 @@ function DetailSeriesPage({ params }) {
     const [idSaved, setIdSaved] = useState(null);
 
     const seriesData = data?.data?.data || {};
-    const episode_series = (seriesData.episodes || []).slice().sort((a, b) => {
+    const episode_series = (seriesData?.episodes?.episodes || []).slice().sort((a, b) => {
         return new Date(a.createdAt) - new Date(b.createdAt);
     });
 
@@ -278,7 +278,7 @@ function DetailSeriesPage({ params }) {
                             <div className="flex place-content-center justify-center text-2xl font-bold text-white">
                                 {seriesData?.creator?.profileName}
                             </div>
-                            <div className="text-sm text-white">{seriesData?.creator?._count.subscriptions} followers</div>
+                            <div className="text-sm text-white">{seriesData?.creator?.totalSubscribers} followers</div>
                         </div>
                     </div>
                 </section>

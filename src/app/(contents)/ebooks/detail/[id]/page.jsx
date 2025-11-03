@@ -52,8 +52,8 @@ export default function DetailEbookPage({ params }) {
 
   const skip = !id || !userId;
   const { data, isLoading } = useGetEbookByIdQuery({ id, userId }, { skip });
-  const ebookData = data?.data?.data || {};
-  const episode_ebooks = (ebookData.episode_ebooks || []).slice().sort((a, b) => {
+  const ebookData = data?.data || {};
+  const episode_ebooks = (ebookData?.episode_ebooks?.episodes || []).slice().sort((a, b) => {
     return new Date(a.createdAt) - new Date(b.createdAt);
   });
 
@@ -74,8 +74,8 @@ export default function DetailEbookPage({ params }) {
         isLoading={isLoading}
         handlePayment={handleModalOpen}
         handleSubscribe={handleModalSubscribeOpen}
-        topContentData={data?.data?.topContent || []}
-        recomendationData={data?.data?.recommendation || []}
+        topContentData={data?.topContent || []}
+        recomendationData={data?.recommendation || []}
       />
       <SimpleModal
         title={"Konten ini masih terkunci, apakah kamu bersedia membeli nya dengan harga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}

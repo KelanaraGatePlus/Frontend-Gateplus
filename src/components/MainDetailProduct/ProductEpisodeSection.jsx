@@ -83,6 +83,7 @@ export default function ProductEpisodeSection({
             {(showAll ? productEpisodes : productEpisodes.slice(0, 5))
               .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
               .map((item, index) => (
+                console.log(item),
                 <button key={index} onClick={item.isPurchased || item.price == 'Free' || isSubscribe ? () => { window.location.href = `${parentPath}/${item.id}` } : () => { handlePayment(item.id, item.price, 'EBOOK') }}>
                   <div className="group flex cursor-pointer items-stretch gap-2 px-4 py-2 hover:bg-[#1F6E8A] md:gap-4">
                     {/* Book Container */}

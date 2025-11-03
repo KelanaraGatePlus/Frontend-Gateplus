@@ -61,11 +61,11 @@ export default function PurchaseContentPaymentPage({ params }) {
 
     switch (contentType) {
         case "ebooks":
-            contentData = ebookData?.data?.data;
+            contentData = ebookData?.data;
             isLoading = ebookLoading;
             break;
         case "comics":
-            contentData = comicData?.data?.data;
+            contentData = comicData?.data;
             isLoading = comicLoading;
             break;
         case "series":
@@ -74,7 +74,7 @@ export default function PurchaseContentPaymentPage({ params }) {
             isLoading = seriesLoading;
             break;
         case "podcasts":
-            contentData = podcastData?.data?.data;
+            contentData = podcastData?.data;
             isLoading = podcastLoading;
             break;
         default:
@@ -82,12 +82,12 @@ export default function PurchaseContentPaymentPage({ params }) {
     }
 
     let episodeList = [];
-    if (contentType === 'ebooks' && contentData?.episode_ebooks) {
-        episodeList = contentData.episode_ebooks;
-    } else if (contentType === 'comics' && contentData?.episode_comics) { // Asumsi nama array, sesuaikan
-        episodeList = contentData.episode_comics;
-    } else if (contentType === 'podcasts' && contentData?.episode_podcasts) { // Asumsi nama array, sesuaikan
-        episodeList = contentData.episode_podcasts;
+    if (contentType === 'ebooks' && contentData?.episode_ebooks?.episodes) { // Asumsi nama array, sesuaikan
+        episodeList = contentData.episode_ebooks.episodes;
+    } else if (contentType === 'comics' && contentData?.episode_comics?.episodes) { // Asumsi nama array, sesuaikan
+        episodeList = contentData.episode_comics.episodes;
+    } else if (contentType === 'podcasts' && contentData?.episode_podcasts?.episodes) { // Asumsi nama array, sesuaikan
+        episodeList = contentData.episode_podcasts.episodes;
     } else if (contentType === 'series' && contentData?.episodes) { // Asumsi nama array, sesuaikan
         episodeList = contentData.episodes;
     }
