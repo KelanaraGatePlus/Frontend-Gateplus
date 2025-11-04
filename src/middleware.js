@@ -42,7 +42,7 @@ export async function middleware(req) {
     }
 
     try {
-        const secret = new TextEncoder().encode('rahasia_jwt_kamu');
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
         const { payload } = await jose.jwtVerify(token, secret);
         console.log("Token payload:", payload);
 
