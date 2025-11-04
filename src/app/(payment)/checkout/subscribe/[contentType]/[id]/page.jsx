@@ -31,7 +31,7 @@ export default function PaymentCheckoutPage({ params }) {
     const [selectedTip, setSelectedTip] = useState(null);
     const { pay: subscribePay } = useMidtransPayment('SUBSCRIBE');
     const { pay } = useMidtransPayment();
-    const [getDiscount, { isLoading: getDiscountLoading, error: getDiscountError, isError, isSuccess }] = useGetDiscountByVoucherDiscountCodeMutation();
+    const [getDiscount, { isLoading: getDiscountLoading, error: getDiscountError, isSuccess }] = useGetDiscountByVoucherDiscountCodeMutation();
 
     // Simulasi userId kalau diperlukan
     const userId = 1;

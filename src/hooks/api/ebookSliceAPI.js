@@ -23,7 +23,7 @@ export const ebookApi = createApi({
       keepUnusedDataFor: 5,
     }),
     getEbookById: builder.query({
-      query: ({ id }) => `/ebooks/${id}`,
+      query: ({ id, withEpisodes = false }) => `/ebooks/${id}?withEpisodes=${withEpisodes}`,
       providesTags: ["ebook"],
     }),
     getEpisodeEbookById: builder.query({

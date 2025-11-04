@@ -11,7 +11,6 @@ import { createSeriesSchema } from "@/lib/schemas/createSeriesSchema";
 
 /*[--- API HOOKS & FEATURES ---]*/
 import { useGetAllGenresQuery } from "@/hooks/api/genreSliceAPI";
-import { useGetCreatorId } from "@/lib/features/useGetCreatorId";
 
 /*[--- CONSTANT VARIABLE---]*/
 import { languageOptions } from '@/lib/constants/languageOptions';

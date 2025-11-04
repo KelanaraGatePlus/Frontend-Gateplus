@@ -24,7 +24,7 @@ export const comicApi = createApi({
             keepUnusedDataFor: 3600,
         }),
         getComicById: builder.query({
-            query: ({ id, userId }) => `/comics/${id}?userId=${userId}`,
+            query: ({ id, withEpisodes = false }) => `/comics/${id}?withEpisodes=${withEpisodes}`,
             providesTags: ["comic"],
             keepUnusedDataFor: 3600,
         }),

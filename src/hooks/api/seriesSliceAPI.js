@@ -30,7 +30,7 @@ export const seriesAPI = createApi({
       invalidatesTags: ["series"],
     }),
     getSeriesById: builder.query({
-      query: (id) => `/series/${id}`,
+      query: ({ id, withEpisodes = false }) => `/series/${id}?withEpisodes=${withEpisodes}`,
       providesTags: (result, error, id) => [{ type: 'series', id }],
     }),
     createEpisodeSeries: builder.mutation({

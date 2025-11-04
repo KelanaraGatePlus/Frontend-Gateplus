@@ -29,7 +29,7 @@ import CarouselTemplate from '@/components/Carousel/carouselTemplate';
 
 function DetailSeriesPage({ params }) {
     const { id } = params;
-    const { data } = useGetSeriesByIdQuery(id);
+    const { data } = useGetSeriesByIdQuery({ id, withEpisodes: false });
     const [loading, setLoading] = useState(false);
     const [selectedContentId, setSelectedContentId] = useState(null);
     const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
@@ -322,6 +322,9 @@ function DetailSeriesPage({ params }) {
                     isLoading={loading}
                     isSubscribe={seriesData?.isSubscribed}
                     handlePayment={handleModalOpen}
+                    productId={
+                        seriesData?.id
+                    }
                 />
 
                 <div className="mt-10 md:mt-20">

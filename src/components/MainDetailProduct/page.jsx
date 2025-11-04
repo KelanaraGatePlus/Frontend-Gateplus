@@ -61,6 +61,7 @@ export default function MainTemplateLayout({
           handlePlayPodcast={handlePlayPodcast}
           handlePayment={handlePayment}
           isSubscribe={productDetail?.isSubscribe && productDetail?.canSubscribe ? true : false}
+          productId={productDetail?.id}
         />
       </div>
 

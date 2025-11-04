@@ -12,7 +12,6 @@ import { createEbookSchema } from "@/lib/schemas/createEbookSchema";
 /*[--- API HOOKS & FEATURES ---]*/
 import { useGetAllGenresQuery } from "@/hooks/api/genreSliceAPI";
 import { useCreateComicMutation } from "@/hooks/api/comicSliceAPI";
-import { useGetCreatorId } from "@/lib/features/useGetCreatorId";
 
 /*[--- CONSTANT VARIABLE---]*/
 import { languageOptions } from '@/lib/constants/languageOptions';

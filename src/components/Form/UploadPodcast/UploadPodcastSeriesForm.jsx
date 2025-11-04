@@ -12,7 +12,6 @@ import { createPodcastSchema } from "@/lib/schemas/createPodcastSchema";
 /*[--- API HOOKS & FEATURES ---]*/
 import { useGetAllGenresQuery } from "@/hooks/api/genreSliceAPI";
 import { useCreatePodcastMutation } from "@/hooks/api/podcastSliceAPI";
-import { useGetCreatorId } from "@/lib/features/useGetCreatorId";
 
 /*[--- CONSTANT VARIABLE---]*/
 import { languageOptions } from '@/lib/constants/languageOptions';

@@ -37,21 +37,21 @@ export default function PurchaseContentPaymentPage({ params }) {
     const userId = 1;
 
     const { data: ebookData, isLoading: ebookLoading } = useGetEbookByIdQuery(
-        { id: contentId, userId },
+        { id: contentId, withEpisodes: true },
         { skip: contentType !== "ebooks" }
     );
 
     const { data: comicData, isLoading: comicLoading } = useGetComicByIdQuery(
-        { id: contentId, userId },
+        { id: contentId, userId, withEpisodes: true },
         { skip: contentType !== "comics" }
     );
 
-    const { data: seriesData, isLoading: seriesLoading } = useGetSeriesByIdQuery(contentId, {
+    const { data: seriesData, isLoading: seriesLoading } = useGetSeriesByIdQuery({ id: contentId, withEpisodes: true }, {
         skip: contentType !== "series",
     });
 
     const { data: podcastData, isLoading: podcastLoading } = useGetPodcastByIdQuery(
-        { id: contentId, userId },
+        { id: contentId, userId, withEpisodes: true },
         { skip: contentType !== "podcasts" }
     );
 
@@ -88,8 +88,8 @@ export default function PurchaseContentPaymentPage({ params }) {
         episodeList = contentData.episode_comics.episodes;
     } else if (contentType === 'podcasts' && contentData?.episode_podcasts?.episodes) { // Asumsi nama array, sesuaikan
         episodeList = contentData.episode_podcasts.episodes;
-    } else if (contentType === 'series' && contentData?.episodes) { // Asumsi nama array, sesuaikan
-        episodeList = contentData.episodes;
+    } else if (contentType === 'series' && contentData?.episodes?.episodes) { // Asumsi nama array, sesuaikan
+        episodeList = contentData.episodes.episodes;
     }
 
     const episodeData = episodeList.find(episode => episode.id === id);
