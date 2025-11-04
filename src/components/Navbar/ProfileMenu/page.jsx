@@ -16,6 +16,7 @@ import iconsUploadContent from "@@/icons/icons-upload-content.svg";
 import logoUsersComment from "@@/AvatarIcons/avatar-face-2.jpg";
 import iconsArrow from "@@/icons/icon-arrow.svg";
 import { useAuth } from "@/components/Context/AuthContext";
+import { TicketIcon } from "lucide-react";
 
 export default function ProfileMenu({
   creatorId,
@@ -25,6 +26,7 @@ export default function ProfileMenu({
   role,
   handleSwitchRole,
   openCreateContentModal,
+  openRedeemVoucherModal,
 }) {
   const router = useRouter();
   const profileRef = useRef();
@@ -111,6 +113,15 @@ export default function ProfileMenu({
                 <span>Profile</span>
               </li>
             </Link>
+            <button onClick={() => openRedeemVoucherModal()} className="hover:cursor-pointer">
+              <li className="flex flex-row gap-2 rounded-md p-2 font-semibold text-white hover:bg-[#F5F5F54D]">
+                <span className="relative h-6 w-6">
+                  <TicketIcon className="h-6 w-6 text-white" />
+                </span>
+
+                <span>Redeem Voucher</span>
+              </li>
+            </button>
             {/* Dashboard */}
             {role === "Creators" && (
               <>
@@ -298,4 +309,5 @@ ProfileMenu.propTypes = {
   role: PropTypes.string,
   handleSwitchRole: PropTypes.func,
   openCreateContentModal: PropTypes.func.isRequired,
+  openRedeemVoucherModal: PropTypes.func.isRequired,
 };

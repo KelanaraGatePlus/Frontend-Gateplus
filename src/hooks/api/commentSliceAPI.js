@@ -21,27 +21,22 @@ export const commentAPI = createApi({
         getCommentByEpisodeEbook: builder.query({
             query: (id) => `/comment/episode-ebook/${id}`,
             providesTags: ["comment"],
-            keepUnusedDataFor: 6000,
         }),
         getCommentByEpisodeComic: builder.query({
             query: (id) => `/comment/episode-comic/${id}`,
             providesTags: ["comment"],
-            keepUnusedDataFor: 6000,
         }),
         getCommentByEpisodePodcast: builder.query({
             query: (id) => `/comment/episode-podcast/${id}`,
             providesTags: ["comment"],
-            keepUnusedDataFor: 6000,
         }),
         getCommentByEpisodeSeries: builder.query({
             query: (id) => `/comment/episode-series/${id}`,
             providesTags: ["comment"],
-            keepUnusedDataFor: 6000,
         }),
         getCommentByMovie: builder.query({
             query: (id) => `/comment/movie/${id}`,
             providesTags: ["comment"],
-            keepUnusedDataFor: 6000,
         }),
         createComment: builder.mutation({
             query: (payload) => ({

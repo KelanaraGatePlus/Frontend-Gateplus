@@ -7,6 +7,13 @@ export const ebookApi = createApi({
   refetchOnReconnect: true,
   baseQuery: fetchBaseQuery({
     baseUrl: BACKEND_URL,
+    prepareHeaders: (headers) => {
+      const token = localStorage.getItem("token"); // atau sessionStorage atau cookie
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      return headers;
+    },
   }),
   tagTypes: ["ebook"],
   endpoints: (builder) => ({
@@ -16,7 +23,7 @@ export const ebookApi = createApi({
       keepUnusedDataFor: 5,
     }),
     getEbookById: builder.query({
-      query: ({ id, userId }) => `/ebooks/${id}?userId=${userId}`,
+      query: ({ id, withEpisodes = false }) => `/ebooks/${id}?withEpisodes=${withEpisodes}`,
       providesTags: ["ebook"],
     }),
     getEpisodeEbookById: builder.query({

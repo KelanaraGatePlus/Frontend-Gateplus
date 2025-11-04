@@ -3,8 +3,6 @@ import { useEffect, useState } from "react";
 import { BACKEND_URL } from "@/lib/constants/backendUrl";
 import { useAuth } from "@/components/Context/AuthContext";
 
-// pakai constant langsung, jangan ambil dari backendUrl
-// ganti ke app.midtrans.com untuk production
 const MIDTRANS_URL = "https://app.sandbox.midtrans.com/snap/snap.js";
 
 export const useMidtransPayment = (paymentType = "ORDER") => {
@@ -15,9 +13,6 @@ export const useMidtransPayment = (paymentType = "ORDER") => {
     switch (paymentType) {
         case "ORDER":
             midtransURL = `${BACKEND_URL}/api/payment/create`;
-            break;
-        case "TIP":
-            midtransURL = `${BACKEND_URL}/api/payment/create-tip`;
             break;
         case "SUBSCRIPTION":
             midtransURL = `${BACKEND_URL}/api/payment/create-subscription`;
@@ -45,11 +40,14 @@ export const useMidtransPayment = (paymentType = "ORDER") => {
         return undefined;
     }, []);
 
-    const pay = async ({ episodeId, contentId, contentType = "PODCAST" }) => {
+    const pay = async (
+        { episodeId, contentId, contentType = "PODCAST", tip = null, voucherCode = null },
+        callbacks = {}
+    ) => {
         const body =
             paymentType === "ORDER"
-                ? JSON.stringify({ episodeId, contentType })
-                : JSON.stringify({ contentId, contentType });
+                ? JSON.stringify({ episodeId, contentType, tip, voucherCode })
+                : JSON.stringify({ contentId, contentType, tip, voucherCode });
 
         if (!snapReady || !window.snap || typeof window.snap.pay !== "function") {
             alert("Midtrans Snap belum siap, coba lagi.");
@@ -67,16 +65,19 @@ export const useMidtransPayment = (paymentType = "ORDER") => {
             });
 
             const data = await res.json();
+            if (data.isPromoFree && data.isPromoFree === true) {
+                callbacks.onSuccess?.(data);
+                return;
+            }
             if (!data.snapToken) throw new Error("snapToken tidak ditemukan");
 
+            console.log("Memanggil Midtrans Snap dengan snapToken:", data.snapToken);
+
             window.snap.pay(data.snapToken, {
-                onSuccess: () => console.log("Pembayaran sukses"),
-                onPending: () => alert("Pembayaran masih pending."),
-                onError: (err) => {
-                    console.error("Midtrans error:", err);
-                    alert("Pembayaran gagal.");
-                },
-                onClose: () => alert("Popup ditutup."),
+                onSuccess: (result) => callbacks.onSuccess?.(result),
+                onPending: (result) => callbacks.onPending?.(result),
+                onError: (error) => callbacks.onError?.(error),
+                onClose: () => callbacks.onClose?.(),
             });
         } catch (error) {
             console.error(error);

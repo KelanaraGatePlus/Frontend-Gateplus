@@ -14,9 +14,13 @@ import Image from "next/image";
 import { contentType } from "@/lib/constants/contentType";
 import Script from "next/script";
 import { AuthProvider } from "@/components/Context/AuthContext";
+import RedeemVoucherModal from "@/components/Modal/RedeemVoucherModal";
+import { usePathname } from "next/navigation";
+import routeWithoutNavbar from "@/lib/constants/routeWithoutNavbar";
 
 export default function RootLayout({ children }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalRedeemOpen, setIsModalRedeemOpen] = useState(false);
   const [objective, setObjective] = useState("");
 
   const redirect = (type, objective) => {
@@ -38,6 +42,14 @@ export default function RootLayout({ children }) {
     }
   };
 
+  const pathname = usePathname();
+
+  // true kalau salah satu pattern cocok
+  const hideNavbar = routeWithoutNavbar.some((pattern) => pattern.test(pathname));
+
+  console.log("Current Pathname:", pathname);
+  console.log("Hide Navbar:", hideNavbar);
+
   return (
     <Provider store={store}>
       <html lang="en">
@@ -58,10 +70,14 @@ export default function RootLayout({ children }) {
         </head>
         <body className={`antialiased overflow-x-hidden`}>
           <AuthProvider>
-            <Navbar openCreateContentModal={(objective) => {
+            {!hideNavbar && <Navbar openCreateContentModal={(objective) => {
               setObjective(objective);
               setIsModalOpen(true);
-            }} />
+            }}
+              openRedeemVoucherModal={() => {
+                setIsModalRedeemOpen(true);
+              }}
+            />}
             <FlexModal isOpen={isModalOpen} onClose={() => {
               setIsModalOpen(false);
             }} title={"Kategori Upload Karya"}>
@@ -91,6 +107,8 @@ export default function RootLayout({ children }) {
                   ))}
               </div>
             </FlexModal>
+
+            <RedeemVoucherModal isModalRedeemOpen={isModalRedeemOpen} setIsModalRedeemOpen={setIsModalRedeemOpen} />
             <AppRouterCacheProvider>{children}</AppRouterCacheProvider>
             <Footer />
           </AuthProvider>

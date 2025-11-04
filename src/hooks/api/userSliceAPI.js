@@ -29,7 +29,7 @@ export const userAPI = createApi({
       keepUnusedDataFor: 60,
     }),
     getUserSavedContent: builder.query({
-      query: (id) => `/save/user/${id}`,
+      query: () => `/save/user`,
       providesTags: ["usersAPI"],
       keepUnusedDataFor: 60,
     }),

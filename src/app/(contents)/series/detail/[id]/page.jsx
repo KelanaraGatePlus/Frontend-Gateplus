@@ -15,7 +15,6 @@ import Image from "next/image";
 import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
 import { useGetSeriesByIdQuery } from "@/hooks/api/seriesSliceAPI";
 import ProductEpisodeSection from "@/components/MainDetailProduct/ProductEpisodeSection";
-import { useMidtransPayment } from "@/hooks/api/midtransAPI";
 import SimpleModal from "@/components/Modal/SimpleModal";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { useLikeContent } from "@/lib/features/useLikeContent";
@@ -30,10 +29,9 @@ import CarouselTemplate from '@/components/Carousel/carouselTemplate';
 
 function DetailSeriesPage({ params }) {
     const { id } = params;
-    const { data } = useGetSeriesByIdQuery(id);
+    const { data } = useGetSeriesByIdQuery({ id, withEpisodes: false });
     const [loading, setLoading] = useState(false);
     const [selectedContentId, setSelectedContentId] = useState(null);
-    const [selectedCreatorId, setSelectedCreatorId] = useState(null);
     const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
     const [selectedPrice, setSelectedPrice] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -52,22 +50,17 @@ function DetailSeriesPage({ params }) {
     const [idSaved, setIdSaved] = useState(null);
 
     const seriesData = data?.data?.data || {};
-    const episode_series = (seriesData.episodes || []).slice().sort((a, b) => {
+    const episode_series = (seriesData?.episodes?.episodes || []).slice().sort((a, b) => {
         return new Date(a.createdAt) - new Date(b.createdAt);
     });
 
-    const { pay } = useMidtransPayment();
-    const { pay: subscribePay } = useMidtransPayment("SUBSCRIBE");
-
-    const handleModalSubscribeOpen = (creatorId, contentId, price) => {
-        setSelectedCreatorId(creatorId);
+    const handleModalSubscribeOpen = (contentId, price) => {
         setSelectedContentId(contentId);
         setSelectedPrice(price);
         setIsModalSubscribeOpen(true);
     };
 
-    const handleModalOpen = (creatorId, episodeId, price) => {
-        setSelectedCreatorId(creatorId);
+    const handleModalOpen = (episodeId, price) => {
         setSelectedEpisode(episodeId);
         setSelectedPrice(price);
         setIsModalOpen(true);
@@ -75,24 +68,14 @@ function DetailSeriesPage({ params }) {
 
     const handleBuy = async () => {
         setLoading(true);
-        await pay({
-            creatorId: selectedCreatorId,
-            episodeId: selectedEpisode,
-            price: selectedPrice,
-            contentType: "SERIES",
-        });
+        window.location.href = `/checkout/purchase/series/${id}/${selectedEpisode}`;
         setIsModalOpen(false);
         setLoading(false);
     };
 
     const handleSubscribe = async () => {
         setLoading(true);
-        await subscribePay({
-            creatorId: selectedCreatorId,
-            contentId: selectedContentId,
-            price: selectedPrice,
-            contentType: "SERIES",
-        });
+        window.location.href = `/checkout/subscribe/series/${selectedContentId}`;
         setIsModalSubscribeOpen(false);
         setLoading(false);
     };
@@ -216,7 +199,7 @@ function DetailSeriesPage({ params }) {
                         </div>
                         <div className="flex flex-row gap-6">
                             <div className="flex items-center justify-center w-48">
-                                <button onClick={!seriesData?.isSubscribed && seriesData?.canSubscribe ? () => { handleModalSubscribeOpen(seriesData?.creator?.id, seriesData?.id, seriesData?.subscriptionPrice) } : null} className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
+                                <button onClick={!seriesData?.isSubscribed && seriesData?.canSubscribe ? () => { handleModalSubscribeOpen(seriesData?.id, seriesData?.subscriptionPrice) } : null} className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
                                     {!seriesData?.canSubscribe ? 'Buy Episode To Watch' : seriesData?.isSubscribed ? "Watch" : "Buy"}
                                 </button>
                             </div>
@@ -295,7 +278,7 @@ function DetailSeriesPage({ params }) {
                             <div className="flex place-content-center justify-center text-2xl font-bold text-white">
                                 {seriesData?.creator?.profileName}
                             </div>
-                            <div className="text-sm text-white">{seriesData?.creator?._count.subscriptions} followers</div>
+                            <div className="text-sm text-white">{seriesData?.creator?.totalSubscribers} followers</div>
                         </div>
                     </div>
                 </section>
@@ -339,6 +322,9 @@ function DetailSeriesPage({ params }) {
                     isLoading={loading}
                     isSubscribe={seriesData?.isSubscribed}
                     handlePayment={handleModalOpen}
+                    productId={
+                        seriesData?.id
+                    }
                 />
 
                 <div className="mt-10 md:mt-20">

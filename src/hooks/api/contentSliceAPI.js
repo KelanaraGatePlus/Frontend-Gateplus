@@ -15,7 +15,7 @@ export const contentAPI = createApi({
             return headers;
         },
     }),
-    tagTypes: ["ebookContent", "comicContent"],
+    tagTypes: ["ebookContent", "comicContent", "seriesContent", "podcastContent"],
     endpoints: (builder) => ({
         getEpisodeEbookById: builder.query({
             query: (id) => `/episode/${id}`,
@@ -29,11 +29,42 @@ export const contentAPI = createApi({
             query: (id) => `/episodeSeries/${id}`,
             providesTags: ["seriesContent"],
         }),
+        getAllEpisodeByEbookId: builder.query({
+            // Accept a single object parameter: { ebookId, page, limit, withPurchased }
+            query: ({ id, page = 1, limit = 5, withPurchased = false, paginate = true }) =>
+                `/episode/ebook/${id}?page=${page}&limit=${limit}&withPurchased=${withPurchased}&paginate=${paginate}`,
+            providesTags: ["ebookContent"],
+        }),
+        getAllEpisodeByComicId: builder.query({
+            query: ({ id, page = 1, limit = 5, withPurchased = false, paginate = true }) =>
+                `/episodeComics/comic/${id}?page=${page}&limit=${limit}&withPurchased=${withPurchased}&paginate=${paginate}`,
+            providesTags: ["comicContent"],
+        }),
+        getAllEpisodeBySeriesId: builder.query({
+            query: ({ id, page = 1, limit = 5, withPurchased = false, paginate = true }) =>
+                `/episodeSeries/series/${id}?page=${page}&limit=${limit}&withPurchased=${withPurchased}&paginate=${paginate}`,
+            providesTags: ["seriesContent"],
+        }),
+        getAllEpisodeByPodcastId: builder.query({
+            query: ({ id, page = 1, limit = 5, withPurchased = false, paginate = true }) =>
+                `/episodePodcast/podcast/${id}?page=${page}&limit=${limit}&withPurchased=${withPurchased}&paginate=${paginate}`,
+            providesTags: ["podcastContent"],
+        }),
     }),
 });
 
 export const {
     useGetEpisodeEbookByIdQuery,
     useGetEpisodeComicsByIdQuery,
-    useGetEpisodeSeriesByIdQuery
+    useGetEpisodeSeriesByIdQuery,
+    useGetAllEpisodeByEbookIdQuery,
+    useGetAllEpisodeByComicIdQuery,
+    useGetAllEpisodeBySeriesIdQuery,
+    useGetAllEpisodeByPodcastIdQuery,
+
+    // Lazy Queries
+    useLazyGetAllEpisodeByComicIdQuery,
+    useLazyGetAllEpisodeBySeriesIdQuery,
+    useLazyGetAllEpisodeByPodcastIdQuery,
+    useLazyGetAllEpisodeByEbookIdQuery,
 } = contentAPI;

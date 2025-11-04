@@ -24,7 +24,7 @@ export const podcastApi = createApi({
             keepUnusedDataFor: 3600,
         }),
         getPodcastById: builder.query({
-            query: ({ id, userId }) => `/podcast/${id}?userId=${userId}`,
+            query: ({ id, withEpisodes = false }) => `/podcast/${id}?withEpisodes=${withEpisodes}`,
             providesTags: ["podcast"],
             keepUnusedDataFor: 3600,
         }),

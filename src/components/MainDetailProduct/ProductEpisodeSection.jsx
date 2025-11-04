@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import PropTypes from "prop-types";
 
@@ -18,25 +18,50 @@ import iconMore from "@@/icons/icons-more.svg";
 import iconPlay from "@@/icons/icons-play.svg";
 import iconFlag from "@@/icons/icons-flag.svg";
 import Link from "next/link";
+import useGetLazyEpisodeByType from "@/hooks/helper/getEpisodeByType";
 // import iconPause from "@@/icons/icons-pause.svg";
 
 export default function ProductEpisodeSection({
   productType,
-  productEpisodes,
   isLoading,
   currentlyPlaying,
   handlePlayPodcast,
   handlePayment,
-  isSubscribe = false
+  isSubscribe = false,
+  productId = 'cmhiwnwlu0009f8z8rskzp22e',
 }) {
   const [showSkeleton, setShowSkeleton] = useState(true);
-  const [showAll, setShowAll] = useState(false);
   const [selectedPodcast, setSelectedPodcast] = useState({});
   const [isPodcastModalVisible, setIsPodcastModalVisible] = useState(false);
+  const [episodes, setEpisodes] = useState([]);
+  const [totalEpisodes, setTotalEpisodes] = useState(0);
+  const lastEpisodeRef = useRef(null);
 
-  const handleShowAll = () => {
-    setShowAll(!showAll);
-  };
+  // Hanya eksekusi sekali saja saat komponen dimount
+  useEffect(() => {
+    handleLoadAllEpisodes();
+  }, [
+    productId, productType
+  ]);
+
+  const [trigger] = useGetLazyEpisodeByType(productType);
+
+  const handleLoadAllEpisodes = async (paginate = true) => {
+    const data = await trigger({
+      id: productId,
+      page: 1,
+      limit: 5,
+      withPurchased: true,
+      paginate: paginate,
+    }).unwrap();
+
+    if (data && data.data.episodes) {
+      setEpisodes([...data.data.episodes]);
+      if (paginate) {
+        setTotalEpisodes(data.data.pagination.totalCount);
+      }
+    }
+  }
 
   const handlePodcastModal = () => {
     setIsPodcastModalVisible(!isPodcastModalVisible);
@@ -46,6 +71,20 @@ export default function ProductEpisodeSection({
     setSelectedPodcast(item);
     handlePodcastModal();
   };
+
+  const handleScroll = () => {
+    if (episodes.length < totalEpisodes) {
+      handleLoadAllEpisodes(false);
+    } else {
+      if (lastEpisodeRef.current) {
+        lastEpisodeRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+
+    if (lastEpisodeRef.current) {
+      lastEpisodeRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }
 
   useEffect(() => {
     setShowSkeleton(isLoading);
@@ -59,10 +98,10 @@ export default function ProductEpisodeSection({
       productType === "ebook" ? "/ebooks/read" : productType == "comic" ? "/comics/read" : "/series/watch";
     return (
       <>
-        {productEpisodes?.length > 0 ? (
+        {episodes?.length > 0 ? (
           <section className="relative flex w-full flex-col py-5 text-white">
             {/* Lihat episode pertama */}
-            <div className="flex">
+            {totalEpisodes > 5 && <button className="flex hover:cursor-pointer" onClick={() => { handleScroll() }}>
               <div className="mb-1 flex w-full items-center justify-center gap-2 rounded-lg bg-[#393939] py-2">
                 <h4 className={`zeinFont text-2xl font-bold`}>
                   Lihat Episode Pertama
@@ -77,13 +116,12 @@ export default function ProductEpisodeSection({
                   />
                 </div>
               </div>
-            </div>
+            </button>}
 
             {/* List episode */}
-            {(showAll ? productEpisodes : productEpisodes.slice(0, 5))
-              .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+            {episodes
               .map((item, index) => (
-                <button key={index} onClick={item.isPurchased || item.price == 'Free' || isSubscribe ? () => { window.location.href = `${parentPath}/${item.id}` } : () => { handlePayment(item.creatorId, item.id, item.price, 'EBOOK') }}>
+                <button ref={index + 1 == totalEpisodes ? lastEpisodeRef : null} key={index} onClick={item.isPurchased || item.price == 'Free' || isSubscribe ? () => { window.location.href = `${parentPath}/${item.id}` } : () => { handlePayment(item.id, item.price, 'EBOOK') }}>
                   <div className="group flex cursor-pointer items-stretch gap-2 px-4 py-2 hover:bg-[#1F6E8A] md:gap-4">
                     {/* Book Container */}
                     <div className="h-24 w-24 overflow-hidden rounded-lg md:h-36 md:w-36">
@@ -139,11 +177,9 @@ export default function ProductEpisodeSection({
                 </button>
               ))}
 
-            {/* Lihat Lainnya */}
             <SeeAnotherEpisodes
-              productEpisodes={productEpisodes}
-              showAll={showAll}
-              handleShowAll={handleShowAll}
+              showAll={episodes.length === totalEpisodes}
+              handleShowAll={() => handleLoadAllEpisodes(false)}
             />
           </section>
         ) : (
@@ -155,15 +191,14 @@ export default function ProductEpisodeSection({
   } else if (productType === "podcast") {
     return (
       <>
-        {productEpisodes?.length > 0 ? (
+        {episodes.length > 0 ? (
           <section className="relative mb-10 flex w-full flex-col py-0 text-white">
-            {(showAll ? productEpisodes : productEpisodes.slice(0, 5))
-              .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+            {episodes
               .map((item, index) => (
                 <div
                   key={index}
                   className={`group flex cursor-pointer w-full gap-2 px-4 py-4 ${item.isPurchased || item.price == 'Free' || isSubscribe ? "hover:bg-[#105CAC]" : "hover:bg-gray-900"} md:gap-4 md:rounded-lg transition-all duration-300 ease-in-out justify-between ${currentlyPlaying?.id === item.id ? "" : ""} `}
-                  onClick={item.isPurchased || item.price == 'Free' || isSubscribe ? () => handlePlayPodcast(item) : () => { handlePayment(item.creatorId, item.id, item.price) }}
+                  onClick={item.isPurchased || item.price == 'Free' || isSubscribe ? () => handlePlayPodcast(item) : () => { handlePayment(item.id, item.price) }}
                 >
                   <div className="flex gap-2 w-[200px] md:w-2xl">
                     <div className="h-24 w-24 overflow-hidden rounded-lg bg-[#DEDEDE] md:h-36 md:w-36 relative group">
@@ -284,12 +319,16 @@ export default function ProductEpisodeSection({
 
               ))}
 
-            {/* Lihat Lainnya */}
-            <SeeAnotherEpisodes
-              productEpisodes={productEpisodes}
-              showAll={showAll}
-              handleShowAll={handleShowAll}
-            />
+            {episodes.length < totalEpisodes && (
+              <div className="flex w-full justify-center mt-4">
+                <button
+                  className="zeinFont rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                  onClick={() => handleLoadAllEpisodes(false)}
+                >
+                  Load More Episodes
+                </button>
+              </div>
+            )}
 
             {isPodcastModalVisible && (
               <PodcastMoreDetail
@@ -318,6 +357,7 @@ ProductEpisodeSection.propTypes = {
   handlePlayPodcast: PropTypes.func,
   handlePayment: PropTypes.func,
   isSubscribe: PropTypes.bool,
+  productId: PropTypes.string,
 };
 
 function EpisodeUnAvailable() {
@@ -332,9 +372,9 @@ function EpisodeUnAvailable() {
   );
 }
 
-function SeeAnotherEpisodes({ productEpisodes, showAll, handleShowAll }) {
+function SeeAnotherEpisodes({ showAll, handleShowAll }) {
   return (
-    productEpisodes.length > 5 && (
+    !showAll && (
       <div
         className={`absolute left-0 flex w-screen items-end py-2 transition-all duration-300 ease-in-out ${showAll ? "bottom-[-45px] h-fit" : "bottom-0 h-45 bg-gradient-to-b from-[#39393900] via-[#393939CC] to-[#393939FF]"}`}
       >
@@ -451,10 +491,8 @@ export function PodcastMoreDetail({
 }
 
 SeeAnotherEpisodes.propTypes = {
-  productEpisodes: PropTypes.array.isRequired,
   showAll: PropTypes.bool.isRequired,
   handleShowAll: PropTypes.func.isRequired,
-
 };
 
 PodcastMoreDetail.propTypes = {
@@ -464,4 +502,5 @@ PodcastMoreDetail.propTypes = {
   creator: PropTypes.array.isRequired,
   createdAt: PropTypes.string.isRequired,
   handlePodcastModal: PropTypes.func.isRequired,
+  withEpisodes: PropTypes.bool.isRequired,
 };

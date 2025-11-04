@@ -9,7 +9,6 @@ import { useGetUserId } from "@/lib/features/useGetUserId";
 /*[--- API HOOKS ---]*/
 import { useGetEbookByIdQuery } from "@/hooks/api/ebookSliceAPI";
 import SimpleModal from "@/components/Modal/SimpleModal";
-import { useMidtransPayment } from "@/hooks/api/midtransAPI";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 
@@ -20,23 +19,18 @@ export default function DetailEbookPage({ params }) {
   const [loading, setLoading] = useState(false);
   const [selectedEpisode, setSelectedEpisode] = useState(null);
   const [selectedContentId, setSelectedContentId] = useState(null);
-  const [selectedCreatorId, setSelectedCreatorId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
   const [selectedPrice, setSelectedPrice] = useState(null);
-  const { pay } = useMidtransPayment();
-  const { pay: subscribePay } = useMidtransPayment("SUBSCRIBE");
   const [createLog] = useCreateLogMutation();
 
-  const handleModalOpen = (creatorId, episodeId, price) => {
-    setSelectedCreatorId(creatorId);
+  const handleModalOpen = (episodeId, price) => {
     setSelectedEpisode(episodeId);
     setSelectedPrice(price);
     setIsModalOpen(true);
   };
 
-  const handleModalSubscribeOpen = (creatorId, contentId, price) => {
-    setSelectedCreatorId(creatorId);
+  const handleModalSubscribeOpen = (contentId, price) => {
     setSelectedContentId(contentId);
     setSelectedPrice(price);
     setIsModalSubscribeOpen(true);
@@ -44,32 +38,22 @@ export default function DetailEbookPage({ params }) {
 
   const handleBuy = async () => {
     setLoading(true);
-    await pay({
-      creatorId: selectedCreatorId,
-      episodeId: selectedEpisode,
-      price: selectedPrice,
-      contentType: "EBOOK",
-    });
+    window.location.href = `/checkout/purchase/ebooks/${id}/${selectedEpisode}`;
     setIsModalOpen(false);
     setLoading(false);
   };
 
   const handleSubscribe = async () => {
     setLoading(true);
-    await subscribePay({
-      creatorId: selectedCreatorId,
-      contentId: selectedContentId,
-      price: selectedPrice,
-      contentType: "EBOOK",
-    });
+    window.location.href = `/checkout/subscribe/ebooks/${selectedContentId}`;
     setIsModalSubscribeOpen(false);
     setLoading(false);
   };
 
   const skip = !id || !userId;
   const { data, isLoading } = useGetEbookByIdQuery({ id, userId }, { skip });
-  const ebookData = data?.data?.data || {};
-  const episode_ebooks = (ebookData.episode_ebooks || []).slice().sort((a, b) => {
+  const ebookData = data?.data || {};
+  const episode_ebooks = (ebookData?.episode_ebooks?.episodes || []).slice().sort((a, b) => {
     return new Date(a.createdAt) - new Date(b.createdAt);
   });
 
@@ -90,8 +74,8 @@ export default function DetailEbookPage({ params }) {
         isLoading={isLoading}
         handlePayment={handleModalOpen}
         handleSubscribe={handleModalSubscribeOpen}
-        topContentData={data?.data?.topContent || []}
-        recomendationData={data?.data?.recommendation || []}
+        topContentData={data?.topContent || []}
+        recomendationData={data?.recommendation || []}
       />
       <SimpleModal
         title={"Konten ini masih terkunci, apakah kamu bersedia membeli nya dengan harga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}

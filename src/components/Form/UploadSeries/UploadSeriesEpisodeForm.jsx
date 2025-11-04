@@ -65,7 +65,6 @@ export default function UploadSeriesEpisodeForm() {
 
     const onSubmit = async (data) => {
         const formData = new FormData();
-        formData.append("creatorId", creatorId);
         formData.append("seriesId", data.seriesId);
         formData.append("title", data.title);
         formData.append("description", data.description);

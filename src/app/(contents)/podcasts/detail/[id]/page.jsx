@@ -10,7 +10,6 @@ import MainTemplateLayout from "@/components/MainDetailProduct/page";
 import PodcastPlayback from "@/components/PodcastPlayer/PodcastPlayback";
 import BottomSpacer from "@/components/BottomSpacer/page";
 import SimpleModal from "@/components/Modal/SimpleModal";
-import { useMidtransPayment } from "@/hooks/api/midtransAPI";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 
@@ -22,12 +21,9 @@ export default function DetailPodcastPage({ params }) {
   const [selectedEpisode, setSelectedEpisode] = useState(null);
   const [selectedContentId, setSelectedContentId] = useState(null);
   const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
-  const [selectedCreatorId, setSelectedCreatorId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPrice, setSelectedPrice] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { pay } = useMidtransPayment();
-  const { pay: subscribePay } = useMidtransPayment("SUBSCRIBE");
   const [createLog] = useCreateLogMutation();
 
   useEffect(() => {
@@ -39,8 +35,8 @@ export default function DetailPodcastPage({ params }) {
 
   const skip = !id || !userId;
   const { data, isLoading } = useGetPodcastByIdQuery({ id, userId }, { skip });
-  const podcastData = data?.data?.data || {};
-  const episode_podcasts = (podcastData.episode_podcasts || []).slice().sort((a, b) => {
+  const podcastData = data?.data || {};
+  const episode_podcasts = (podcastData?.episode_podcasts?.episodes || []).slice().sort((a, b) => {
     return new Date(a.createdAt) - new Date(b.createdAt);
   });
 
@@ -49,8 +45,7 @@ export default function DetailPodcastPage({ params }) {
     localStorage.setItem("currentlyPlaying", JSON.stringify(episodeData));
   };
 
-  const handleModalOpen = (creatorId, episodeId, price) => {
-    setSelectedCreatorId(creatorId);
+  const handleModalOpen = (episodeId, price) => {
     setSelectedEpisode(episodeId);
     setSelectedPrice(price);
     setIsModalOpen(true);
@@ -58,24 +53,14 @@ export default function DetailPodcastPage({ params }) {
 
   const handleBuy = async () => {
     setLoading(true);
-    await pay({
-      creatorId: selectedCreatorId,
-      episodeId: selectedEpisode,
-      price: selectedPrice,
-      contentType: "PODCAST",
-    });
+    window.location.href = `/checkout/purchase/podcasts/${id}/${selectedEpisode}`;
     setIsModalOpen(false);
     setLoading(false);
   };
 
   const handleSubscribe = async () => {
     setLoading(true);
-    await subscribePay({
-      creatorId: selectedCreatorId,
-      contentId: selectedContentId,
-      price: selectedPrice,
-      contentType: "PODCAST",
-    });
+    window.location.href = `/checkout/subscribe/podcasts/${selectedContentId}`;
     setIsModalSubscribeOpen(false);
     setLoading(false);
   };

@@ -40,11 +40,11 @@ export default function MainTemplateLayout({
         productTotalViews={productDetail.totalViews}
         productTotalLikes={productDetail.totalLikes}
         creatorDetail={productType === 'podcast' ? productDetail.Creator : productDetail.creators}
-        creatorTotalSubscriber={productDetail.totalCount}
-        creatorIsSubscribed={productDetail.isSubscribed}
+        creatorTotalSubscriber={productDetail?.totalSubscribers}
+        creatorIsSubscribed={productDetail?.isSubscribedToCreator?.data?.length > 0 ? true : false}
         idLikedProduct={productDetail?.isLiked?.id}
         idDislikedProduct={productDetail?.isDisliked?.id}
-        idSavedProduct={productDetail.idSaved}
+        idSavedProduct={productDetail?.savedBy?.[0]?.id}
         canSubscribe={productDetail.canSubscribe}
         subscriptionPrice={productDetail.subscriptionPrice}
         isLoading={isLoading}
@@ -61,6 +61,7 @@ export default function MainTemplateLayout({
           handlePlayPodcast={handlePlayPodcast}
           handlePayment={handlePayment}
           isSubscribe={productDetail?.isSubscribe && productDetail?.canSubscribe ? true : false}
+          productId={productDetail?.id}
         />
       </div>
 

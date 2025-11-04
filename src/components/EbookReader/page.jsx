@@ -19,35 +19,49 @@ export default function EpubReader({ epubUrl, isDark = true }) {
     });
 
     renditionRef.current = rendition;
-    rendition.display();
 
+    // ⬇️ Cari halaman pertama yang bukan TOC/nav/cover
+    bookInstance.ready.then(() => {
+      const spineItems = bookInstance.spine.items;
+
+      const firstRealContent = spineItems.find(
+        (item) =>
+          !item.href.includes("toc") &&
+          !item.href.includes("nav") &&
+          !item.href.includes("cover")
+      );
+
+      if (firstRealContent) {
+        rendition.display(firstRealContent.href);
+      } else {
+        rendition.display();
+      }
+    });
+
+    // 🎨 Tema
     const themeStyles = isDark
       ? {
-          body: {
-            background: "#222222 !important",
-            color: "#ffffff !important",
-            columnCount: "1 !important",
-            padding: "1em",
-            fontSize: "110%",
-            lineHeight: "1.6",
-          },
-          p: {
-            color: "#ffffff !important",
-          },
-        }
+        body: {
+          background: "#222222 !important",
+          color: "#ffffff !important",
+          columnCount: "1 !important",
+          padding: "1em",
+          fontSize: "110%",
+          lineHeight: "1.6",
+        },
+        p: { color: "#ffffff !important" },
+      }
       : {
-          body: {
-            background: "#ffffff !important",
-            color: "#222222 !important",
-            columnCount: "1 !important",
-            padding: "1em",
-            fontSize: "110%",
-            lineHeight: "1.6",
-          },
-          p: {
-            color: "#222222 !important",
-          },
-        };
+        body: {
+          background: "#ffffff !important",
+          color: "#222222 !important",
+          columnCount: "1 !important",
+          padding: "1em",
+          fontSize: "110%",
+          lineHeight: "1.6",
+        },
+        p: { color: "#222222 !important" },
+      };
 
     rendition.themes.default(themeStyles);
 

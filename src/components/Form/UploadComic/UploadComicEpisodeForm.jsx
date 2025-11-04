@@ -59,7 +59,6 @@ export default function UploadComicEpisodeForm() {
     const onSubmit = async (data) => {
         const sortedFiles = data.inputFile.sort((a, b) => a.name.localeCompare(b.name));
         const formData = new FormData();
-        formData.append("creatorId", creatorId);
         formData.append("comicsId", data.comicId);
         formData.append("title", data.title);
         formData.append("description", data.description);

@@ -1,7 +1,9 @@
-import axios from "axios";
-import { BACKEND_URL } from "@/lib/constants/backendUrl";
+import { useCreateSavedContentMutation, useDeleteSavedContentMutation } from "@/hooks/api/savedContentAPI";
 
 export function useSaveContent() {
+    const [deleteSavedContent] = useDeleteSavedContentMutation();
+    const [createSavedContent] = useCreateSavedContentMutation();
+
     const toggleSave = async ({
         isSaved,
         title,
@@ -14,14 +16,12 @@ export function useSaveContent() {
         setIsSaved,
         setIdSaved,
     }) => {
-        const userId = localStorage.getItem("users_id");
-        if (!userId) return;
         try {
             if (isSaved) {
                 // UNSAVE
                 setIsSaved(false);
                 console.log("idlike", idSaved);
-                const response = await axios.delete(`${BACKEND_URL}/save/${idSaved}`);
+                const response = await deleteSavedContent(idSaved).unwrap();
                 console.log("UNSAVED", response.data);
                 setIdSaved(null);
                 setShowToast(true);
@@ -31,15 +31,10 @@ export function useSaveContent() {
                 // SAVE
                 setIsSaved(true);
                 const requestBody = {
-                    userId: userId,
                     [fieldKey]: id,
                 };
-                const response = await axios.post(
-                    `${BACKEND_URL}/save`,
-                    requestBody,
-                );
-                console.log("SAVED", response.data.data.data);
-                setIdSaved(response.data.data.data.id);
+                const response = await createSavedContent(requestBody).unwrap();
+                setIdSaved(response.data.data.id);
                 setShowToast(true);
                 setToastMessage(`"${title}" berhasil disimpan ke daftar simpan`);
                 setToastType("success");

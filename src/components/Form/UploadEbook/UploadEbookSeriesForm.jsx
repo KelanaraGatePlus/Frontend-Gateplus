@@ -12,7 +12,6 @@ import { createEbookSchema } from "@/lib/schemas/createEbookSchema";
 /*[--- API HOOKS & FEATURES ---]*/
 import { useGetAllGenresQuery } from "@/hooks/api/genreSliceAPI";
 import { useCreateEbookMutation } from "@/hooks/api/ebookSliceAPI";
-import { useGetCreatorId } from "@/lib/features/useGetCreatorId";
 
 /*[--- CONSTANT VARIABLE---]*/
 import { languageOptions } from '@/lib/constants/languageOptions';
@@ -32,7 +31,6 @@ import IconsGalery from "@@/icons/logo-upload-banner.svg";
 
 export default function UploadEbookSeriesForm() {
     const router = useRouter();
-    const creatorId = useGetCreatorId();
     const posterBannerInputRef = useRef(null);
     const coverBookInputRef = useRef(null);
     const {
@@ -63,7 +61,6 @@ export default function UploadEbookSeriesForm() {
 
     const onSubmit = async (data) => {
         const formData = new FormData();
-        formData.append("creatorId", creatorId);
         formData.append("title", data.title);
         formData.append("description", data.description);
         formData.append("categoriesId", data.genre);

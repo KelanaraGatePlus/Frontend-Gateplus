@@ -8,7 +8,7 @@ import { Pagination } from 'flowbite-react';
 import MenuTabs from './MenuTabs';
 import ContentList from '../ContentList';
 
-export default function UserLibraryTabs({ id }) {
+export default function UserLibraryTabs() {
     const [switchTab, setSwitchTab] = useState("Disimpan");
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
@@ -16,7 +16,7 @@ export default function UserLibraryTabs({ id }) {
     const [activeContent, setActiveContent] = useState([]);
     const [isLoadingContent, setIsLoadingContent] = useState(false);
 
-    const { data, isLoading: isLoadingSavedContent, isSuccess } = useGetUserSavedContentQuery(id);
+    const { data, isLoading: isLoadingSavedContent, isSuccess } = useGetUserSavedContentQuery();
     const { data: lastWatchedData, isLoading: isLoadingLastWatched } = useGetUserLastWatchedContentQuery();
     const { data: purchasedData, isLoading: isLoadingPurchased } = useGetUserPurchasedContentQuery();
     const userSavedContentData = data?.data?.data || [];

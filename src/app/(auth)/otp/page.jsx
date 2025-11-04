@@ -1,73 +1,182 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import OtpInput from "react-otp-input";
+import LoadingOverlay from "@/components/LoadingOverlay/page";
+import {
+  useCreateEmailOTPMutation,
+  useVerifyEmailMutation,
+} from "@/hooks/api/oneTimePasswordAPI";
+import { useAuth } from "@/components/Context/AuthContext";
 
 export default function OtpPage() {
-  const [otp, setOtp] = useState(Array(6).fill(""));
-  const inputRefs = useRef([]);
+  const [otp, setOtp] = useState("");
+  const [cooldown, setCooldown] = useState(0);
+  const { logout } = useAuth();
 
-  const handleChange = (e, index) => {
-    const value = e.target.value;
-    if (!/^[0-9]$/.test(value) && value !== "") return;
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
+  const [createEmailOtp, { isLoading, isError, isSuccess, error }] =
+    useCreateEmailOTPMutation();
+  const [
+    verifyEmailOtp,
+    {
+      isLoading: isVerifying,
+      isError: isVerifyingError,
+      isSuccess: isVerifyingSuccess,
+      error: verifyingError,
+    },
+  ] = useVerifyEmailMutation();
 
-    if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus();
+  // ⏱️ Timer countdown
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) clearInterval(timer);
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
+
+  // 📩 Cek kapan terakhir OTP dikirim
+  useEffect(() => {
+    const lastSent = localStorage.getItem("lastOtpSent");
+    if (!lastSent) return;
+
+    const elapsed = Math.floor((Date.now() - Number(lastSent)) / 1000);
+    if (elapsed < 120) {
+      // Masih dalam cooldown → hitung sisa waktu
+      setCooldown(120 - elapsed);
+      console.log(`⏳ Masih cooldown ${120 - elapsed} detik`);
+    }
+  }, []);
+
+  // 📬 Kirim OTP ke email user
+  const handleSendOtp = async () => {
+    try {
+      const result = await createEmailOtp().unwrap();
+      console.log("✅ OTP Sent:", result);
+      localStorage.setItem("lastOtpSent", Date.now().toString()); // simpan waktu kirim
+      setCooldown(120); // aktifkan cooldown 2 menit
+    } catch (err) {
+      console.error("❌ Gagal kirim OTP:", err);
+      setCooldown(30); // cooldown pendek jika gagal (opsional)
     }
   };
 
-  const handleKeyDown = (e, index) => {
-    if (e.key === "Backspace" && otp[index] === "" && index > 0) {
-      inputRefs.current[index - 1]?.focus();
+  // 🔁 Resend OTP
+  const handleResendOtp = async () => {
+    if (cooldown > 0) return;
+    await handleSendOtp();
+  };
+
+  // ✅ Submit OTP ke backend
+  const handleSubmit = async () => {
+    if (isVerifying || otp.length < 6) return;
+
+    try {
+      await verifyEmailOtp({ token: otp }).unwrap();
+
+      logout();
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } catch (err) {
+      console.error("❌ Gagal verifikasi OTP:", err);
     }
   };
 
   return (
     <div className="flex min-h-screen min-w-screen items-center justify-center px-4 md:py-10">
-      <main className="flex h-full w-full max-w-lg flex-col rounded-lg bg-[#184A9780] px-6 pt-2 pb-8">
+      <main className="flex h-full w-full max-w-lg flex-col rounded-lg bg-[#184A9780] px-6 pt-2 pb-8 shadow-lg backdrop-blur-md">
+        {/* Header */}
         <section className="flex flex-col">
           <div className="relative flex h-24 w-fit items-center justify-start">
-            <div className="text-white">
-              <h1 className="zeinFont text-5xl font-black md:text-5xl">
-                Input OTP
-              </h1>
-            </div>
+            <h1 className="zeinFont text-5xl font-black text-white md:text-5xl">
+              Input OTP
+            </h1>
           </div>
 
-          <div className="-mt-7 mb-6 flex translate-y-2">
-            <p className="montserratFont text-sm font-normal text-[#1DBDF5]">
-              <span>We have sent OTP Code to Your mail, please check</span>
+          {/* Status Info */}
+          {isSuccess && (
+            <p className="montserratFont -mt-7 mb-6 translate-y-2 text-sm font-normal text-[#1DBDF5]">
+              We have sent an OTP to your email, please check.
             </p>
-          </div>
+          )}
+          {isError && (
+            <p className="montserratFont -mt-7 mb-6 translate-y-2 text-sm font-normal text-red-500">
+              {error?.data?.message ||
+                "Failed to send OTP Code, please try again later."}
+            </p>
+          )}
+          {isVerifyingError && (
+            <p className="montserratFont mb-4 text-sm font-normal text-red-500">
+              {verifyingError?.data?.message || "Invalid or expired OTP code."}
+            </p>
+          )}
+          {isVerifyingSuccess && (
+            <p className="montserratFont mb-4 text-sm font-normal text-green-400">
+              Email Berhasil diverifikasi! Silahkan Login.
+            </p>
+          )}
         </section>
 
-        <div className="flex justify-center gap-2">
-          {otp.map((digit, index) => (
-            <input
-              key={index}
-              ref={(el) => (inputRefs.current[index] = el)}
-              type="number"
-              inputMode="numeric"
-              maxLength={1}
-              className="flex h-12 w-12 flex-1 rounded-lg border border-gray-300 bg-white text-center text-lg font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none md:h-18 md:text-3xl"
-              value={digit}
-              onChange={(e) => handleChange(e, index)}
-              onKeyDown={(e) => handleKeyDown(e, index)}
-            />
-          ))}
+        {/* OTP Input */}
+        <div className="flex justify-center mb-4">
+          <OtpInput
+            value={otp}
+            onChange={setOtp}
+            numInputs={6}
+            inputType="number"
+            renderInput={(props, index) => (
+              <input
+                key={index}
+                {...props}
+                className="mx-2 h-12 w-12 md:h-16 md:w-16 rounded-lg border border-gray-300 bg-white text-center text-xl font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+            )}
+            skipDefaultStyles
+          />
         </div>
 
-        {/* button */}
-        <button className="zeinFont mt-4 cursor-pointer rounded-lg border border-[#156EB7] bg-[#156EB7] py-2 text-xl font-bold text-white hover:border-white/70 hover:bg-[#156EB7CC]">
-          Next
+        {/* Action Buttons */}
+        <button
+          onClick={handleSubmit}
+          disabled={isVerifying || otp.length < 6}
+          className={`zeinFont mt-4 cursor-pointer rounded-lg border py-2 text-xl font-bold text-white transition-all ${isVerifying || otp.length < 6
+            ? "border-gray-400 bg-gray-500/50 cursor-not-allowed"
+            : "border-[#156EB7] bg-[#156EB7] hover:border-white/70 hover:bg-[#156EB7CC]"
+            }`}
+        >
+          {isVerifying ? "Verifying..." : "Next"}
         </button>
-        <button className="zeinFont mt-2 cursor-pointer rounded-lg border-2 border-[#156EB7] bg-transparent py-2 text-xl font-bold text-white hover:border-white/70 hover:bg-[#156EB7CC]">
-          Didn&apos;t rechives any code
+
+        <button
+          onClick={handleResendOtp}
+          disabled={cooldown > 0}
+          className={`zeinFont mt-2 cursor-pointer rounded-lg border-2 py-2 text-xl font-bold text-white transition-all ${cooldown > 0
+            ? "border-gray-400 bg-gray-500/50 cursor-not-allowed"
+            : "border-[#156EB7] hover:border-white/70 hover:bg-[#156EB7CC]"
+            }`}
+        >
+          {cooldown > 0
+            ? `Resend available in ${cooldown}s`
+            : "Didn’t receive any code?"}
         </button>
       </main>
+
+      {/* Loading Overlay */}
+      {(isLoading || isVerifying) && (
+        <LoadingOverlay
+          message={
+            isVerifying
+              ? "Memverifikasi OTP anda..."
+              : "Mengirim OTP ke email anda..."
+          }
+        />
+      )}
     </div>
   );
 }

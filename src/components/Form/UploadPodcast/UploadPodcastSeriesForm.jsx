@@ -12,7 +12,6 @@ import { createPodcastSchema } from "@/lib/schemas/createPodcastSchema";
 /*[--- API HOOKS & FEATURES ---]*/
 import { useGetAllGenresQuery } from "@/hooks/api/genreSliceAPI";
 import { useCreatePodcastMutation } from "@/hooks/api/podcastSliceAPI";
-import { useGetCreatorId } from "@/lib/features/useGetCreatorId";
 
 /*[--- CONSTANT VARIABLE---]*/
 import { languageOptions } from '@/lib/constants/languageOptions';
@@ -32,7 +31,6 @@ import IconsGalery from "@@/icons/logo-upload-banner.svg";
 
 export default function UploadPodcastSeriesForm() {
     const router = useRouter();
-    const creatorId = useGetCreatorId();
     const coverPodcastInputRef = useRef(null);
     const {
         register,
@@ -57,7 +55,6 @@ export default function UploadPodcastSeriesForm() {
 
     const onSubmit = async (data) => {
         const formData = new FormData();
-        formData.append("creatorId", creatorId);
         formData.append("title", data.title);
         formData.append("description", data.description);
         formData.append("categoriesId", data.genre);

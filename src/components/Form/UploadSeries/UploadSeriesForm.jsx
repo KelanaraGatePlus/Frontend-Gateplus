@@ -11,7 +11,6 @@ import { createSeriesSchema } from "@/lib/schemas/createSeriesSchema";
 
 /*[--- API HOOKS & FEATURES ---]*/
 import { useGetAllGenresQuery } from "@/hooks/api/genreSliceAPI";
-import { useGetCreatorId } from "@/lib/features/useGetCreatorId";
 
 /*[--- CONSTANT VARIABLE---]*/
 import { languageOptions } from '@/lib/constants/languageOptions';
@@ -37,7 +36,6 @@ import { useCreateSeriesMutation } from "@/hooks/api/seriesSliceAPI";
 
 export default function UploadSeriesForm() {
     const router = useRouter();
-    const creatorId = useGetCreatorId();
     const posterBannerInputRef = useRef(null);
     const coverBookInputRef = useRef(null);
     const {
@@ -73,10 +71,8 @@ export default function UploadSeriesForm() {
     const { data: genresData } = useGetAllGenresQuery();
 
     const onSubmit = async (data) => {
-        console.log("Form Data:", data);
         try {
             const formData = new FormData();
-            formData.append("creatorId", creatorId);
             formData.append("title", data.title);
             formData.append("description", data.description);
             formData.append("categoriesId", data.genre);
