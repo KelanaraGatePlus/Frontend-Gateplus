@@ -14,7 +14,10 @@ export function storeUserData(data) {
             localStorage.setItem("isCreator", JSON.stringify(true));
         }
 
-        document.cookie = `token=${token}; path=/`;
+        // set cookie expires in 1 day
+        const expires = new Date();
+        expires.setTime(expires.getTime() + 24 * 60 * 60 * 1000);
+        document.cookie = `token=${token};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
     } else {
         throw new Error("Token not found in response");
     }

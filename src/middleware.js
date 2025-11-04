@@ -59,8 +59,14 @@ export async function middleware(req) {
         if (payload.isVerified === false && !VERIFICATION_PATHS.includes(pathname)) {
             return NextResponse.redirect(new URL("/otp", req.url));
         }
+
+        return NextResponse.next();
     } catch (err) {
         console.error("Token invalid:", err);
+        // Hapus cookie rusak biar gak stuck loop
+        const res = NextResponse.redirect(new URL("/login", req.url));
+        res.cookies.delete("token");
+        return res;
     }
 }
 
