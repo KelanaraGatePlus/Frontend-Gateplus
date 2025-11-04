@@ -42,6 +42,7 @@ export async function middleware(req) {
     }
 
     try {
+        // eslint-disable-next-line no-undef
         const secret = new TextEncoder().encode(process.env.JWT_SECRET);
         const { payload } = await jose.jwtVerify(token, secret);
         console.log("Token payload:", payload);
