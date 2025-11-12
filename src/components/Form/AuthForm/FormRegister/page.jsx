@@ -14,7 +14,7 @@ import { useDebounce } from "use-debounce";
 import { registerSchema } from "@/lib/schemas/registerSchema";
 
 /*[--- API HOOKS & FEATURES ---]*/
-import { useCheckUserAvailabilityQuery, useRegisterUserMutation } from "@/hooks/api/userSliceAPI";
+import { useCheckUserAvailabilityQuery, useLoginUserMutation, useRegisterUserMutation } from "@/hooks/api/userSliceAPI";
 import useTogglePassword from "@/lib/features/useTogglePassword";
 
 /*[--- UI COMPONENTS ---]*/
@@ -26,7 +26,8 @@ export default function FormRegister({ setIsError, setError, setIsSuccess }) {
   const router = useRouter();
   const { isVisible: isPasswordVisible, toggle: toggleShowPassword } = useTogglePassword();
   const { isVisible: isConfirmPasswordVisible, toggle: toggleShowConfirmPassword } = useTogglePassword();
-  const [ registerUser, { isLoading, isSuccess, isError, error } ] = useRegisterUserMutation();
+  const [registerUser, { isLoading, isSuccess, isError, error }] = useRegisterUserMutation();
+  const [loginUser, { isLoading: isLoginLoading }] = useLoginUserMutation();
   const {
     register,
     handleSubmit,
@@ -74,12 +75,17 @@ export default function FormRegister({ setIsError, setError, setIsSuccess }) {
   const onSubmit = async (data) => {
     try {
       await registerUser(data).unwrap();
+      const loginResponse = await loginUser(data).unwrap();
+      if (loginResponse?.data?.token) {
+        router.push(`/otp?token=${loginResponse.data.token}`);
+        return;
+      }
       reset();
-      router.push("/login");
     } catch (err) {
       console.error("Register failed:", err);
     }
   };
+
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex w-full flex-col gap-2">
@@ -155,8 +161,8 @@ export default function FormRegister({ setIsError, setError, setIsSuccess }) {
         </div>
       </span>
 
-      <button disabled={isLoading} className="zeinFont mt-4 cursor-pointer rounded-lg border border-[#156EB7] bg-[#156EB7] py-2 text-2xl font-bold text-white hover:border-white/70 hover:bg-[#156EB7CC]">
-        {isLoading ? "Registering..." : "Sign Up"}
+      <button disabled={isLoading || isLoginLoading} className="zeinFont mt-4 cursor-pointer rounded-lg border border-[#156EB7] bg-[#156EB7] py-2 text-2xl font-bold text-white hover:border-white/70 hover:bg-[#156EB7CC]">
+        {isLoading || isLoginLoading ? "Registering..." : "Sign Up"}
       </button>
 
       <button type="button" className="zeinFont flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-blue-500 bg-blue-900 py-2 text-2xl font-bold text-white hover:bg-blue-950 md:rounded-xl">

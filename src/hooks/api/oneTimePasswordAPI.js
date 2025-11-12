@@ -16,17 +16,23 @@ export const oneTimePasswordAPI = createApi({
     tagTypes: ['oneTimePassword'], // ⬅️ tambahkan 'oneTimePassword'
     endpoints: (builder) => ({
         createEmailOTP: builder.mutation({
-            query: () => ({
+            query: ({ jwtToken }) => ({
                 url: "/otp/email",
                 method: "POST",
+                headers: {
+                    'Authorization': `Bearer ${jwtToken}`,
+                }
             }),
             invalidatesTags: ["oneTimePassword"],
         }),
         verifyEmail: builder.mutation({
-            query: (otpData) => ({
+            query: ({ token, jwtToken }) => ({
                 url: "/otp/verify-email",
                 method: "POST",
-                body: otpData,
+                body: { token },
+                headers: {
+                    'Authorization': `Bearer ${jwtToken}`,
+                }
             }),
             invalidatesTags: ["oneTimePassword"],
         }),

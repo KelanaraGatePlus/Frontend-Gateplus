@@ -14,7 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "@/lib/schemas/loginSchema";
 
 /*[--- API HOOKS & FEATURES ---]*/
-import { useLoginUserMutation } from "@/hooks/api/userSliceAPI";
+import { useLoginUserMutation, useResetPasswordRequestMutation } from "@/hooks/api/userSliceAPI";
 import useTogglePassword from "@/lib/features/useTogglePassword";
 
 /*[--- UI COMPONENTS ---]*/
@@ -24,18 +24,20 @@ import LogoGoogle from "@@/logo/logoGoogle/icons-google.svg";
 import { BACKEND_URL } from "@/lib/constants/backendUrl";
 import { useAuth } from "@/components/Context/AuthContext";
 
-export default function FormLogin({ setIsError, setError, setIsSuccess }) {
+export default function FormLogin({ setIsError, setError, setIsSuccess, setForgotPasswordSuccess, setErrorMessage }) {
   const router = useRouter();
   const { isVisible: isPasswordVisible, toggle: toggleShowPassword } = useTogglePassword();
   const [loginMutation, { isLoading, isSuccess, isError, error }] = useLoginUserMutation();
 
   const { login } = useAuth(); // ambil dari context
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm({
+  const { register, handleSubmit, formState: { errors }, reset, trigger, getValues } = useForm({
     resolver: zodResolver(loginSchema),
     mode: "onChange",
     reValidateMode: "onBlur",
   });
+
+  const [forgotPasswordRequest, { isSuccess: isForgotPasswordSuccess, isLoading: isForgotPasswordLoading }] = useResetPasswordRequestMutation();
 
   useEffect(() => {
     setIsError(isError);
@@ -46,11 +48,42 @@ export default function FormLogin({ setIsError, setError, setIsSuccess }) {
   const onSubmit = async (data) => {
     try {
       const response = await loginMutation(data).unwrap();
-      login(response.data);
-      reset();
-      router.push('/');
+      if (
+        response.data.isNotVerified == true
+      ) {
+        reset();
+        router.push('/otp?token=' + response.data.token);
+        return;
+      } else {
+        login(response.data);
+        reset();
+        router.push('/');
+      }
     } catch (err) {
       console.error("Login failed:", err);
+    }
+  };
+
+  const handleRequestPasswordReset = async () => {
+    try {
+      const isValid = await trigger("email"); // validasi field email
+      if (!isValid) return;
+
+      const email = getValues("email"); // ambil dari form utama
+      const result = await forgotPasswordRequest({ email }).unwrap();
+      console.log("Password reset request result:", result);
+
+      if (isForgotPasswordSuccess) {
+        setForgotPasswordSuccess(true);
+        setIsError(false);
+        setErrorMessage("");
+        reset();
+      } 
+    } catch (err) {
+      setForgotPasswordSuccess(false);
+      setErrorMessage(err?.data?.message || "Failed to send password reset request.");
+      setIsError(true);
+      reset();
     }
   };
 
@@ -115,14 +148,16 @@ export default function FormLogin({ setIsError, setError, setIsSuccess }) {
         <Link href="/register" className="text-left">
           <span>Create new account</span>
         </Link>
-        <Link href="/forgot-password" className="text-right">
-          <span>Forgot Password?</span>
-        </Link>
+        <button type="button" onClick={handleRequestPasswordReset} disabled={isForgotPasswordLoading || isLoading} className="hover:cursor-pointer text-right">
+          <span>{
+            isForgotPasswordLoading ? "Sending..." : "Forgot Password?"
+          }</span>
+        </button>
       </span>
 
       {/* Submit */}
       <button
-        disabled={isLoading}
+        disabled={isLoading || isForgotPasswordLoading}
         className="zeinFont mt-4 cursor-pointer rounded-lg bg-[#156EB7] py-2 text-2xl font-bold text-white hover:bg-[#156EB7CC]"
       >
         {isLoading ? "Logging in ..." : "Log In"}
@@ -144,4 +179,6 @@ FormLogin.propTypes = {
   setIsError: PropTypes.func.isRequired,
   setIsSuccess: PropTypes.func.isRequired,
   setError: PropTypes.func.isRequired,
+  setForgotPasswordSuccess: PropTypes.func.isRequired,
+  setErrorMessage: PropTypes.func.isRequired,
 };

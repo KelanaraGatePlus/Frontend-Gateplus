@@ -25,7 +25,7 @@ const DefaultPieChart = ({ data }) => {
           verticalAlign="middle"
           formatter={(value, entry) => {
             const percentage = entry.payload.percentage; // Mengakses data percentage dari entry
-            return `${entry.payload.name}: ${percentage.toFixed(2)}%`;
+            return `${entry.payload.name}: ${percentage}%`;
           }}
           iconType="circle" // Membuat icon legend berbentuk lingkaran
           iconSize={12} // Ukuran lingkaran

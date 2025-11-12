@@ -75,6 +75,23 @@ export const userAPI = createApi({
       }),
       invalidatesTags: ["usersAPI"],
     }),
+    resetPasswordRequest: builder.mutation({
+      query: ({ email }) => ({
+        url: "users/requestResetPassword",
+        method: "POST",
+        body: { email },
+      }),
+    }),
+    resetPassword: builder.mutation({
+      query: ({ resetPasswordToken, newPassword }) => ({
+        url: "users/resetPassword",
+        method: "POST",
+        body: {
+          resetPasswordToken,
+          newPassword
+        },
+      }),
+    }),
   }),
 });
 
@@ -89,4 +106,6 @@ export const {
   useGetUserLastWatchedContentQuery,
   useUpdateUserMutation,
   useGetUserPurchasedContentQuery,
+  useResetPasswordRequestMutation,
+  useResetPasswordMutation,
 } = userAPI;
