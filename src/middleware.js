@@ -4,9 +4,11 @@ import * as jose from "jose";
 const MAINTENANCE_MODE = false;
 
 export async function middleware(req) {
-    const { pathname } = req.nextUrl;
+    const { pathname, searchParams } = req.nextUrl;
 
-    // 🧩 Maintenance Mode
+    /* =========================
+       🧩 1. Maintenance Mode
+    ========================== */
     if (MAINTENANCE_MODE && pathname !== "/maintenance") {
         return NextResponse.redirect(new URL("/maintenance", req.url));
     }
@@ -14,8 +16,10 @@ export async function middleware(req) {
         return NextResponse.redirect(new URL("/", req.url));
     }
 
-    // 🧩 Path publik & verifikasi
-    const VERIFICATION_PATHS = ["/otp", "/verify-email"];
+    /* =========================
+       🧩 2. Path Konfigurasi
+    ========================== */
+    const VERIFICATION_PATHS = ["/otp", "/verify-email", '/forgot-password'];
     const PUBLIC_PATHS = [
         "/",
         "/maintenance",
@@ -27,44 +31,68 @@ export async function middleware(req) {
         "/oauth-success",
         "/login",
         "/register",
+        '/session-expired',
     ];
 
-    // 🧩 Ambil token
-    const token = req.cookies.get("token")?.value;
+    /* =========================
+       🧩 3. Ambil token
+    ========================== */
+    const cookieToken = req.cookies.get("token")?.value;
+    const urlToken = searchParams.get("token");
+    const token = cookieToken || urlToken;
 
+    /* =========================
+       🧩 4. Public Path tanpa token
+    ========================== */
     if (PUBLIC_PATHS.includes(pathname) && !token) {
         return NextResponse.next();
     }
 
-    // 🧩 Jika tidak ada token → redirect login
+    /* =========================
+       🧩 5. Jika tidak ada token sama sekali
+    ========================== */
     if (!token || token.trim() === "") {
+        console.log("No token found, redirecting to login.");
         return NextResponse.redirect(new URL("/login", req.url));
     }
 
+    /* =========================
+       🧩 6. Verifikasi token JWT
+    ========================== */
     try {
         // eslint-disable-next-line no-undef
         const secret = new TextEncoder().encode(process.env.JWT_SECRET);
         const { payload } = await jose.jwtVerify(token, secret);
+
         console.log("Token payload:", payload);
 
         const now = Math.floor(Date.now() / 1000);
+
+        // Token expired
         if (payload.exp && payload.exp < now) {
-            return NextResponse.redirect(new URL("/session-expired", req.url));
+            const res = NextResponse.redirect(new URL("/session-expired", req.url));
+            res.cookies.delete("token");
+            return res;
         }
 
+        // Jika user sudah verified tapi akses ke halaman otp
         if (payload.isVerified && VERIFICATION_PATHS.includes(pathname)) {
             return NextResponse.redirect(new URL("/", req.url));
         }
 
-        if (payload.isVerified === false && !VERIFICATION_PATHS.includes(pathname)) {
-            return NextResponse.redirect(new URL("/otp", req.url));
+        // Jika user belum verified tapi akses ke halaman selain otp/verify-email
+        if (!payload.isVerified && !VERIFICATION_PATHS.includes(pathname)) {
+            // Bawa token di query supaya halaman OTP tahu
+            const url = new URL("/otp", req.url);
+            url.searchParams.set("token", token);
+            return NextResponse.redirect(url);
         }
 
+        // ✅ Jika semua valid
         return NextResponse.next();
     } catch (err) {
-        console.error("Token invalid:", err);
-        // Hapus cookie rusak biar gak stuck loop
-        const res = NextResponse.redirect(new URL("/login", req.url));
+        console.error("Token verification failed:", err);
+        const res = NextResponse.redirect(new URL("/session-expired", req.url));
         res.cookies.delete("token");
         return res;
     }

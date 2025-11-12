@@ -73,7 +73,40 @@ export const creatorAPI = createApi({
             providesTags: ["creatorsAPI"],
             keepUnusedDataFor: 300,
         }),
-
+        getPerContentDashboard: builder.query({
+            query: () => `/creator-per-content-dashboard`,
+            providesTags: ["creatorsAPI"],
+            keepUnusedDataFor: 3600,
+        }),
+        getContentDashboard: builder.query({
+            query: () => `/creator-content-dashboard`,
+            providesTags: ["creatorsAPI"],
+            keepUnusedDataFor: 3600,
+        }),
+        getOverviewDashboard: builder.query({
+            query: ({ days = null }) => `/overview-dashboard${days ? `?days=${days}` : ""}`,
+            providesTags: ["creatorsAPI"],
+            keepUnusedDataFor: 300,
+        }),
+        getViewersOverview: builder.query({
+            query: () => `/overview-viewers`,
+            providesTags: ["creatorsAPI"],
+            keepUnusedDataFor: 300,
+        }),
+        getRevenueOverview: builder.query({
+            query: ({
+                days = null,
+            }) => `/overview-revenue${days ? `?days=${days}` : ""}`,
+            providesTags: ["creatorsAPI"],
+            keepUnusedDataFor: 300,
+        }),
+        getEngagementOverview: builder.query({
+            query: ({
+                days = null,
+            }) => `/overview-engagement${days ? `?days=${days}` : ""}`,
+            providesTags: ["creatorsAPI"],
+            keepUnusedDataFor: 60,
+        }),
     }),
 })
 
@@ -87,4 +120,10 @@ export const {
     useGetDashboardDataQuery,
     useUpdateCreatorMutation,
     useGetCreatorEarnedQuery,
+    useGetPerContentDashboardQuery,
+    useGetContentDashboardQuery,
+    useGetOverviewDashboardQuery,
+    useGetViewersOverviewQuery,
+    useGetRevenueOverviewQuery,
+    useGetEngagementOverviewQuery,
 } = creatorAPI;

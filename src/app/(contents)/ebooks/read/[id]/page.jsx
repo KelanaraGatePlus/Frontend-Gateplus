@@ -61,7 +61,7 @@ export default function ReadEbookPage({ params }) {
         await createLog({
           contentId: id,
           logType: "WATCH_CONTENT", // misalnya tipe konten
-          contentType: "EBOOK", // misalnya log aksi
+          contentType: "EPISODE_EBOOK", // misalnya log aksi
           deviceType: device,
         }).unwrap();
 

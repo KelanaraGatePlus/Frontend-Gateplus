@@ -6,6 +6,8 @@ import {
   Area,
   Tooltip,
   ResponsiveContainer,
+  XAxis,
+  YAxis,
 } from "recharts";
 import PropTypes from "prop-types";
 
@@ -36,6 +38,7 @@ export default function CustomizableAreaChart({
   gradientColors = ["#22c55e", "#22c55e"],
   gradientOpacity = [1, 1],
   noFill = false,
+  withAxis = false,
 }) {
   // Gunakan ID unik untuk gradient agar tidak bentrok jika ada beberapa chart di satu halaman
   const gradientId = `gradient-${Math.random().toString(36).substr(2, 9)}`;
@@ -63,13 +66,24 @@ export default function CustomizableAreaChart({
 
         <Tooltip content={<CustomTooltip />} cursor={false} />
 
+        {withAxis && <>
+          <XAxis
+            dataKey="date"
+            axisLine={true}
+            tickLine={false}
+            scale={"point"}
+          />
+          <YAxis
+            axisLine={true}
+            tickLine={true}
+          />
+        </>}
+
         <Area
           type="monotone"
           dataKey="value"
           stroke={strokeColor}
           strokeWidth={5}
-          // Secara kondisional mengatur 'fill'
-          // Jika noFill true, maka 'fill' transparan. Jika false, gunakan gradient.
           fill={noFill ? "transparent" : `url(#${gradientId})`}
         />
       </AreaChart>
@@ -87,4 +101,5 @@ CustomizableAreaChart.propTypes = {
   gradientColors: PropTypes.arrayOf(PropTypes.string),
   gradientOpacity: PropTypes.arrayOf(PropTypes.number),
   noFill: PropTypes.bool,
+  withAxis: PropTypes.bool,
 };

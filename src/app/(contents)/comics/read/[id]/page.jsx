@@ -71,7 +71,7 @@ export default function ReadComicPage({ params }) {
       } catch (err) {
         console.error("❌ Gagal membuat log:", err);
       }
-    }, 5 * 1000); // Tetap 5 detik untuk testing, atau ubah ke 60 * 1000 untuk 1 menit
+    }, 2 * 60 * 1000); // Tetap 2 menit untuk testing, atau ubah ke 60 * 1000 untuk 1 menit
     return () => clearTimeout(timer);
   }, [id, createLog, device]);
 

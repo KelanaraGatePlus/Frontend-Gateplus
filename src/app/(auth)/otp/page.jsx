@@ -46,7 +46,6 @@ export default function OtpPage() {
 
     const elapsed = Math.floor((Date.now() - Number(lastSent)) / 1000);
     if (elapsed < 120) {
-      // Masih dalam cooldown → hitung sisa waktu
       setCooldown(120 - elapsed);
       console.log(`⏳ Masih cooldown ${120 - elapsed} detik`);
     }
@@ -55,7 +54,9 @@ export default function OtpPage() {
   // 📬 Kirim OTP ke email user
   const handleSendOtp = async () => {
     try {
-      const result = await createEmailOtp().unwrap();
+      const urlParams = new URLSearchParams(window.location.search);
+      const jwtToken = urlParams.get("token");
+      const result = await createEmailOtp({ jwtToken }).unwrap();
       console.log("✅ OTP Sent:", result);
       localStorage.setItem("lastOtpSent", Date.now().toString()); // simpan waktu kirim
       setCooldown(120); // aktifkan cooldown 2 menit
@@ -75,13 +76,15 @@ export default function OtpPage() {
   const handleSubmit = async () => {
     if (isVerifying || otp.length < 6) return;
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const jwtToken = urlParams.get("token");
     try {
-      await verifyEmailOtp({ token: otp }).unwrap();
+      await verifyEmailOtp({ token: otp, jwtToken: jwtToken }).unwrap();
 
       logout();
 
       setTimeout(() => {
-        window.location.reload();
+        window.location.href = "/login";
       }, 2000);
     } catch (err) {
       console.error("❌ Gagal verifikasi OTP:", err);

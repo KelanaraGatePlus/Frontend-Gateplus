@@ -155,9 +155,9 @@ function PlayingMoviePage({ params }) {
                     {movieData?.id && <DefaultVideoPlayer
                         contentId={movieData.id}
                         contentType="FILM"
-                        logType={movieData?.isSubscribed ? 'WATCH_CONTENT' : 'WATCH_TRAILER'}
+                        logType={movieData?.isSubscribed || movieData?.price == 'Free' ? 'WATCH_CONTENT' : 'WATCH_TRAILER'}
                         className="rounded-lg"
-                        src={movieData?.isSubscribed ? movieData?.movieFileUrl : movieData?.trailerFileUrl}
+                        src={movieData?.isSubscribed || movieData?.price == 'Free' ? movieData?.movieFileUrl : movieData?.trailerFileUrl}
                         poster={movieData?.thumbnailImageUrl}
                         startFrom={movieData?.WatchProgress?.[0]?.progressSeconds || 0}
                         title={movieData?.title}
@@ -180,8 +180,8 @@ function PlayingMoviePage({ params }) {
                         </div>
                         <div className="flex flex-row gap-6">
                             <div className="flex items-center justify-center w-48">
-                                <button onClick={movieData?.isSubscribed ? null : () => { handleModalOpen(movieData?.id, movieData?.price) }} className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
-                                    {movieData?.isSubscribed ? "Watch" : "Buy"}
+                                <button onClick={movieData?.isSubscribed || movieData?.price == 'Free' ? null : () => { handleModalOpen(movieData?.id, movieData?.price) }} className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
+                                    {movieData?.isSubscribed || movieData?.price == 'Free' ? "Watch" : "Buy"}
                                 </button>
                             </div>
                             <div onClick={handleToggleLike} className="flex items-center justify-center transition delay-150 duration-400 ease-linear hover:-translate-y-1 hover:scale-x-110 hover:scale-y-110 cursor-pointer">
