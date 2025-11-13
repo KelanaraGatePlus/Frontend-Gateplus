@@ -14,11 +14,11 @@ import { useCreateReportContentMutation } from "@/hooks/api/reportContentAPI";
 import { createReportContentSchema } from "@/lib/schemas/createReportContentSchema";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import { useGetMovieByIdQuery } from "@/hooks/api/movieSliceAPI";
-import { useGetEpisodeComicsByIdQuery, useGetEpisodeSeriesByIdQuery, useGetEpisodeEbookByIdQuery  } from "@/hooks/api/contentSliceAPI";
+import { useGetEpisodeComicsByIdQuery, useGetEpisodeSeriesByIdQuery, useGetEpisodeEbookByIdQuery, useGetEpisodePodcastByIdQuery } from "@/hooks/api/contentSliceAPI";
 import PropTypes from "prop-types";
 
 export default function ReportPage({ params }) {
-    const { contentType, id } = params;
+    const { contentType, id } = React.use(params); // ✅ gunakan React.use()
     const router = useRouter();
 
     // 1. Panggil semua hooks di top-level dengan opsi `skip`
@@ -35,8 +35,11 @@ export default function ReportPage({ params }) {
     const { data: episodeSeriesData, isLoading: isSeriesLoading, isError: isSeriesError } = useGetEpisodeSeriesByIdQuery(id, {
         skip: contentType !== 'episode_series',
     });
+    const { data: episodePodcastData, isLoading: isPodcastLoading, isError: isPodcastError } = useGetEpisodePodcastByIdQuery(id, {
+        skip: contentType !== 'episode_podcast',
+    });
 
-    // 2. Gabungkan data dari hook yang aktif menjadi satu objek `content` yang konsisten
+    // 2. Gabungkan data dari hook yang aktif menjadi satu objek `csontent` yang konsisten
     const content = useMemo(() => {
         let sourceData;
         if (contentType === 'movie' && movieData) {
@@ -74,9 +77,9 @@ export default function ReportPage({ params }) {
                 author: sourceData.creators?.profileName,
                 genres: [sourceData.ebooks.categories.tittle].filter(Boolean),
                 publicationDate: new Date(sourceData.ebooks.createdAt).toLocaleDateString(),
-                creatorName: sourceData.ebooks?.creator?.profileName,
-                creatorUsername: sourceData.ebooks?.creator?.username,
-                creatorProfilePicture: sourceData.ebooks?.creator?.imageUrl,
+                creatorName: sourceData.creators?.profileName,
+                creatorUsername: sourceData.creators?.username,
+                creatorProfilePicture: sourceData.creators?.imageUrl,
             };
         } else if (contentType === 'episode_series' && episodeSeriesData) {
             sourceData = episodeSeriesData.data.data;
@@ -91,6 +94,19 @@ export default function ReportPage({ params }) {
                 creatorUsername: sourceData.creator?.username,
                 creatorProfilePicture: sourceData.creator?.imageUrl,
             };
+        } else if (contentType === 'episode_podcast' && episodePodcastData) {
+            sourceData = episodePodcastData?.data?.data;
+            return {
+                title: sourceData?.podcasts?.title,
+                description: sourceData?.podcasts?.description,
+                poster: sourceData?.podcasts?.coverPodcastImage,
+                adthor: sourceData?.podcasts?.Creator?.profileName,
+                genres: [sourceData?.podcasts?.categories?.tittle].filter(Boolean),
+                publicationDate: new Date(sourceData?.podcasts?.createdAt).toLocaleDateString(),
+                creatorName: sourceData?.podcasts?.Creator?.profileName,
+                creatorUsername: sourceData?.podcasts?.Creator?.username,
+                creatorProfilePicture: sourceData?.podcasts?.Creator?.imageUrl,
+            };
         }
 
         // Default values jika data belum ada atau tipe konten tidak valid
@@ -103,7 +119,7 @@ export default function ReportPage({ params }) {
             publicationDate: "Memuat...",
             creatorName: "Memuat...",
         };
-    }, [contentType, movieData, episodeComicData, episodeEbookData, episodeSeriesData]);
+    }, [contentType, movieData, episodeComicData, episodeEbookData, episodeSeriesData , episodePodcastData]);
 
     const {
         register,
@@ -133,6 +149,7 @@ export default function ReportPage({ params }) {
             'episode_series': 'EPISODE_SERIES',
             'episode_comic': 'EPISODE_COMIC',
             'episode_ebook': 'EPISODE_EBOOK',
+            'episode_podcast': 'EPISODE_PODCAST',
         };
 
         formData.append("isAnonymous", String(data.isAnonymous)); // Kirim sebagai string
@@ -156,8 +173,8 @@ export default function ReportPage({ params }) {
         }
     };
 
-    const isContentLoading = isMovieLoading || isComicLoading || isEbookLoading || isSeriesLoading;
-    const isError = isMovieError || isComicError || isEbookError || isSeriesError;
+    const isContentLoading = isMovieLoading || isComicLoading || isEbookLoading || isSeriesLoading || isPodcastLoading;
+    const isError = isMovieError || isComicError || isEbookError || isSeriesError || isPodcastError;
 
     if (isContentLoading) {
         return <div className="text-white text-center">Loading content details...</div>;
@@ -315,7 +332,7 @@ export default function ReportPage({ params }) {
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="bg-[#156EB7] w-max flex self-center px-16 py-2 rounded-lg disabled:bg-gray-500 disabled:cursor-not-allowed"
+                        className="bg-[#156EB7] cursor-pointer w-max flex self-center px-16 py-2 rounded-lg disabled:bg-gray-500 disabled:cursor-not-allowed"
                     >
                         {isSubmitting ? "Mengirim..." : "Kirim Laporan"}
                     </button>
@@ -327,8 +344,8 @@ export default function ReportPage({ params }) {
 }
 
 ReportPage.propTypes = {
-  params: PropTypes.shape({
-    contentType: PropTypes.string.isRequired,
-    id: PropTypes.string.isRequired,
-  }).isRequired,
+    params: PropTypes.shape({
+        contentType: PropTypes.string.isRequired,
+        id: PropTypes.string.isRequired,
+    }).isRequired,
 };

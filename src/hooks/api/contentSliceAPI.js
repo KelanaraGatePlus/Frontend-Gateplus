@@ -29,6 +29,10 @@ export const contentAPI = createApi({
             query: (id) => `/episodeSeries/${id}`,
             providesTags: ["seriesContent"],
         }),
+        getEpisodePodcastById: builder.query({
+            query: (id) => `/episodePodcast/${id}`,
+            providesTags: ["podcastContent"],
+        }),
         getAllEpisodeByEbookId: builder.query({
             // Accept a single object parameter: { ebookId, page, limit, withPurchased }
             query: ({ id, page = 1, limit = 5, withPurchased = false, paginate = true }) =>
@@ -61,6 +65,7 @@ export const {
     useGetAllEpisodeByComicIdQuery,
     useGetAllEpisodeBySeriesIdQuery,
     useGetAllEpisodeByPodcastIdQuery,
+    useGetEpisodePodcastByIdQuery,
 
     // Lazy Queries
     useLazyGetAllEpisodeByComicIdQuery,
