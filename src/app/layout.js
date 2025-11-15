@@ -17,6 +17,7 @@ import { AuthProvider } from "@/components/Context/AuthContext";
 import RedeemVoucherModal from "@/components/Modal/RedeemVoucherModal";
 import { usePathname } from "next/navigation";
 import routeWithoutNavbar from "@/lib/constants/routeWithoutNavbar";
+import routeWithoutFooter from "@/lib/constants/routeWithoutFooter";
 
 export default function RootLayout({ children }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -46,9 +47,7 @@ export default function RootLayout({ children }) {
 
   // true kalau salah satu pattern cocok
   const hideNavbar = routeWithoutNavbar.some((pattern) => pattern.test(pathname));
-
-  console.log("Current Pathname:", pathname);
-  console.log("Hide Navbar:", hideNavbar);
+  const hideFooter = routeWithoutFooter.some((pattern) => pattern.test(pathname));
 
   return (
     <Provider store={store}>
@@ -110,7 +109,9 @@ export default function RootLayout({ children }) {
 
             <RedeemVoucherModal isModalRedeemOpen={isModalRedeemOpen} setIsModalRedeemOpen={setIsModalRedeemOpen} />
             <AppRouterCacheProvider>{children}</AppRouterCacheProvider>
-            <Footer />
+            {
+              !hideFooter && <Footer />
+            }
           </AuthProvider>
         </body>
       </html>

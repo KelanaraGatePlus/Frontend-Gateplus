@@ -77,43 +77,43 @@ export default function CarouselTemplate({ label, type, contents, isLoading, isT
                                                     )}
 
                                                     {fixedType == 'podcast' && type && !isTopTen && (
-                                                        <PodcastUniqueCard title={item.title} id={item.id} coverUrl={item.coverPodcastImage} creatorName={item.Creator.profileName} releaseDate={item.createdAt}  />
+                                                        <PodcastUniqueCard title={item.title} id={item.id} coverUrl={item.coverPodcastImage} creatorName={item.Creator.profileName} releaseDate={item.createdAt} />
                                                     )}
 
-                                                    <div className={`${isTopTen ? "grid grid-cols-2" : ""}`}>
+                                                    <div className={`${isTopTen ? "grid grid-cols-17" : ""}`}>
                                                         {isTopTen && (
-                                                            <div className="relative w-full h-full">
-                                                                <p className="absolute -bottom-10 md:-bottom-0 md:-right-6 -right-4 text-[180px] md:text-[300px]/46.5 font-extrabold zeinFont flex leading-none -mb-4 md:-mb-8 text-[#1297DC] [text-shadow:2px_2px_5px_rgba(0,0,0,0.4)]">
+                                                            <div className="relative w-full h-full col-span-8">
+                                                                <p className="absolute -bottom-10 md:bottom-5 md:-right-6 -right-4 text-[230px] md:text-[350px]/46.5 font-extrabold zeinFont flex leading-none -mb-4 md:-mb-8 text-[#1297DC] [text-shadow:2px_2px_5px_rgba(0,0,0,0.4)]">
                                                                     {index + 1}
                                                                 </p>
                                                             </div>
                                                         )}
                                                         {fixedType == 'ebook' && isTopTen && (
-                                                            <div className="aspect-[2/3] rounded-lg overflow-hidden">
+                                                            <div className="aspect-[2/3] rounded-lg overflow-hidden col-span-9">
                                                                 <EbookCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
                                                             </div>
                                                         )}
 
                                                         {fixedType == 'comic' && isTopTen && (
-                                                            <div className="aspect-[2/3] rounded-lg overflow-hidden">
+                                                            <div className="aspect-[2/3] rounded-lg overflow-hidden col-span-9">
                                                                 <ComicCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
                                                             </div>
                                                         )}
 
                                                         {fixedType == 'movie' && isTopTen && (
-                                                            <div className="aspect-[2/3] rounded-lg overflow-hidden">
+                                                            <div className="aspect-[2/3] rounded-lg overflow-hidden col-span-9">
                                                                 <MovieCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
                                                             </div>
                                                         )}
 
                                                         {fixedType == 'series' && isTopTen && (
-                                                            <div className="aspect-[2/3] rounded-lg overflow-hidden">
+                                                            <div className="aspect-[2/3] rounded-lg overflow-hidden col-span-9">
                                                                 <SeriesCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
                                                             </div>
                                                         )}
 
                                                         {fixedType == 'podcast' && isTopTen && (
-                                                            <div className="aspect-[2/3] rounded-lg overflow-hidden">
+                                                            <div className="aspect-[2/3] rounded-lg overflow-hidden col-span-9">
                                                                 <PodcastCard title={item.title} id={item.id} coverUrl={item.coverPodcastImage} />
                                                             </div>
                                                         )}

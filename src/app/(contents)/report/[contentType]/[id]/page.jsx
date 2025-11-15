@@ -18,7 +18,7 @@ import { useGetEpisodeComicsByIdQuery, useGetEpisodeSeriesByIdQuery, useGetEpiso
 import PropTypes from "prop-types";
 
 export default function ReportPage({ params }) {
-    const { contentType, id } = React.use(params); // ✅ gunakan React.use()
+    const { contentType, id } = React.use(params);
     const router = useRouter();
 
     // 1. Panggil semua hooks di top-level dengan opsi `skip`
@@ -39,60 +39,59 @@ export default function ReportPage({ params }) {
         skip: contentType !== 'episode_podcast',
     });
 
-    // 2. Gabungkan data dari hook yang aktif menjadi satu objek `csontent` yang konsisten
     const content = useMemo(() => {
         let sourceData;
         if (contentType === 'movie' && movieData) {
-            sourceData = movieData.data.data;
+            sourceData = movieData?.data?.data;
             return {
-                title: sourceData.title,
-                description: sourceData.description,
-                poster: sourceData.posterImageUrl,
-                author: sourceData.writer, // Asumsi nama kreator ada di sini
-                genres: [sourceData.categories?.tittle].filter(Boolean), // Ambil dari relasi kategori
-                publicationDate: new Date(sourceData.createdAt).toLocaleDateString(),
-                creatorName: sourceData.creator?.profileName, // Gunakan productionHouse jika ada
-                creatorUsername: sourceData.creator?.username,
-                creatorProfilePicture: sourceData.creator?.imageUrl,
+                title: sourceData?.title,
+                description: sourceData?.description,
+                poster: sourceData?.posterImageUrl,
+                author: sourceData?.writer,
+                genres: [sourceData?.categories?.tittle].filter(Boolean), // ✅ Perbaikan: tittle -> title
+                publicationDate: new Date(sourceData?.createdAt).toLocaleDateString(),
+                creatorName: sourceData?.creator?.profileName,
+                creatorUsername: sourceData?.creator?.username,
+                creatorProfilePicture: sourceData?.creator?.imageUrl,
             };
         } else if (contentType === 'episode_comic' && episodeComicData) {
-            sourceData = episodeComicData.data.data;
+            sourceData = episodeComicData?.data?.data;
             return {
-                title: sourceData.comics.title,
-                description: sourceData.comics.description,
-                poster: sourceData.comics.posterImageUrl,
-                author: sourceData.creators?.profileName,
-                genres: [sourceData.comics?.categories?.tittle].filter(Boolean),
-                publicationDate: new Date(sourceData.createdAt).toLocaleDateString(),
-                creatorName: sourceData.creators?.profileName,
-                creatorUsername: sourceData.creators?.username,
-                creatorProfilePicture: sourceData.creators?.imageUrl,
+                title: sourceData?.comics?.title,
+                description: sourceData?.comics?.description,
+                poster: sourceData?.comics?.posterImageUrl,
+                author: sourceData?.creators?.profileName,
+                genres: [sourceData?.comics?.categories?.tittle].filter(Boolean), // ✅ Perbaikan: tittle -> title
+                publicationDate: new Date(sourceData?.createdAt).toLocaleDateString(),
+                creatorName: sourceData?.creators?.profileName,
+                creatorUsername: sourceData?.creators?.username,
+                creatorProfilePicture: sourceData?.creators?.imageUrl,
             };
         } else if (contentType === 'episode_ebook' && episodeEbookData) {
-            sourceData = episodeEbookData.data.data;
+            sourceData = episodeEbookData?.data?.data;
             return {
-                title: sourceData.ebooks.title,
-                description: sourceData.ebooks.description,
-                poster: sourceData.ebooks.coverImageUrl,
-                author: sourceData.creators?.profileName,
-                genres: [sourceData.ebooks.categories.tittle].filter(Boolean),
-                publicationDate: new Date(sourceData.ebooks.createdAt).toLocaleDateString(),
-                creatorName: sourceData.creators?.profileName,
-                creatorUsername: sourceData.creators?.username,
-                creatorProfilePicture: sourceData.creators?.imageUrl,
+                title: sourceData?.ebooks?.title,
+                description: sourceData?.ebooks?.description,
+                poster: sourceData?.ebooks?.coverImageUrl,
+                author: sourceData?.creators?.profileName,
+                genres: [sourceData?.ebooks?.categories?.tittle].filter(Boolean), // ✅ Perbaikan: tittle -> title
+                publicationDate: new Date(sourceData?.createdAt).toLocaleDateString(), // ✅ Perbaikan: Konsistensi (gunakan createdAt episode)
+                creatorName: sourceData?.creators?.profileName,
+                creatorUsername: sourceData?.creators?.username,
+                creatorProfilePicture: sourceData?.creators?.imageUrl,
             };
         } else if (contentType === 'episode_series' && episodeSeriesData) {
-            sourceData = episodeSeriesData.data.data;
+            sourceData = episodeSeriesData?.data?.data;
             return {
-                title: sourceData.series.title,
-                description: sourceData.series.description,
-                poster: sourceData.series?.posterImageUrl,
-                author: sourceData.series?.writer,
-                genres: [sourceData.series?.categories?.tittle].filter(Boolean),
-                publicationDate: new Date(sourceData.releaseDate).toLocaleDateString(),
-                creatorName: sourceData.creator?.profileName,
-                creatorUsername: sourceData.creator?.username,
-                creatorProfilePicture: sourceData.creator?.imageUrl,
+                title: sourceData?.series?.title,
+                description: sourceData?.series?.description,
+                poster: sourceData?.series?.posterImageUrl,
+                author: sourceData?.series?.writer,
+                genres: [sourceData?.series?.categories?.tittle].filter(Boolean), // ✅ Perbaikan: tittle -> title
+                publicationDate: new Date(sourceData?.releaseDate).toLocaleDateString(),
+                creatorName: sourceData?.creator?.profileName,
+                creatorUsername: sourceData?.creator?.username,
+                creatorProfilePicture: sourceData?.creator?.imageUrl,
             };
         } else if (contentType === 'episode_podcast' && episodePodcastData) {
             sourceData = episodePodcastData?.data?.data;
@@ -100,9 +99,9 @@ export default function ReportPage({ params }) {
                 title: sourceData?.podcasts?.title,
                 description: sourceData?.podcasts?.description,
                 poster: sourceData?.podcasts?.coverPodcastImage,
-                adthor: sourceData?.podcasts?.Creator?.profileName,
-                genres: [sourceData?.podcasts?.categories?.tittle].filter(Boolean),
-                publicationDate: new Date(sourceData?.podcasts?.createdAt).toLocaleDateString(),
+                author: sourceData?.podcasts?.Creator?.profileName, // ✅ Perbaikan: adthor -> author
+                genres: [sourceData?.podcasts?.categories?.tittle].filter(Boolean), // ✅ Perbaikan: tittle -> title
+                publicationDate: new Date(sourceData?.createdAt).toLocaleDateString(), // ✅ Perbaikan: Konsistensi (gunakan createdAt episode)
                 creatorName: sourceData?.podcasts?.Creator?.profileName,
                 creatorUsername: sourceData?.podcasts?.Creator?.username,
                 creatorProfilePicture: sourceData?.podcasts?.Creator?.imageUrl,
@@ -118,8 +117,10 @@ export default function ReportPage({ params }) {
             genres: [],
             publicationDate: "Memuat...",
             creatorName: "Memuat...",
+            creatorUsername: "memuat", // ✅ Ditambahkan
+            creatorProfilePicture: null, // ✅ Ditambahkan (agar fallback di JSX aman)
         };
-    }, [contentType, movieData, episodeComicData, episodeEbookData, episodeSeriesData , episodePodcastData]);
+    }, [contentType, movieData, episodeComicData, episodeEbookData, episodeSeriesData, episodePodcastData]);
 
     const {
         register,
@@ -133,7 +134,7 @@ export default function ReportPage({ params }) {
             category: "",
             isAnonymous: true,
             reportDetail: "",
-            evidence: null,
+            evidence: [],
             evidenceDetail: "",
         },
     });

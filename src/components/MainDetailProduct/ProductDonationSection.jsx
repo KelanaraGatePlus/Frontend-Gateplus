@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import Link from "next/link";
-import { useMidtransTipPayment } from "@/hooks/api/midtransAPI";
+import { useTipPayment } from "@/hooks/api/paymentAPI";
 import SimpleModal from "../Modal/SimpleModal";
 import PropTypes from "prop-types";
 
 export default function ProductDonationSection({ creatorId }) {
-  const { pay } = useMidtransTipPayment();
+  const { pay } = useTipPayment();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [amount, setAmount] = useState(0);
 

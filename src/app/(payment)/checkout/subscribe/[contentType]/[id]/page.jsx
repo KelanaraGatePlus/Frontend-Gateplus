@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import PropTypes from "prop-types";
 import RacunSangga from "@@/poster/poster-content-racunSangga.svg";
-import { useMidtransPayment } from "@/hooks/api/midtransAPI";
+import { usePayment } from "@/hooks/api/paymentAPI";
 
 // Import semua query
 import { useGetMovieByIdQuery } from "@/hooks/api/movieSliceAPI";
@@ -29,8 +29,8 @@ export default function PaymentCheckoutPage({ params }) {
     const [successModal, setSuccessModal] = useState(false);
 
     const [selectedTip, setSelectedTip] = useState(null);
-    const { pay: subscribePay } = useMidtransPayment('SUBSCRIBE');
-    const { pay } = useMidtransPayment();
+    const { pay: subscribePay } = usePayment('SUBSCRIBE');
+    const { pay } = usePayment();
     const [getDiscount, { isLoading: getDiscountLoading, error: getDiscountError, isSuccess }] = useGetDiscountByVoucherDiscountCodeMutation();
 
     // Simulasi userId kalau diperlukan
