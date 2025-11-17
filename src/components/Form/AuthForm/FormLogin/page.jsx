@@ -37,7 +37,7 @@ export default function FormLogin({ setIsError, setError, setIsSuccess, setForgo
     reValidateMode: "onBlur",
   });
 
-  const [forgotPasswordRequest, { isSuccess: isForgotPasswordSuccess, isLoading: isForgotPasswordLoading }] = useResetPasswordRequestMutation();
+  const [forgotPasswordRequest, { isLoading: isForgotPasswordLoading }] = useResetPasswordRequestMutation();
 
   useEffect(() => {
     setIsError(isError);

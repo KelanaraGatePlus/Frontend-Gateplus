@@ -27,6 +27,7 @@ export function useSaveContent() {
                 setShowToast(true);
                 setToastMessage(`Konten "${title}" berhasil dihapus dari daftar simpan`);
                 setToastType("success");
+                window.location.reload();
             } else {
                 // SAVE
                 setIsSaved(true);
@@ -38,6 +39,7 @@ export function useSaveContent() {
                 setShowToast(true);
                 setToastMessage(`"${title}" berhasil disimpan ke daftar simpan`);
                 setToastType("success");
+                window.location.reload();
             }
         } catch (err) {
             console.error("Error in save/unsave:", err);
