@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import PropTypes from "prop-types";
 import RacunSangga from "@@/poster/poster-content-racunSangga.svg";
-import { useMidtransPayment } from "@/hooks/api/midtransAPI";
+import { usePayment } from "@/hooks/api/paymentAPI";
 
 // Import semua query
 import { useGetEbookByIdQuery } from "@/hooks/api/ebookSliceAPI";
@@ -19,18 +19,22 @@ import Link from "next/link";
 import { contentType as contentTypeConst } from "@/lib/constants/contentType";
 import PaymentSuccessImage from "@@/AdditionalImages/payment-success.svg";
 import PaymentFailedImage from "@@/AdditionalImages/payment-failed.svg";
+import { useSearchParams } from "next/navigation";
 
 export default function PurchaseContentPaymentPage({ params }) {
     const resolvedParams = React.use(params);
     const { contentType, contentId, id } = resolvedParams;
+    const searchParams = useSearchParams();
+    const isSuccessParams = searchParams.get("isSuccess");
+    const isFailedParams = searchParams.get("isFailed");
     const [isShowInput, setIsShowInput] = useState(true);
     const [totalDiscount, setTotalDiscount] = useState(0);
     const [voucherCode, setVoucherCode] = useState("");
-    const [successModal, setSuccessModal] = useState(false);
-    const [failedModal, setFailedModal] = useState(false);
+    const [successModal, setSuccessModal] = useState(isSuccessParams === "true" ? true : false);
+    const [failedModal, setFailedModal] = useState(isFailedParams === "true" ? true : false);
 
     const [selectedTip, setSelectedTip] = useState(null);
-    const { pay } = useMidtransPayment();
+    const { pay } = usePayment();
     const [getDiscount, { isLoading: getDiscountLoading, error: getDiscountError, isSuccess }] = useGetDiscountByVoucherDiscountCodeMutation();
 
     // Simulasi userId kalau diperlukan

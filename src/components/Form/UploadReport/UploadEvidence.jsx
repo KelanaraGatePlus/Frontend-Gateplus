@@ -11,7 +11,7 @@ export default function InputReportEvidence({
     onChange,
     error
 }) {
-    const files = value ? Array.from(value) : [];
+    const files = Array.isArray(value) || value instanceof FileList ? Array.from(value) : [];
 
     const handleFileChange = (event) => {
         const newlySelectedFiles = Array.from(event.target.files);

@@ -2,10 +2,10 @@ import React from "react";
 import { contentType } from "@/lib/constants/contentType";
 import Image from "next/image";
 import Link from "next/link";
-import logoSave from "@@/logo/logoDetailFilm/save-icons.svg";
+// import logoSave from "@@/logo/logoDetailFilm/save-icons.svg";
 import logoGateplusWhite from "@@/logo/logoGate+/logo-gateplus-white.svg";
 import blur from "@@/poster/blur.svg";
-import iconMore from "@@/icons/icon_more.svg";
+// import iconMore from "@@/icons/icon_more.svg";
 import PropTypes from "prop-types";
 
 export default function ComicCard({ title, id, coverUrl, rank = null, isOriginal = false }) {
@@ -27,7 +27,7 @@ export default function ComicCard({ title, id, coverUrl, rank = null, isOriginal
                         </span>
                     </div>
 
-                    {/* Icon more → hanya muncul saat hover */}
+                    {/* Icon more → hanya muncul saat hover
                     <Image
                         priority
                         width={24}
@@ -35,7 +35,7 @@ export default function ComicCard({ title, id, coverUrl, rank = null, isOriginal
                         src={iconMore}
                         alt="more-icon"
                         className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out"
-                    />
+                    /> */}
                 </div>
 
                 {/* Konten Bawah */}
@@ -65,7 +65,7 @@ export default function ComicCard({ title, id, coverUrl, rank = null, isOriginal
                         <p className="zeinFont text-xs">Original</p>
                     </div>}
 
-                    {/* Bookmark icon → hanya muncul saat hover */}
+                    {/* Bookmark icon → hanya muncul saat hover
                     <Image
                         priority
                         width={28}
@@ -73,7 +73,7 @@ export default function ComicCard({ title, id, coverUrl, rank = null, isOriginal
                         src={logoSave}
                         alt="save-icon"
                         className="drop-shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out"
-                    />
+                    /> */}
                 </div>
 
                 {/* Poster */}

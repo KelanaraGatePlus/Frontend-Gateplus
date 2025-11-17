@@ -1,8 +1,8 @@
 "use client";
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import Image from "next/image";
 import logo from "@@/logo/logoGate+/logo-header-login.svg";
-import FormLogin from '@/components/Form/AuthForm/FormLogin/page'
+import FormLogin from "@/components/Form/AuthForm/FormLogin/page";
 
 export default function LoginPage() {
     const [isError, setIsError] = useState(false);
@@ -10,6 +10,24 @@ export default function LoginPage() {
     const [isSuccess, setIsSuccess] = useState(false);
     const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
+
+    // === AUTO DISMISS ALERT AFTER 1 MINUTE ===
+    useEffect(() => {
+        let timer;
+
+        if (isError || isSuccess || forgotPasswordSuccess) {
+            timer = setTimeout(() => {
+                setIsError(false);
+                setIsSuccess(false);
+                setForgotPasswordSuccess(false);
+                setErrorMessage("");
+                setError(null);
+            }, 60000); // 60 detik
+        }
+
+        // Cleanup agar timer dibersihkan jika komponen unmount atau alert berubah
+        return () => clearTimeout(timer);
+    }, [isError, isSuccess, forgotPasswordSuccess]);
 
     return (
         <div className="flex min-h-screen min-w-screen items-center justify-center px-4 md:py-10">
@@ -35,12 +53,14 @@ export default function LoginPage() {
                         </p>
                     </div>
                 </section>
-                <section className="">
+
+                <section>
+                    {/* === ERROR ALERT === */}
                     {isError && (
                         <div className="mb-2 flex items-center space-x-2 rounded-lg border border-red-600 bg-red-800 px-4 py-3 text-xs font-medium text-red-200">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="flex h-5 max-h-5 min-h-5 w-5 max-w-5 min-w-5"
+                                className="flex h-5 w-5"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -57,11 +77,13 @@ export default function LoginPage() {
                             </p>
                         </div>
                     )}
+
+                    {/* === LOGIN SUCCESS ALERT === */}
                     {isSuccess && (
                         <div className="mb-2 flex items-center space-x-2 rounded-lg border border-green-600 bg-green-800 px-4 py-3 text-xs font-medium text-green-200">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="flex h-5 max-h-5 min-h-5 w-5 max-w-5 min-w-5"
+                                className="flex h-5 w-5"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -73,14 +95,16 @@ export default function LoginPage() {
                                     d="M5 13l4 4L19 7"
                                 />
                             </svg>
-                            <p>Login Successfully!</p>
+                            <p>Login Berhasil!</p>
                         </div>
                     )}
+
+                    {/* === FORGOT PASSWORD SUCCESS ALERT === */}
                     {forgotPasswordSuccess && (
                         <div className="mb-2 flex items-center space-x-2 rounded-lg border border-green-600 bg-green-800 px-4 py-3 text-xs font-medium text-green-200">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="flex h-5 max-h-5 min-h-5 w-5 max-w-5 min-w-5"
+                                className="flex h-5 w-5"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -92,9 +116,11 @@ export default function LoginPage() {
                                     d="M5 13l4 4L19 7"
                                 />
                             </svg>
-                            <p>Password reset has been sent to your email.</p>
+                            <p>Permintaan perubahan password telah dikirim ke email Anda.</p>
                         </div>
                     )}
+
+                    {/* === FORM LOGIN === */}
                     <Suspense fallback={<div>Loading...</div>}>
                         <FormLogin
                             setIsError={setIsError}

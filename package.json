@@ -1,7 +1,7 @@
 {
   "name": "gate-plus-project",
   "version": "0.1.0",
-  "developer-by": "codewithjuni",
+  "developer-by": ["codewithjuni", "rakhanasjaya"],
   "private": true,
   "scripts": {
     "dev": "bun run next dev --turbopack & npx next-video sync -w",

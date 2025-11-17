@@ -37,7 +37,7 @@ export default function FormLogin({ setIsError, setError, setIsSuccess, setForgo
     reValidateMode: "onBlur",
   });
 
-  const [forgotPasswordRequest, { isSuccess: isForgotPasswordSuccess, isLoading: isForgotPasswordLoading }] = useResetPasswordRequestMutation();
+  const [forgotPasswordRequest, { isLoading: isForgotPasswordLoading }] = useResetPasswordRequestMutation();
 
   useEffect(() => {
     setIsError(isError);
@@ -60,7 +60,10 @@ export default function FormLogin({ setIsError, setError, setIsSuccess, setForgo
         router.push('/');
       }
     } catch (err) {
-      console.error("Login failed:", err);
+      setErrorMessage(err?.data?.error || "Login gagal. Silakan coba lagi.");
+      setIsError(true);
+      setIsSuccess(false);
+      reset();
     }
   };
 
@@ -70,18 +73,15 @@ export default function FormLogin({ setIsError, setError, setIsSuccess, setForgo
       if (!isValid) return;
 
       const email = getValues("email"); // ambil dari form utama
-      const result = await forgotPasswordRequest({ email }).unwrap();
-      console.log("Password reset request result:", result);
+      await forgotPasswordRequest({ email }).unwrap();
+      setForgotPasswordSuccess(true);
+      setIsError(false);
+      setErrorMessage("");
+      reset();
 
-      if (isForgotPasswordSuccess) {
-        setForgotPasswordSuccess(true);
-        setIsError(false);
-        setErrorMessage("");
-        reset();
-      } 
     } catch (err) {
       setForgotPasswordSuccess(false);
-      setErrorMessage(err?.data?.message || "Failed to send password reset request.");
+      setErrorMessage(err?.data?.message || "Gagal mengirim permintaan reset password. Silakan coba lagi.");
       setIsError(true);
       reset();
     }

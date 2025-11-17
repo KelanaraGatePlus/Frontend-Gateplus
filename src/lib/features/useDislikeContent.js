@@ -19,6 +19,7 @@ export function useDislikeContent() {
                 const response = await axios.delete(`${BACKEND_URL}/like/${idDisliked}`);
                 console.log("UNDISLIKED", response.data);
                 setIdDisliked(null);
+                window.location.reload();
             } else {
                 // DISLIKE
                 setIsDisliked(true);
@@ -29,6 +30,7 @@ export function useDislikeContent() {
                 });
                 console.log("LIKED", response.data.data.data);
                 setIdDisliked(response.data.data.data.id);
+                window.location.reload();
             }
         } catch (err) {
             console.error("Error in like/unlike:", err);
