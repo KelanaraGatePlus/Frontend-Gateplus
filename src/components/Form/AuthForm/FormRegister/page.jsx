@@ -1,8 +1,9 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import ReCAPTCHA from "react-google-recaptcha";
 
 /*[--- THIRD PARTY LIBRARIES ---]*/
 import PropTypes from "prop-types";
@@ -28,6 +29,7 @@ export default function FormRegister({ setIsError, setError, setIsSuccess }) {
   const { isVisible: isConfirmPasswordVisible, toggle: toggleShowConfirmPassword } = useTogglePassword();
   const [registerUser, { isLoading, isSuccess, isError, error }] = useRegisterUserMutation();
   const [loginUser, { isLoading: isLoginLoading }] = useLoginUserMutation();
+  const [captchaToken, setCaptchaToken] = useState(null);
   const {
     register,
     handleSubmit,
@@ -73,8 +75,17 @@ export default function FormRegister({ setIsError, setError, setIsSuccess }) {
   }, [emailAvailable]);
 
   const onSubmit = async (data) => {
+    if (!captchaToken) {
+      setFormError("root", { message: "Please complete the reCAPTCHA." });
+      return;
+    }
+
     try {
-      await registerUser(data).unwrap();
+      // kirim captchaToken ke backend
+      const payload = { ...data, captchaToken };
+
+      await registerUser(payload).unwrap();
+
       const loginResponse = await loginUser(data).unwrap();
       if (loginResponse?.data?.token) {
         router.push(`/otp?token=${loginResponse.data.token}`);
@@ -85,7 +96,6 @@ export default function FormRegister({ setIsError, setError, setIsSuccess }) {
       console.error("Register failed:", err);
     }
   };
-
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex w-full flex-col gap-2">
@@ -160,6 +170,17 @@ export default function FormRegister({ setIsError, setError, setIsSuccess }) {
           Already registered? <Link href="/login" className="text-left font-bold">Log in</Link>
         </div>
       </span>
+
+      <ReCAPTCHA
+        sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+        onChange={(token) => setCaptchaToken(token)}
+        onExpired={() => setCaptchaToken(null)}
+        className="my-2"
+      />
+
+      {
+        errors.root && <p className="text-xs text-red-500">{errors.root.message}</p>
+      }
 
       <button disabled={isLoading || isLoginLoading} className="zeinFont mt-4 cursor-pointer rounded-lg border border-[#156EB7] bg-[#156EB7] py-2 text-2xl font-bold text-white hover:border-white/70 hover:bg-[#156EB7CC]">
         {isLoading || isLoginLoading ? "Registering..." : "Sign Up"}
