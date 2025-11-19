@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
@@ -26,6 +25,8 @@ export default function FormRegisterCreator() {
     const router = useRouter();
     const { refreshUser } = useAuth();
     const [registerCreator, { isLoading }] = useRegisterCreatorMutation();
+    // eslint-disable-next-line no-undef
+    const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
     const {
         register,
@@ -211,7 +212,7 @@ export default function FormRegisterCreator() {
 
             {/* RECAPTCHA */}
             <ReCAPTCHA
-                sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+                sitekey={recaptchaSiteKey}
                 onChange={(token) => setCaptchaToken(token)}
                 onExpired={() => setCaptchaToken(null)}
                 className="my-2"

@@ -30,6 +30,10 @@ export default function FormRegister({ setIsError, setError, setIsSuccess }) {
   const [registerUser, { isLoading, isSuccess, isError, error }] = useRegisterUserMutation();
   const [loginUser, { isLoading: isLoginLoading }] = useLoginUserMutation();
   const [captchaToken, setCaptchaToken] = useState(null);
+
+  // eslint-disable-next-line no-undef
+  const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+
   const {
     register,
     handleSubmit,
@@ -172,7 +176,7 @@ export default function FormRegister({ setIsError, setError, setIsSuccess }) {
       </span>
 
       <ReCAPTCHA
-        sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+        sitekey={recaptchaSiteKey}
         onChange={(token) => setCaptchaToken(token)}
         onExpired={() => setCaptchaToken(null)}
         className="my-2"
