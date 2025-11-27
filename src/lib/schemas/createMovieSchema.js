@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const validTypes = ["image/jpeg", "image/png", "image/webp"];
-const maxSize = 500 * 1024;
+const maxSize = 1000 * 1024;
 
 export const createMovieSchema = z.object({
     title: z.string().min(1, "Judul wajib diisi").max(50, "Maksimal 50 karakter"),

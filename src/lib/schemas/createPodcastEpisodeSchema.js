@@ -5,7 +5,7 @@ const validTypesImage = ["image/jpeg", "image/png", "image/webp"];
 const validTypesAudio = [
     "audio/mpeg"
 ];
-const maxSize = 500 * 1024;
+const maxSize = 1000 * 1024;
 
 export const createPodcastEpisodeSchema = z.object({
     podcastId: z.string().min(1, "Judul series wajib dipilih"),

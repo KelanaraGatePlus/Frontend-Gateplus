@@ -45,7 +45,7 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
   const handleSearchSubmit = () => {
     if (searchQuery.trim()) {
       router.push(`/search?search=${encodeURIComponent(searchQuery)}`);
-      setIsSearchActive(false); // [SARAN] Tutup search setelah submit
+      setIsSearchActive(false);
     }
   };
 
@@ -71,7 +71,6 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
       <nav
         className={`${isMenuBarsOpen ? "rounded-b-xl" : ""} fixed z-30 w-full bg-white/5 backdrop-blur`}
       >
-        {/* [MODIFIKASI] Navbar utama disembunyikan di mobile jika search aktif */}
         <section className={`${isSearchActive ? "hidden md:flex" : "flex"} items-center justify-between px-4 py-4 md:flex md:justify-between md:bg-fixed`}>
           <div className="-mt-3 w-fit -translate-x-8 ps-0 md:mt-0 md:-translate-x-0 md:place-items-start lg:ps-6">
             <Link href="/"><div className="flex aspect-auto justify-center"><Image className="ml-6 h-auto w-auto" src={logoHome} alt="logo-gate+" priority /></div></Link>
@@ -131,18 +130,34 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
               <Image priority height={30} width={27} src={logoSearch} alt="search-icon" className="object-cover object-center" />
             </button>
             <NotificationMenu key={role} />
+
             {isAuthenticated ? (
               <ProfileMenu creatorId={user.creators_id} userId={user.users_id} isCreator={user.isCreator} imageUrl={imageUrl} role={role} handleSwitchRole={handleSwitchRole} openCreateContentModal={openCreateContentModal} openRedeemVoucherModal={openRedeemVoucherModal} />
             ) : (
               <>
-                <div className="hidden md:flex md:flex-col md:py-3"><Link href="/login"><div className="flex justify-center rounded-full bg-linear-to-t from-[#0E5BA8] to-[#0395BC] py-2 font-semibold sm:px-2 md:px-4 lg:px-6 xl:px-8"><span className="zeinFont mt-0.5 text-center text-lg leading-tight drop-shadow-[0_0_2px_rgba(255,255,255,0.4)]">Log In</span></div></Link></div>
-                <div className="hidden md:block md:py-3"><Link href="/register"><div className="flex justify-center rounded-full bg-[#0881AB] py-2 font-semibold sm:px-2 md:px-4 lg:px-6 xl:px-8"><span className="zeinFont mt-0.5 text-center text-base leading-tight drop-shadow-[0_0_2px_rgba(255,255,255,0.4)]">Sign Up</span></div></Link></div>
+                {/* FIXED: tampilkan juga di mobile */}
+                <div className="flex md:flex md:flex-col md:py-3">
+                  <Link href="/login">
+                    <div className="flex justify-center rounded-full bg-linear-to-t from-[#0E5BA8] to-[#0395BC] py-2 font-semibold sm:px-2 md:px-4 lg:px-6 xl:px-8">
+                      <span className="zeinFont mt-0.5 text-center text-lg leading-tight drop-shadow-[0_0_2px_rgba(255,255,255,0.4)]">Log In</span>
+                    </div>
+                  </Link>
+                </div>
+
+                {/* FIXED: tampilkan juga di mobile */}
+                <div className="block md:block md:py-3">
+                  <Link href="/register">
+                    <div className="flex justify-center rounded-full bg-[#0881AB] py-2 font-semibold sm:px-2 md:px-4 lg:px-6 xl:px-8">
+                      <span className="zeinFont mt-0.5 text-center text-base leading-tight drop-shadow-[0_0_2px_rgba(255,255,255,0.4)]">Sign Up</span>
+                    </div>
+                  </Link>
+                </div>
               </>
             )}
           </div>
         </section>
 
-        {/* [PENAMBAHAN] Section khusus untuk search bar di mobile */}
+        {/* mobile search */}
         {isSearchActive && (
           <section className="flex items-center gap-2 px-4 py-4 md:hidden">
             <div className="flex items-center gap-3 rounded-full px-4 py-2 border border-white/20 w-full bg-white/10">
@@ -174,7 +189,6 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
         )}
       </nav>
 
-      {/* Overlay di bawah search bar */}
       {isSearchActive && (
         <div
           className="fixed left-0 right-0 z-40 mt-[76px] mx-auto w-full max-w-3xl rounded-b-2xl border-x border-b border-white/20 bg-[#0395BC80] text-white backdrop-blur-xl"
@@ -187,7 +201,9 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
             <Link href={`/${contentType.ebooks.pluralName}`} className="flex flex-col items-center gap-2 text-white hover:text-white transition-colors"><Image src={contentType.ebooks.icon} width={65} height={65} /> <span className="text-sm font-semibold">EBOOK</span></Link>
             <Link href={`/${contentType.comics.pluralName}`} className="flex flex-col items-center gap-2 text-white hover:text-white transition-colors"><Image src={contentType.comics.icon} width={65} height={65} /> <span className="text-sm font-semibold">COMIC</span></Link>
           </div>
+
           <hr className="border-white/10" />
+
           <div className="grid grid-cols-1 gap-2 p-4 text-xs">
             <div>
               <div className="flex items-center gap-1">
@@ -196,10 +212,11 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
               </div>
               <div className="p-1">
                 <ul className="space-y-1">{trendingData?.popularSearches?.map((item, index) => (<li key={index}><Link href={`/search?search=${item.searchQuery}`} className="text-white hover:text-white flex flex-row items-center gap-1">
-                <Image src={iconChartYellow} width={24} height={24} className="inline-block " />
-                <p>{item.searchQuery}</p></Link></li>))}</ul>
+                  <Image src={iconChartYellow} width={24} height={24} className="inline-block " />
+                  <p>{item.searchQuery}</p></Link></li>))}</ul>
               </div>
             </div>
+
             <div>
               <div className="flex items-center gap-1">
                 <Image src={iconChartRed} width={24} height={24} className="inline-block mr-2" />

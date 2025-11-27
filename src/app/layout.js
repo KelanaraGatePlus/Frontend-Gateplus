@@ -8,7 +8,7 @@ import { Provider } from "react-redux";
 import "./globals.css";
 import Navbar from "@/components/Navbar/page";
 import Footer from "@/components/Footer/MainFooter";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import FlexModal from "@/components/Modal/FlexModal";
 import Image from "next/image";
 import { contentType } from "@/lib/constants/contentType";
@@ -48,6 +48,18 @@ export default function RootLayout({ children }) {
   // true kalau salah satu pattern cocok
   const hideNavbar = routeWithoutNavbar.some((pattern) => pattern.test(pathname));
   const hideFooter = routeWithoutFooter.some((pattern) => pattern.test(pathname));
+
+  useEffect(() => {
+    // blok klik kanan
+    document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+    // blok CTRL+C, CTRL+U, CTRL+S
+    document.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && ["c", "u", "s",].includes(e.key.toLowerCase())) {
+        e.preventDefault();
+      }
+    });
+  }, []);
 
   return (
     <Provider store={store}>

@@ -5,7 +5,7 @@ const validTypesEbook = [
     "application/msword",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ];
-const maxSize = 500 * 1024;
+const maxSize = 1000 * 1024;
 
 export const createEbookEpisodeSchema = z.object({
     ebookId: z.string().min(1, "Judul series wajib dipilih"),

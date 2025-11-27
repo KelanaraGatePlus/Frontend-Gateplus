@@ -243,14 +243,14 @@ export default function DashboardCreatorsPage() {
               <h1 className="text-3xl font-black zeinFont">Analitik & Insight</h1>
               <p className="text-[#979797]">Monitor performa konten dan perilaku penonton dengan analisa mendalam</p>
             </div>
-            <button className="bg-[#175BA6] flex flex-row gap-2 items-center justify-center py-2 px-4 rounded-lg">
+            <Link href={'/creator/dashboard/detail'} className="bg-[#175BA6] flex flex-row gap-2 items-center justify-center py-2 px-4 rounded-lg">
               <Image
                 src={IconBarChart}
                 width={28}
                 height={28}
               />
               <p className="font-bold text-sm">Lihat Detail Lengkap</p>
-            </button>
+            </Link>
           </div>
           <div className="grid grid-cols-1 gap-6">
             <div className="bg-gradient-to-b from-[#393939] to-[#222222] rounded-lg w-full p-4 border-[#686868] border flex flex-col gap-4">

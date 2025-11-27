@@ -46,6 +46,48 @@ body {
   }
 }
 
+/* Mencegah seleksi teks */
+* {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Mencegah drag */
+img, body {
+  -webkit-user-drag: none;
+}
+
+/* Anda dapat menambahkan ini ke app/globals.css atau file styling global Anda */
+
+/*
+  Lapisan Hitam (Blackout Layer) untuk Anti-Screenshot
+  Ini harus diletakkan di atas semua elemen lain.
+*/
+.screenshot-blackout {
+  position: fixed; /* Tetap di viewport */
+  top: 0;
+  left: 0;
+  width: 100vw; /* Lebar penuh viewport */
+  height: 100vh; /* Tinggi penuh viewport */
+  background-color: black; /* Warna hitam gelap */
+  z-index: 99999; /* Pastikan berada di atas semua konten web */
+  pointer-events: none; /* Penting: agar pengguna masih bisa berinteraksi dengan elemen di belakangnya (kecuali saat aktif) */
+  transition: opacity 0.1s ease; /* Transisi untuk menghindari kedipan saat muncul/hilang */
+}
+
+/*
+Source - https://stackoverflow.com/a
+Posted by Nelson Benítez León, modified by community. See post 'Timeline' for change history
+Retrieved 2025-11-25, License - CC BY-SA 3.0
+*/
+
+@media print {
+    html, body {
+       display: none;  /* hide whole page */
+    }
+}
+
+
 .animate-like {
   animation: likePop 0.3s ease-in-out;
 }

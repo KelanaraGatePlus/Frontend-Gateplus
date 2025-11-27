@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const validTypes = ["image/jpeg", "image/png", "image/webp"];
-const maxSize = 500 * 1024; // 500KB
+const maxSize = 1000 * 1024; // 500KB
 
 export const createReportContentSchema = z.object({
     isAnonymous: z.boolean(),

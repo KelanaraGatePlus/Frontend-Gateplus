@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const validTypesImage = ["image/jpeg", "image/png", "image/webp"];
-const maxSize = 500 * 1024;
+const maxSize = 1000 * 1024;
 
 export const createComicEpisodeSchema = z.object({
     comicId: z.string().min(1, "Judul series wajib dipilih"),
