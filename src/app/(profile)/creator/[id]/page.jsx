@@ -10,7 +10,6 @@ import { useGetNewestContentQuery } from "@/hooks/api/creatorSliceAPI";
 /*[--- COMPONENT IMPORT ---]*/
 import ProfileCard from "@/components/Profile/ProfileCard/ProfileCard";
 import CreatorMostViewedContent from "@/components/Carousel/CarouselProfile/creatorMostViewedContent";
-import ContentList from "@/components/Profile/ContentList";
 import BackButton from "@/components/BackButton/page";
 import Skeleton from "react-loading-skeleton";
 import { Pagination } from 'flowbite-react';
@@ -18,6 +17,7 @@ import "react-loading-skeleton/dist/skeleton.css";
 
 /*[--- CONSTANT IMPORT ---]*/
 import { imageDefaultValue } from "@/lib/constants/imageDefaultValue";
+import CarouselTemplate from "@/components/Carousel/carouselTemplate";
 
 export default function CreatorProfilePage({ params }) {
   const { id } = use(params);
@@ -122,20 +122,13 @@ export default function CreatorProfilePage({ params }) {
       </div>
 
       {/* Baru ditambahkan */}
-      <section className="md:mt-8 px-2">
-        <div className="flex justify-between text-white">
-          <p className="zeinFont md:mb-2 mb-1 text-2xl md:text-3xl lg:text-4xl xl:text-[40px] font-extrabold">
-            Baru ditambahkan
-          </p>
-          <p className="cursor-pointer text-xs lg:text-base font-semibold text-[#14CAFB] montserratFont flex md:mr-4">
-            <button className="cursor-pointer">Lainnya</button>
-          </p>
-        </div>
-        <ContentList
-          data={creatorContentNewestData}
-          isLoading={creatorContentNewestQuery.isLoading}
-          currentPage={currentPage}
-          itemsPerPage={itemsPerPage}
+      <section className="md:mt-8">
+        <CarouselTemplate
+          label={"Baru ditambahkan"}
+          contents={creatorContentNewestData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)}
+          isLoading={false}
+          isTopTen={false}
+          isOnCreatorProfile={true}
         />
       </section>
 
