@@ -23,6 +23,7 @@ import CommentComponent from "@/components/Comment/page";
 import { useGetCommentByMovieQuery } from "@/hooks/api/commentSliceAPI";
 import formatDuration from "@/lib/helper/formatDurationHelper";
 import CarouselTemplate from "@/components/Carousel/carouselTemplate";
+import Link from "next/link";
 
 /* ===========================
    Halaman: PlayingMoviePage (JSX)
@@ -255,12 +256,12 @@ function PlayingMoviePage({ params }) {
                                 priority
                             />
                         </div>
-                        <div className="grid grid-rows-2">
-                            <div className="flex place-content-center justify-center text-2xl font-bold text-white">
+                        <Link href={`/creator/${movieData?.creator?.id}`} className="grid grid-rows-2">
+                            <div className="flex place-content-center justify-center text-2xl font-bold text-white hover:underline">
                                 {movieData?.creator?.profileName}
                             </div>
-                            <div className="text-sm text-white">{movieData?.creator?.totalSubscribers} followers</div>
-                        </div>
+                            <div className="text-sm text-white">{movieData?.totalSubscribers} followers</div>
+                        </Link>
                     </div>
                 </section>
 

@@ -26,6 +26,7 @@ import iconDislikeSolid from "@@/logo/logoDetailFilm/dislike-icons-solid.svg";
 import iconSaveSolid from "@@/logo/logoDetailFilm/saved-icons.svg";
 import { useSaveContent } from '@/lib/features/useSaveContent';
 import CarouselTemplate from '@/components/Carousel/carouselTemplate';
+import Link from 'next/link';
 
 function DetailSeriesPage({ params }) {
     const { id } = params;
@@ -274,12 +275,12 @@ function DetailSeriesPage({ params }) {
                                 priority
                             />
                         </div>
-                        <div className="grid grid-rows-2">
-                            <div className="flex place-content-center justify-center text-2xl font-bold text-white">
+                        <Link href={`/creator/${seriesData?.creator?.id}`} className="grid grid-rows-2">
+                            <div className="flex place-content-center justify-center text-2xl font-bold text-white hover:underline">
                                 {seriesData?.creator?.profileName}
                             </div>
                             <div className="text-sm text-white">{seriesData?.creator?.totalSubscribers} followers</div>
-                        </div>
+                        </Link>
                     </div>
                 </section>
 
