@@ -1,7 +1,7 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
 
-import logoUsersComment from "@@/AvatarIcons/avatar-face-2.jpg";
+import { DEFAULT_AVATAR } from "@/lib/defaults";
 import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
@@ -86,7 +86,7 @@ export default function SearchResults() {
                             />
                           ) : (
                             <Image
-                              src={logoUsersComment}
+                              src={DEFAULT_AVATAR}
                               alt="creator profile"
                               width={60}
                               height={60}
@@ -137,7 +137,7 @@ export default function SearchResults() {
                                 />
                               ) : (
                                 <Image
-                                  src={logoUsersComment}
+                                  src={DEFAULT_AVATAR}
                                   alt="cover book"
                                   fill
                                   className="rounded-lg object-cover object-center"

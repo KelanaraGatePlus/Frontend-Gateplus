@@ -13,7 +13,7 @@ import iconsDashboard from "@@/icons/icons-dashboard.svg";
 import iconsHelp from "@@/icons/icons-help.svg";
 import iconsProfile from "@@/icons/icons-profile.svg";
 import iconsUploadContent from "@@/icons/icons-upload-content.svg";
-import logoUsersComment from "@@/AvatarIcons/avatar-face-2.jpg";
+import { DEFAULT_AVATAR } from "@/lib/defaults";
 import iconsArrow from "@@/icons/icon-arrow.svg";
 import { useAuth } from "@/components/Context/AuthContext";
 import { TicketIcon } from "lucide-react";
@@ -81,7 +81,7 @@ export default function ProfileMenu({
           />
         ) : (
           <Image
-            src={logoUsersComment}
+            src={DEFAULT_AVATAR}
             alt="Profile Picture"
             layout="fill"
             objectFit="cover"

@@ -15,6 +15,7 @@ import { BACKEND_URL } from "@/lib/constants/backendUrl";
 import ProfileModal from "@/components/Modal/ProfileModal";
 import { useUpdateCreatorMutation } from "@/hooks/api/creatorSliceAPI";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+import { useAuth } from "@/components/Context/AuthContext";
 
 export default function CreatorSettingsPage() {
   const router = useRouter();
@@ -25,7 +26,7 @@ export default function CreatorSettingsPage() {
   const [profileName, setProfileName] = useState("");
   const [username, setUsername] = useState("");
   const [description, setDescription] = useState("");
-  const [gender, setGender] = useState(null);
+  const [gender, setGender] = useState("Male");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
@@ -44,6 +45,7 @@ export default function CreatorSettingsPage() {
   const [bannerProfilePicturePreview, setBannerProfilePicturePreview] =
     useState(null);
   const [updateCreator, { isLoading: isUpdateCreatorLoading }] = useUpdateCreatorMutation();
+  const { refreshUser } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,7 +54,7 @@ export default function CreatorSettingsPage() {
       profileName === "" ||
       username === "" ||
       email === "" ||
-      (profilePictureUrl === null && selectedIconUrl === null)
+      ((profilePictureUrl === null || profilePictureUrl === "") && (selectedIconUrl === null || selectedIconUrl === ""))
     ) {
       setShowToast(true);
       setToastMessage(
@@ -66,20 +68,22 @@ export default function CreatorSettingsPage() {
       setIsLoading(true);
 
       const formData = new FormData();
+      // when frontend shows empty string, send backend the string "null" so backend stores null-equivalent
+      const toBackend = (v) => (v === "" || v === null ? "null" : v);
+
       formData.append("profileName", profileName);
       formData.append("username", username);
-      formData.append("description", description);
-      if (gender !== "" && gender !== null) {
-        formData.append("gender", gender);
-      }
+      formData.append("description", toBackend(description));
+      // backend requires a non-null gender; default to 'Male' when empty
+      formData.append("gender", gender || "Male");
       formData.append("email", email);
-      formData.append("phone", phone);
-      formData.append("dateOfBirth", dateOfBirth);
-      formData.append("region", region);
-      formData.append("instagramUrl", instagramUrl);
-      formData.append("tiktokUrl", tiktokUrl);
-      formData.append("twitterUrl", twitterUrl);
-      formData.append("facebookUrl", facebookUrl);
+      formData.append("phone", toBackend(phone));
+      formData.append("dateOfBirth", toBackend(dateOfBirth));
+      formData.append("region", toBackend(region));
+      formData.append("instagramUrl", toBackend(instagramUrl));
+      formData.append("tiktokUrl", toBackend(tiktokUrl));
+      formData.append("twitterUrl", toBackend(twitterUrl));
+      formData.append("facebookUrl", toBackend(facebookUrl));
       if (profilePictureUrl) {
         formData.append("imageUrl", profilePictureUrl);
       } else if (selectedIconUrl) {
@@ -96,6 +100,12 @@ export default function CreatorSettingsPage() {
       setToastType("success");
       console.log("Update success:", response.data);
       localStorage.setItem("image_creators", response.data.imageUrl);
+      // refresh AuthContext so consumers (eg. Navbar) update immediately
+      try {
+        refreshUser();
+      } catch (err) {
+        console.warn("refreshUser failed:", err);
+      }
       setIsLoading(false);
       router.push(`/creator/${id}`);
     } catch (error) {
@@ -111,21 +121,23 @@ export default function CreatorSettingsPage() {
       );
 
       const creatorData = response.data.data.data;
+      // normalize values: backend sometimes returns string "null"; show empty in UI
+      const normalize = (v) => (v === null || v === "null" ? "" : v);
 
-      setProfilePictureUrl(creatorData.imageUrl);
-      setBannerProfileUrl(creatorData.bannerImageUrl);
-      setProfileName(creatorData.profileName);
-      setUsername(creatorData.username);
-      setDescription(creatorData.description);
-      setGender(creatorData.gender);
-      setEmail(creatorData.email);
-      setPhone(creatorData.phone);
-      setDateOfBirth(creatorData.dateOfBirth);
-      setRegion(creatorData.region);
-      setInstagramUrl(creatorData.instagramUrl);
-      setTiktokUrl(creatorData.tiktokUrl);
-      setTwitterUrl(creatorData.twitterUrl);
-      setFacebookUrl(creatorData.facebookUrl);
+      setProfilePictureUrl(normalize(creatorData.imageUrl));
+      setBannerProfileUrl(normalize(creatorData.bannerImageUrl));
+      setProfileName(normalize(creatorData.profileName));
+      setUsername(normalize(creatorData.username));
+      setDescription(normalize(creatorData.description));
+      setGender(normalize(creatorData.gender) || "Male");
+      setEmail(normalize(creatorData.email));
+      setPhone(normalize(creatorData.phone));
+      setDateOfBirth(normalize(creatorData.dateOfBirth));
+      setRegion(normalize(creatorData.region));
+      setInstagramUrl(normalize(creatorData.instagramUrl));
+      setTiktokUrl(normalize(creatorData.tiktokUrl));
+      setTwitterUrl(normalize(creatorData.twitterUrl));
+      setFacebookUrl(normalize(creatorData.facebookUrl));
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -172,7 +184,7 @@ export default function CreatorSettingsPage() {
 
   return (
     <>
-      <main className="mx-2 my-2 mt-16 flex flex-col md:mt-24 lg:mx-6 lg:mb-10 lg:h-fit">
+      <main className="mx-2 my-2 mt-16 flex flex-col md:mt-24 lg:mx-6 lg:mb-10 lg:h-fit text-white">
         {/* Back Menu */}
         <BackButton />
 
@@ -184,25 +196,19 @@ export default function CreatorSettingsPage() {
             className="flex flex-col gap-4 lg:gap-0"
           >
             <div className="flex flex-col gap-2">
-              {/* profile */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                  Profile Picture
-                  <span className="align-super text-[12px] text-red-700">
-                    {" *"}
-                  </span>
-                </h3>
-                <div className="flex flex-4 text-white md:flex-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center gap-4">
+                  <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
+                    Profile Picture
+                    <span className="align-super text-[12px] text-red-700">{" *"}</span>
+                  </h3>
                   <label className="relative h-16 w-16 cursor-pointer lg:h-24 lg:w-24"
                     onClick={() => {
                       setShowProfileModal(true);
                       console.log("open modal");
                     }}>
                     <div className="group relative h-16 w-16 cursor-pointer overflow-hidden rounded-full lg:h-24 lg:w-24">
-                      {profilePictureUrl &&
-                        profilePictureUrl !== "null" &&
-                        profilePictureUrl !== "" &&
-                        profilePicturePreview === null ? (
+                      {profilePictureUrl && profilePictureUrl !== "null" && profilePictureUrl !== "" && profilePicturePreview === null ? (
                         <Image
                           src={profilePictureUrl}
                           alt="profile"
@@ -229,102 +235,88 @@ export default function CreatorSettingsPage() {
                     </div>
                   </label>
                 </div>
+                <div className="flex items-center gap-4">
+                  <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] md:text-base lg:text-xl">Banner Profile IMG</h3>
+                  <div className="relative flex-1 overflow-hidden rounded-xl">
+                    <label className="relative block h-full w-full cursor-pointer lg:max-h-42 lg:max-w-[70%]">
+                      {bannerProfileUrl && bannerProfileUrl !== "null" && bannerProfileUrl !== "" && bannerProfilePicturePreview === null ? (
+                        <Image
+                          src={bannerProfileUrl}
+                          alt="profile"
+                          width={1080}
+                          height={200}
+                          className="aspect-auto h-full w-full object-cover object-center"
+                        />
+                      ) : (
+                        <Image
+                          src={bannerProfilePicturePreview || BannerCreator}
+                          alt="banner"
+                          width={1080}
+                          height={200}
+                          className="aspect-auto h-full w-full object-cover object-center"
+                        />
+                      )}
+
+                      <div className="absolute top-1/2 right-0 left-0 flex h-[28%] -translate-y-1/2 items-center justify-center gap-2 bg-black/40">
+                        <Image
+                          src={IconsGalery}
+                          alt="camera icon"
+                          width={24}
+                          height={24}
+                          className="object-contain"
+                        />
+                        <p className="font-bold text-white">Upload</p>
+                      </div>
+
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+                        id="banner-profile-picture"
+                        onChange={(e) => handleFileUpload(e)}
+                      />
+                    </label>
+                  </div>
+                </div>
               </div>
-              {/* Banner */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                  Banner Profile IMG
-                </h3>
-
-                <div className="relative flex w-full flex-4 overflow-hidden rounded-xl md:flex-10">
-                  <label className="relative block h-full w-full cursor-pointer lg:max-h-42 lg:max-w-[70%]">
-                    {/* Banner Image */}
-                    {bannerProfileUrl &&
-                      bannerProfileUrl !== "null" &&
-                      bannerProfileUrl !== "" &&
-                      bannerProfilePicturePreview === null ? (
-                      <Image
-                        src={bannerProfileUrl}
-                        alt="profile"
-                        width={1080}
-                        height={200}
-                        className="aspect-auto h-full w-full object-cover object-center"
-                      />
-                    ) : (
-                      <Image
-                        src={bannerProfilePicturePreview || BannerCreator}
-                        alt="banner"
-                        width={1080}
-                        height={200}
-                        className="aspect-auto h-full w-full object-cover object-center"
-                      />
-                    )}
-
-                    <div className="absolute top-1/2 right-0 left-0 flex h-[28%] -translate-y-1/2 items-center justify-center gap-2 bg-black/40">
-                      <Image
-                        src={IconsGalery}
-                        alt="camera icon"
-                        width={24}
-                        height={24}
-                        className="object-contain"
-                      />
-                      <p className="font-bold text-white">Upload</p>
-                    </div>
-
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center gap-4">
+                  <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
+                    Profile Name
+                    <span className="align-super text-[12px] text-red-700">{" *"}</span>
+                  </h3>
+                  <div className="flex-1">
                     <input
-                      type="file"
-                      accept="image/*"
-                      className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
-                      id="banner-profile-picture"
-                      onChange={(e) => handleFileUpload(e)}
+                      type="text"
+                      className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
+                      value={profileName || ""}
+                      onChange={(e) => setProfileName(e.target.value)}
+                      placeholder="Masukan Nama Profile"
+                      required
                     />
-                  </label>
+                  </div>
                 </div>
-              </div>
-              {/* name */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                  Profile Name
-                  <span className="align-super text-[12px] text-red-700">
-                    {" *"}
-                  </span>
-                </h3>
-                <div className="flex w-full flex-4 text-white md:flex-10">
-                  <input
-                    type="text"
-                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                    value={profileName || ""}
-                    onChange={(e) => setProfileName(e.target.value)}
-                    placeholder="Masukan Nama Profile"
-                    required
-                  />
-                </div>
-              </div>
-              {/* Username */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                  Username
-                  <span className="align-super text-[12px] text-red-700">
-                    {" *"}
-                  </span>
-                </h3>
-                <div className="flex w-full flex-4 text-white md:flex-10">
-                  <input
-                    type="text"
-                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                    value={username || ""}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Masukan Username"
-                    required
-                  />
+                <div className="flex items-center gap-4">
+                  <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
+                    Username
+                    <span className="align-super text-[12px] text-red-700">{" *"}</span>
+                  </h3>
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
+                      value={username || ""}
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="Masukan Username"
+                      required
+                    />
+                  </div>
                 </div>
               </div>
               {/* Description */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                  Description
-                </h3>
-                <div className="flex w-full flex-4 text-white md:flex-10">
+              <div className="flex items-start gap-4">
+                <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] md:text-base lg:text-xl">Description</h3>
+                <div className="flex-1">
                   <textarea
                     name="about"
                     className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
@@ -337,95 +329,88 @@ export default function CreatorSettingsPage() {
                   />
                 </div>
               </div>
-              {/* Gender */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                  Gender
-                </h3>
-                <div className="flex w-fit flex-4 justify-start gap-6 text-white md:flex-10">
-                  <label className="flex w-fit cursor-pointer items-center gap-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center gap-4">
+                  <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
+                    Email
+                    <span className="align-super text-[12px] text-red-700">{" *"}</span>
+                  </h3>
+                  <div className="flex-1">
                     <input
-                      type="radio"
-                      name="gender"
-                      value="Male"
-                      className="accent-green-500"
-                      checked={gender === "Male"}
-                      onChange={(e) => setGender(e.target.value)}
+                      type="email"
+                      className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
+                      value={email || ""}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Masukan Email"
+                      required
                     />
-                    <span>Male</span>
-                  </label>
-                  <label className="flex w-full cursor-pointer items-center gap-1">
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
+                    Phone
+                    <span className="align-super text-[12px] text-red-700">{" *"}</span>
+                  </h3>
+                  <div className="flex-1">
                     <input
-                      type="radio"
-                      name="gender"
-                      value="Female"
-                      className="accent-green-500"
-                      checked={gender === "Female"}
-                      onChange={(e) => setGender(e.target.value)}
+                      type="number"
+                      className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
+                      value={phone || ""}
+                      placeholder="Masukan No. Telepon"
+                      onChange={(e) => setPhone(e.target.value)}
+                      required
                     />
-                    <span>Female</span>
-                  </label>
+                  </div>
                 </div>
               </div>
-              {/* Email */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                  Email
-                  <span className="align-super text-[12px] text-red-700">
-                    {" *"}
-                  </span>
-                </h3>
-                <div className="flex w-full flex-4 text-white md:flex-10">
-                  <input
-                    type="email"
-                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                    value={email || ""}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Masukan Email"
-                    required
-                  />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center gap-4">
+                  <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] md:text-base lg:text-xl">Date of Birth</h3>
+                  <div className="flex-1">
+                    <input
+                      type="date"
+                      className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1 text-white"
+                      placeholder="your birthday"
+                      value={dateOfBirth || ""}
+                      onChange={(e) => setDateOfBirth(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] md:text-base lg:text-xl">Gender</h3>
+                  <div className="flex-1">
+                    <div className="flex gap-6 items-center text-white">
+                      <label className="flex cursor-pointer items-center gap-1">
+                        <input
+                          type="radio"
+                          name="gender"
+                          value="Male"
+                          className="accent-green-500"
+                          checked={gender === "Male"}
+                          onChange={(e) => setGender(e.target.value)}
+                        />
+                        <span>Male</span>
+                      </label>
+                      <label className="flex cursor-pointer items-center gap-1">
+                        <input
+                          type="radio"
+                          name="gender"
+                          value="Female"
+                          className="accent-green-500"
+                          checked={gender === "Female"}
+                          onChange={(e) => setGender(e.target.value)}
+                        />
+                        <span>Female</span>
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
-              {/* Phone */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                  Phone
-                  <span className="align-super text-[12px] text-red-700">
-                    {" *"}
-                  </span>
-                </h3>
-                <div className="flex w-full flex-4 text-white md:flex-10">
-                  <input
-                    type="number"
-                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                    value={phone || ""}
-                    placeholder="Masukan No. Telepon"
-                    onChange={(e) => setPhone(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-              {/* Date of Birth */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                  Date of Birth
-                </h3>
-                <div className="flex w-full flex-4 text-white md:flex-10">
-                  <input
-                    type="date"
-                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1 text-white"
-                    placeholder="your birthday"
-                    value={dateOfBirth || ""}
-                    onChange={(e) => setDateOfBirth(e.target.value)}
-                  />
-                </div>
-              </div>
-              {/* Country */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                  Country / Region
-                </h3>
-                <div className="flex w-full flex-4 text-white md:flex-10">
+              {/* Country & Social Links */}
+              <div className="flex items-center gap-4">
+                <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] md:text-base lg:text-xl">Country / Region</h3>
+                <div className="flex-1">
                   <select
                     className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1 text-white"
                     value={region || ""}
@@ -440,12 +425,10 @@ export default function CreatorSettingsPage() {
                   </select>
                 </div>
               </div>
-              {/* Instagram Link */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                  Instagram Link
-                </h3>
-                <div className="flex w-full flex-4 text-white md:flex-10">
+
+              <div className="flex items-center gap-4">
+                <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] md:text-base lg:text-xl">Instagram Link</h3>
+                <div className="flex-1">
                   <input
                     type="text"
                     className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
@@ -455,12 +438,10 @@ export default function CreatorSettingsPage() {
                   />
                 </div>
               </div>
-              {/* Tiktok Link */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                  Tiktok Link
-                </h3>
-                <div className="flex w-full flex-4 text-white md:flex-10">
+
+              <div className="flex items-center gap-4">
+                <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] md:text-base lg:text-xl">Tiktok Link</h3>
+                <div className="flex-1">
                   <input
                     type="text"
                     className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
@@ -470,12 +451,10 @@ export default function CreatorSettingsPage() {
                   />
                 </div>
               </div>
-              {/* Twitter/X Link */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                  Twitter/X Link
-                </h3>
-                <div className="flex w-full flex-4 text-white md:flex-10">
+
+              <div className="flex items-center gap-4">
+                <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] md:text-base lg:text-xl">Twitter/X Link</h3>
+                <div className="flex-1">
                   <input
                     type="text"
                     className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
@@ -485,12 +464,10 @@ export default function CreatorSettingsPage() {
                   />
                 </div>
               </div>
-              {/* Facebook Link */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                  Facebook Link
-                </h3>
-                <div className="flex w-full flex-4 text-white md:flex-10">
+
+              <div className="flex items-center gap-4">
+                <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] md:text-base lg:text-xl">Facebook Link</h3>
+                <div className="flex-1">
                   <input
                     type="text"
                     className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"

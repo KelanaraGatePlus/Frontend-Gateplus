@@ -186,7 +186,7 @@ export default function FormRegister({ setIsError, setError, setIsSuccess }) {
         errors.root && <p className="text-xs text-red-500">{errors.root.message}</p>
       }
 
-      <button disabled={isLoading || isLoginLoading} className="zeinFont mt-4 cursor-pointer rounded-lg border border-[#156EB7] bg-[#156EB7] py-2 text-2xl font-bold text-white hover:border-white/70 hover:bg-[#156EB7CC]">
+      <button disabled={isLoading || isLoginLoading || !captchaToken || userAvailable?.exists || emailAvailable?.exists} className="zeinFont mt-4 cursor-pointer rounded-lg border border-[#156EB7] bg-[#156EB7] py-2 text-2xl font-bold text-white hover:border-white/70 hover:bg-[#156EB7CC]">
         {isLoading || isLoginLoading ? "Registering..." : "Sign Up"}
       </button>
 

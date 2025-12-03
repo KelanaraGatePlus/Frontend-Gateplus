@@ -30,13 +30,13 @@ export default function PersonalInformationSection({
                     totalSubsribers={totalSubsribers}
                 />
             )}
-            <DescriptionSection description={data.description} />
+            <DescriptionSection description={data.description == 'null' ? null : data.description} />
             {profileFor === 'creator' && (
                 <SocialMediaSection
-                    instagramUrl={data.instagramUrl}
-                    tiktokUrl={data.tiktokUrl}
-                    twitterUrl={data.twitterUrl}
-                    facebookUrl={data.facebookUrl}
+                    instagramUrl={data.instagramUrl == "null" ? null : data.instagramUrl}
+                    tiktokUrl={data.tiktokUrl == "null" ? null : data.tiktokUrl}
+                    twitterUrl={data.twitterUrl == "null" ? null : data.twitterUrl}
+                    facebookUrl={data.facebookUrl == "null" ? null : data.facebookUrl}
                 />
             )}
             <ButtonSection

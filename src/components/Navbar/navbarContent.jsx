@@ -31,7 +31,7 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
   const { user } = useAuth();
 
   const [role, setRole] = useState(user?.role || "Users");
-  const [imageUrl, setImageUrl] = useState(null);
+  const [imageUrl, setImageUrl] = useState(user?.image_users || user?.image_creators || "");
   const [isMenuBarsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchActive, setIsSearchActive] = useState(false);
@@ -53,7 +53,7 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
     const newRole = role === "Users" ? "Creators" : "Users";
     setRole(newRole);
     localStorage.setItem("role", newRole);
-    setImageUrl(newRole === "Creators" ? localStorage.getItem("image_creators") : localStorage.getItem("image_users"));
+    setImageUrl(newRole === "Creators" ? (user?.image_creators || "") : (user?.image_users || ""));
   };
 
   useEffect(() => {
@@ -65,6 +65,13 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
+
+  // keep local state in sync when auth user changes (e.g. after profile update)
+  useEffect(() => {
+    setRole(user?.role || "Users");
+    // choose image according to current role
+    setImageUrl(user?.role === "Creators" ? user?.image_creators : user?.image_users);
+  }, [user]);
 
   return (
     <Fragment>

@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { BACKEND_URL } from "@/lib/constants/backendUrl";
 import { useUpdateUserMutation } from "@/hooks/api/userSliceAPI";
 import ProfileModal from "@/components/Modal/ProfileModal";
+import { useAuth } from "@/components/Context/AuthContext";
 
 export default function UserSettingsPage() {
   const router = useRouter();
@@ -35,6 +36,7 @@ export default function UserSettingsPage() {
   const [token, setToken] = useState("");
   const [canChangeUsername, setCanChangeUsername] = useState(true);
   const [updateUser] = useUpdateUserMutation();
+  const { refreshUser } = useAuth();
   const [isShowProfileModal, setIsShowProfileModal] = useState(false);
   const [selectedIconUrl, setSelectedIconUrl] = useState(null);
 
@@ -77,11 +79,18 @@ export default function UserSettingsPage() {
       const response = await updateUser(formData);
 
       localStorage.setItem("image_users", response.data.data.imageUrl);
+      // refresh auth context so components (eg. Navbar) update immediately
+      try {
+        refreshUser();
+      } catch (err) {
+        console.warn("refreshUser failed:", err);
+      }
       setShowToast(true);
       setToastMessage("Profil berhasil diupdate!");
       setToastType("success");
       setIsLoading(false);
       router.push(`/user/${id}`);
+      router.refresh();
     } catch (error) {
       setIsLoading(false);
       console.error("Error during patch request:", error);
@@ -143,7 +152,7 @@ export default function UserSettingsPage() {
 
   return (
     <>
-      <main className="mx-2 my-2 mt-16 flex flex-col md:mt-24 lg:mx-6 lg:mb-10 lg:h-fit lg:min-h-[80vh]">
+      <main className="mx-2 my-2 mt-16 flex flex-col md:mt-24 lg:mx-6 lg:mb-10 lg:h-fit lg:min-h-[80vh] text-white">
         {/* Back Menu */}
         <BackButton />
 
@@ -152,88 +161,80 @@ export default function UserSettingsPage() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 lg:gap-0">
             <div className="flex flex-col gap-2">
               {/* profile */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                  Profile Picture
-                </h3>
-                <div className="flex flex-4 text-white md:flex-10">
-                  <label
-                    className="relative h-16 w-16 cursor-pointer lg:h-24 lg:w-24"
-                    onClick={() => setIsShowProfileModal(true)}
-                  >
-                    <div className="group relative h-16 w-16 overflow-hidden rounded-full bg-amber-600 lg:h-24 lg:w-24">
-                      {imageUrl && imageUrl !== "null" && !uploadedPhotoProfile ? (
-                        <Image
-                          src={imageUrl}
-                          alt="profile"
-                          fill
-                          className="h-full w-full rounded-full bg-white object-cover"
-                        />
-                      ) : (
-                        <Image
-                          src={uploadedPhotoProfile || logoUsersComment}
-                          alt="profile"
-                          fill
-                          className="h-full w-full rounded-full bg-white object-cover"
-                        />
-                      )}
-                      <div className="absolute bottom-0 left-0 right-0 flex h-[28%] items-center justify-center bg-black/40">
-                        <Image
-                          src={IconsCameraAdd}
-                          alt="camera icon"
-                          width={16}
-                          height={16}
-                          className="scale-110 object-contain"
-                        />
-                      </div>
+              <div className="flex items-center gap-4">
+                <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] md:text-base lg:text-xl">Profile Picture</h3>
+                <label
+                  className="relative h-16 w-16 cursor-pointer lg:h-24 lg:w-24"
+                  onClick={() => setIsShowProfileModal(true)}
+                >
+                  <div className="group relative h-16 w-16 overflow-hidden rounded-full bg-amber-600 lg:h-24 lg:w-24">
+                    {imageUrl && imageUrl !== "null" && !uploadedPhotoProfile ? (
+                      <Image
+                        src={imageUrl}
+                        alt="profile"
+                        fill
+                        className="h-full w-full rounded-full bg-white object-cover"
+                      />
+                    ) : (
+                      <Image
+                        src={uploadedPhotoProfile || logoUsersComment}
+                        alt="profile"
+                        fill
+                        className="h-full w-full rounded-full bg-white object-cover"
+                      />
+                    )}
+                    <div className="absolute bottom-0 left-0 right-0 flex h-[28%] items-center justify-center bg-black/40">
+                      <Image
+                        src={IconsCameraAdd}
+                        alt="camera icon"
+                        width={16}
+                        height={16}
+                        className="scale-110 object-contain"
+                      />
                     </div>
-                  </label>
-                </div>
+                  </div>
+                </label>
               </div>
-              {/* name */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] lg:text-xl">
-                  Profile Name<span className="text-red-700"> *</span>
-                </h3>
-                <div className="flex w-full flex-4 text-white md:flex-10">
-                  <input
-                    type="text"
-                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                    onChange={(e) => setProfileName(e.target.value)}
-                    value={profileName}
-                    placeholder="Masukan Profile Name"
-                    required
-                  />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* name */}
+                <div className="flex items-center gap-4">
+                  <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] lg:text-xl">Profile Name<span className="text-red-700"> *</span></h3>
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
+                      onChange={(e) => setProfileName(e.target.value)}
+                      value={profileName}
+                      placeholder="Masukan Profile Name"
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
-              {/* username */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] lg:text-xl">
-                  Username<span className="text-red-700"> *</span>
-                </h3>
-                <div className="relative group flex w-full flex-4 text-white md:flex-10">
-                  {!canChangeUsername && (
-                    <span className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black px-3 py-1.5 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">
-                      Username hanya bisa diubah 3 bulan sekali
-                    </span>
-                  )}
-                  <input
-                    type="text"
-                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-gray-400"
-                    onChange={(e) => setUsername(e.target.value)}
-                    value={username}
-                    placeholder="Masukan username"
-                    disabled={!canChangeUsername}
-                    required
-                  />
+                {/* username */}
+                <div className="flex items-center gap-4 relative group">
+                  <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] lg:text-xl">Username<span className="text-red-700"> *</span></h3>
+                  <div className="flex-1">
+                    {!canChangeUsername && (
+                      <span className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black px-3 py-1.5 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">
+                        Username hanya bisa diubah 3 bulan sekali
+                      </span>
+                    )}
+                    <input
+                      type="text"
+                      className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-gray-400"
+                      onChange={(e) => setUsername(e.target.value)}
+                      value={username}
+                      placeholder="Masukan username"
+                      disabled={!canChangeUsername}
+                      required
+                    />
+                  </div>
                 </div>
               </div>
               {/* bio */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] lg:text-xl">
-                  Bio
-                </h3>
-                <div className="flex w-full flex-4 text-white md:flex-10">
+              <div className="flex items-start gap-4">
+                <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] lg:text-xl">Bio</h3>
+                <div className="flex-1">
                   <textarea
                     className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
                     placeholder="Tell us about you, max 150 characters."
@@ -243,87 +244,84 @@ export default function UserSettingsPage() {
                   />
                 </div>
               </div>
-              {/* gender */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] lg:text-xl">
-                  Gender
-                </h3>
-                <div className="flex gap-6 text-white">
-                  <label className="flex items-center gap-1 cursor-pointer">
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* email */}
+                <div className="flex items-center gap-4">
+                  <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] lg:text-xl">Email<span className="text-red-700"> *</span></h3>
+                  <div className="flex-1">
                     <input
-                      type="radio"
-                      name="gender"
-                      value="Male"
-                      className="accent-green-500"
-                      onChange={(e) => setGender(e.target.value)}
-                      checked={gender === "Male"}
+                      type="email"
+                      className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
+                      onChange={(e) => setEmail(e.target.value)}
+                      value={email}
+                      placeholder="Masukan Email"
+                      required
                     />
-                    <span>Male</span>
-                  </label>
-                  <label className="flex items-center gap-1 cursor-pointer">
+                  </div>
+                </div>
+                {/* phone */}
+                <div className="flex items-center gap-4">
+                  <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] lg:text-xl">Phone</h3>
+                  <div className="flex-1">
                     <input
-                      type="radio"
-                      name="gender"
-                      value="Female"
-                      className="accent-green-500"
-                      onChange={(e) => setGender(e.target.value)}
-                      checked={gender === "Female"}
+                      type="number"
+                      className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
+                      onChange={(e) => setPhone(e.target.value)}
+                      value={phone}
+                      placeholder="Masukan Nomor Telepon"
                     />
-                    <span>Female</span>
-                  </label>
+                  </div>
                 </div>
               </div>
-              {/* email */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] lg:text-xl">
-                  Email<span className="text-red-700"> *</span>
-                </h3>
-                <div className="flex w-full flex-4 text-white md:flex-10">
-                  <input
-                    type="email"
-                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                    onChange={(e) => setEmail(e.target.value)}
-                    value={email}
-                    placeholder="Masukan Email"
-                    required
-                  />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* dob */}
+                <div className="flex items-center gap-4">
+                  <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] lg:text-xl">Date Of Birth</h3>
+                  <div className="flex-1">
+                    <input
+                      type="date"
+                      className="w-full appearance-none rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
+                      onChange={(e) => setdateOfBirth(e.target.value)}
+                      value={dateOfBirth}
+                    />
+                  </div>
                 </div>
-              </div>
-              {/* phone */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] lg:text-xl">
-                  Phone
-                </h3>
-                <div className="flex w-full flex-4 text-white md:flex-10">
-                  <input
-                    type="number"
-                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                    onChange={(e) => setPhone(e.target.value)}
-                    value={phone}
-                    placeholder="Masukan Nomor Telepon"
-                  />
-                </div>
-              </div>
-              {/* dob */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] lg:text-xl">
-                  Date Of Birth
-                </h3>
-                <div className="flex w-full flex-4 text-white md:flex-10">
-                  <input
-                    type="date"
-                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                    onChange={(e) => setdateOfBirth(e.target.value)}
-                    value={dateOfBirth}
-                  />
+                {/* gender */}
+                <div className="flex items-center gap-4">
+                  <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] lg:text-xl">Gender</h3>
+                  <div className="flex-1">
+                    <div className="flex gap-6 items-center">
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="gender"
+                          value="Male"
+                          className="accent-green-500"
+                          onChange={(e) => setGender(e.target.value)}
+                          checked={gender === "Male"}
+                        />
+                        <span>Male</span>
+                      </label>
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="gender"
+                          value="Female"
+                          className="accent-green-500"
+                          onChange={(e) => setGender(e.target.value)}
+                          checked={gender === "Female"}
+                        />
+                        <span>Female</span>
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
               {/* region */}
-              <div className="flex items-center gap-2">
-                <h3 className="flex-2 text-base font-semibold text-[#979797] lg:text-xl">
-                  Country / Region
-                </h3>
-                <div className="flex w-full flex-4 text-white md:flex-10">
+              <div className="flex items-center gap-4">
+                <h3 className="w-40 md:w-56 text-base font-semibold text-[#979797] lg:text-xl">Country / Region</h3>
+                <div className="flex-1">
                   <select
                     className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1 text-white"
                     onChange={(e) => setRegion(e.target.value)}

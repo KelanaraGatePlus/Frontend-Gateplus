@@ -174,3 +174,27 @@ Retrieved 2025-11-25, License - CC BY-SA 3.0
     transform: translateY(0);
   }
 }
+
+/* Normalize date input appearance across browsers so it matches other inputs */
+input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Hide default calendar icon in WebKit/Blink (Chrome, Edge, Safari) */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
+}
+
+/* for Safari and other engines, try to remove spin buttons if present */
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Ensure line-height/height consistent with other inputs */
+input[type="date"] {
+  line-height: 1.25rem;
+}

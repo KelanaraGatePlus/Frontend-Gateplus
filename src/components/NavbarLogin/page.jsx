@@ -1,5 +1,5 @@
 /* eslint-disable react/react-in-jsx-scope */
-import logoUsersComment from "@@/AvatarIcons/avatar-face-2.jpg";
+import { DEFAULT_AVATAR } from "@/lib/defaults";
 import logoHome from "@@/icons/logoHome.svg";
 import logoSearch from "@@/logo/logoSearch/nav-search.svg";
 import logoLonceng from "@@/logo/logoSosmed/lonceng_fix.svg";
@@ -67,7 +67,7 @@ export default function NavbarLogin() {
                   width={40}
                   alt="logo-comment"
                   className="flex place-content-center rounded-full bg-blue-700 saturate-100"
-                  src={logoUsersComment}
+                  src={DEFAULT_AVATAR}
                 />
               </div>
             </div>
