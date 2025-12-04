@@ -59,6 +59,7 @@ function PodcastContent() {
                 contents={highlightedData}
                 isLoading={isLoading}
                 type={"podcast"}
+                withGradient={false}
             />
             <CarouselTemplate
                 label={"Top 10 Podcast"}
@@ -72,6 +73,7 @@ function PodcastContent() {
                 contents={newestData}
                 isLoading={isLoading}
                 type={"podcast"}
+                withGradient={false}
             />
         </>
     );

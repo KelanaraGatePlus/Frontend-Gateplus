@@ -51,6 +51,7 @@ export default function BannerPromoSlider() {
         <Splide
           options={{
             type: "loop",
+            arrows: false,
             perPage: 1,
             autoplay: true,
             gap: "0rem",

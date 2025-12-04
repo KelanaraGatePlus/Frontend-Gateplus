@@ -1,12 +1,8 @@
 /* eslint-disable react/prop-types */
 "use client";
+import React from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import Image from "next/legacy/image";
-import ChevronLeftIcons from "@@@/public/images/carousel-icons/chevron-left.svg";
-import ChevronRightIcons from "@@@/public/images/carousel-icons/chevron-right.svg";
-import * as React from "react";
-
-import { Button } from "@/components/ui/button";
+import { Icon } from "@iconify/react";
 import { cn } from "@/lib/utils";
 
 const CarouselContext = React.createContext(null);
@@ -37,6 +33,7 @@ function Carousel({
     },
     plugins,
   );
+
   const [canScrollPrev, setCanScrollPrev] = React.useState(false);
   const [canScrollNext, setCanScrollNext] = React.useState(false);
 
@@ -87,7 +84,7 @@ function Carousel({
     <CarouselContext.Provider
       value={{
         carouselRef,
-        api: api,
+        api,
         opts,
         orientation:
           orientation || (opts?.axis === "y" ? "vertical" : "horizontal"),
@@ -139,7 +136,6 @@ function CarouselItem({ className, ...props }) {
     <div
       role="group"
       aria-roledescription="slide"
-      data-slot="carousel-item"
       className={cn(
         "min-w-0 shrink-0 grow-0 transition-all duration-300 ease-in-out rounded-lg overflow-hidden",
         orientation === "horizontal" ? "" : "pt-4",
@@ -150,21 +146,27 @@ function CarouselItem({ className, ...props }) {
   );
 }
 
-function CarouselPrevious({
-  className,
-  variant = "rounded",
-  size = "icon",
-  ...props
-}) {
+/* ================================
+   🔥 LIQUID GLASS BUTTON STYLE
+   ================================ */
+const liquidButtonStyles =
+  "size-6 sm:size-10 md:size-10 lg:size-14 rounded-full " +
+  "bg-white/20 backdrop-blur-xl border border-white/40 " +
+  "shadow-[0_0_15px_4px_rgba(255,255,255,0.2)] " +
+  "flex items-center justify-center cursor-pointer";
+
+
+/* ======================================
+   ⬅️  PREVIOUS BUTTON — Liquid Glass
+   ====================================== */
+function CarouselPrevious({ className, ...props }) {
   const { orientation, scrollPrev, canScrollPrev } = useCarousel();
 
   return (
-    <Button
-      data-slot="carousel-previous"
-      variant={variant}
-      size={size}
+    <button
       className={cn(
-        "absolute size-9 rounded-full bg-[#0395BC26] border border-[#0395BC1A] backdrop-blur-2xl sm:size-12 md:size-12 lg:size-16 -ml-4 md:-ml-6 lg:-ml-8 cursor-pointer",
+        "absolute -ml-4 md:-ml-6 lg:-ml-8",
+        liquidButtonStyles,
         orientation === "horizontal"
           ? "top-1/2 -left-0.5 -translate-y-1/2"
           : "-bottom-1/2 left-1/2 -translate-x-1/2 rotate-90",
@@ -174,32 +176,28 @@ function CarouselPrevious({
       onClick={scrollPrev}
       {...props}
     >
-      <Image
-        src={ChevronLeftIcons}
-        height={40}
+      <Icon
+        icon={'material-symbols:chevron-left-rounded'}
         width={40}
-        alt="icons-arrow-left"
+        height={40}
+        alt="prev"
+        className="outline-chevron text-[#222222]"
       />
-      <span className="sr-only">Previous slide</span>
-    </Button>
+    </button>
   );
 }
 
-function CarouselNext({
-  className,
-  variant = "rounded",
-  size = "icon",
-  ...props
-}) {
+/* ======================================
+   ➡️  NEXT BUTTON — Liquid Glass
+   ====================================== */
+function CarouselNext({ className, ...props }) {
   const { orientation, scrollNext, canScrollNext } = useCarousel();
 
   return (
-    <Button
-      data-slot="carousel-next"
-      variant={variant}
-      size={size}
+    <button
       className={cn(
-        "absolute size-9 rounded-full bg-[#0395BC26] border border-[#0395BC1A] backdrop-blur-2xl sm:size-12 md:size-12 lg:size-16 -mr-4 md:-mr-6 lg:-mr-8 cursor-pointer",
+        "absolute -mr-4 md:-mr-6 lg:-mr-8",
+        liquidButtonStyles,
         orientation === "horizontal"
           ? "top-1/2 -right-0.5 -translate-y-1/2"
           : "-bottom-1/2 left-1/2 -translate-x-1/2 rotate-90",
@@ -209,15 +207,14 @@ function CarouselNext({
       onClick={scrollNext}
       {...props}
     >
-      <Image
-        src={ChevronRightIcons}
-        height={40}
+      <Icon
+        icon={'material-symbols:chevron-right-rounded'}
         width={40}
-        alt="icons-arrow-right"
+        height={40}
+        alt="next"
+        className="outline-chevron text-[#222222]"
       />
-
-      <span className="sr-only">Next slide</span>
-    </Button>
+    </button>
   );
 }
 

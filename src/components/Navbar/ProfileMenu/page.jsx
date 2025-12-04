@@ -24,7 +24,6 @@ export default function ProfileMenu({
   isCreator,
   imageUrl,
   role,
-  handleSwitchRole,
   openCreateContentModal,
   openRedeemVoucherModal,
 }) {
@@ -34,7 +33,7 @@ export default function ProfileMenu({
   const [isDashboardMenuOpen, setIsDashboardMenuOpen] = useState(false);
   const [isUploadContentMenuOpen, setIsUploadContentMenuOpen] = useState(false);
   const linkHref =
-    role === "Creators" ? `/creator/${creatorId}` : `/user/${userId}`;
+    isCreator ? `/creator/${creatorId}` : `/user/${userId}`;
   const { logout } = useAuth();
 
   const toggleProfile = () => {
@@ -123,7 +122,7 @@ export default function ProfileMenu({
               </li>
             </button>
             {/* Dashboard */}
-            {role === "Creators" && (
+            {isCreator && (
               <>
                 <li className="flex flex-col gap-1 rounded-md bg-[#F5F5F54D] p-2 font-semibold text-white transition-all duration-300 ease-in-out">
                   <div
@@ -165,7 +164,7 @@ export default function ProfileMenu({
                       <span>Penarikan Saldo</span>
                     </Link>
                     <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
-                      <Link href="/creator/dashboard">
+                      <Link href="/creator/dashboard/detail">
                         <span>Analytic</span>
                       </Link>
                     </div>
@@ -217,9 +216,9 @@ export default function ProfileMenu({
                         <span>Upload Episode Baru</span>
                       </button>
                     </div>
-                    <div className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
+                    <Link href={'/creator/dashboard/content'} className="ms-8 flex flex-row gap-2 rounded-md py-1 font-medium text-white">
                       <span>Lihat Karya</span>
-                    </div>
+                    </Link>
                   </div>
                 </li>
 
@@ -278,14 +277,6 @@ export default function ProfileMenu({
               <Link href="/register-creators">
                 <span>Be Creator</span>
               </Link>
-            </div>
-          )}
-          {isCreator && (
-            <div
-              className="flex cursor-pointer flex-row justify-center gap-2 rounded-md bg-[#04475EB2] p-2 font-semibold text-white"
-              onClick={handleSwitchRole}
-            >
-              <span>Switch to {role === "Users" ? "Creators" : "User"}</span>
             </div>
           )}
           <button

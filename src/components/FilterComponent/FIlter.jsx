@@ -73,7 +73,7 @@ export default function Filter({ contentType, textColor, buttonColor }) {
                     Filter <span style={{ color: textColor }} className="text-lg">{contentType}</span>
                 </p>
             </div>
-            <div className="grid w-full grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2 items-center" style={{ direction: 'rtl' }}
+            <div className="w-full flex flex-row gap-2 items-center" style={{ direction: 'rtl' }}
             >
                 {genres.map((genre) => (
                     <button
@@ -85,7 +85,7 @@ export default function Filter({ contentType, textColor, buttonColor }) {
                                 : "#686868", // default color
                             color: "white",
                         }}
-                        className={"rounded-full text-center py-1 md:py-2 font-semibold text-[14px] transition hover:cursor-pointer"}
+                        className={"rounded-full w-max text-center px-4 py-1 md:py-2 font-semibold text-[14px] transition hover:cursor-pointer"}
                     >
                         {genre}
                     </button>

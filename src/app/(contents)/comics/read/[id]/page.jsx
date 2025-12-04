@@ -20,7 +20,6 @@ export default function ReadComicPage({ params }) {
   const [currentPage, setCurrentPage] = useState(0);
   const [isDesktop, setIsDesktop] = useState(false);
   const [viewMode, setViewMode] = useState("auto");
-  const [zoomLevel, setZoomLevel] = useState(1);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const device = useDeviceType();
   const [isCommentVisible, setIsCommentVisible] = useState(false);
@@ -95,6 +94,24 @@ export default function ReadComicPage({ params }) {
     }
   }, [comicSingleData]);
 
+  const imageAreaRef = useRef(null);
+
+  const handleClickArea = (e) => {
+    if (!imageAreaRef.current) return;
+    // Calculate click position relative to the image area
+    const rect = imageAreaRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const isLeft = x < rect.width / 2;
+
+    if (isLeft) {
+      if (currentPage === 0) return;
+      handlePrev();
+    } else {
+      if (logicalCurrentPage === totalPages) return;
+      handleNext();
+    }
+  };
+
   const handleNext = () => {
     setCurrentPage((prev) => Math.min(prev + itemsPerPage, maxCurrentPageIndex));
   };
@@ -143,11 +160,6 @@ export default function ReadComicPage({ params }) {
       </div>
     );
 
-  if (error || !comicSingleData) {
-    if (typeof window !== "undefined") window.location.href = "/";
-    return null;
-  }
-
   return (
     <div className="relative flex min-h-screen flex-col bg-[#222222]">
       {/* Header */}
@@ -168,39 +180,40 @@ export default function ReadComicPage({ params }) {
       {/* MAIN WRAPPER */}
       <div className="flex flex-col min-h-screen pt-[60px]">
 
-        {/* 🔵 AREA GAMBAR + TOMBOL KIRI/KANAN */}
-        <div className="relative h-[80vh] flex items-center justify-center overflow-auto">
+        {/* 🔵 AREA GAMBAR + OVERLAY KIRI/KANAN */}
+        <div
+          className="relative flex-1 min-h-0 flex items-center justify-center overflow-auto"
+          onClick={handleClickArea}
+          ref={imageAreaRef}
+        >
+          {/* Overlay areas for left/right hit zones (50% each) */}
+          <div
+            role="button"
+            aria-label="previous-page-area"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (currentPage === 0) return;
+              handlePrev();
+            }}
+            className="absolute left-0 top-0 h-full w-1/2"
+            style={{ cursor: "url('/cursor/leftArrow.svg') 12 12, w-resize", background: "transparent" }}
+          />
 
-          {/* === BUTTON KIRI === */}
-          <button
-            onClick={handlePrev}
-            disabled={currentPage === 0}
-            className="absolute left-2 top-1/2 -translate-y-1/2 
-              bg-black/40 text-white p-3 rounded-full 
-              hover:bg-black/60 transition
-              disabled:opacity-30 disabled:cursor-not-allowed
-              md:left-4"
-          >
-            ◀
-          </button>
-
-          {/* === BUTTON KANAN === */}
-          <button
-            onClick={handleNext}
-            disabled={logicalCurrentPage === totalPages}
-            className="absolute right-2 top-1/2 -translate-y-1/2 
-              bg-black/40 text-white p-3 rounded-full 
-              hover:bg-black/60 transition
-              disabled:opacity-30 disabled:cursor-not-allowed
-              md:right-4"
-          >
-            ▶
-          </button>
+          <div
+            role="button"
+            aria-label="next-page-area"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (logicalCurrentPage === totalPages) return;
+              handleNext();
+            }}
+            className="absolute right-0 top-0 h-full w-1/2"
+            style={{ cursor: "url('/cursor/rightArrow.svg') 12 12, e-resize", background: "transparent" }}
+          />
 
           {/* === GAMBAR KOMIK === */}
           <div
-            className={`flex ${viewMode === "2" ? "flex-row" : "flex-col"
-              } items-center justify-center`}
+            className={`flex ${viewMode === "2" ? "flex-row" : "flex-col"} items-center justify-center`}
           >
             {visiblePages.map((page, idx) => {
               const globalIndex = currentPage + idx;
@@ -210,12 +223,10 @@ export default function ReadComicPage({ params }) {
                 <div
                   key={globalIndex}
                   data-index={globalIndex}
-                  className={`lazy-image flex items-center justify-center 
-                    ${viewMode === "2" ? (idx % 2 === 0 ? "pr-1" : "pl-1") : "mb-2"}
-                    transition-all`}
+                  className={`lazy-image flex items-center justify-center ${viewMode === "2" ? (idx % 2 === 0 ? "pr-1" : "pl-1") : "mb-2"} transition-all`}
                   style={{
-                    maxHeight: "80vh",
-                    height: "80vh",
+                    maxHeight: "100%",
+                    height: "89vh",
                     overflow: "hidden",
                   }}
                 >
@@ -226,16 +237,13 @@ export default function ReadComicPage({ params }) {
                       width={0}
                       height={0}
                       sizes="100vw"
-                      className="w-auto max-h-[80vh] object-contain rounded-md"
+                      className="h-full w-auto object-contain rounded-md"
                       priority={isPriority}
                       loading={isPriority ? undefined : "lazy"}
-                      style={{
-                        transform: `scale(${zoomLevel})`,
-                        transition: "transform 0.3s ease",
-                      }}
+                      style={{ transition: "transform 0.3s ease" }}
                     />
                   ) : (
-                    <div className="flex h-[80vh] w-auto items-center justify-center bg-[#111]/30 text-white rounded-md animate-pulse">
+                    <div className="flex h-full w-auto items-center justify-center bg-[#111]/30 text-white rounded-md animate-pulse">
                       Loading image...
                     </div>
                   )}
@@ -246,7 +254,7 @@ export default function ReadComicPage({ params }) {
         </div>
 
         {/* NAVIGASI BAWAH */}
-        <div className="h-[10vh] flex flex-wrap items-center justify-center gap-4 bg-white/60 px-4 py-2 shadow-lg backdrop-blur-md w-full">
+        <div className="h-[5vh] flex flex-wrap items-center justify-center gap-4 bg-white/60 px-4 py-2 shadow-lg backdrop-blur-md w-full">
           <button
             onClick={handlePrev}
             disabled={currentPage === 0}
@@ -285,22 +293,7 @@ export default function ReadComicPage({ params }) {
               <option value="2">2 Page</option>
             </select>
 
-            <label className="text-sm font-medium text-gray-700">
-              Zoom
-            </label>
-
-            <select
-              value={zoomLevel}
-              onChange={(e) => setZoomLevel(parseFloat(e.target.value))}
-              className="rounded bg-white/80 px-2 py-1 text-sm"
-            >
-              <option value={0.5}>50%</option>
-              <option value={0.75}>75%</option>
-              <option value={1}>100%</option>
-              <option value={1.25}>125%</option>
-              <option value={1.5}>150%</option>
-              <option value={2}>200%</option>
-            </select>
+            {/* Zoom control removed */}
           </div>
 
           <button

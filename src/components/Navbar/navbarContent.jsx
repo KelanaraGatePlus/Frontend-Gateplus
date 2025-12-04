@@ -31,7 +31,7 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
   const { user } = useAuth();
 
   const [role, setRole] = useState(user?.role || "Users");
-  const [imageUrl, setImageUrl] = useState(user?.image_users || user?.image_creators || "");
+  const [imageUrl, setImageUrl] = useState(user?.isCreator ? user?.image_creators : user?.image_users);
   const [isMenuBarsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchActive, setIsSearchActive] = useState(false);
@@ -49,13 +49,6 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
     }
   };
 
-  const handleSwitchRole = () => {
-    const newRole = role === "Users" ? "Creators" : "Users";
-    setRole(newRole);
-    localStorage.setItem("role", newRole);
-    setImageUrl(newRole === "Creators" ? (user?.image_creators || "") : (user?.image_users || ""));
-  };
-
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === "role") {
@@ -69,8 +62,7 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
   // keep local state in sync when auth user changes (e.g. after profile update)
   useEffect(() => {
     setRole(user?.role || "Users");
-    // choose image according to current role
-    setImageUrl(user?.role === "Creators" ? user?.image_creators : user?.image_users);
+    setImageUrl(user?.isCreator ? user?.image_creators : user?.image_users);
   }, [user]);
 
   return (
@@ -139,7 +131,7 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
             <NotificationMenu key={role} />
 
             {isAuthenticated ? (
-              <ProfileMenu creatorId={user.creators_id} userId={user.users_id} isCreator={user.isCreator} imageUrl={imageUrl} role={role} handleSwitchRole={handleSwitchRole} openCreateContentModal={openCreateContentModal} openRedeemVoucherModal={openRedeemVoucherModal} />
+              <ProfileMenu creatorId={user.creators_id} userId={user.users_id} isCreator={user.isCreator} imageUrl={imageUrl} role={role} openCreateContentModal={openCreateContentModal} openRedeemVoucherModal={openRedeemVoucherModal} />
             ) : (
               <>
                 {/* FIXED: tampilkan juga di mobile */}

@@ -87,6 +87,26 @@ Retrieved 2025-11-25, License - CC BY-SA 3.0
     }
 }
 
+/*
+ * Selector: Targetkan elemen <path> di dalam elemen <svg>
+ * yang memiliki class 'outline-chevron'
+ */
+.outline-chevron svg path {
+  /* 1. Properti Stroke (Outline) */
+  stroke: black; /* Ganti dengan warna outline yang diinginkan (misalnya 'red', '#333') */
+  stroke-width: 3; /* Atur ketebalan outline (misalnya 2, 3, 4) */
+  
+  /* 2. Properti Fill (Isi Ikon) */
+  fill: white; /* Ganti dengan warna isi ikon yang diinginkan */
+
+  /* 3. Efek Visual Tambahan (Opsional) */
+  /* Membuat ujung stroke menjadi bulat, cocok untuk ikon rounded */
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  
+  /* Memastikan stroke tetap terlihat jelas tanpa diskalakan (Opsional, tapi disarankan) */
+  vector-effect: non-scaling-stroke;
+}
 
 .animate-like {
   animation: likePop 0.3s ease-in-out;

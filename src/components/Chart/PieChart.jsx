@@ -3,6 +3,9 @@ import { PieChart, Pie, Cell, Legend, ResponsiveContainer } from 'recharts';
 import PropTypes from 'prop-types';
 
 const DefaultPieChart = ({ data }) => {
+
+  const format2 = (num) => Number(num).toFixed(2);
+
   return (
     <ResponsiveContainer width="100%" height="100%">
       <PieChart>
@@ -12,23 +15,26 @@ const DefaultPieChart = ({ data }) => {
           nameKey="name"
           cx="50%"
           cy="50%"
-          outerRadius="80%" // Ubah radius agar lebih responsif
-          label
+          outerRadius="80%"
+          label={({ name, percentage }) => `${name}: ${format2(percentage)}%`}
+          isAnimationActive={false}
+          style={{ pointerEvents: "none" }}
         >
           {data.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={entry.color} />
           ))}
         </Pie>
+
         <Legend
           layout="vertical"
           align="right"
           verticalAlign="middle"
           formatter={(value, entry) => {
-            const percentage = entry.payload.percentage; // Mengakses data percentage dari entry
-            return `${entry.payload.name}: ${percentage}%`;
+            const percentage = entry.payload.percentage;
+            return `${entry.payload.name}: ${format2(percentage)}%`;
           }}
-          iconType="circle" // Membuat icon legend berbentuk lingkaran
-          iconSize={12} // Ukuran lingkaran
+          iconType="circle"
+          iconSize={12}
         />
       </PieChart>
     </ResponsiveContainer>

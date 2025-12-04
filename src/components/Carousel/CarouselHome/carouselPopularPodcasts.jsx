@@ -12,6 +12,7 @@ export default function CarouselPopularEbooks() {
             contents={popularPodcasts}
             isLoading={isLoading}
             type="podcast"
+            withGradient={false}
         />
     );
 
