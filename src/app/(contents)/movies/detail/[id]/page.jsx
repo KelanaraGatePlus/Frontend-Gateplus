@@ -3,7 +3,6 @@
 import logoDislike from "@@/logo/logoDetailFilm/dislike-icons.svg";
 import logoLike from "@@/logo/logoDetailFilm/like-icons.svg";
 import logoSave from "@@/logo/logoDetailFilm/save-icons.svg";
-import logoSubscribe from "@@/logo/logoDetailFilm/subscribe-icon-kelanara.svg";
 import Image from "next/image";
 import { useGetMovieByIdQuery } from "@/hooks/api/movieSliceAPI";
 import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
@@ -24,6 +23,7 @@ import { useGetCommentByMovieQuery } from "@/hooks/api/commentSliceAPI";
 import formatDuration from "@/lib/helper/formatDurationHelper";
 import CarouselTemplate from "@/components/Carousel/carouselTemplate";
 import Link from "next/link";
+import { DEFAULT_AVATAR } from "@/lib/defaults";
 
 /* ===========================
    Halaman: PlayingMoviePage (JSX)
@@ -252,7 +252,8 @@ function PlayingMoviePage({ params }) {
                             <Image
                                 width={60}
                                 alt="logo-subscribers"
-                                src={logoSubscribe}
+                                className="rounded-full"
+                                src={movieData?.creator?.imageUrl !== 'null' && movieData?.creator?.imageUrl !== null ? movieData?.creator?.imageUrl : DEFAULT_AVATAR }
                                 priority
                             />
                         </div>

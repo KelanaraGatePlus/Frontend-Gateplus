@@ -49,18 +49,6 @@ export default function RootLayout({ children }) {
   const hideNavbar = routeWithoutNavbar.some((pattern) => pattern.test(pathname));
   const hideFooter = routeWithoutFooter.some((pattern) => pattern.test(pathname));
 
-  useEffect(() => {
-    // blok klik kanan
-    document.addEventListener("contextmenu", (e) => e.preventDefault());
-
-    // blok CTRL+C, CTRL+U, CTRL+S
-    document.addEventListener("keydown", (e) => {
-      if (e.ctrlKey && ["c", "u", "s",].includes(e.key.toLowerCase())) {
-        e.preventDefault();
-      }
-    });
-  }, []);
-
   return (
     <Provider store={store}>
       <html lang="en">

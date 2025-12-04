@@ -2,7 +2,7 @@ import React from "react";
 import { useGetPopularComicsQuery } from "@/hooks/api/homeSliceAPI.js";
 import CarouselTemplate from "../carouselTemplate";
 
-export default function CarouselPopularEbooks() {
+export default function CarouselPopularComics() {
     const { data, isLoading } = useGetPopularComicsQuery();
     const popularComics = data?.data || [];
 
@@ -11,7 +11,7 @@ export default function CarouselPopularEbooks() {
             label={"Popular Comics"}
             contents={popularComics}
             isLoading={isLoading}
-            type="ebook"
+            type="comic"
         />
     );
 
