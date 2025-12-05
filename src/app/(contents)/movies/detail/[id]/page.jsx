@@ -251,6 +251,7 @@ function PlayingMoviePage({ params }) {
                         <div className="flex items-center justify-center">
                             <Image
                                 width={60}
+                                height={60}
                                 alt="logo-subscribers"
                                 className="rounded-full"
                                 src={movieData?.creator?.imageUrl !== 'null' && movieData?.creator?.imageUrl !== null ? movieData?.creator?.imageUrl : DEFAULT_AVATAR }

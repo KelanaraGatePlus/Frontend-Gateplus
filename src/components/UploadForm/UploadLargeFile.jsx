@@ -33,7 +33,7 @@ export default function UploadLargeFile({ label = "Film", prefix, setDataUrl, se
     // Efek ini mengirimkan URL file setelah upload selesai
     useEffect(() => {
         if (isFinish && fileUrl) {
-            setDataUrl(fileUrl.location);
+            setDataUrl(fileUrl.muxAsset.playback_ids[0].id);
             if (setDuration) {
                 // Jika durasi terdeteksi (bukan null) dan prop setDuration ada
                 if (videoDuration && setDuration) {
