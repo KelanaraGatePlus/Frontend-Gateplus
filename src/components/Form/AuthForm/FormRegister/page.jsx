@@ -22,6 +22,7 @@ import useTogglePassword from "@/lib/features/useTogglePassword";
 import IconsEyeClose from "@@/icons/icons-eyes-close.svg";
 import IconsEyeOpen from "@@/icons/icons-eyes-open.svg";
 import LogoGoogle from "@@/logo/logoGoogle/icons-google.svg";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export default function FormRegister({ setIsError, setError, setIsSuccess }) {
   const router = useRouter();
@@ -190,10 +191,13 @@ export default function FormRegister({ setIsError, setError, setIsSuccess }) {
         {isLoading || isLoginLoading ? "Registering..." : "Sign Up"}
       </button>
 
-      <button type="button" className="zeinFont flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-blue-500 bg-blue-900 py-2 text-2xl font-bold text-white hover:bg-blue-950 md:rounded-xl">
-        <Image src={LogoGoogle} alt="Logo-Google" />
-        <p>Sign Up with Google</p>
-      </button>
+      <Link
+        href={`${BACKEND_URL}/auth/google`}
+        className="zeinFont flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-blue-900 py-2 text-2xl font-bold text-white hover:bg-blue-950"
+      >
+        <Image priority src={LogoGoogle} alt="logo-google" />
+        <p><span>Sign In with Google</span></p>
+      </Link>
     </form>
   );
 }
