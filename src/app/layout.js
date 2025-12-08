@@ -109,9 +109,10 @@ export default function RootLayout({ children }) {
 
             <RedeemVoucherModal isModalRedeemOpen={isModalRedeemOpen} setIsModalRedeemOpen={setIsModalRedeemOpen} />
             <AppRouterCacheProvider>
-              <div className="md:pt-18.5 2xl:pt-[100px]">
+              {!hideNavbar && <div className="md:pt-18.5 2xl:pt-[100px]">
                 {children}
-              </div>
+              </div>}
+              {hideNavbar && children}
             </AppRouterCacheProvider>
             {
               !hideFooter && <Footer />
