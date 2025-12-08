@@ -152,7 +152,7 @@ export default function UserSettingsPage() {
 
   return (
     <>
-      <main className="mx-2 my-2 mt-16 flex flex-col md:mt-24 lg:mx-6 lg:mb-10 lg:h-fit lg:min-h-[80vh] text-white">
+      <main className="mx-2 my-2 flex flex-col lg:mx-6 lg:mb-10 lg:h-fit lg:min-h-[80vh] text-white">
         {/* Back Menu */}
         <BackButton />
 
