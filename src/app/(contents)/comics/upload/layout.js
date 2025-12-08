@@ -7,7 +7,7 @@ import HeaderTab from '@/components/UploadForm/HeaderTab';
 export default function UploadEbookLayout({ children }) {
 
     return (
-        <main className="mt-16 flex flex-col py-2 md:mt-[100px] lg:px-4">
+        <main className="flex flex-col py-2 lg:px-4">
             <HeaderUploadForm title={"Upload Komik"} />
             <HeaderTab type={"comics"} />
 

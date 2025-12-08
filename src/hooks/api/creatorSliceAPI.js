@@ -107,6 +107,15 @@ export const creatorAPI = createApi({
             providesTags: ["creatorsAPI"],
             keepUnusedDataFor: 60,
         }),
+        getCreatorRealtimeRevenue: builder.query({
+            query: (
+                {
+                    days = null,
+                }
+            ) => `/real-time-revenue${days ? `?days=${days}` : ""}`,
+            providesTags: ["creatorsAPI"],
+            keepUnusedDataFor: 60,
+        }),
     }),
 })
 
@@ -126,4 +135,5 @@ export const {
     useGetViewersOverviewQuery,
     useGetRevenueOverviewQuery,
     useGetEngagementOverviewQuery,
+    useGetCreatorRealtimeRevenueQuery,
 } = creatorAPI;

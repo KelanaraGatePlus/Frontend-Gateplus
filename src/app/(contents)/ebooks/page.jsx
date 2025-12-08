@@ -10,7 +10,7 @@ import LoadingOverlay from '@/components/LoadingOverlay/page';
 
 export default function EbooksPage() {
     return (
-        <main className="relative mt-16 flex flex-col md:mt-[100px] lg:px-4 w-full h-full gap-4 md:gap-10">
+        <main className="relative flex flex-col lg:px-4 w-full h-full gap-4 md:gap-10">
             <div className="absolute left-2 md:left-13 top-2">
                 <BackButton />
             </div>
@@ -22,19 +22,21 @@ export default function EbooksPage() {
                         bgColor="#F4A2614D"
                         titleColor="#F07F26"
                     />
-                    <div className="px-24">
-                        <Suspense fallback={<LoadingOverlay />}>
-                            <Filter
-                                contentType="eBook"
-                                textColor="#F07F26"
-                                buttonColor={
-                                    {
-                                        activeFrom: "#F07F26",
-                                        activeTo: "#FFB479"
+                    <div className='relative w-full h-full'>
+                        <div className='px-2 md:px-16 absolute -bottom-6 w-full'>
+                            <Suspense fallback={<LoadingOverlay />}>
+                                <Filter
+                                    contentType="eBook"
+                                    textColor="#F07F26"
+                                    buttonColor={
+                                        {
+                                            activeFrom: "#F07F26",
+                                            activeTo: "#FFB479"
+                                        }
                                     }
-                                }
-                            />
-                        </Suspense>
+                                />
+                            </Suspense>
+                        </div>
                     </div>
                 </div>
                 <Suspense fallback={<LoadingOverlay />}>

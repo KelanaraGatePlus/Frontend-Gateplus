@@ -42,23 +42,23 @@ export default function CarouselTemplate({ label, type, contents, isLoading, isT
                                                         className={`overflow-hidden group relative flex items-center ${isTopTen ? "w-[240px] sm:w-[180px] md:w-[460px]" : "w-[120px] sm:w-[140px] md:w-[230px] aspect-[2/3]"} cursor-pointer rounded-lg group`}
                                                     >
                                                         {fixedType == 'ebook' && !isTopTen && (
-                                                            <EbookCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
+                                                            <EbookCard title={item.title} rank={index + 1} id={item.id} coverUrl={item.posterImageUrl} />
                                                         )}
 
                                                         {fixedType == 'comic' && !isTopTen && (
-                                                            <ComicCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
+                                                            <ComicCard title={item.title} rank={index + 1} id={item.id} coverUrl={item.posterImageUrl} />
                                                         )}
 
                                                         {fixedType == 'movie' && !isTopTen && (
-                                                            <MovieCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
+                                                            <MovieCard title={item.title} rank={index + 1} id={item.id} coverUrl={item.posterImageUrl} />
                                                         )}
 
                                                         {fixedType == 'series' && !isTopTen && (
-                                                            <SeriesCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
+                                                            <SeriesCard title={item.title} rank={index + 1} id={item.id} coverUrl={item.posterImageUrl} />
                                                         )}
 
                                                         {fixedType == 'podcast' && type == null && !isTopTen && (
-                                                            <PodcastCard title={item.title} id={item.id} coverUrl={item.coverPodcastImage} />
+                                                            <PodcastCard title={item.title} rank={index + 1} id={item.id} coverUrl={item.coverPodcastImage} />
                                                         )}
 
                                                         {fixedType == 'podcast' && type && !isTopTen && (

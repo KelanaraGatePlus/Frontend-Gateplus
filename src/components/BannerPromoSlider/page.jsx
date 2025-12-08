@@ -38,7 +38,7 @@ export default function BannerPromoSlider() {
   }, []);
 
   return (
-    <div className="my-auto mt-3.5 mb-0.5 md:mb-10 flex w-screen flex-col md:h-fit">
+    <div className="my-auto mb-0.5 md:mb-10 flex w-screen flex-col md:h-fit">
       {isLoading ? (
         <Skeleton
           height={400}

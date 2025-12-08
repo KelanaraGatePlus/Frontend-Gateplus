@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export default function WorkInProgress() {
   return (
-    <div className="mt-15 flex flex-col md:mt-24">
+    <div className="flex flex-col">
       <div className="col-span-full flex w-full flex-col items-center">
         {/* Image */}
         <div className="relative h-[280px] w-[230px] md:h-[400px] md:w-[330px]">

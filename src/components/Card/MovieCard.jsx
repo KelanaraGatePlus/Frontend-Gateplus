@@ -18,10 +18,10 @@ export default function MovieCard({ title, id, coverUrl, rank = null, isOriginal
                         className="flex flex-row items-start gap-1 
                                    opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out"
                     >
-                        <div className="flex flex-col rounded-sm bg-[#22222233] backdrop-blur-xs py-1 px-4 font-black items-center text-cyan-400 zeinFont">
+                        {rank && <div className="flex flex-col rounded-sm bg-[#22222233] backdrop-blur-xs py-1 px-4 font-black items-center text-cyan-400 zeinFont">
                             <span className="text-sm">Teratas</span>
                             <span className="text-3xl">{rank || 1}</span>
-                        </div>
+                        </div>}
                         <span className="text-sm text-cyan-200 font-semibold zeinFont bg-[#22222233] backdrop-blur-xs rounded-sm px-2">
                             Episode Baru
                         </span>

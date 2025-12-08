@@ -1,5 +1,5 @@
 "use client";
-import { useGetContentDashboardQuery, useGetEngagementOverviewQuery, useGetOverviewDashboardQuery, useGetPerContentDashboardQuery, useGetRevenueOverviewQuery, useGetViewersOverviewQuery } from "@/hooks/api/creatorSliceAPI";
+import { useGetContentDashboardQuery, useGetCreatorRealtimeRevenueQuery, useGetEngagementOverviewQuery, useGetOverviewDashboardQuery, useGetPerContentDashboardQuery, useGetRevenueOverviewQuery, useGetViewersOverviewQuery } from "@/hooks/api/creatorSliceAPI";
 import React from "react";
 import { useState } from "react";
 import Skeleton from "react-loading-skeleton";
@@ -11,6 +11,7 @@ import CustomizableComposedChart from "@/components/Chart/CustomizableComposedCh
 import CustomizableMultiBarChart from "@/components/Chart/CustomizableMultiBarChart";
 import HeaderUploadForm from "@/components/UploadForm/HeaderUploadForm";
 import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@heroui/react";
+import formatCompactDuration from "@/lib/helper/formatCompactDuration";
 
 export default function DashboardDetailPage() {
     const [isActive, setIsActive] = useState(0);
@@ -58,6 +59,11 @@ export default function DashboardDetailPage() {
         data: engagementData
     } = useGetEngagementOverviewQuery({ days: selectedDayItem.key }, {
         skip: isActive !== 3,
+    });
+    const {
+        data: realTimeRevenueData
+    } = useGetCreatorRealtimeRevenueQuery({ days: selectedDayItem.key }, {
+        skip: isActive !== 5,
     });
 
     const chartData = mergeDailyData();
@@ -619,17 +625,17 @@ export default function DashboardDetailPage() {
                 <div className="flex flex-col gap-4 bg-gradient-to-b from-[#393939] to-[#222222] py-5 px-4 outline-[#686868] outline rounded-lg shadow shadow-black">
                     <h2 className="text-white text-md font-bold">Real Time Activity</h2>
                     <div className="w-full flex flex-col gap-2">
-                        {[1, 2, 3, 4, 5].map((index) => (<div key={index} className="self-stretch px-4 py-2 bg-[#393939] text-white text-sm rounded-lg outline outline-[#686868] outline-offset-[-1px] outline-Color-neutral-700 inline-flex flex-col justify-start items-center gap-1">
+                        {realTimeRevenueData?.data?.map((data, index) => (<div key={index} className="self-stretch px-4 py-2 bg-[#393939] text-white text-sm rounded-lg outline outline-[#686868] outline-offset-[-1px] outline-Color-neutral-700 inline-flex flex-col justify-start items-center gap-1">
                             <div className="self-stretch rounded-lg inline-flex justify-start items-center gap-2">
                                 <div className="w-4 h-4 relative bg-green-500 rounded-lg" />
                                 <div className="flex-1 inline-flex flex-col justify-center items-start">
                                     <div className="self-stretch inline-flex justify-start items-end">
-                                        <div className="flex-1 justify-start text-Color-neutral-100 text-sm font-medium montserratFont leading-5">(nama user) was subscribed</div>
+                                        <div className="flex-1 justify-start text-Color-neutral-100 text-sm font-medium montserratFont leading-5">{data.username} was {data.type == 'transaction' ? 'purchased 1 episode of' : 'subscribed into '} {data.contentTitle}</div>
                                     </div>
                                 </div>
                                 <div className="inline-flex flex-col justify-start items-end">
-                                    <div className="px-2 bg-Color-neutral-700 rounded-lg inline-flex justify-start items-center">
-                                        <div className="text-center justify-start text-Color-neutral-100 text-xs font-medium montserratFont leading-5">43s</div>
+                                    <div className="px-2 bg-[#686868] rounded-lg inline-flex justify-start items-center">
+                                        <div className="text-center justify-start text-Color-neutral-100 text-xs font-medium montserratFont leading-5">{formatCompactDuration(data.secondsAgo)} Ago</div>
                                     </div>
                                 </div>
                             </div>

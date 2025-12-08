@@ -65,7 +65,7 @@ export default function CreatorProfilePage({ params }) {
 
 
   return (
-    <main className="relative mx-2 my-2 mt-16 flex flex-col md:mt-24 lg:mx-6">
+    <main className="relative mx-2 flex flex-col lg:mx-6">
       <BackButton />
       {
         creatorDetailQuery.isLoading ? (

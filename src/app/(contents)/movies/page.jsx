@@ -21,13 +21,15 @@ export default function MoviesPage() {
                     bgColor="#156EB74D"
                     titleColor="#219BFF"
                 />
-                <div className="px-2 md:px-24">
-                    <Suspense fallback={<LoadingOverlay />}>
-                        <Filter
-                            contentType="Movie"
-                            textColor="#219BFF"
-                        />
-                    </Suspense>
+                <div className='relative w-full h-full'>
+                    <div className='px-2 md:px-16 absolute -bottom-6 w-full'>
+                        <Suspense fallback={<LoadingOverlay />}>
+                            <Filter
+                                contentType="Movie"
+                                textColor="#219BFF"
+                            />
+                        </Suspense>
+                    </div>
                 </div>
             </div>
             <Suspense fallback={<LoadingOverlay />}>

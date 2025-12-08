@@ -3,7 +3,7 @@ import FormForgotPassword from "@/components/Form/AuthForm/FormForgotPassword/pa
 /* eslint-disable react/react-in-jsx-scope */
 export default function ForgotPasswordPage() {
   return (
-    <div className="flex min-h-screen min-w-screen items-center justify-center px-4 md:py-10">
+    <div className="flex min-h-screen min-w-screen items-center justify-center px-4">
       <main className="flex h-full w-full max-w-lg flex-col rounded-lg bg-[#184A9780] px-6 pt-2 pb-8">
         <section className="flex flex-col">
           <div className="relative flex h-24 w-fit items-center justify-start">

@@ -21,19 +21,21 @@ export default function SeriesPage() {
                     bgColor="#5856D64D"
                     titleColor="#6A67FF"
                 />
-                <div className='px-2 md:px-24'>
-                    <Suspense fallback={<LoadingOverlay />}>
-                        <Filter
-                            contentType="Series"
-                            textColor="#6A67FF"
-                            buttonColor={
-                                {
-                                    activeFrom: "#5856D6",
-                                    activeTo: "#6A67FF"
+                <div className='relative w-full h-full'>
+                    <div className='px-2 md:px-16 absolute -bottom-6 w-full'>
+                        <Suspense fallback={<LoadingOverlay />}>
+                            <Filter
+                                contentType="Series"
+                                textColor="#6A67FF"
+                                buttonColor={
+                                    {
+                                        activeFrom: "#5856D6",
+                                        activeTo: "#6A67FF"
+                                    }
                                 }
-                            }
-                        />
-                    </Suspense>
+                            />
+                        </Suspense>
+                    </div>
                 </div>
             </div>
             <Suspense fallback={<LoadingOverlay />}>

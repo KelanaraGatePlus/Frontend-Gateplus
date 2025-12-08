@@ -78,7 +78,7 @@ function SearchPageComponent() {
     }, [query, searchParams.toString()]);
 
     return (
-        <main className="relative mt-16 flex flex-col md:mt-[100px] lg:px-4">
+        <main className="relative flex flex-col lg:px-4">
             <div className="absolute left-2 md:left-13 top-2">
                 <BackButton />
             </div>

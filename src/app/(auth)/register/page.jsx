@@ -10,7 +10,7 @@ export default function RegisterPage() {
     const [isSuccess, setIsSuccess] = useState(false);
 
     return (
-        <div className="flex min-h-screen min-w-screen items-center justify-center px-4 md:py-10">
+        <div className="flex min-h-screen min-w-screen items-center justify-center px-4">
             <main className="flex h-full w-full max-w-lg flex-col rounded-lg border-[#1382C9] bg-[#135B8E] px-4 py-6 [box-shadow:0px_4px_70px_rgba(19,130,201,0.5)]">
                 <section className="flex flex-col">
                     <div className="relative ml-2 flex h-24 w-fit items-center justify-start">

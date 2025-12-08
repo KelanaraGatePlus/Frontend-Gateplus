@@ -92,7 +92,7 @@ export default function OtpPage() {
   };
 
   return (
-    <div className="flex min-h-screen min-w-screen items-center justify-center px-4 md:py-10">
+    <div className="flex min-h-screen min-w-screen items-center justify-center px-4">
       <main className="flex h-full w-full max-w-lg flex-col rounded-lg bg-[#184A9780] px-6 pt-2 pb-8 shadow-lg backdrop-blur-md">
         {/* Header */}
         <section className="flex flex-col">

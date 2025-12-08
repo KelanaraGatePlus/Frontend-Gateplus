@@ -18,7 +18,7 @@ export default function RegisterCreatorsPage() {
       "Daftar sebagai kreator sekarang dan mulai berbagi karya Anda dengan dunia! 🎬🎤📚"
   }
   return (
-    <div className="flex h-screen w-screen items-center justify-center px-3 md:py-10">
+    <div className="flex h-screen w-screen items-center justify-center px-3">
       <main className="flex h-full w-full flex-col items-center justify-center gap-4 px-0 py-6 lg:flex-row">
         <br />
         <section className="mt-64 flex w-full max-w-lg flex-col px-4 py-6 lg:-mt-12">

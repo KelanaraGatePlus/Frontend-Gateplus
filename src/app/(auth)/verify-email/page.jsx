@@ -3,7 +3,7 @@ import Link from "next/link";
 /* eslint-disable react/react-in-jsx-scope */
 export default function VerifyEmailPage() {
   return (
-    <div className="flex min-h-screen min-w-screen items-center justify-center px-4 md:py-10">
+    <div className="flex min-h-screen min-w-screen items-center justify-center px-4">
       <main className="flex h-full w-full max-w-lg flex-col rounded-lg bg-[#184A9780] px-4 pt-0 pb-6">
         <section className="flex flex-col">
           <div className="relative flex h-24 w-fit items-center justify-start">

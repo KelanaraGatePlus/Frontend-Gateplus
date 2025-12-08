@@ -84,7 +84,7 @@ export default function HomePage() {
         <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" />
       </head>
 
-      <div className="mt-15 flex flex-col md:mt-[85px]">
+      <div className="flex flex-col">
         <SliderBannerPage />
 
         <main className="flex flex-col px-3 md:mx-5 md:px-0">

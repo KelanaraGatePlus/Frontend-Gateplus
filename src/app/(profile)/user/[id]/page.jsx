@@ -24,7 +24,7 @@ export default function UserProfilePage({ params }) {
   }, [isSuccess, userDetailData]);
 
   return (
-    <main className="mt-16 flex w-full flex-col md:mt-24 px-2 lg:px-6">
+    <main className="flex w-full flex-col px-2 lg:px-6">
       <BackButton />
       <div className="flex w-full flex-col md:flex-row md:gap-5">
         <ProfileCard

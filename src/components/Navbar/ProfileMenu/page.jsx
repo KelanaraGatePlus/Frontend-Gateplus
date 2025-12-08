@@ -2,7 +2,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 
@@ -28,6 +28,7 @@ export default function ProfileMenu({
   openRedeemVoucherModal,
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const profileRef = useRef();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isDashboardMenuOpen, setIsDashboardMenuOpen] = useState(false);
@@ -63,6 +64,15 @@ export default function ProfileMenu({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // Auto-close dropdowns when the route changes (e.g., after redirect)
+  useEffect(() => {
+    if (isProfileMenuOpen || isDashboardMenuOpen || isUploadContentMenuOpen) {
+      setIsProfileMenuOpen(false);
+      setIsDashboardMenuOpen(false);
+      setIsUploadContentMenuOpen(false);
+    }
+  }, [pathname]);
 
   return (
     <div ref={profileRef} className="relative md:mt-0.5 md:block md:py-3">

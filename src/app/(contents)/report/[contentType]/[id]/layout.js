@@ -7,7 +7,7 @@ import HeaderUploadForm from "@/components/UploadForm/HeaderUploadForm";
 export default function UploadEbookLayout({ children }) {
 
     return (
-        <main className="mt-16 flex flex-col md:mt-[100px]">
+        <main className="flex flex-col">
             <div className="flex w-full flex-col">
                 <div className="flex flex-col py-2 lg:px-16">
                     <HeaderUploadForm title={"Report Konten"} />

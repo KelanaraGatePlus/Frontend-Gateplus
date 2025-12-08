@@ -22,7 +22,7 @@ import iconChartYellow from "@@/icons/icon-chart-yellow.svg";
 
 /*[--- CONTEXT IMPORT ---]*/
 import { useAuth } from "../Context/AuthContext";
-import { contentType } from "@/lib/constants/contentType";
+import { contentTypeArray } from "@/lib/constants/contentType";
 import { useGetPopularSearchesQuery, useGetSearchHistoryByUserQuery } from "@/hooks/api/searchAPI";
 
 export default function NavbarContent({ openCreateContentModal, openRedeemVoucherModal }) {
@@ -70,19 +70,19 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
       <nav
         className={`${isMenuBarsOpen ? "rounded-b-xl" : ""} fixed z-30 w-full bg-white/5 backdrop-blur`}
       >
-        <section className={`${isSearchActive ? "hidden md:flex" : "flex"} items-center justify-between px-4 py-4 md:flex md:justify-between md:bg-fixed`}>
-          <div className="-mt-3 w-fit -translate-x-8 ps-0 md:mt-0 md:-translate-x-0 md:place-items-start lg:ps-6">
+        <section className={`${isSearchActive ? "hidden md:flex" : "flex"} items-center justify-between p-1 2xl:p-4 md:flex md:justify-between md:bg-fixed`}>
+          <div className="-mt-3 w-fit -translate-x-8 ps-0 md:mt-0 md:-translate-x-0 md:place-items-start lg:px-6">
             <Link href="/"><div className="flex aspect-auto justify-center"><Image className="ml-6 h-auto w-auto" src={logoHome} alt="logo-gate+" priority /></div></Link>
           </div>
 
           {!isSearchActive ? (
-            <div className="zeinFont mt-0.5 hidden w-fit justify-between gap-1 rounded-full p-2 text-xl leading-tight transition-all duration-300 ease-in-out md:flex md:bg-[#0881AB] lg:-mr-10">
+            <div className="zeinFont mt-0.5 hidden w-fit justify-between gap-1 2xl:gap-3 rounded-full px-2 py-1 2xl:py-2 text-sm 2xl:text-xl leading-tight transition-all duration-300 ease-in-out md:flex md:bg-[#0881AB] lg:-mr-10">
               {navbarOptions.map((option) => {
                 const isActive = option.url === pathname;
                 return (
                   <div key={option.id}>
                     <Link href={option.url}>
-                      <div className={`mt-0.5 flex cursor-pointer items-center justify-center rounded-full border-2 border-[#0881AB] from-[#0E5BA8] to-[#0395BC] p-2 text-center font-semibold text-white lg:px-5 xl:px-6 hover:bg-linear-to-t active:bg-linear-to-t active:border-white/40 ${isActive && "bg-linear-to-t border-white/40"}`}>
+                      <div className={`flex cursor-pointer items-center justify-center rounded-full border-2 border-[#0881AB] from-[#0E5BA8] to-[#0395BC] p-2 text-center font-semibold text-white lg:px-3 xl:px-4 hover:bg-linear-to-t active:bg-linear-to-t active:border-white/40 ${isActive && "bg-linear-to-t border-white/40"}`}>
                         <span className="drop-shadow-[0_0_2px_rgba(255,255,255,0.3)]">{option.tittle}</span>
                       </div>
                     </Link>
@@ -90,14 +90,14 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
                 );
               })}
               <div
-                className="flex-cols relative flex items-center justify-start gap-1 rounded-3xl bg-blue-300 px-2 transition-all duration-300 ease-in-out hover:ring-1 hover:ring-white lg:px-5 xl:px-6"
+                className="w-full flex items-center justify-between gap-1 rounded-3xl bg-blue-300 px-2 transition-all duration-300 ease-in-out hover:ring-1 hover:ring-white lg:px-5 xl:px-6"
                 onClick={() => setIsSearchActive(true)}
               >
-                <div className={`mt-0.5 cursor-pointer font-semibold drop-shadow-[0_0_2px_rgba(255,255,255,0.3)] ${searchQuery.length === 0 ? "text-white" : "text-[#184A97]"}`}>
+                <div className={`mt-1 cursor-pointer font-semibold drop-shadow-[0_0_2px_rgba(255,255,255,0.3)] ${searchQuery.length === 0 ? "text-white" : "text-[#184A97]"}`}>
                   {searchQuery ? (searchQuery.length > 8 ? `${searchQuery.slice(0, 8)}...` : searchQuery) : ("Search")}
                 </div>
                 <div className="ml-2 flex -mr-2 transition-all duration-300 ease-in-out">
-                  <Image height={20} width={20} src={logoSearch} alt="logo-search" priority />
+                  <Image height={16} width={16} src={logoSearch} alt="logo-search" priority />
                 </div>
               </div>
             </div>
@@ -190,15 +190,16 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
 
       {isSearchActive && (
         <div
-          className="fixed left-0 right-0 z-40 mt-[76px] mx-auto w-full max-w-3xl rounded-b-2xl border-x border-b border-white/20 bg-[#0395BC80] text-white backdrop-blur-xl"
+          className="fixed left-0 right-0 z-40 mt-[68px] 2xl:mt-[76px] mx-auto w-full max-w-3xl rounded-b-2xl border-x border-b border-white/20 bg-[#0395BC80] text-white backdrop-blur-xl"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="my-6 grid grid-cols-5 gap-4 text-center">
-            <Link href={`/${contentType.movie.pluralName}`} className="flex flex-col items-center gap-2 text-white hover:text-white transition-colors"><Image src={contentType.movie.icon} width={65} height={65} /> <span className="text-sm font-semibold">MOVIE</span></Link>
-            <Link href={`/${contentType.series.pluralName}`} className="flex flex-col items-center gap-2 text-white hover:text-white transition-colors"><Image src={contentType.series.icon} width={65} height={65} /> <span className="text-sm font-semibold">SERIES</span></Link>
-            <Link href={`/${contentType.podcasts.pluralName}`} className="flex flex-col items-center gap-2 text-white hover:text-white transition-colors"><Image src={contentType.podcasts.icon} width={65} height={65} /> <span className="text-sm font-semibold">PODCAST</span></Link>
-            <Link href={`/${contentType.ebooks.pluralName}`} className="flex flex-col items-center gap-2 text-white hover:text-white transition-colors"><Image src={contentType.ebooks.icon} width={65} height={65} /> <span className="text-sm font-semibold">EBOOK</span></Link>
-            <Link href={`/${contentType.comics.pluralName}`} className="flex flex-col items-center gap-2 text-white hover:text-white transition-colors"><Image src={contentType.comics.icon} width={65} height={65} /> <span className="text-sm font-semibold">COMIC</span></Link>
+            {contentTypeArray.map((type) => (
+              <Link key={type.pluralName} href={`/${type.pluralName}`} className="flex flex-col items-center gap-2 text-white hover:text-white transition-colors">
+                <Image src={type.icon} width={65} height={65} />
+                <span className="text-sm font-semibold">{type.singleName.toUpperCase()}</span>
+              </Link>
+            ))}
           </div>
 
           <hr className="border-white/10" />
