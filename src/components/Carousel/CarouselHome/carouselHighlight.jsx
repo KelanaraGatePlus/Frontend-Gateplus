@@ -4,7 +4,7 @@ import CarouselTemplate from "@/components/Carousel/carouselTemplate";
 
 export default function CarouselHighlight() {
         const { data, isLoading } = useGetHighlightQuery();
-        const hightlightData = data?.data?.data || [];
+        const hightlightData = data?.data || [];
 
     return (
         <CarouselTemplate

@@ -22,9 +22,6 @@ export default function MovieCard({ title, id, coverUrl, rank = null, isOriginal
                             <span className="text-sm">Teratas</span>
                             <span className="text-3xl">{rank || 1}</span>
                         </div>}
-                        <span className="text-sm text-cyan-200 font-semibold zeinFont bg-[#22222233] backdrop-blur-xs rounded-sm px-2">
-                            Episode Baru
-                        </span>
                     </div>
 
                     {/* Icon more → hanya muncul saat hover

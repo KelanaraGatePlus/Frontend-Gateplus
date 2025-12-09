@@ -8,7 +8,7 @@ import blur from "@@/poster/blur.svg";
 // import iconMore from "@@/icons/icon_more.svg";
 import PropTypes from "prop-types";
 
-export default function PodcastCard({ title, id, coverUrl, rank = null, isOriginal = false }) {
+export default function PodcastCard({ title, id, coverUrl, rank = null, isOriginal = false, hasNewEpisode = false }) {
     return (
         <Link href={`/${contentType.podcasts.pluralName}/detail/${id}`} className="h-full w-full">
             <div className="relative h-full w-full rounded-[6px] overflow-hidden group">
@@ -22,9 +22,9 @@ export default function PodcastCard({ title, id, coverUrl, rank = null, isOrigin
                             <span className="text-sm">Teratas</span>
                             <span className="text-3xl">{rank || 1}</span>
                         </div>}
-                        <span className="text-sm text-cyan-200 font-semibold zeinFont bg-[#22222233] backdrop-blur-xs rounded-sm px-2">
+                        {hasNewEpisode && <span className="text-sm text-cyan-200 font-semibold zeinFont bg-[#22222233] backdrop-blur-xs rounded-sm px-2">
                             Episode Baru
-                        </span>
+                        </span>}
                     </div>
 
                     {/* Icon more → hanya muncul saat hover
@@ -107,4 +107,5 @@ PodcastCard.propTypes = {
     coverUrl: PropTypes.string.isRequired,
     rank: PropTypes.number,
     isOriginal: PropTypes.bool,
+    hasNewEpisode: PropTypes.bool,
 };

@@ -4,7 +4,7 @@ import CarouselTemplate from "@/components/Carousel/carouselTemplate";
 
 export default function CarouselNewest() {
     const { data, isLoading } = useGetNewestQuery();
-    const newestData = data?.data?.data || [];
+    const newestData = data?.data || [];
 
     return (
         <CarouselTemplate

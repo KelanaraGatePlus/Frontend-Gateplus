@@ -22,7 +22,7 @@ export default function MainTemplateLayout({
 }) {
   console.log("productDetail", productDetail);
   return (
-    <main className="mt-16 flex flex-col md:mt-[100px]">
+    <main className="flex flex-col">
       <ProductDetailSection
         productType={productType}
         productID={productDetail.id}

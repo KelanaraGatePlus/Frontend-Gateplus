@@ -4,7 +4,7 @@ import CarouselTemplate from "@/components/Carousel/carouselTemplate";
 
 export default function CarouselRecommendations() {
     const { data, isLoading } = useGetRecommendationsQuery();
-    const recommendationsData = data?.data?.data || [];
+    const recommendationsData = data?.data || [];
 
     return (
         <CarouselTemplate
