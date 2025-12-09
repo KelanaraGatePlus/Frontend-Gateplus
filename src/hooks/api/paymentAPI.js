@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { BACKEND_URL } from "@/lib/constants/backendUrl";
 import { useAuth } from "@/components/Context/AuthContext";
 
-const MIDTRANS_URL = "https://app.sandbox.midtrans.com/snap/snap.js";
+const MIDTRANS_URL = "https://app.midtrans.com/snap/snap.js";
 
 // =======================================================================
 //    GLOBAL POPUP HANDLER UNTUK XENDIT (CENTERED & ANTI GESER)
