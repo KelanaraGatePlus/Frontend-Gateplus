@@ -1,6 +1,7 @@
 "use client";
 import ContentTable from "@/components/Table/ContentTable";
 import { useGetContentDashboardQuery, useGetPerContentDashboardQuery } from "@/hooks/api/creatorSliceAPI";
+import { useDeleteEbookMutation } from "@/hooks/api/ebookSliceAPI";
 import { contentTypeArray } from "@/lib/constants/contentType";
 import React from "react";
 import { useState } from "react";
@@ -10,8 +11,22 @@ import Image from "next/image";
 import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@heroui/react";
 import { EyeIcon, PencilIcon, TrashIcon } from "lucide-react";
 import HeaderUploadForm from "@/components/UploadForm/HeaderUploadForm";
+import FlexModal from "@/components/Modal/FlexModal";
+import DatabaseDelete from "@@/AdditionalImages/database-delete.png";
+import { useDeleteComicMutation } from "@/hooks/api/comicSliceAPI";
+import { useDeletePodcastMutation } from "@/hooks/api/podcastSliceAPI";
+import { useDeleteSeriesMutation } from "@/hooks/api/seriesSliceAPI";
+import { useDeleteMovieMutation } from "@/hooks/api/movieSliceAPI";
 
 export default function DashboardContentPage() {
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState({ id: null, type: null });
+    const [deleteEbook, { isLoading: isDeletingEbook }] = useDeleteEbookMutation();
+    const [deleteComic, { isLoading: isDeletingComic }] = useDeleteComicMutation();
+    const [deletePodcast, { isLoading: isDeletingPodcast }] = useDeletePodcastMutation();
+    const [deleteSeries, { isLoading: isDeletingSeries }] = useDeleteSeriesMutation();
+    const [deleteMovie, { isLoading: isDeletingMovie }] = useDeleteMovieMutation();
+
     const hoverColorClasses = {
         blue: 'hover:from-[#156EB7] hover:to-[#093151]',
         darkPurple: 'hover:from-[#5856D6] hover:to-[#2E2D70]',
@@ -34,8 +49,8 @@ export default function DashboardContentPage() {
     const color = colorClassesArray.slice(0, contentTypeArray.length);
     const hoverColorClassesArray = Object.keys(hoverColorClasses);
     const hoverColor = hoverColorClassesArray.slice(0, contentTypeArray.length);
-    const { data: contentData } = useGetPerContentDashboardQuery();
-    const { data: contentDashboardData } = useGetContentDashboardQuery();
+    const { data: contentData, refetch: refetchPerContent } = useGetPerContentDashboardQuery();
+    const { data: contentDashboardData, refetch: refetchContentDashboard } = useGetContentDashboardQuery();
 
     const tabsData = [
         {
@@ -56,6 +71,43 @@ export default function DashboardContentPage() {
 
     const [isActive, setIsActive] = useState(tabsData[0].id);
     const [dataType, setDataType] = useState('result');
+
+    const handleConfirmDelete = async () => {
+        if (!deleteTarget?.id || !deleteTarget?.type) return;
+        try {
+            switch (deleteTarget.type) {
+                case 'ebooks':
+                case 'ebook':
+                    await deleteEbook(deleteTarget.id).unwrap();
+                    break;
+                case 'comics':
+                case 'comic':
+                    await deleteComic(deleteTarget.id).unwrap();
+                    break;
+                case 'podcast':
+                case 'podcasts':
+                    await deletePodcast(deleteTarget.id).unwrap();
+                    break;
+                case 'series':
+                    await deleteSeries(deleteTarget.id).unwrap();
+                    break;
+                case 'movies':
+                case 'movie':
+                    await deleteMovie(deleteTarget.id).unwrap();
+                    break;
+                default:
+                    console.warn(`Delete not implemented for type: ${deleteTarget.type}`);
+            }
+            setIsDeleteModalOpen(false);
+            setDeleteTarget({ id: null, type: null });
+            await Promise.all([
+                refetchPerContent?.(),
+                refetchContentDashboard?.(),
+            ]);
+        } catch (error) {
+            console.error('Failed to delete content:', error);
+        }
+    };
 
     return (
         <div>
@@ -183,6 +235,12 @@ export default function DashboardContentPage() {
                                                 </DropdownItem>
                                                 <DropdownItem
                                                     key="delete"
+                                                    onClick={() => {
+                                                        const id = item?._id ?? item?.id ?? null;
+                                                        const type = dataType !== 'result' ? dataType : (item?.contentType ?? item?.type ?? null);
+                                                        setDeleteTarget({ id, type });
+                                                        setIsDeleteModalOpen(true);
+                                                    }}
                                                     className="text-red-500 hover:bg-[#4a4a4a] rounded-sm px-2 flex items-center"
                                                     color="danger"
                                                 >
@@ -206,6 +264,26 @@ export default function DashboardContentPage() {
                         } /> : <Skeleton className="w-full p-14 rounded-lg mt-4" baseColor="#393939" highlightColor="#686868" />
                         }
                     </div>
+                    <FlexModal
+                        isOpen={isDeleteModalOpen}
+                        onClose={() => setIsDeleteModalOpen(false)}
+                    >
+                        <div className="flex max-w-lg flex-col gap-8 items-center text-[#F5F5F5] montserratFont">
+                            <Image src={DatabaseDelete} alt="Delete Database" className="w-64 h-64 mb-4 mx-auto" />
+                            <div className="flex flex-col items-center">
+                                <p className="text-2xl font-bold">Hapus Permanen Konten</p>
+                                <p className="text-center">Anda Yakin Ingin Menghapus Konten, Konten Yang Sudah Di Hapus Tidak Dapat Di Pulihkan Lagi</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 w-full justify-between">
+                                <button onClick={() => setIsDeleteModalOpen(false)} className="flex items-center justify-center p-2 hover:bg-[#156EB7] rounded-lg">
+                                    Batal
+                                </button>
+                                <button onClick={handleConfirmDelete} disabled={isDeletingEbook || isDeletingPodcast || isDeletingSeries || isDeletingComic || isDeletingMovie} className="flex items-center justify-center p-2 bg-[#156EB7] rounded-lg disabled:opacity-60 disabled:cursor-not-allowed">
+                                    {isDeletingEbook || isDeletingPodcast || isDeletingSeries || isDeletingComic || isDeletingMovie ? 'Menghapus…' : 'Hapus'}
+                                </button>
+                            </div>
+                        </div>
+                    </FlexModal>
                 </div>
             </div>
         </div>

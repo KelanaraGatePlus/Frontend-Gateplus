@@ -50,6 +50,13 @@ export const podcastApi = createApi({
             query: (category) => category ? `/podcast/highlights?category=${category}` : `/podcast/highlights`,
             providesTags: ["podcast"],
         }),
+        deletePodcast: builder.mutation({
+            query: (id) => ({
+                url: `/podcast/${id}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["podcast"],
+        }),
     }),
 });
 
@@ -59,4 +66,5 @@ export const {
     useCreatePodcastMutation,
     useCreateEpisodeMutation,
     useGetPodcastHomeDataQuery,
+    useDeletePodcastMutation,
 } = podcastApi;

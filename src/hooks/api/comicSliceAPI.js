@@ -50,6 +50,13 @@ export const comicApi = createApi({
             query: (category) => category ? `/comics/highlights?category=${category}` : `/comics/highlights`,
             providesTags: ["comic"],
         }),
+        deleteComic: builder.mutation({
+            query: (id) => ({
+                url: `/comics/${id}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["comic"],
+        }),
     }),
 });
 
@@ -59,4 +66,5 @@ export const {
     useCreateComicMutation,
     useCreateEpisodeMutation,
     useGetComicsHomeDataQuery,
+    useDeleteComicMutation,
 } = comicApi;

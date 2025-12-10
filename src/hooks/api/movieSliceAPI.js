@@ -39,7 +39,14 @@ export const movieAPI = createApi({
       },
       providesTags: ["movie"],
     }),
+    deleteMovie: builder.mutation({
+      query: (id) => ({
+        url: `/movies/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["movie"],
+    }),
   }),
 });
 
-export const { useGetMovieQuery, useCreateMovieMutation, useGetMovieByIdQuery, useGetMoviesHomeDataQuery } = movieAPI;
+export const { useGetMovieQuery, useCreateMovieMutation, useGetMovieByIdQuery, useGetMoviesHomeDataQuery, useDeleteMovieMutation } = movieAPI;

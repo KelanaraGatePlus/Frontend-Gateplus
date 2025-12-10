@@ -52,6 +52,13 @@ export const ebookApi = createApi({
       query: (category) => category ? `/ebooks/highlights?category=${category}` : "/ebooks/highlights",
       providesTags: ["ebook"],
     }),
+    deleteEbook: builder.mutation({
+      query: (id) => ({
+        url: `/ebooks/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["ebook"],
+    }),
   }),
 });
 
@@ -62,4 +69,5 @@ export const {
   useCreateEbookMutation,
   useCreateEpisodeMutation,
   useGetEbooksHomeDataQuery,
+  useDeleteEbookMutation,
 } = ebookApi;
