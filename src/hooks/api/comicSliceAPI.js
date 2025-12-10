@@ -57,6 +57,15 @@ export const comicApi = createApi({
             }),
             invalidatesTags: ["comic"],
         }),
+        updateComic: builder.mutation({
+            query: ({ id, formData }) => ({
+                url: `/comics/${id}`,
+                method: "PATCH",
+                body: formData,
+                formData: true,
+            }),
+            invalidatesTags: ["comic"],
+        })
     }),
 });
 
@@ -67,4 +76,5 @@ export const {
     useCreateEpisodeMutation,
     useGetComicsHomeDataQuery,
     useDeleteComicMutation,
+    useUpdateComicMutation,
 } = comicApi;

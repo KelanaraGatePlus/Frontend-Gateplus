@@ -59,6 +59,15 @@ export const ebookApi = createApi({
       }),
       invalidatesTags: ["ebook"],
     }),
+    editEbook: builder.mutation({
+      query: ({ id, formData }) => ({
+        url: `/ebooks/${id}`,
+        method: "PATCH",
+        body: formData,
+        formData: true,
+      }),
+      invalidatesTags: ["ebook"],
+    }),
   }),
 });
 
@@ -70,4 +79,5 @@ export const {
   useCreateEpisodeMutation,
   useGetEbooksHomeDataQuery,
   useDeleteEbookMutation,
+  useEditEbookMutation,
 } = ebookApi;

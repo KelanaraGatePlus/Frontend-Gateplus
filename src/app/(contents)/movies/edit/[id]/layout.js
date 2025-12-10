@@ -7,7 +7,7 @@ export default function UploadEbookLayout({ children }) {
 
     return (
         <main className="flex flex-col py-2 lg:px-4">
-            <HeaderUploadForm title={"Edit Podcast"} />
+            <HeaderUploadForm title={"Edit Movie"} />
 
             <div className="flex w-full flex-col px-2 mt-4">
                 {children}

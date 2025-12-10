@@ -57,6 +57,15 @@ export const podcastApi = createApi({
             }),
             invalidatesTags: ["podcast"],
         }),
+        editPodcast: builder.mutation({
+            query: ({ id, formData }) => ({
+                url: `/podcast/${id}`,
+                method: "PATCH",
+                body: formData,
+                formData: true,
+            }),
+            invalidatesTags: ["podcast"],
+        }),
     }),
 });
 
@@ -67,4 +76,5 @@ export const {
     useCreateEpisodeMutation,
     useGetPodcastHomeDataQuery,
     useDeletePodcastMutation,
+    useEditPodcastMutation,
 } = podcastApi;

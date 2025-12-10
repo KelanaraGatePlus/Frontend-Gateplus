@@ -53,9 +53,18 @@ export const seriesAPI = createApi({
       }),
       invalidatesTags: ["series"],
     }),
+    editSeries: builder.mutation({
+      query: ({ id, formData }) => ({
+        url: `/series/${id}`,
+        method: "PATCH",
+        body: formData,
+        formData: true,
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: 'series', id }],
+    }),
   }),
 });
 
 export const { useGetSeriesQuery, useCreateSeriesMutation, useGetSeriesByIdQuery, useCreateEpisodeSeriesMutation,
-  useGetSeriesHomeDataQuery, useDeleteSeriesMutation
+  useGetSeriesHomeDataQuery, useDeleteSeriesMutation, useEditSeriesMutation
 } = seriesAPI;

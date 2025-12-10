@@ -2,7 +2,7 @@
 import ContentTable from "@/components/Table/ContentTable";
 import { useGetContentDashboardQuery, useGetPerContentDashboardQuery } from "@/hooks/api/creatorSliceAPI";
 import { useDeleteEbookMutation } from "@/hooks/api/ebookSliceAPI";
-import { contentTypeArray } from "@/lib/constants/contentType";
+import { contentTypeArray, contentTypeSingle } from "@/lib/constants/contentType";
 import React from "react";
 import { useState } from "react";
 import Skeleton from "react-loading-skeleton";
@@ -17,6 +17,7 @@ import { useDeleteComicMutation } from "@/hooks/api/comicSliceAPI";
 import { useDeletePodcastMutation } from "@/hooks/api/podcastSliceAPI";
 import { useDeleteSeriesMutation } from "@/hooks/api/seriesSliceAPI";
 import { useDeleteMovieMutation } from "@/hooks/api/movieSliceAPI";
+import Link from "next/link";
 
 export default function DashboardContentPage() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -222,8 +223,10 @@ export default function DashboardContentPage() {
                                                 "
                                             >
                                                 <DropdownItem key="edit" className="hover:bg-[#4a4a4a] rounded-sm px-2 flex items-center">
-                                                    <PencilIcon size={16} className="inline-block mr-2" />
-                                                    Edit
+                                                    <Link href={`/${contentTypeSingle[item.contentType || item.type]?.pluralName}/edit/${item._id || item.id}`}>
+                                                        <PencilIcon size={16} className="inline-block mr-2" />
+                                                        Edit
+                                                    </Link>
                                                 </DropdownItem>
                                                 <DropdownItem key="preview" className="hover:bg-[#4a4a4a] rounded-sm px-2 flex items-center">
                                                     <EyeIcon size={16} className="inline-block mr-2" />

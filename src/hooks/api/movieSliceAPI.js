@@ -46,7 +46,16 @@ export const movieAPI = createApi({
       }),
       invalidatesTags: ["movie"],
     }),
+    editMovie: builder.mutation({
+      query: ({ id, formData }) => ({
+        url: `/movies/${id}`,
+        method: "PATCH",
+        body: formData,
+        formData: true,
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: 'movie', id }],
+    }),
   }),
 });
 
-export const { useGetMovieQuery, useCreateMovieMutation, useGetMovieByIdQuery, useGetMoviesHomeDataQuery, useDeleteMovieMutation } = movieAPI;
+export const { useGetMovieQuery, useCreateMovieMutation, useGetMovieByIdQuery, useGetMoviesHomeDataQuery, useDeleteMovieMutation, useEditMovieMutation } = movieAPI;

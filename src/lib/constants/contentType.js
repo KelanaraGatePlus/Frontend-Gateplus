@@ -42,4 +42,42 @@ export const contentType = {
     }
 }
 
+export const contentTypeSingle = {
+    movie: {
+        singleName: 'movie',
+        pluralName: 'movies',
+        icon: IconsMovie,
+        haveEpisodes: false,
+        capitalizedLabel: 'Movie'
+    },
+    series: {
+        singleName: 'series',
+        pluralName: 'series',
+        icon: IconsSeries,
+        haveEpisodes: true,
+        capitalizedLabel: 'Series'
+    },
+    podcast: {
+        singleName: 'podcast',
+        pluralName: 'podcasts',
+        icon: IconsPodcast,
+        haveEpisodes: true,
+        capitalizedLabel: 'Podcast'
+    },
+    ebook: {
+        singleName: 'ebook',
+        pluralName: 'ebooks',
+        icon: IconsEbook,
+        haveEpisodes: true,
+        capitalizedLabel: 'Ebook'
+    },
+    comic: {
+        singleName: 'comic',
+        pluralName: 'comics',
+        icon: IconsComic,
+        haveEpisodes: true,
+        capitalizedLabel: 'Comic'
+    }
+}
+
 export const contentTypeArray = Object.keys(contentType).map(key => contentType[key]);

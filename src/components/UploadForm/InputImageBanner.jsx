@@ -59,22 +59,29 @@ export default function InputImageBanner({
                             </label>
                         </div>
                         <p className="mt-2 text-center text-xs text-white italic">
-                            {files && files.length > 0 ? `${files.length} file(s) selected` : "No file chosen"}
+                            {files && files.length > 0
+                                ? files.some(f => typeof f === "string")
+                                    ? "Gambar sudah diunggah"
+                                    : `${files.length} file(s) selected`
+                                : "No file chosen"}
                         </p>
                     </div>
 
                     {/* Preview */}
                     <div className="flex flex-wrap gap-4">
                         {files && files.length > 0 && (
-                            files.map((file, index) =>
-                                type === "banner" ? (
+                            files.map((file, index) => {
+                                const isUrl = typeof file === "string";
+                                const imgSrc = isUrl ? file : URL.createObjectURL(file);
+                                const fileName = isUrl ? "Preview" : file.name;
+                                return type === "banner" ? (
                                     <div
                                         key={index}
                                         className="relative flex h-28 w-36 flex-col items-center overflow-hidden rounded-md bg-gray-500 md:h-32 md:w-42"
                                     >
                                         <div className="relative h-24 w-full md:h-28">
                                             <img
-                                                src={URL.createObjectURL(file)}
+                                                src={imgSrc}
                                                 alt={`preview-${index}`}
                                                 className="h-full w-full object-cover object-center"
                                             />
@@ -86,7 +93,7 @@ export default function InputImageBanner({
                                             </button>
                                         </div>
                                         <p className="w-full truncate px-1 py-0.5 text-center text-[8px] text-white lg:text-[10px]">
-                                            {file.name}
+                                            {fileName}
                                         </p>
                                     </div>
                                 ) : (
@@ -96,7 +103,7 @@ export default function InputImageBanner({
                                     >
                                         <div className="relative h-24 w-full md:h-28">
                                             <img
-                                                src={URL.createObjectURL(file)}
+                                                src={imgSrc}
                                                 alt={`preview-${index}`}
                                                 className="h-full w-full object-cover object-center"
                                             />
@@ -110,11 +117,11 @@ export default function InputImageBanner({
                                             </button>
                                         </div>
                                         <p className="w-full truncate px-1 py-0.5 text-center text-[8px] text-white lg:text-[10px]">
-                                            {file.name}
+                                            {fileName}
                                         </p>
                                     </div>
-                                )
-                            )
+                                );
+                            })
                         )}
                     </div>
                 </div>
