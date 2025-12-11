@@ -2,7 +2,6 @@
 import Picture404 from "@@/icons/error-page.svg";
 import Image from "next/image";
 import Link from "next/link";
-import MiniFooter from "@/components/Footer/MiniFooter";
 
 export default function NotFoundPage() {
   return (
@@ -59,10 +58,6 @@ export default function NotFoundPage() {
           </Link>
         </section>
       </main>
-
-      <div className="absolute bottom-0 text-[12px] md:text-sm">
-        <MiniFooter />
-      </div>
     </div>
   );
 }

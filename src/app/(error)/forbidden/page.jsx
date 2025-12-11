@@ -2,7 +2,6 @@
 import Picture404 from "@@/icons/error-page.svg";
 import Image from "next/image";
 import Link from "next/link";
-import MiniFooter from "@/components/Footer/MiniFooter";
 
 export default function ForbiddenPage() {
   return (
@@ -51,10 +50,6 @@ export default function ForbiddenPage() {
           </Link>
         </section>
       </main>
-
-      <div className="absolute bottom-0 md:bottom-2 text-[10px] md:text-sm">
-        <MiniFooter />
-      </div>
     </div>
   );
 }

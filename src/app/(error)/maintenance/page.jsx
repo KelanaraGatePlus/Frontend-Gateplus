@@ -2,7 +2,6 @@ import React from "react";
 import Image from "next/image";
 import MaintenancePictures from "@@/icons/maintenance-picture.svg";
 import logo from "../../../../public/images/logo/logoGate+/logo-header-login.svg";
-import MiniFooter from "@/components/Footer/MiniFooter";
 
 export default function MaintenancePage() {
   return (
@@ -52,10 +51,6 @@ export default function MaintenancePage() {
           </div>
         </section>
       </main>
-
-      <div className="absolute bottom-0 text-[12px] md:text-sm">
-        <MiniFooter />
-      </div>
     </div>
   );
 }
