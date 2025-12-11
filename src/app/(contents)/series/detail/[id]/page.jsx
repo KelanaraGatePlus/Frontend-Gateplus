@@ -199,9 +199,9 @@ function DetailSeriesPage({ params }) {
                             </p>
                         </div>
                         <div className="flex flex-row gap-6">
-                            <div className="flex items-center justify-center w-48">
-                                <button onClick={!seriesData?.isSubscribed && seriesData?.canSubscribe ? () => { handleModalSubscribeOpen(seriesData?.id, seriesData?.subscriptionPrice) } : null} className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
-                                    {!seriesData?.canSubscribe ? 'Buy Episode To Watch' : seriesData?.isSubscribed ? "Watch" : "Buy"}
+                            <div className="flex items-center justify-center w-max">
+                                <button onClick={seriesData?.isOwner ? null : !seriesData?.isSubscribed && seriesData?.canSubscribe ? () => { handleModalSubscribeOpen(seriesData?.id, seriesData?.subscriptionPrice) } : null} className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
+                                    {seriesData?.isOwner ? "Series ini adalah karya mu" : !seriesData?.canSubscribe ? 'Buy Episode To Watch' : seriesData?.isSubscribed ? "Watch" : "Buy"}
                                 </button>
                             </div>
                             <div onClick={handleToggleLike} className="flex items-center justify-center transition delay-150 duration-400 ease-linear hover:-translate-y-1 hover:scale-x-110 hover:scale-y-110 cursor-pointer">
@@ -326,6 +326,7 @@ function DetailSeriesPage({ params }) {
                     productId={
                         seriesData?.id
                     }
+                    isOwner={seriesData?.isOwner}
                 />
 
                 <div className="mt-10 md:mt-20">

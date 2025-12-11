@@ -156,9 +156,9 @@ function PlayingMoviePage({ params }) {
                     {movieData?.id && <DefaultVideoPlayer
                         contentId={movieData.id}
                         contentType="FILM"
-                        logType={movieData?.isSubscribed || movieData?.price == 'Free' ? 'WATCH_CONTENT' : 'WATCH_TRAILER'}
+                        logType={movieData?.isOwner || movieData?.isSubscribed || movieData?.price == 'Free' ? 'WATCH_CONTENT' : 'WATCH_TRAILER'}
                         className="rounded-lg"
-                        src={movieData?.isSubscribed || movieData?.price == 'Free' ? movieData?.movieFileUrl : movieData?.trailerFileUrl}
+                        src={movieData?.isOwner || movieData?.isSubscribed || movieData?.price == 'Free' ? movieData?.movieFileUrl : movieData?.trailerFileUrl}
                         poster={movieData?.thumbnailImageUrl}
                         startFrom={movieData?.WatchProgress?.[0]?.progressSeconds || 0}
                         title={movieData?.title}
@@ -181,8 +181,8 @@ function PlayingMoviePage({ params }) {
                         </div>
                         <div className="flex flex-row gap-6">
                             <div className="flex items-center justify-center w-48">
-                                <button onClick={movieData?.isSubscribed || movieData?.price == 'Free' ? null : () => { handleModalOpen(movieData?.id, movieData?.price) }} className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
-                                    {movieData?.isSubscribed || movieData?.price == 'Free' ? "Watch" : "Buy"}
+                                <button onClick={movieData?.isOwner || movieData?.isSubscribed || movieData?.price == 'Free' ? null : () => { handleModalOpen(movieData?.id, movieData?.price) }} className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
+                                    {movieData?.isOwner || movieData?.isSubscribed || movieData?.price == 'Free' ? "Watch" : "Buy"}
                                 </button>
                             </div>
                             <div onClick={handleToggleLike} className="flex items-center justify-center transition delay-150 duration-400 ease-linear hover:-translate-y-1 hover:scale-x-110 hover:scale-y-110 cursor-pointer">
@@ -254,7 +254,7 @@ function PlayingMoviePage({ params }) {
                                 height={60}
                                 alt="logo-subscribers"
                                 className="rounded-full"
-                                src={movieData?.creator?.imageUrl !== 'null' && movieData?.creator?.imageUrl !== null ? movieData?.creator?.imageUrl : DEFAULT_AVATAR }
+                                src={movieData?.creator?.imageUrl !== 'null' && movieData?.creator?.imageUrl !== null ? movieData?.creator?.imageUrl : DEFAULT_AVATAR}
                                 priority
                             />
                         </div>
@@ -307,7 +307,7 @@ function PlayingMoviePage({ params }) {
                 <section className="mt-5">
                     <section className="my-10 flex flex-col">
                         <section className="mt-10">
-                            <CarouselTemplate 
+                            <CarouselTemplate
                                 label="Banyak Dilihat"
                                 type="movie"
                                 contents={data?.data?.topContent || []}
@@ -316,7 +316,7 @@ function PlayingMoviePage({ params }) {
                         </section>
 
                         <section className="mt-10">
-                            <CarouselTemplate 
+                            <CarouselTemplate
                                 label="Rekomendasi Serupa"
                                 type="movie"
                                 contents={data?.data?.recommendation || []}

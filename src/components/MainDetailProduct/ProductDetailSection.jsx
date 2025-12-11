@@ -53,6 +53,7 @@ export default function ProductDetailSection({
   canSubscribe,
   subscriptionPrice,
   isSubscribe = false,
+  isOwner = false,
 }) {
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [isLiked, setIsLiked] = useState(productIsLiked);
@@ -240,11 +241,11 @@ export default function ProductDetailSection({
                   {(productType === 'ebook' || productType === 'comic') && canSubscribe && (
                     <button
                       onClick={() => handleSubscribe(productID, subscriptionPrice)}
-                      disabled={isSubscribe}
+                      disabled={isSubscribe || isOwner}
                       className={`w-full cursor-pointer rounded-3xl px-12 py-3 font-bold text-white md:w-auto 
-                      ${isSubscribe ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#0076E999] hover:bg-[#0076E999]/80'}`}
+                      ${isSubscribe || isOwner ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#0076E999] hover:bg-[#0076E999]/80'}`}
                     >
-                      {isSubscribe ? 'Subscribed' : 'Subscribe'}
+                      {isOwner ? 'Ini adalah konten milikmu' : isSubscribe ? 'Subscribed' : 'Subscribe'}
                     </button>
                   )}
 
@@ -252,11 +253,11 @@ export default function ProductDetailSection({
                     console.log("productID", productID),
                     <button
                       onClick={() => handleSubscribe(creatorDetail.id, productID, subscriptionPrice)}
-                      disabled={isSubscribe}
+                      disabled={isSubscribe || isOwner}
                       className={`w-full cursor-pointer rounded-3xl px-12 py-3 font-bold text-white md:w-auto 
-                      ${isSubscribe ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#0076E999] hover:bg-[#0076E999]/80'}`}
+                      ${isSubscribe || isOwner ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#0076E999] hover:bg-[#0076E999]/80'}`}
                     >
-                      {isSubscribe ? 'Subscribed' : 'Subscribe'}
+                      {isOwner ? 'Ini adalah konten milikmu' : isSubscribe ? 'Subscribed' : 'Subscribe'}
                     </button>
                   ) : productFirstEpisode ? (
                     <Link href={`/${productType}/read/${productFirstEpisode.id}`}>
@@ -416,4 +417,5 @@ ProductDetailSection.propTypes = {
   canSubscribe: PropTypes.bool,
   subscriptionPrice: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   isSubscribe: PropTypes.bool,
+  isOwner: PropTypes.bool,
 };

@@ -50,6 +50,7 @@ export default function MainTemplateLayout({
         isLoading={isLoading}
         handleSubscribe={handleSubscribe}
         isSubscribe={productDetail?.isSubscribe && productDetail?.canSubscribe ? true : false}
+        isOwner={productDetail?.isOwner || false}
       />
 
       <div className="px-4 pmd:px-15">
@@ -62,6 +63,7 @@ export default function MainTemplateLayout({
           handlePayment={handlePayment}
           isSubscribe={productDetail?.isSubscribe && productDetail?.canSubscribe ? true : false}
           productId={productDetail?.id}
+          isOwner={productDetail?.isOwner || false}
         />
       </div>
 
