@@ -39,6 +39,10 @@ export const movieAPI = createApi({
       },
       providesTags: ["movie"],
     }),
+    getMoviePerContentAnalytics: builder.query({
+      query: (id) => `/movies/analytics/${id}`,
+      providesTags: ['movie'],
+    }),
     deleteMovie: builder.mutation({
       query: (id) => ({
         url: `/movies/${id}`,
@@ -58,4 +62,4 @@ export const movieAPI = createApi({
   }),
 });
 
-export const { useGetMovieQuery, useCreateMovieMutation, useGetMovieByIdQuery, useGetMoviesHomeDataQuery, useDeleteMovieMutation, useEditMovieMutation } = movieAPI;
+export const { useGetMovieQuery, useCreateMovieMutation, useGetMovieByIdQuery, useGetMoviesHomeDataQuery, useDeleteMovieMutation, useEditMovieMutation, useGetMoviePerContentAnalyticsQuery } = movieAPI;

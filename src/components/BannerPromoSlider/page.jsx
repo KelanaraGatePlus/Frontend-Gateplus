@@ -4,9 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import "@splidejs/react-splide/css/skyblue";
 
-import bannerPromo1 from "@@/BannerPromo/hero-banner-1.svg";
-import bannerPromo2 from "@@/BannerPromo/hero-banner-2.svg";
-import bannerPromo4 from "@@/BannerPromo/hero-banner-4.svg";
+import bannerPromo1 from "@@/BannerPromo/hero-banner-1.jpg";
+import bannerPromo2 from "@@/BannerPromo/hero-banner-2.jpg";
+import bannerPromo3 from "@@/BannerPromo/hero-banner-3.jpg";
+import bannerPromo4 from "@@/BannerPromo/hero-banner-4.jpg";
+import bannerPromo5 from "@@/BannerPromo/hero-banner-5.jpg";
 
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -26,8 +28,18 @@ export default function BannerPromoSlider() {
       url: "/register-creators",
     },
     {
+      id: 3,
+      image: bannerPromo3,
+      url: "/register-creators",
+    },
+    {
       id: 4,
       image: bannerPromo4,
+      url: "/register-creators",
+    },
+    {
+      id: 5,
+      image: bannerPromo5,
       url: "/register-creators",
     },
   ];
@@ -38,7 +50,7 @@ export default function BannerPromoSlider() {
   }, []);
 
   return (
-    <div className="my-auto mb-0.5 md:mb-10 flex w-screen flex-col md:h-fit">
+    <div className="my-auto mb-0.5 md:mb-10 flex w-screen flex-col md:h-fit shadow-2xl shadow-[#166EB6]/30">
       {isLoading ? (
         <Skeleton
           height={400}
@@ -61,6 +73,9 @@ export default function BannerPromoSlider() {
             },
           }}
           aria-label="Banner Foto"
+          style={{
+            boxShadow: "inset 0 -80px 60px -40px rgba(0, 0, 0, 0.5)",
+          }}
         >
           {bannerPromo.map((item) => (
             <SplideSlide key={item.id}>

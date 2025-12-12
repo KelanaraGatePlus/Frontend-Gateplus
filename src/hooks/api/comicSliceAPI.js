@@ -50,6 +50,10 @@ export const comicApi = createApi({
             query: (category) => category ? `/comics/highlights?category=${category}` : `/comics/highlights`,
             providesTags: ["comic"],
         }),
+        getComicPerContentAnalytics: builder.query({
+            query: (id) => `/comics/analytics/${id}`,
+            providesTags: ["comic"],
+        }),
         deleteComic: builder.mutation({
             query: (id) => ({
                 url: `/comics/${id}`,
@@ -77,4 +81,5 @@ export const {
     useGetComicsHomeDataQuery,
     useDeleteComicMutation,
     useUpdateComicMutation,
+    useGetComicPerContentAnalyticsQuery,
 } = comicApi;

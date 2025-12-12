@@ -46,6 +46,10 @@ export const seriesAPI = createApi({
       query: (category) => category ? `/series/highlights?category=${category}` : "/series/highlights",
       providesTags: ['series'],
     }),
+    getSeriesPerContentAnalytics: builder.query({
+      query: (id) => `/series/analytics/${id}`,
+      providesTags: ['series'],
+    }),
     deleteSeries: builder.mutation({
       query: (id) => ({
         url: `/series/${id}`,
@@ -66,5 +70,5 @@ export const seriesAPI = createApi({
 });
 
 export const { useGetSeriesQuery, useCreateSeriesMutation, useGetSeriesByIdQuery, useCreateEpisodeSeriesMutation,
-  useGetSeriesHomeDataQuery, useDeleteSeriesMutation, useEditSeriesMutation
+  useGetSeriesHomeDataQuery, useDeleteSeriesMutation, useEditSeriesMutation, useGetSeriesPerContentAnalyticsQuery
 } = seriesAPI;

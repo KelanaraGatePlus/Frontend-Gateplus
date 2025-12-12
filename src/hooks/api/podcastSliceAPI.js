@@ -50,6 +50,10 @@ export const podcastApi = createApi({
             query: (category) => category ? `/podcast/highlights?category=${category}` : `/podcast/highlights`,
             providesTags: ["podcast"],
         }),
+        getPodcastPerContentAnalytics: builder.query({
+            query: (id) => `/podcast/analytics/${id}`,
+            providesTags: ["podcast"],
+        }),
         deletePodcast: builder.mutation({
             query: (id) => ({
                 url: `/podcast/${id}`,
@@ -77,4 +81,5 @@ export const {
     useGetPodcastHomeDataQuery,
     useDeletePodcastMutation,
     useEditPodcastMutation,
+    useGetPodcastPerContentAnalyticsQuery,
 } = podcastApi;

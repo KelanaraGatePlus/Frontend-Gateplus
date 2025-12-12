@@ -1,7 +1,7 @@
 "use client";
 import ContentTable from "@/components/Table/ContentTable";
 import { useGetContentDashboardQuery, useGetPerContentDashboardQuery } from "@/hooks/api/creatorSliceAPI";
-import { useDeleteEbookMutation } from "@/hooks/api/ebookSliceAPI";
+import { useDeleteEbookMutation, useGetEbookPerContentAnalyticsQuery } from "@/hooks/api/ebookSliceAPI";
 import { contentTypeArray, contentTypeSingle } from "@/lib/constants/contentType";
 import React from "react";
 import { useState } from "react";
@@ -13,20 +13,46 @@ import { EyeIcon, PencilIcon, TrashIcon } from "lucide-react";
 import HeaderUploadForm from "@/components/UploadForm/HeaderUploadForm";
 import FlexModal from "@/components/Modal/FlexModal";
 import DatabaseDelete from "@@/AdditionalImages/database-delete.png";
-import { useDeleteComicMutation } from "@/hooks/api/comicSliceAPI";
-import { useDeletePodcastMutation } from "@/hooks/api/podcastSliceAPI";
-import { useDeleteSeriesMutation } from "@/hooks/api/seriesSliceAPI";
-import { useDeleteMovieMutation } from "@/hooks/api/movieSliceAPI";
+import { useDeleteComicMutation, useGetComicPerContentAnalyticsQuery } from "@/hooks/api/comicSliceAPI";
+import { useDeletePodcastMutation, useGetPodcastPerContentAnalyticsQuery } from "@/hooks/api/podcastSliceAPI";
+import { useDeleteSeriesMutation, useGetSeriesPerContentAnalyticsQuery } from "@/hooks/api/seriesSliceAPI";
+import { useDeleteMovieMutation, useGetMoviePerContentAnalyticsQuery } from "@/hooks/api/movieSliceAPI";
 import Link from "next/link";
+import PreviewContentHeader from "@/components/Header/PreviewContentHeader";
+import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 export default function DashboardContentPage() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState({ id: null, type: null });
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+    const [detailTarget, setDetailTarget] = useState({ id: null, type: null });
     const [deleteEbook, { isLoading: isDeletingEbook }] = useDeleteEbookMutation();
     const [deleteComic, { isLoading: isDeletingComic }] = useDeleteComicMutation();
     const [deletePodcast, { isLoading: isDeletingPodcast }] = useDeletePodcastMutation();
     const [deleteSeries, { isLoading: isDeletingSeries }] = useDeleteSeriesMutation();
     const [deleteMovie, { isLoading: isDeletingMovie }] = useDeleteMovieMutation();
+
+    // Analytics hooks - conditionally enabled based on detailTarget
+    const { data: ebookAnalytics, isLoading: isLoadingEbookAnalytics } = useGetEbookPerContentAnalyticsQuery(
+        detailTarget.id,
+        { skip: !detailTarget.id || (detailTarget.type !== 'ebooks' && detailTarget.type !== 'ebook') }
+    );
+    const { data: comicAnalytics, isLoading: isLoadingComicAnalytics } = useGetComicPerContentAnalyticsQuery(
+        detailTarget.id,
+        { skip: !detailTarget.id || (detailTarget.type !== 'comics' && detailTarget.type !== 'comic') }
+    );
+    const { data: podcastAnalytics, isLoading: isLoadingPodcastAnalytics } = useGetPodcastPerContentAnalyticsQuery(
+        detailTarget.id,
+        { skip: !detailTarget.id || (detailTarget.type !== 'podcasts' && detailTarget.type !== 'podcast') }
+    );
+    const { data: seriesAnalytics, isLoading: isLoadingSeriesAnalytics } = useGetSeriesPerContentAnalyticsQuery(
+        detailTarget.id,
+        { skip: !detailTarget.id || detailTarget.type !== 'series' }
+    );
+    const { data: movieAnalytics, isLoading: isLoadingMovieAnalytics } = useGetMoviePerContentAnalyticsQuery(
+        detailTarget.id,
+        { skip: !detailTarget.id || (detailTarget.type !== 'movies' && detailTarget.type !== 'movie') }
+    );
 
     const hoverColorClasses = {
         blue: 'hover:from-[#156EB7] hover:to-[#093151]',
@@ -72,6 +98,33 @@ export default function DashboardContentPage() {
 
     const [isActive, setIsActive] = useState(tabsData[0].id);
     const [dataType, setDataType] = useState('result');
+
+    // Get analytics data based on content type
+    const getAnalyticsData = () => {
+        switch (detailTarget.type) {
+            case 'ebooks':
+            case 'ebook':
+                return ebookAnalytics?.data;
+            case 'comics':
+            case 'comic':
+                return comicAnalytics?.data;
+            case 'podcasts':
+            case 'podcast':
+                return podcastAnalytics?.data;
+            case 'series':
+                return seriesAnalytics?.data;
+            case 'movies':
+            case 'movie':
+                return movieAnalytics?.data;
+            default:
+                return null;
+        }
+    };
+
+    const analyticsData = getAnalyticsData();
+    const isLoadingAnalytics = isLoadingEbookAnalytics || isLoadingComicAnalytics ||
+        isLoadingPodcastAnalytics || isLoadingSeriesAnalytics ||
+        isLoadingMovieAnalytics;
 
     const handleConfirmDelete = async () => {
         if (!deleteTarget?.id || !deleteTarget?.type) return;
@@ -232,7 +285,16 @@ export default function DashboardContentPage() {
                                                     <EyeIcon size={16} className="inline-block mr-2" />
                                                     Preview
                                                 </DropdownItem>
-                                                <DropdownItem key="detail" className="hover:bg-[#4a4a4a] rounded-sm px-2 flex items-center">
+                                                <DropdownItem
+                                                    key="detail"
+                                                    onClick={() => {
+                                                        const id = item?._id ?? item?.id ?? null;
+                                                        const type = dataType !== 'result' ? dataType : (item?.contentType ?? item?.type ?? null);
+                                                        setDetailTarget({ id, type });
+                                                        setIsDetailModalOpen(true);
+                                                    }}
+                                                    className="hover:bg-[#4a4a4a] rounded-sm px-2 flex items-center"
+                                                >
                                                     <EyeIcon size={16} className="inline-block mr-2" />
                                                     Detail
                                                 </DropdownItem>
@@ -285,6 +347,58 @@ export default function DashboardContentPage() {
                                     {isDeletingEbook || isDeletingPodcast || isDeletingSeries || isDeletingComic || isDeletingMovie ? 'Menghapus…' : 'Hapus'}
                                 </button>
                             </div>
+                        </div>
+                    </FlexModal>
+                    <FlexModal
+                        isOpen={isDetailModalOpen}
+                        onClose={() => {
+                            setIsDetailModalOpen(false);
+                            setDetailTarget({ id: null, type: null });
+                        }}
+                    >
+                        <div className="flex flex-col gap-4 w-full">
+                            {isLoadingAnalytics ? (
+                                <LoadingOverlay />
+                            ) : analyticsData ? (
+                                <PreviewContentHeader
+                                    posterImageUrl={
+                                        analyticsData.contentData?.posterImageUrl ||
+                                        analyticsData.contentData?.coverPodcastImage ||
+                                        analyticsData.posterImageUrl ||
+                                        analyticsData.coverPodcastImage ||
+                                        ''
+                                    }
+                                    title={analyticsData.contentData?.title || analyticsData.title || ''}
+                                    description={analyticsData.contentData?.description || analyticsData.description || ''}
+                                    author={
+                                        analyticsData.contentData?.Creator?.profileName ||
+                                        analyticsData.contentData?.creator?.fullname ||
+                                        analyticsData.author ||
+                                        analyticsData.creator?.fullname ||
+                                        ''
+                                    }
+                                    ageRestriction={analyticsData.contentData?.ageRestriction || analyticsData.ageRestriction || ''}
+                                    createdAt={analyticsData.contentData?.createdAt || analyticsData.createdAt || ''}
+                                    categories={
+                                        analyticsData.contentData?.categories?.tittle ||
+                                        analyticsData.categories?.[0]?.tittle ||
+                                        analyticsData.category ||
+                                        ''
+                                    }
+                                    totalLikes={analyticsData.totalLikes || 0}
+                                    totalDislikes={analyticsData.totalDislikes || 0}
+                                    totalSaves={analyticsData.totalSaved || 0}
+                                    totalShares={analyticsData.totalShares || 0}
+                                    totalRevenue={analyticsData.totalRevenue || 0}
+                                    totalUnitsSold={analyticsData.totalUnitsSold || analyticsData.totalPurchaseCount || 0}
+                                    totalViews={analyticsData.contentData?.totalViews || analyticsData.totalViews || 0}
+                                    totalReports={analyticsData.totalReports || 0}
+                                />
+                            ) : (
+                                <div className="flex justify-center items-center p-8">
+                                    <p className="text-white">No analytics data available</p>
+                                </div>
+                            )}
                         </div>
                     </FlexModal>
                 </div>
