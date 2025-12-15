@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,16 +18,18 @@ import BackButton from "@/components/BackButton/page";
 import EpubReader from "@/components/EbookReader/page";
 import DetailPageLoadingSkeleton from "@/components/MainDetailProduct/Loading/ProductReadLoading"
 import CommentComponent from "@/components/Comment/page";
+import FontSizeController from "./Component/FontSizeController";
 
 /*[--- ASSETS IMPORT ---]*/
 import logoArrowDownDark from "@@/icons/icons-dashboard/icons-arrow-left.svg";
 import logoArrowDownLight from "@@/icons/icons-dashboard/icons-arrow-left-light.svg";
-import iconFlag from "@@/icons/icon-flag.svg";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
-import { useDeviceType } from "@/hooks/helper/deviceType";
+import { Icon } from "@iconify/react";
+import ProductDonationSection from "@/components/MainDetailProduct/ProductDonationSection";
 
 export default function ReadEbookPage({ params }) {
   const { id } = React.use(params);
+  const epubReaderRef = useRef(null);
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [ebookTitle, setEbookTitle] = useState("");
   const [ebookId, setEbookId] = useState("");
@@ -41,11 +43,22 @@ export default function ReadEbookPage({ params }) {
   const { data, isLoading, error } = useGetEpisodeEbookByIdQuery(id);
   const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByEpisodeEbookQuery(id);
   const [createLog] = useCreateLogMutation();
+  const [fontSizeFactor, setFontSizeFactor] = useState(1.0);
+  const [fontSizeModalOpen, setFontSizeModalOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const episodeEbookData = data?.data?.data || {};
   const ebookData = episodeEbookData.ebooks || {};
   const allEpisodes = ebookData.episode_ebooks || [];
   let hasUpdatedViews = false;
-  const device = useDeviceType();
+
+  // Detect device type based on window width
+  const getDeviceType = () => {
+    if (typeof window === 'undefined') return 'DESKTOP';
+    const width = window.innerWidth;
+    if (width < 768) return 'MOBILE';
+    if (width < 1024) return 'TABLET';
+    return 'DESKTOP';
+  };
 
   const currentIndex = allEpisodes.findIndex(
     (ep) => ep.id === episodeEbookData.id,
@@ -62,14 +75,14 @@ export default function ReadEbookPage({ params }) {
           contentId: id,
           logType: "WATCH_CONTENT", // misalnya tipe konten
           contentType: "EPISODE_EBOOK", // misalnya log aksi
-          deviceType: device,
+          deviceType: getDeviceType(),
         }).unwrap();
 
         console.log("✅ Log berhasil dibuat setelah 2 menit");
       } catch (err) {
         console.error("❌ Gagal membuat log:", err);
       }
-    }, 2 * 60 * 1000); // 1 menit = 60000 ms
+    }, 2 * 60 * 1000);
 
     return () => clearTimeout(timer); // clear kalau user keluar sebelum 1 menit
   }, [id, createLog]);
@@ -114,6 +127,13 @@ export default function ReadEbookPage({ params }) {
     localStorage.setItem("theme", newTheme ? "dark" : "light");
   };
 
+  // Fungsi untuk mengubah ukuran font
+  const handleFontSizeChange = (delta) => {
+    if (epubReaderRef.current) {
+      epubReaderRef.current.changeFontSize(delta);
+    }
+  };
+
   useEffect(() => {
     if (data && !isLoading) {
       getData();
@@ -144,11 +164,17 @@ export default function ReadEbookPage({ params }) {
 
   return (
     <div
-      className={`flex flex-col overflow-x-hidden ${isDark ? "bg-[#222222]" : "bg-[#fff]"}`}
+      className={`flex flex-col overflow-x-hidden ${isDark ? "bg-[#1A1A1A]" : "bg-[#fff]"}`}
     >
       <main className="flex flex-col">
+        <FontSizeController
+          isOpen={fontSizeModalOpen}
+          fontSizeFactor={fontSizeFactor}
+          onFontSizeChange={handleFontSizeChange}
+          containerClassName="fixed right-20 top-12"
+        />
         <div
-          className={`${isDark ? "text-white" : "text-[#222222]"} fixed z-10 mt-0 flex w-full flex-row items-center justify-start gap-2 px-4 py-2 text-2xl font-semibold backdrop-blur`}
+          className={`${isDark ? "text-white" : "text-[#222222]"} fixed z-10 mt-0 w-full flex-row items-center justify-start gap-2 px-4 md:px-20 py-2 text-2xl font-semibold backdrop-blur flex`}
         >
           <BackButton isDark={isDark} />
           <h4
@@ -161,9 +187,12 @@ export default function ReadEbookPage({ params }) {
               {ebookTitle || "Loading..."}
             </Link>
           </h4>
-          <div className="flex flex-row items-center justify-end">
-            <Link href={'/report/episode_ebook/' + id} className="mr-4">
-              <Image src={iconFlag} alt="Report" className="w-8 h-8" />
+          <div className="hidden md:flex flex-row items-center justify-end gap-2 relative">
+            <button className="w-8 h-8" onClick={() => setFontSizeModalOpen(!fontSizeModalOpen)}>
+              <Icon icon="material-symbols:text-fields-rounded" className="text-2xl w-full h-full" />
+            </button>
+            <Link href={'/report/episode_ebook/' + id}>
+              <Icon icon="solar:flag-2-linear" className="w-8 h-8" />
             </Link>
             {/* toggle dark and light */}
             <label className="inline-flex cursor-pointer items-center">
@@ -209,7 +238,117 @@ export default function ReadEbookPage({ params }) {
               </div>
             </label>
           </div>
+          <Icon
+            icon={'solar:menu-dots-bold-duotone'}
+            className={`w-10 h-10 z-10 text-3xl md:hidden ${isDark ? "text-white" : "text-black"}`}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          />
         </div>
+
+        {/* Mobile Dropdown Menu */}
+        {mobileMenuOpen && (
+          <div className="fixed top-2 right-4 z-20 md:hidden">
+            <div
+              className={`flex flex-col gap-3 rounded-2xl backdrop-blur-sm p-4 shadow-2xl border-1 min-w-[200px] ${isDark ? 'bg-black/20 text-white border-gray-600' : 'bg-white/20 text-black border-gray-400'} `}
+            >
+              {/* Dot */}
+              <Icon
+                icon={'solar:close-circle-bold-duotone'}
+                className={`h-8 w-8 text-3xl self-end md:hidden ${isDark ? "text-white" : "text-black"}`}
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              />
+              {/* Font Size Controller */}
+              <div className="flex flex-col gap-2 pb-3 border-b border-white/10">
+                <p className="text-xs font-semibold">Ukuran Font</p>
+                <div className="flex flex-row items-center justify-between gap-2">
+                  <button
+                    onClick={() => handleFontSizeChange(-0.1)}
+                    className="hover:opacity-70 transition-opacity p-2"
+                    aria-label="Decrease font size"
+                  >
+                    <Icon icon={'solar:rounded-magnifer-zoom-out-outline'} className="w-6 h-6" />
+                  </button>
+                  <div className="bg-[#515151] px-4 py-2 rounded-full text-sm font-medium text-white">
+                    <p>{Math.round(fontSizeFactor * 16)}px</p>
+                  </div>
+                  <button
+                    onClick={() => handleFontSizeChange(0.1)}
+                    className="hover:opacity-70 transition-opacity p-2"
+                    aria-label="Increase font size"
+                  >
+                    <Icon icon={'solar:rounded-magnifer-zoom-in-outline'} className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Dark Mode Toggle */}
+              <div className="flex flex-row items-center justify-between pb-3 border-b border-white/10">
+                <p className="text-xs font-semibold">Mode Gelap</p>
+                <label className="inline-flex cursor-pointer items-center">
+                  <input
+                    type="checkbox"
+                    checked={isDark}
+                    onChange={toggleTheme}
+                    className="peer sr-only"
+                  />
+                  <div
+                    className={`relative h-7 w-14 rounded-full transition-colors duration-300 ${isDark
+                        ? "bg-indigo-900 peer-focus:ring-2 peer-focus:ring-violet-800"
+                        : "bg-amber-200 peer-focus:ring-2 peer-focus:ring-amber-400"
+                      }`}
+                  >
+                    <div
+                      className={`absolute top-1/2 left-[2px] flex h-5 w-5 -translate-y-1/2 transform items-center justify-center rounded-full bg-white shadow-md transition-transform duration-300 ${isDark ? "translate-x-7" : "translate-x-1"
+                        }`}
+                    >
+                      {isDark ? (
+                        <svg
+                          className="h-4 w-4 text-violet-700"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                        </svg>
+                      ) : (
+                        <svg
+                          className="h-4 w-4 text-yellow-400"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                </label>
+              </div>
+
+              {/* Report Button */}
+              <Link
+                href={`/report/episode_ebook/${id}`}
+                className={`flex flex-row items-center gap-2 hover:opacity-70 transition-opacity ${isDark ? "text-white" : "text-black"}`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Icon icon={'solar:flag-2-linear'} className="w-6 h-6" />
+                <p className="text-sm font-medium">Laporkan Konten</p>
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Overlay to close mobile menu */}
+        {mobileMenuOpen && (
+          <div
+            className="fixed inset-0 z-10 md:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+        )}
         {/* Bagian Header */}
         <section className="relative mt-16 w-full">
           {/* banner */}
@@ -224,16 +363,13 @@ export default function ReadEbookPage({ params }) {
               />
             )}
             <div
-              className={`absolute top-0 left-0 z-0 h-full w-full ${isDark
-                ? "bg-[linear-gradient(to_bottom,#FFFFFF00,#FFFFFF00,#737373A1,#595959BF,#3F3F3FDE,#303030ED,#222222FF)]"
-                : "bg-[linear-gradient(to_bottom,#00000000,#00000000,#E5E5E5A1,#E0E0E0BF,#D4D4D4DE,#CCCCCCED,#FFFFFF)]"
-                }`}
+              className={`absolute top-0 left-0 z-0 h-full w-full bg-gradient-to-b`}
             ></div>
           </div>
         </section>
         {/* Isi Ebook */}
         <div
-          className={`relative flex w-screen flex-col px-4 py-5 ${isDark ? "text-white" : "text-[#222222]"} md:px-15`}
+          className={`relative flex w-screen flex-col py-5 ${isDark ? "text-white" : "text-[#222222]"}`}
         >
           {/* Judul Chapter */}
           <h1 className="w-full text-center text-2xl font-bold lg:text-3xl">
@@ -253,7 +389,15 @@ export default function ReadEbookPage({ params }) {
             <div
               className={`mt-8 mb-10 flex h-fit flex-col ${isDark ? "text-white" : "text-[#222222]"}`}
             >
-              {ebookUrl && <EpubReader epubUrl={ebookUrl} isDark={isDark} />}
+              {ebookUrl && (
+                <EpubReader
+                  ref={epubReaderRef}
+                  epubUrl={ebookUrl}
+                  isDark={isDark}
+                  initialFontSizeFactor={fontSizeFactor}
+                  onFontSizeChange={setFontSizeFactor}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -269,8 +413,8 @@ export default function ReadEbookPage({ params }) {
           )}
           <div
             className={`absolute top-0 left-0 z-0 h-full w-full ${isDark
-                ? "bg-[linear-gradient(to_top,#FFFFFF00,#FFFFFF00,#737373A1,#595959BF,#3F3F3FDE,#303030ED,#222222FF)]"
-                : "bg-[linear-gradient(to_top,#00000000,#00000000,#E5E5E5A1,#E0E0E0BF,#D4D4D4DE,#CCCCCCED,#FFFFFF)]"
+              ? "bg-[linear-gradient(to_top,#FFFFFF00,#FFFFFF00,#737373A1,#595959BF,#3F3F3FDE,#303030ED,#222222FF)]"
+              : "bg-[linear-gradient(to_top,#00000000,#00000000,#E5E5E5A1,#E0E0E0BF,#D4D4D4DE,#CCCCCCED,#FFFFFF)]"
               }`}
           />
         </div>
@@ -377,65 +521,9 @@ export default function ReadEbookPage({ params }) {
           className={`relative flex w-screen flex-col px-4 py-5 md:px-15 ${isDark ? "text-white" : "text-[#222222]"
             }`}
         >
-          <div
-            className={`w-full rounded-xl p-4 ${isDark ? "bg-[#2f2f2f] text-white" : "bg-[#e0e0e0] text-[#222222]"
-              }`}
-          >
-            <h3 className="mb-2 text-xl font-bold lg:text-2xl">Sawerkuy!</h3>
-            <p className="mb-2 text-justify text-sm lg:text-base">
-              Karya ini bisa dinikmati secara gratis, tapi kalau kamu mau, kasih
-              &quot;sawer&quot; ke kreator. Dengan donasi, kamu udah bantu
-              kreator supaya terus bisa berkarya, kayak hero di dunia anime!
-            </p>
-            <p className="mb-4 text-justify text-sm lg:text-base">
-              Karya ini GRATIS! Tapi kamu boleh kok kasih tip biar kreator hepi
-              🥰
-            </p>
-
-            <div className="mb-2 grid grid-cols-4 gap-2">
-              <button
-                type="button"
-                className="flex-1 rounded-lg bg-[#175BA6] py-2 text-lg font-bold text-white"
-              >
-                5K
-              </button>
-              <button
-                type="button"
-                className="flex-1 rounded-lg bg-[#175BA6] py-2 text-lg font-bold text-white"
-              >
-                10k
-              </button>
-              <button
-                type="button"
-                className="flex-1 rounded-lg bg-[#175BA6] py-2 text-lg font-bold text-white"
-              >
-                25k
-              </button>
-              <button
-                type="button"
-                className="flex-1 rounded-lg bg-[#175BA6] py-2 text-lg font-bold text-white"
-              >
-                75k
-              </button>
-            </div>
-            <button
-              type="submit"
-              className="w-full flex-1 rounded-lg bg-[#175BA6] py-3 text-lg font-bold text-white lg:py-2"
-            >
-              Masukan Nominal Sendiri
-            </button>
-          </div>
-
-          <p className="mt-6 text-center text-base">
-            Gimana nih? Apakah konten ini melanggar{" "}
-            <Link href="/term-and-conditions" className="underline">
-              aturan (Syarat & Ketentuan)
-            </Link>
-            ? Laporkan aja kalau ada yang nggak sesuai ya!{" "}
-            <Link href="/feedback" className="underline">
-              Laporkan!
-            </Link>
-          </p>
+          <ProductDonationSection
+            creatorId={ebookData?.creatorId}
+          />
         </section>
 
         {/* Comment Baru */}
