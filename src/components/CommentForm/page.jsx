@@ -13,6 +13,7 @@ import { useCreateCommentMutation } from "@/hooks/api/commentSliceAPI";
 import { useDisplayPayment } from "@/hooks/api/paymentAPI";
 import { Icon } from "@iconify/react";
 import CommentDonationForm from "./CommentDonationForm";
+import DonationLabel from "./DonationLabel";
 
 export default function CommentForm({
   contentType,
@@ -127,20 +128,39 @@ export default function CommentForm({
     <section className={`flex w-full flex-col pb-3 text-white`}>
       <div className="flex w-full">
         <form className="flex w-full flex-col gap-2.5" onSubmit={handleSubmit(onSubmit)} >
-          <textarea
-            name="comment"
-            id="comment"
-            placeholder="Tell us about you, maxs 150 character."
-            className={`${errors.message ? "border-red-500" : "border-[#F5F5F540]"} h-32 w-full rounded-md border p-2 text-sm text-white transition-colors duration-300 placeholder:text-sm placeholder:font-bold placeholder:text-[#979797] bg-[#F5F5F54D]`}
-            {...register("message")}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSubmit(onSubmit)();
-              }
-            }}
-            required
-          />
+          <div
+            className={`
+              ${errors.message ? "border-red-500" : "border-[#F5F5F540]"} 
+              flex min-h-[128px] flex-col gap-2 w-full rounded-md border p-3 text-sm text-white transition-all duration-300 bg-[#F5F5F54D]
+              focus-within:border-[#2563eb]
+            `}
+          >
+            {withTip && tipValue && (
+              <div className="w-fit">
+                <DonationLabel label={tipValue} />
+              </div>
+            )}
+
+            <textarea
+              {...register("message")}
+              id="comment"
+              placeholder="Tell us about you, maxs 150 character."
+              rows={1}
+              className="w-full flex-1 montserratFont bg-transparent outline-none border-none resize-none p-0 placeholder:text-[#979797] focus:ring-0 overflow-hidden"
+              onInput={(e) => {
+                const target = e.target;
+                target.style.height = "auto";
+                target.style.height = `${target.scrollHeight}px`;
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit(onSubmit)();
+                }
+              }}
+              required
+            />
+          </div>
           {withTip && (
             <CommentDonationForm
               setValue={setTipValue}
