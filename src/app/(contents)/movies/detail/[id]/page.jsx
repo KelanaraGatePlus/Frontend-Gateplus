@@ -13,7 +13,6 @@ import { useLikeContent } from "@/lib/features/useLikeContent";
 import { useDislikeContent } from "@/lib/features/useDislikeContent";
 import DefaultShareButton from "@/components/ShareButton/DefaultShareButton";
 import PropTypes from 'prop-types';
-import ProductDonationSection from "@/components/MainDetailProduct/ProductDonationSection";
 import iconLikeSolid from "@@/logo/logoDetailFilm/liked-icons.svg";
 import iconDislikeSolid from "@@/logo/logoDetailFilm/dislike-icons-solid.svg";
 import iconSaveSolid from "@@/logo/logoDetailFilm/saved-icons.svg";
@@ -301,10 +300,6 @@ function PlayingMoviePage({ params }) {
                 </section>
 
                 <section className="mt-5">
-                    <ProductDonationSection creatorId={movieData?.creator?.id} />
-                </section>
-
-                <section className="mt-5">
                     <section className="my-10 flex flex-col">
                         <section className="mt-10">
                             <CarouselTemplate
@@ -330,7 +325,7 @@ function PlayingMoviePage({ params }) {
                 {commentData && <CommentComponent
                     commentData={commentData?.data?.data || []}
                     isLoadingGetComment={isLoadingGetComment}
-                    typeContent={"movie"}
+                    contentType={"MOVIE"}
                     episodeId={id}
                 />}
 

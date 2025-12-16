@@ -25,7 +25,6 @@ import logoArrowDownDark from "@@/icons/icons-dashboard/icons-arrow-left.svg";
 import logoArrowDownLight from "@@/icons/icons-dashboard/icons-arrow-left-light.svg";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { Icon } from "@iconify/react";
-import ProductDonationSection from "@/components/MainDetailProduct/ProductDonationSection";
 
 export default function ReadEbookPage({ params }) {
   const { id } = React.use(params);
@@ -293,8 +292,8 @@ export default function ReadEbookPage({ params }) {
                   />
                   <div
                     className={`relative h-7 w-14 rounded-full transition-colors duration-300 ${isDark
-                        ? "bg-indigo-900 peer-focus:ring-2 peer-focus:ring-violet-800"
-                        : "bg-amber-200 peer-focus:ring-2 peer-focus:ring-amber-400"
+                      ? "bg-indigo-900 peer-focus:ring-2 peer-focus:ring-violet-800"
+                      : "bg-amber-200 peer-focus:ring-2 peer-focus:ring-amber-400"
                       }`}
                   >
                     <div
@@ -516,24 +515,13 @@ export default function ReadEbookPage({ params }) {
           </p>
         </div>
 
-        {/* SawerKuy */}
-        <section
-          className={`relative flex w-screen flex-col px-4 py-5 md:px-15 ${isDark ? "text-white" : "text-[#222222]"
-            }`}
-        >
-          <ProductDonationSection
-            creatorId={ebookData?.creatorId}
-          />
-        </section>
-
         {/* Comment Baru */}
         <CommentComponent
           commentData={commentData?.data?.data || []}
           isLoadingGetComment={isLoadingGetComment}
-          typeContent={"ebook"}
+          contentType={"EBOOK"}
           episodeId={id}
         />
-
       </main>
     </div>
   );

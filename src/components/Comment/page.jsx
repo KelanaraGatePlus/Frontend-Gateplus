@@ -29,7 +29,7 @@ export default function CommentComponent({
   isPodcast = false,
   commentData = [],
   isLoadingGetComment,
-  typeContent = "ebook",
+  contentType,
   episodeId
 }) {
   const [isCommentFieldHide, setIsCommentFieldHide] = useState(false);
@@ -93,11 +93,12 @@ export default function CommentComponent({
         <div className="flex">
           {!isCommentFieldHide &&
             <CommentForm
-              episodeEbookId={typeContent === "ebook" ? episodeId : null}
-              episodeComicsId={typeContent === "comic" ? episodeId : null}
-              episode_podcastId={typeContent === "podcast" ? episodeId : null}
-              episodeSeriesId={typeContent === "series" ? episodeId : null}
-              movieId={typeContent === "movie" ? episodeId : null}
+              contentType={contentType}
+              episodeEbookId={contentType === "EBOOK" ? episodeId : null}
+              episodeComicsId={contentType === "COMIC" ? episodeId : null}
+              episode_podcastId={contentType === "PODCAST" ? episodeId : null}
+              episodeSeriesId={contentType === "SERIES" ? episodeId : null}
+              movieId={contentType === "MOVIE" ? episodeId : null}
             />
           }
 
@@ -125,11 +126,11 @@ export default function CommentComponent({
                   const isAuthor =
                     comment.user?.creator &&
                     (
-                      (typeContent === "ebook" &&
+                      (contentType === "EBOOK" &&
                         comment.ebook_episode?.ebooks?.creators?.id === comment.user.creator.id) ||
-                      (typeContent === "podcast" &&
+                      (contentType === "PODCAST" &&
                         comment.Episode_podcast?.podcasts?.Creator?.id === comment.user.creator.id) ||
-                      (typeContent === "comic" &&
+                      (contentType === "COMIC" &&
                         comment.comics_episode?.comics?.creators?.id === comment.user.creator.id)
                     );
 
@@ -354,6 +355,6 @@ CommentComponent.propTypes = {
   isPodcast: PropTypes.bool,
   commentData: PropTypes.array.isRequired,
   isLoadingGetComment: PropTypes.bool,
-  typeContent: PropTypes.string.isRequired,
+  contentType: PropTypes.string.isRequired,
   episodeId: PropTypes.string.isRequired,
 };

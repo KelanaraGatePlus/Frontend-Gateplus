@@ -10,8 +10,12 @@ import { createCommentSchema } from "@/lib/schemas/createCommentSchema";
 
 /*[--- API HOOKS & FEATURES ---]*/
 import { useCreateCommentMutation } from "@/hooks/api/commentSliceAPI";
+import { useDisplayPayment } from "@/hooks/api/paymentAPI";
+import { Icon } from "@iconify/react";
+import CommentDonationForm from "./CommentDonationForm";
 
 export default function CommentForm({
+  contentType,
   episodeEbookId = null,
   episodeComicsId = null,
   episode_podcastId = null,
@@ -19,6 +23,10 @@ export default function CommentForm({
   movieId = null
 }) {
   const [createComment, { isLoading, error }] = useCreateCommentMutation();
+  const { display } = useDisplayPayment();
+  const [tipValue, setTipValue] = React.useState(null);
+  const [withTip, setWithTip] = React.useState(false);
+
   const {
     register,
     handleSubmit,
@@ -29,24 +37,88 @@ export default function CommentForm({
     mode: "onChange",
     defaultValues: {
       message: "",
+      contentType: contentType || "",
+      tipAmount: tipValue || null,
     },
   });
 
   const onSubmit = async (data) => {
+    // Determine which id to send based on contentType or available ids
+    const typeKeyMap = {
+      ebook: { key: "episodeEbookId", value: episodeEbookId },
+      comic: { key: "episodeComicsId", value: episodeComicsId },
+      podcast: { key: "episode_podcastId", value: episode_podcastId },
+      series: { key: "episodeSeriesId", value: episodeSeriesId },
+      movie: { key: "movieId", value: movieId },
+    };
+
+    // Fallback detection when contentType not provided
+    let chosen = null;
+    const normalizedType = typeof contentType === "string" ? contentType.toLowerCase() : undefined;
+    if (normalizedType && typeKeyMap[normalizedType]) {
+      chosen = typeKeyMap[normalizedType];
+    } else {
+      const candidates = [
+        { key: "episodeEbookId", value: episodeEbookId },
+        { key: "episodeComicsId", value: episodeComicsId },
+        { key: "episode_podcastId", value: episode_podcastId },
+        { key: "episodeSeriesId", value: episodeSeriesId },
+        { key: "movieId", value: movieId },
+      ];
+      chosen = candidates.find((c) => c.value != null) || null;
+    }
+
     const payload = {
       message: data.message,
-      episodeEbookId,
-      episodeComicsId,
-      episode_podcastId,
-      episodeSeriesId,
-      movieId
+      contentType,
+      ...(withTip && Number(tipValue) > 0 ? { tipAmount: Number(tipValue) } : {}),
+      ...(chosen ? { [chosen.key]: chosen.value } : {}),
     };
 
     try {
-      await createComment(payload).unwrap();
-      reset();
+      const result = await createComment(payload).unwrap();
+
+      // Jika ada snapToken/snapUrl di response, tampilkan payment
+      if (result?.data?.snapToken || result?.data?.snapUrl) {
+        await display(
+          {
+            snapToken: result.data.snapToken,
+            snapUrl: result.data.snapUrl,
+            provider: result.data.provider || "midtrans",
+          },
+          {
+            onSuccess: (paymentResult) => {
+              console.log("Pembayaran berhasil:", paymentResult);
+              reset();
+              setTipValue(null);
+              setWithTip(false);
+            },
+            onPending: (paymentResult) => {
+              console.log("Pembayaran pending:", paymentResult);
+              alert("Pembayaran masih dalam proses.");
+            },
+            onError: (paymentError) => {
+              console.error("Pembayaran gagal:", paymentError);
+              alert("Pembayaran gagal. Silakan coba lagi.");
+            },
+            onClose: () => {
+              console.log("Payment dialog ditutup");
+              // Tetap reset form meskipun user close
+              reset();
+              setTipValue(null);
+              setWithTip(false);
+            },
+          }
+        );
+      } else {
+        // Jika tidak ada payment (comment tanpa tip atau tip gratis)
+        reset();
+        setTipValue(null);
+        setWithTip(false);
+      }
     } catch (err) {
       console.error("Error creating comment:", err);
+      alert("Gagal mengirim komentar. Silakan coba lagi.");
     }
   };
 
@@ -69,17 +141,33 @@ export default function CommentForm({
             }}
             required
           />
+          {withTip && (
+            <CommentDonationForm
+              setValue={setTipValue}
+              initialValue={tipValue ?? null}
+              name="comment-donation"
+            />
+          )}
+          <div className={` ${withTip ? "flex" : "grid"} grid-cols-5 gap-2 montserratFont`}>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className={`${isLoading ? "cursor-not-allowed opacity-60 bg-gray-600" : "bg-[#0E5BA8]"} flex w-full ${withTip ? "w-full" : "col-span-3"} cursor-pointer items-center justify-center rounded-md border-2 border-[#F5F5F559] py-2 text-sm font-bold text-white`}
+            >
+              {isLoading ? "Loading..." : "Kirim Komentar"}
+            </button>
+            <div
+              onClick={() => setWithTip(!withTip)}
+              disabled={isLoading}
+              className={`${isLoading ? "cursor-not-allowed opacity-60 bg-gray-600" : "bg-[#0E5BA8]"} flex ${withTip ? "w-max p-2" : "col-span-2"} gap-1 cursor-pointer items-center justify-center rounded-md border-2 border-[#F5F5F559] py-2 text-sm font-bold text-white`}
+            >
+              <Icon icon={"solar:crown-bold-duotone"} className="text-[#F07F26] w-6 h-6" />
+              {!withTip ? (isLoading ? "Loading..." : "Reward") : null}
+            </div>
+          </div>
           {errors.message?.message && (
             <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>
           )}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`${isLoading ? "cursor-not-allowed opacity-60 bg-gray-600" : "bg-[#0E5BA8]"} flex w-full cursor-pointer items-center justify-center rounded-md border-2 border-[#F5F5F540] py-2 text-sm font-bold text-white`}
-          >
-            {isLoading ? "Loading..." : "Kirim Komentar"}
-          </button>
-          {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
         </form>
       </div>
     </section>
@@ -87,6 +175,7 @@ export default function CommentForm({
 }
 
 CommentForm.propTypes = {
+  contentType: propTypes.oneOf(["EBOOK", "COMIC", "PODCAST", "SERIES", "MOVIE"]),
   episodeEbookId: propTypes.string,
   episodeComicsId: propTypes.string,
   episode_podcastId: propTypes.string,

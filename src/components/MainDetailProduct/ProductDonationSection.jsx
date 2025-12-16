@@ -74,17 +74,6 @@ export default function ProductDonationSection({ creatorId }) {
         </button>
       </div>
 
-      <p className="mt-6 text-center text-base">
-        Gimana nih? Apakah konten ini melanggar{" "}
-        <Link href="/term-and-conditions" className="underline">
-          aturan (Syarat & Ketentuan)
-        </Link>
-        ? Laporkan aja kalau ada yang nggak sesuai ya!{" "}
-        <Link href="/feedback" className="underline">
-          Laporkan!
-        </Link>
-      </p>
-
       <SimpleModal
         title={"Berikan tip kepada creator sebanyak Rp. " + (amount?.toLocaleString() ?? 0) + ",- ?"}
         isOpen={isModalOpen}
