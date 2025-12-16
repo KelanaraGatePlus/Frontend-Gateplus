@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Link from "next/link";
 import { useTipPayment } from "@/hooks/api/paymentAPI";
 import SimpleModal from "../Modal/SimpleModal";
 import PropTypes from "prop-types";

@@ -1,5 +1,9 @@
+"use client";
+
+import React from "react";
 import { donationPriceAvailable } from "@/lib/constants/donationPriceAvailable";
 import { useEffect, useMemo, useState } from "react";
+import PropTypes from "prop-types";
 
 export default function CommentDonationForm({ setValue, initialValue = null, name = "donation" }) {
     const [selected, setSelected] = useState(initialValue);
@@ -78,3 +82,9 @@ export default function CommentDonationForm({ setValue, initialValue = null, nam
         </div>
     );
 }
+
+CommentDonationForm.propTypes = {
+    setValue: PropTypes.func,
+    initialValue: PropTypes.number,
+    name: PropTypes.string
+};

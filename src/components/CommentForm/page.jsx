@@ -22,7 +22,7 @@ export default function CommentForm({
   episodeSeriesId = null,
   movieId = null
 }) {
-  const [createComment, { isLoading, error }] = useCreateCommentMutation();
+  const [createComment, { isLoading }] = useCreateCommentMutation();
   const { display } = useDisplayPayment();
   const [tipValue, setTipValue] = React.useState(null);
   const [withTip, setWithTip] = React.useState(false);

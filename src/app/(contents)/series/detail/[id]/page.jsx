@@ -3,8 +3,6 @@
 import PropTypes from 'prop-types';
 import React from "react";
 
-import logoPinComment from "@@/icons/icon-comment.svg";
-import logoUsersComment from "@@/icons/logo-users-comment.svg";
 import logoDislike from "@@/logo/logoDetailFilm/dislike-icons.svg";
 import logoLike from "@@/logo/logoDetailFilm/like-icons.svg";
 import logoSave from "@@/logo/logoDetailFilm/save-icons.svg";
