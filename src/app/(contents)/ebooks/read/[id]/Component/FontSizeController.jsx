@@ -59,4 +59,5 @@ FontSizeController.propTypes = {
   fontSizeFactor: PropTypes.number.isRequired,
   onFontSizeChange: PropTypes.func.isRequired,
   containerClassName: PropTypes.string,
+  isDarkMode: PropTypes.bool,
 };
