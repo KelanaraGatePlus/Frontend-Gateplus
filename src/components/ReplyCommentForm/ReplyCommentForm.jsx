@@ -4,7 +4,6 @@ import React, { forwardRef } from "react";
 import propTypes from "prop-types";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createCommentSchema } from "@/lib/schemas/createCommentSchema";
 import { useReplyCommentMutation } from "@/hooks/api/commentSliceAPI";
 import Image from "next/image";
 import { replyCommentSchema } from "@/lib/schemas/replyCommentSchema";
