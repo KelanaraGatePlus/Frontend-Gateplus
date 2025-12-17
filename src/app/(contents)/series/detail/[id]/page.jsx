@@ -18,7 +18,6 @@ import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { useLikeContent } from "@/lib/features/useLikeContent";
 import { useDislikeContent } from "@/lib/features/useDislikeContent";
 import DefaultShareButton from "@/components/ShareButton/DefaultShareButton";
-import ProductDonationSection from '@/components/MainDetailProduct/ProductDonationSection';
 import iconLikeSolid from "@@/logo/logoDetailFilm/liked-icons.svg";
 import iconDislikeSolid from "@@/logo/logoDetailFilm/dislike-icons-solid.svg";
 import iconSaveSolid from "@@/logo/logoDetailFilm/saved-icons.svg";
@@ -185,8 +184,8 @@ function DetailSeriesPage({ params }) {
                 </div>
             </section>
 
-            <main className="px-5 text-white">
-                <section className="w-full flex flex-col gap-4 md:gap-0 md:flex-row md:items-center justify-between pt-2 pb-4">
+            <main className="text-white mt-10">
+                <section className="w-full px-4 md:px-15 flex flex-col gap-4 md:gap-0 md:flex-row md:items-center justify-between pb-4">
                     <div className="flex flex-col gap-4 md:w-1/2 w-full">
                         <div className="flex flex-col gap-2">
                             <h1 className="font-black text-4xl">
@@ -198,8 +197,8 @@ function DetailSeriesPage({ params }) {
                         </div>
                         <div className="flex flex-row gap-6">
                             <div className="flex items-center justify-center w-max">
-                                <button onClick={seriesData?.isOwner ? null : !seriesData?.isSubscribed && seriesData?.canSubscribe ? () => { handleModalSubscribeOpen(seriesData?.id, seriesData?.subscriptionPrice) } : null} className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
-                                    {seriesData?.isOwner ? "Series ini adalah karya mu" : !seriesData?.canSubscribe ? 'Buy Episode To Watch' : seriesData?.isSubscribed ? "Watch" : "Buy"}
+                                <button disabled={seriesData?.isOwner || seriesData?.isSubscribed} onClick={seriesData?.isOwner ? null : !seriesData?.isSubscribed && seriesData?.canSubscribe ? () => { handleModalSubscribeOpen(seriesData?.id, seriesData?.subscriptionPrice) } : null} className="rounded-3xl bg-[#0076E999] disabled:bg-[#9CA3AF] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
+                                    {seriesData?.isOwner ? "Series ini adalah karya mu" : !seriesData?.canSubscribe ? 'Buy Episode To Watch' : seriesData?.isSubscribed ? "Watch" : "Subscribe"}
                                 </button>
                             </div>
                             <div onClick={handleToggleLike} className="flex items-center justify-center transition delay-150 duration-400 ease-linear hover:-translate-y-1 hover:scale-x-110 hover:scale-y-110 cursor-pointer">
@@ -282,20 +281,20 @@ function DetailSeriesPage({ params }) {
                     </div>
                 </section>
 
-                <section className="flex flex-row gap-3 items-stretch">
+                <section className="flex flex-row gap-3 items-stretch px-4 md:px-15 mt-5">
                     {/* Poster 3:2 */}
                     <div className="relative aspect-[2/3] w-[220px] sm:w-[160px] lg:w-[250px] flex-shrink-0">
                         {seriesData.posterImageUrl && <Image
                             src={seriesData.posterImageUrl}
                             alt="logo-racunsangga-movie"
                             layout="fill"
-                            className="rounded-xl object-cover"
+                            className="rounded-md object-cover"
                             priority
                         />}
                     </div>
 
                     {/* Deskripsi */}
-                    <div className="rounded-xl bg-[#393939] flex-1">
+                    <div className="rounded-md bg-[#393939] flex-1">
                         <div className="mx-4 my-4 text-white h-full flex flex-col">
                             <p>{seriesData?.description}</p>
 
@@ -325,13 +324,8 @@ function DetailSeriesPage({ params }) {
                         seriesData?.id
                     }
                     isOwner={seriesData?.isOwner}
+                    itemClassname='px-4 md:px-15'
                 />
-
-                <div className="mt-10 md:mt-20">
-                    <ProductDonationSection
-                        creatorId={seriesData?.creatorId}
-                    />
-                </div>
 
                 <section className="mt-5">
                     <section className="my-10 flex flex-col">
@@ -347,7 +341,7 @@ function DetailSeriesPage({ params }) {
                         <section className="mt-10">
                             <CarouselTemplate
                                 label="Rekomendasi Serupa"
-                                type="movie"
+                                type="seriess"
                                 contents={data?.data?.recommendation || []}
                                 isLoading={!data}
                             />

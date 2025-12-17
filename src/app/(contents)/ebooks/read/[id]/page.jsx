@@ -516,13 +516,15 @@ export default function ReadEbookPage({ params }) {
         </div>
 
         {/* Comment Baru */}
-        <CommentComponent
-          commentData={commentData?.data?.data || []}
-          isLoadingGetComment={isLoadingGetComment}
-          contentType={"EBOOK"}
-          episodeId={id}
-          isDark={isDark}
-        />
+        <div className="md:px-11">
+          <CommentComponent
+            commentData={commentData?.data?.data || []}
+            isLoadingGetComment={isLoadingGetComment}
+            contentType={"EBOOK"}
+            episodeId={id}
+            isDark={isDark}
+          />
+        </div>
       </main>
     </div>
   );
