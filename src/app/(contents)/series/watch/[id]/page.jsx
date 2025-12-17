@@ -145,7 +145,7 @@ export default function DetailSeriesPage({ params }) {
                 <CommentComponent
                     commentData={commentData?.data?.data || []}
                     isLoadingGetComment={isLoadingGetComment}
-                    typeContent={"series"}
+                    contentType={"SERIES"}
                     episodeId={id}
                 />
             </main>

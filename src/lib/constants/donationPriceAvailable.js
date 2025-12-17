@@ -1,0 +1,1 @@
+export const donationPriceAvailable = [5000, 10000, 25000, 75000];

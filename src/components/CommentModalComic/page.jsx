@@ -40,7 +40,7 @@ export default function CommentModalComic({
                 <CommentComponent
                     commentData={commentData}
                     isLoadingGetComment={isLoadingGetComment}
-                    typeContent={"comic"}
+                    contentType={"COMIC"}
                     episodeId={episodeId}
                 />
             </div>

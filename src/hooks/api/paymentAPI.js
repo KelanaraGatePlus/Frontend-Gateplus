@@ -1,9 +1,9 @@
 // hooks/useMidtransPayment.js
 import { useEffect, useState } from "react";
-import { BACKEND_URL } from "@/lib/constants/backendUrl";
+import { BACKEND_URL, NEXT_MIDTRANS_URL } from "@/lib/constants/backendUrl";
 import { useAuth } from "@/components/Context/AuthContext";
 
-const MIDTRANS_URL = "https://app.midtrans.com/snap/snap.js";
+const MIDTRANS_URL = NEXT_MIDTRANS_URL || "https://app.sandbox.midtrans.com/snap/snap.js";
 
 // =======================================================================
 //    GLOBAL POPUP HANDLER UNTUK XENDIT (CENTERED & ANTI GESER)
@@ -232,4 +232,76 @@ export const useTipPayment = () => {
     };
 
     return { pay, snapReady, isPaying };
+};
+
+// =======================================================================
+//    HOOK DISPLAY PAYMENT (WITHOUT API CALL)
+// =======================================================================
+export const useDisplayPayment = () => {
+    const [snapReady, setSnapReady] = useState(false);
+    const [isPaying, setIsPaying] = useState(false);
+
+    // Load Snap.js
+    useEffect(() => {
+        if (window.snap) {
+            setSnapReady(true);
+            return;
+        }
+        const script = document.createElement("script");
+        script.src = MIDTRANS_URL;
+        script.async = true;
+        script.onload = () => setSnapReady(true);
+        document.body.appendChild(script);
+    }, []);
+
+    const display = async (
+        { snapToken, snapUrl, provider = "midtrans" },
+        callbacks = {}
+    ) => {
+        if (isPaying) return;
+        setIsPaying(true);
+
+        try {
+            // ================= XENDIT =================
+            if (provider === "xendit" && snapUrl) {
+                openXenditPopup(snapUrl, () => {
+                    setIsPaying(false);
+                    callbacks.onClose?.();
+                });
+                return;
+            }
+
+            // ================= MIDTRANS =================
+            if (!snapReady || !window.snap) {
+                alert("Midtrans Snap belum siap.");
+                setIsPaying(false);
+                return;
+            }
+
+            window.snap.pay(snapToken, {
+                onSuccess: (result) => {
+                    setIsPaying(false);
+                    callbacks.onSuccess?.(result);
+                },
+                onPending: (result) => {
+                    setIsPaying(false);
+                    callbacks.onPending?.(result);
+                },
+                onError: (error) => {
+                    setIsPaying(false);
+                    callbacks.onError?.(error);
+                },
+                onClose: () => {
+                    setIsPaying(false);
+                    callbacks.onClose?.();
+                },
+            });
+        } catch (err) {
+            console.error(err);
+            alert("Gagal menampilkan halaman pembayaran.");
+            setIsPaying(false);
+        }
+    };
+
+    return { display, snapReady, isPaying };
 };

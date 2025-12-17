@@ -20,7 +20,6 @@ export default function ReadComicPage({ params }) {
   const [currentPage, setCurrentPage] = useState(0);
   const [isDesktop, setIsDesktop] = useState(false);
   const [viewMode, setViewMode] = useState("auto");
-  const [showMoreOptions, setShowMoreOptions] = useState(false);
   const device = useDeviceType();
   const [isCommentVisible, setIsCommentVisible] = useState(false);
   const [createLog] = useCreateLogMutation();
