@@ -171,6 +171,7 @@ export default function ReadEbookPage({ params }) {
           fontSizeFactor={fontSizeFactor}
           onFontSizeChange={handleFontSizeChange}
           containerClassName="fixed right-20 top-12"
+          isDarkMode={isDark}
         />
         <div
           className={`${isDark ? "text-white" : "text-[#222222]"} fixed z-10 mt-0 w-full flex-row items-center justify-start gap-2 px-4 md:px-20 py-2 text-2xl font-semibold backdrop-blur flex`}
@@ -282,7 +283,7 @@ export default function ReadEbookPage({ params }) {
 
               {/* Dark Mode Toggle */}
               <div className="flex flex-row items-center justify-between pb-3 border-b border-white/10">
-                <p className="text-xs font-semibold">Mode Gelap</p>
+                <p className="text-xs font-semibold">Mode {isDark ? "Gelap" : "Terang"}</p>
                 <label className="inline-flex cursor-pointer items-center">
                   <input
                     type="checkbox"

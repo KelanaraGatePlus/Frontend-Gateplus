@@ -6,7 +6,8 @@ export default function FontSizeController({
   isOpen, 
   fontSizeFactor, 
   onFontSizeChange,
-  containerClassName = '' 
+  containerClassName = '',
+  isDarkMode = false,
 }) {
   if (!isOpen) return null;
 
@@ -25,7 +26,7 @@ export default function FontSizeController({
       />
 
       <div 
-        className="text-white flex flex-row items-center justify-center gap-1 rounded-full bg-white/20 backdrop-blur border border-white/30 px-4 py-1 shadow-lg"
+        className={`${isDarkMode ? 'text-white' : 'text-black'} flex flex-row items-center justify-center gap-1 rounded-full bg-white/20 backdrop-blur border border-white/30 px-4 py-1 shadow-lg`}
         style={{
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
@@ -38,7 +39,7 @@ export default function FontSizeController({
         >
           <Icon icon={'solar:rounded-magnifer-zoom-out-outline'} className="w-10 h-10" />
         </button>
-        <div className="bg-[#515151] py-4 px-8 rounded-full text-[16px] montserratFont font-medium">
+        <div className="bg-[#515151] py-4 px-8 text-white rounded-full text-[16px] montserratFont font-medium">
           <p>{Math.round(fontSizeFactor * 16)}px</p>
         </div>
         <button
