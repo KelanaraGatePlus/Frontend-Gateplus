@@ -250,7 +250,6 @@ export default function ProductDetailSection({
                   )}
 
                   {productType === "podcast" && canSubscribe ? (
-                    console.log("productID", productID),
                     <button
                       onClick={() => handleSubscribe(creatorDetail.id, productID, subscriptionPrice)}
                       disabled={isSubscribe || isOwner}
@@ -265,14 +264,7 @@ export default function ProductDetailSection({
                         {productType === "podcast" ? "Dengarkan" : "Baca"}
                       </button>
                     </Link>
-                  ) : (
-                    <button
-                      disabled
-                      className="w-full cursor-not-allowed rounded-3xl bg-gray-400 px-12 py-3 font-bold text-white md:w-auto"
-                    >
-                      Belum Ada
-                    </button>
-                  )}
+                  ) : null}
                 </div>
                 {productType !== "podcast" && (
                   <>

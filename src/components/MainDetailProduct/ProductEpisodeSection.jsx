@@ -19,6 +19,7 @@ import iconPlay from "@@/icons/icons-play.svg";
 import iconFlag from "@@/icons/icons-flag.svg";
 import Link from "next/link";
 import useGetLazyEpisodeByType from "@/hooks/helper/getEpisodeByType";
+import { Icon } from "@iconify/react";
 // import iconPause from "@@/icons/icons-pause.svg";
 
 export default function ProductEpisodeSection({
@@ -30,6 +31,8 @@ export default function ProductEpisodeSection({
   isSubscribe = false,
   productId = 'cmhiwnwlu0009f8z8rskzp22e',
   isOwner = false,
+  itemClassname = "",
+  containerClassname = "",
 }) {
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [selectedPodcast, setSelectedPodcast] = useState({});
@@ -100,17 +103,17 @@ export default function ProductEpisodeSection({
     return (
       <>
         {episodes?.length > 0 ? (
-          <section className="relative flex w-full flex-col py-5 text-white">
+          <section className={`relative flex w-full flex-col gap-3 py-5 text-white ${containerClassname}`}>
             {/* Lihat episode pertama */}
-            {totalEpisodes > 5 && <button className="flex hover:cursor-pointer" onClick={() => { handleScroll() }}>
-              <div className="mb-1 flex w-full items-center justify-center gap-2 rounded-lg bg-[#393939] py-2">
+            {totalEpisodes > 5 && <button className={`flex hover:cursor-pointer ${itemClassname}`} onClick={() => { handleScroll() }}>
+              <div className={`mb-1 flex w-full items-center justify-center gap-2 rounded-md bg-[#393939] py-4`}>
                 <h4 className={`zeinFont text-2xl font-bold`}>
                   Lihat Episode Pertama
                 </h4>
                 <div className="flex h-8 w-8 items-center justify-center">
                   <Image
                     priority
-                    width={35}
+                    width={30}
                     alt="logo-arrow-down"
                     src={iconArrowDown}
                     className="object-cover"
@@ -123,9 +126,9 @@ export default function ProductEpisodeSection({
             {episodes
               .map((item, index) => (
                 <button ref={index + 1 == totalEpisodes ? lastEpisodeRef : null} key={index} onClick={isOwner || item.isPurchased || item.price == 'Free' || isSubscribe ? () => { window.location.href = `${parentPath}/${item.id}` } : () => { handlePayment(item.id, item.price, 'EBOOK') }}>
-                  <div className="group flex cursor-pointer items-stretch gap-2 px-4 py-2 hover:bg-[#1F6E8A] md:gap-4">
+                  <div className={`group flex cursor-pointer items-stretch gap-2 py-2 hover:bg-[#1F6E8A] md:gap-4 ${itemClassname}`}>
                     {/* Book Container */}
-                    <div className="h-24 w-24 overflow-hidden rounded-lg md:h-36 md:w-36">
+                    <div className="h-20 w-20 overflow-hidden relative rounded-lg md:h-20 md:w-20 2xl:h-25 2xl:w-25">
                       <Image
                         priority
                         src={productType === "ebook" ? item.coverEpisodeUrl : productType === "comic" ? item.coverImageUrl : item.thumbnailUrl}
@@ -134,45 +137,56 @@ export default function ProductEpisodeSection({
                         width={144}
                         height={144}
                       />
+                      {(!isOwner && !item.isPurchased && !(item.price == 'Free')) && <div className="bg-[#F5F5F533] backdrop-blur-xs absolute top-0 left-0 flex h-full w-full items-center justify-center transition-all duration-300 ease-in-out">
+                        <Icon
+                          icon={'solar:lock-keyhole-minimalistic-linear'}
+                          className="w-4 h-4 md:w-8 md:h-8 text-red-600"
+                        />
+                      </div>}
                     </div>
 
-                    {/* Description */}
-                    <div className="flex flex-1 flex-col items-stretch justify-between rounded-lg bg-[#393939] p-2 group-hover:bg-[#21414C]">
-                      <div className="flex flex-col">
-                        <div className="flex flex-col-reverse items-start justify-start sm:flex-row sm:justify-between">
-                          <h4
-                            className={`zeinFont my-2 [display:-webkit-box] w-fit overflow-hidden text-xl leading-5 font-extrabold text-ellipsis [-webkit-box-orient:vertical] [-webkit-line-clamp:2] md:text-2xl`}
-                          >
-                            {item.title}
-                          </h4>
-                          <div className="flex items-center gap-1.5 text-xl font-extrabold md:mr-2">
-                            <div className="rounded border-2 border-[#F5F5F524] bg-[#F5F5F524] p-1">
-                              <Image
-                                priority
-                                src={isOwner || item.isPurchased || item.price == 'Free' || isSubscribe ? iconUnlocked : iconLocked}
-                                alt={`poster-${item.title}`}
-                                className="h-full w-full rounded object-cover object-center"
-                                width={16}
-                                height={16}
-                              />
-                            </div>
-                            <div className="rounded border-2 border-[#F5F5F524] bg-[#F5F5F524] p-1 text-xs font-semibold">
-                              Rp. {item.price}
-                            </div>
-                            <h4
-                              className={`zeinFont mt-1 [display:-webkit-box] w-fit overflow-hidden text-xl font-extrabold text-ellipsis [-webkit-box-orient:vertical] [-webkit-line-clamp:2] md:text-2xl`}
-                            >
-                              {`# ${String(index + 1).padStart(2, "0")}`}
-                            </h4>
-                          </div>
-                        </div>
-                        <p className="hidden text-sm font-normal md:block">
-                          {item.description}
-                        </p>
+                    {/* Book Info */}
+                    <div className="flex w-full justify-between items-center">
+                      <div className="flex flex-col justify-between md:justify-center h-full py-2 md:py-0 items-start montserratFont text-[#AFAFAF]">
+                        <h1 className="text-white zeinFont font-bold text-xs md:text-2xl">{item.title}</h1>
+                        <p className="hidden md:block">{item.description}</p>
+                        <p className="text-[10px] md:text-[16px]">{formatDateTime(item.createdAt)}</p>
                       </div>
-                      <p className="text-[10px] font-normal md:text-sm">
-                        {formatDateTime(item.createdAt)}
-                      </p>
+
+                      {/* Lock */}
+                      {(!isOwner && !item.isPurchased && !(item.price == 'Free')) && <div className="w-max h-full flex flex-col justify-between items-end zeinFont">
+                        <div className="bg-[#63282e] w-full flex items-center gap-2 rounded-lg justify-center p-1 md:p-2 border-2 border-[#967074]">
+                          <Icon
+                            icon={'solar:lock-keyhole-minimalistic-linear'}
+                            className="w-4 h-4"
+                          />
+                          <p className="font-bold zeinFont">Terkunci</p>
+                        </div>
+                        <p className="font-bold">
+                          Rp {item.price == 'Free' ? '0' : item.price.toLocaleString('id-ID')}
+                        </p>
+                      </div>}
+
+                      {/* Open */}
+                      {(isOwner || item.isPurchased || item.price == 'Free') && !item.isWatched && <div className="bg-[#1FC16B4D] p-1 md:p-2 w-max flex items-center gap-2 rounded-lg justify-center border-2 border-[#F5F5F559]">
+                        <Icon
+                          icon={'solar:notebook-minimalistic-linear'}
+                          className="w-4 h-4 rounded-md"
+                        />
+                        <p className="font-bold zeinFont">Baca</p>
+                      </div>}
+
+                      {/* Already Read */}
+                      {(item.isWatched) && (isOwner || item.isPurchased || (item.price == 'Free')) && <Link
+                        href={`/report/${productType == 'ebook' ? 'episode_ebook' : productType == 'comic' ? 'episode_comic' : productType == 'movie' ? 'episode_movie' : 'episode_series'}/${item.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-6 z-20 h-6 cursor-pointer p-1 md:p-2 transition-transform duration-150 active:scale-90"
+                      >
+                        <Icon
+                          className="w-8 h-8 rotate-90"
+                          icon={'solar:menu-dots-line-duotone'}
+                        />
+                      </Link>}
                     </div>
                   </div>
                 </button>
@@ -181,6 +195,7 @@ export default function ProductEpisodeSection({
             <SeeAnotherEpisodes
               showAll={episodes.length === totalEpisodes}
               handleShowAll={() => handleLoadAllEpisodes(false)}
+              itemClassname={itemClassname}
             />
           </section>
         ) : (
@@ -359,6 +374,8 @@ ProductEpisodeSection.propTypes = {
   handlePayment: PropTypes.func,
   isSubscribe: PropTypes.bool,
   productId: PropTypes.string,
+  itemClassname: PropTypes.string,
+  containerClassname: PropTypes.string,
   isOwner: PropTypes.bool,
 };
 
@@ -374,11 +391,11 @@ function EpisodeUnAvailable() {
   );
 }
 
-function SeeAnotherEpisodes({ showAll, handleShowAll }) {
+function SeeAnotherEpisodes({ showAll, handleShowAll, itemClassname }) {
   return (
     !showAll && (
       <div
-        className={`absolute left-0 flex w-screen items-end py-2 transition-all duration-300 ease-in-out ${showAll ? "bottom-[-45px] h-fit" : "bottom-0 h-45 bg-gradient-to-b from-[#39393900] via-[#393939CC] to-[#393939FF]"}`}
+        className={`absolute flex w-screen items-end py-2 transition-all duration-300 ${itemClassname} ease-in-out ${showAll ? "bottom-[-45px] h-fit" : "bottom-0 h-45 bg-gradient-to-b from-[#39393900] via-[#393939CC] to-[#393939FF]"}`}
       >
         <div
           className="group flex w-screen cursor-pointer justify-center hover:text-blue-500"
@@ -399,8 +416,6 @@ export function PodcastMoreDetail({
   coverEpisodeUrl,
   title,
   description,
-  // eslint-disable-next-line no-unused-vars
-  creator,
   createdAt,
   handlePodcastModal,
 }) {
@@ -495,6 +510,7 @@ export function PodcastMoreDetail({
 SeeAnotherEpisodes.propTypes = {
   showAll: PropTypes.bool.isRequired,
   handleShowAll: PropTypes.func.isRequired,
+  itemClassname: PropTypes.string,
 };
 
 PodcastMoreDetail.propTypes = {

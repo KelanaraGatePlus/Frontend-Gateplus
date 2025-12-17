@@ -21,7 +21,7 @@ import PodcastUniqueCard from "../Card/PodcastUniqueCard";
 export default function CarouselTemplate({ label, type, contents, isLoading, isTopTen = false, isOnCreatorProfile = false, withGradient = true }) {
     return (
         <div>
-            <section className={`px-2 ${isOnCreatorProfile ? "md:px-8" : "md:px-15"}`}>
+            <section className={`px-8 ${isOnCreatorProfile ? "md:px-8" : "md:px-16"}`}>
                 {isLoading ? (
                     <CarouselLoading />
                 ) : (
@@ -39,7 +39,7 @@ export default function CarouselTemplate({ label, type, contents, isLoading, isT
                                                 return (
                                                     <CarouselItem
                                                         key={index}
-                                                        className={`overflow-hidden group relative flex items-center ${isTopTen ? "w-[240px] sm:w-[180px] md:w-[460px]" : "w-[120px] sm:w-[140px] md:w-[230px] aspect-[2/3]"} cursor-pointer rounded-lg group`}
+                                                        className={`overflow-hidden group relative flex items-center ${isTopTen ? "w-[240px] sm:w-[180px] md:w-[460px]" : "w-[120px] sm:w-[140px] md:w-[230px] aspect-[2/3]"} cursor-pointer rounded-md group`}
                                                     >
                                                         {fixedType == 'ebook' && !isTopTen && (
                                                             <EbookCard title={item.title} rank={index + 1} id={item.id} coverUrl={item.posterImageUrl} hasNewEpisode={item.hasNewEpisode} />
@@ -74,31 +74,31 @@ export default function CarouselTemplate({ label, type, contents, isLoading, isT
                                                                 </div>
                                                             )}
                                                             {fixedType == 'ebook' && isTopTen && (
-                                                                <div className="aspect-[2/3] rounded-lg overflow-hidden col-span-9">
+                                                                <div className="aspect-[2/3] rounded-md overflow-hidden col-span-9">
                                                                     <EbookCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
                                                                 </div>
                                                             )}
 
                                                             {fixedType == 'comic' && isTopTen && (
-                                                                <div className="aspect-[2/3] rounded-lg overflow-hidden col-span-9">
+                                                                <div className="aspect-[2/3] rounded-md overflow-hidden col-span-9">
                                                                     <ComicCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
                                                                 </div>
                                                             )}
 
                                                             {fixedType == 'movie' && isTopTen && (
-                                                                <div className="aspect-[2/3] rounded-lg overflow-hidden col-span-9">
+                                                                <div className="aspect-[2/3] rounded-md overflow-hidden col-span-9">
                                                                     <MovieCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
                                                                 </div>
                                                             )}
 
                                                             {fixedType == 'series' && isTopTen && (
-                                                                <div className="aspect-[2/3] rounded-lg overflow-hidden col-span-9">
+                                                                <div className="aspect-[2/3] rounded-md overflow-hidden col-span-9">
                                                                     <SeriesCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
                                                                 </div>
                                                             )}
 
                                                             {fixedType == 'podcast' && isTopTen && (
-                                                                <div className="aspect-[2/3] rounded-lg overflow-hidden col-span-9">
+                                                                <div className="aspect-[2/3] rounded-md overflow-hidden col-span-9">
                                                                     <PodcastCard title={item.title} id={item.id} coverUrl={item.coverPodcastImage} />
                                                                 </div>
                                                             )}
@@ -114,10 +114,10 @@ export default function CarouselTemplate({ label, type, contents, isLoading, isT
                                             withGradient && (
                                                 <>
                                                     {/* Left shadow gradient */}
-                                                    <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-14 z-14 opacity-14 bg-gradient-to-r from-neutral-100 to-neutral-100/0 rounded-l-2xl" />
+                                                    <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-14 z-14 opacity-14 bg-gradient-to-r from-neutral-100 to-neutral-100/0 rounded-l-md" />
 
                                                     {/* Right shadow gradient */}
-                                                    <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-14 z-14 opacity-14 bg-gradient-to-l from-neutral-100 to-neutral-100/0 rounded-r-2xl" />
+                                                    <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-14 z-14 opacity-14 bg-gradient-to-l from-neutral-100 to-neutral-100/0 rounded-r-md" />
                                                 </>
                                             )
                                         }
