@@ -39,6 +39,7 @@ export default function ProductEpisodeSection({
   const [isPodcastModalVisible, setIsPodcastModalVisible] = useState(false);
   const [episodes, setEpisodes] = useState([]);
   const [totalEpisodes, setTotalEpisodes] = useState(0);
+  const [imageStatus, setImageStatus] = useState({});
   const lastEpisodeRef = useRef(null);
 
   // Hanya eksekusi sekali saja saat komponen dimount
@@ -124,73 +125,102 @@ export default function ProductEpisodeSection({
 
             {/* List episode */}
             {episodes
-              .map((item, index) => (
-                <button ref={index + 1 == totalEpisodes ? lastEpisodeRef : null} key={index} onClick={isOwner || item.isPurchased || item.price == 'Free' || isSubscribe ? () => { window.location.href = `${parentPath}/${item.id}` } : () => { handlePayment(item.id, item.price, 'EBOOK') }}>
-                  <div className={`group flex cursor-pointer items-stretch gap-2 py-2 hover:bg-[#1F6E8A] md:gap-4 ${itemClassname}`}>
-                    {/* Book Container */}
-                    <div className="h-20 w-20 overflow-hidden relative rounded-lg md:h-20 md:w-20 2xl:h-25 2xl:w-25">
-                      <Image
-                        priority
-                        src={productType === "ebook" ? item.coverEpisodeUrl : productType === "comic" ? item.coverImageUrl : item.thumbnailUrl}
-                        alt={`poster-${item.title}`}
-                        className="h-full w-full rounded object-cover object-center"
-                        width={144}
-                        height={144}
-                      />
-                      {(!isOwner && !item.isPurchased && !(item.price == 'Free')) && <div className="bg-[#F5F5F533] backdrop-blur-xs absolute top-0 left-0 flex h-full w-full items-center justify-center transition-all duration-300 ease-in-out">
-                        <Icon
-                          icon={'solar:lock-keyhole-minimalistic-linear'}
-                          className="w-4 h-4 md:w-8 md:h-8 text-red-600"
-                        />
-                      </div>}
-                    </div>
+              .map((item, index) => {
+                const coverUrl = productType === "ebook" ? item.coverEpisodeUrl : productType === "comic" ? item.coverImageUrl : item.thumbnailUrl;
+                const isLoaded = imageStatus[item.id] === "loaded";
+                const hasError = imageStatus[item.id] === "error";
+                const episodeNumber = totalEpisodes - index;
 
-                    {/* Book Info */}
-                    <div className="flex w-full justify-between items-center">
-                      <div className="flex flex-col justify-between md:justify-center h-full py-2 md:py-0 items-start montserratFont text-[#AFAFAF]">
-                        <h1 className="text-white zeinFont font-bold text-xs md:text-2xl">{item.title}</h1>
-                        <p className="hidden md:block">{item.description}</p>
-                        <p className="text-[10px] md:text-[16px]">{formatDateTime(item.createdAt)}</p>
-                      </div>
+                // Adjust font size based on digit count
+                const getFontSizeClass = (episodeNumber) => {
+                  const digitCount = episodeNumber.toString().length;
+                  if (digitCount === 1) return "text-[116px] 2xl:text-[135px] -bottom-12.5 -left-13 2xl:-bottom-12.5 2xl:-left-15";
+                  if (digitCount === 2) return "text-[64px] 2xl:text-[80px] -bottom-7 -left-7 2xl:-bottom-8 2xl:-left-8";
+                  if (digitCount === 3) return "text-[40px] 2xl:text-[45px] -bottom-4 -left-4 2xl:-bottom-4 2xl:-left-3";
+                  return "text-[55px] 2xl:text-[65px] -bottom-6 -left-5 2xl:-bottom-7 2xl:-left-6";
+                };
 
-                      {/* Lock */}
-                      {(!isOwner && !item.isPurchased && !(item.price == 'Free')) && <div className="w-max h-full flex flex-col justify-between items-end zeinFont">
-                        <div className="bg-[#63282e] w-full flex items-center gap-2 rounded-lg justify-center p-1 md:p-2 border-2 border-[#967074]">
+                return (
+                  <button ref={index + 1 == totalEpisodes ? lastEpisodeRef : null} key={index} onClick={isOwner || item.isPurchased || item.price == 'Free' || isSubscribe ? () => { window.location.href = `${parentPath}/${item.id}` } : () => { handlePayment(item.id, item.price, 'EBOOK') }}>
+                    <div className={`group flex cursor-pointer items-stretch gap-2 py-2 hover:bg-[#1F6E8A] md:gap-4 ${itemClassname}`}>
+                      {/* Book Container */}
+                      <div className="h-20 w-20 overflow-hidden relative rounded-lg 2xl:h-25 2xl:w-25 bg-[#979797]">
+                        {/* Show episode number as fallback or while loading */}
+                        {(!coverUrl || !isLoaded || hasError) && (
+                          <div className="h-full w-full bg-[#979797] relative">
+                            <p className={`${getFontSizeClass(episodeNumber)} montserratFont font-bold absolute text-white`}>#{episodeNumber}</p>
+                          </div>
+                        )}
+
+                        {/* Show image if URL exists */}
+                        {coverUrl && !hasError && (
+                          <Image
+                            priority
+                            src={coverUrl}
+                            alt={`poster-${item.title}`}
+                            className={`h-full w-full rounded object-cover object-center transition-opacity duration-300 ${isLoaded ? "opacity-100" : "opacity-0"}`}
+                            width={144}
+                            height={144}
+                            onLoadingComplete={() => setImageStatus((prev) => ({ ...prev, [item.id]: "loaded" }))}
+                            onError={() => setImageStatus((prev) => ({ ...prev, [item.id]: "error" }))}
+                          />
+                        )}
+
+                        {(!isOwner && !item.isPurchased && !(item.price == 'Free')) && <div className="bg-[#F5F5F533] backdrop-blur-xs absolute top-0 left-0 flex h-full w-full items-center justify-center transition-all duration-300 ease-in-out">
                           <Icon
                             icon={'solar:lock-keyhole-minimalistic-linear'}
-                            className="w-4 h-4"
+                            className="w-4 h-4 md:w-8 md:h-8 text-red-600"
                           />
-                          <p className="font-bold zeinFont">Terkunci</p>
+                        </div>}
+                      </div>
+
+                      {/* Book Info */}
+                      <div className="flex w-full justify-between items-center">
+                        <div className="flex flex-col justify-between md:justify-center h-full py-2 md:py-0 items-start montserratFont text-[#AFAFAF]">
+                          <h1 className="text-white zeinFont font-bold text-xs md:text-2xl">{item.title}</h1>
+                          <p className="hidden md:block">{item.description}</p>
+                          <p className="text-[10px] md:text-[16px]">{formatDateTime(item.createdAt)}</p>
                         </div>
-                        <p className="font-bold">
-                          Rp {item.price == 'Free' ? '0' : item.price.toLocaleString('id-ID')}
-                        </p>
-                      </div>}
 
-                      {/* Open */}
-                      {(isOwner || item.isPurchased || item.price == 'Free') && !item.isWatched && <div className="bg-[#1FC16B4D] p-1 md:p-2 w-max flex items-center gap-2 rounded-lg justify-center border-2 border-[#F5F5F559]">
-                        <Icon
-                          icon={'solar:notebook-minimalistic-linear'}
-                          className="w-4 h-4 rounded-md"
-                        />
-                        <p className="font-bold zeinFont">Baca</p>
-                      </div>}
+                        {/* Lock */}
+                        {(!isOwner && !item.isPurchased && !(item.price == 'Free')) && <div className="w-max h-full flex flex-col justify-between items-end zeinFont">
+                          <div className="bg-[#63282e] w-full flex items-center gap-2 rounded-lg justify-center p-1 md:p-2 border-2 border-[#967074]">
+                            <Icon
+                              icon={'solar:lock-keyhole-minimalistic-linear'}
+                              className="w-4 h-4"
+                            />
+                            <p className="font-bold zeinFont">Terkunci</p>
+                          </div>
+                          <p className="font-bold">
+                            Rp {item.price == 'Free' ? '0' : item.price.toLocaleString('id-ID')}
+                          </p>
+                        </div>}
 
-                      {/* Already Read */}
-                      {(item.isWatched) && (isOwner || item.isPurchased || (item.price == 'Free')) && <Link
-                        href={`/report/${productType == 'ebook' ? 'episode_ebook' : productType == 'comic' ? 'episode_comic' : productType == 'movie' ? 'episode_movie' : 'episode_series'}/${item.id}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="w-6 z-20 h-6 cursor-pointer p-1 md:p-2 transition-transform duration-150 active:scale-90"
-                      >
-                        <Icon
-                          className="w-8 h-8 rotate-90"
-                          icon={'solar:menu-dots-line-duotone'}
-                        />
-                      </Link>}
+                        {/* Open */}
+                        {(isOwner || item.isPurchased || item.price == 'Free') && !item.isWatched && <div className="bg-[#1FC16B4D] p-1 md:p-2 w-max flex items-center gap-2 rounded-lg justify-center border-2 border-[#F5F5F559]">
+                          <Icon
+                            icon={'solar:notebook-minimalistic-linear'}
+                            className="w-4 h-4 rounded-md"
+                          />
+                          <p className="font-bold zeinFont">Baca</p>
+                        </div>}
+
+                        {/* Already Read */}
+                        {(item.isWatched) && (isOwner || item.isPurchased || (item.price == 'Free')) && <Link
+                          href={`/report/${productType == 'ebook' ? 'episode_ebook' : productType == 'comic' ? 'episode_comic' : productType == 'movie' ? 'episode_movie' : 'episode_series'}/${item.id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-6 z-20 h-6 cursor-pointer p-1 md:p-2 transition-transform duration-150 active:scale-90"
+                        >
+                          <Icon
+                            className="w-8 h-8 rotate-90"
+                            icon={'solar:menu-dots-line-duotone'}
+                          />
+                        </Link>}
+                      </div>
                     </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
 
             <SeeAnotherEpisodes
               showAll={episodes.length === totalEpisodes}
