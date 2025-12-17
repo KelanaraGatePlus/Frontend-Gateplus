@@ -521,6 +521,7 @@ export default function ReadEbookPage({ params }) {
           isLoadingGetComment={isLoadingGetComment}
           contentType={"EBOOK"}
           episodeId={id}
+          isDark={isDark}
         />
       </main>
     </div>

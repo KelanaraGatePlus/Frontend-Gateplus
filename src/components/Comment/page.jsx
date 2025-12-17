@@ -31,7 +31,8 @@ export default function CommentComponent({
     commentData = [],
     isLoadingGetComment,
     contentType,
-    episodeId
+    episodeId,
+    isDark = true,
 }) {
     const [isCommentFieldHide, setIsCommentFieldHide] = useState(false);
     const [isReplyFieldHide, setIsReplyFieldHide] = useState(true);
@@ -105,6 +106,7 @@ export default function CommentComponent({
 
                     {!isReplyFieldHide && replyToCommentData && (
                         <ReplyCommentForm
+                            isDark={isDark}
                             ref={replyInputRef}
                             commentId={replyToCommentData.id}
                             imageUrl={replyToCommentData.user.imageUrl ? replyToCommentData.user.imageUrl : profilePictureDefault}
@@ -157,13 +159,13 @@ export default function CommentComponent({
                                                     </figure>
 
                                                     <div>
-                                                        <h5 className="text-xs font-medium">
+                                                        <h5 className={`text-xs font-medium ${isDark ? "text-white" : "text-[#1A1A1A]"}`}>
                                                             {comment.user.profileName
                                                                 ? comment.user.profileName
                                                                 : comment.user.username}{" "}
                                                             {isAuthor && "(Author)"}
                                                         </h5>
-                                                        <p className="text-[10px] font-normal text-white/50">
+                                                        <p className={`text-[10px] font-normal ${isDark ? "text-white/50" : "text-[#1A1A1A]/50"}`}>
                                                             {formatDateTime(comment.createdAt)}
                                                         </p>
                                                     </div>
@@ -185,42 +187,19 @@ export default function CommentComponent({
                                                 />
                                             }
 
-                                            <div className="flex flex-col gap-2 ">
-                                                <div className="mb-2 flex">
-                                                    <p className="text-base font-semibold text-white">
-                                                        {comment.message}
-                                                    </p>
-                                                </div>
-
-                                                <div className="flex justify-start gap-4">
-                                                    <button onClick={
-                                                        () => handleReplyToComment(comment)
-                                                    } className="text-sm font-medium text-[#1DBDF5] hover:cursor-pointer">
-                                                        Balas
-                                                    </button>
-
-                                                    <div className="flex gap-4">
-                                                        <div className="flex items-center gap-1">
-                                                            <Image
-                                                                priority
-                                                                className="h-5 w-5 focus-within:bg-purple-300"
-                                                                width={35}
-                                                                alt="logo-like"
-                                                                src={iconLikeComment}
-                                                            />
-                                                            <p className="text-[#1DBDF5]">Ya</p>
-                                                        </div>
-
-                                                        <div className="flex items-center gap-1">
-                                                            <Image
-                                                                priority
-                                                                className="h-5 w-5 focus-within:bg-purple-300"
-                                                                width={35}
-                                                                alt="logo-like"
-                                                                src={iconDislikeComment}
-                                                            />
-                                                            <p className="text-[#1DBDF5]">Tidak</p>
-                                                        </div>
+                                            <div className={`flex flex-col gap-2 rounded-md`}>
+                                                <div className={`flex flex-col p-2 rounded-md gap-4 ${isDark ? "bg-[#515151] text-white" : "bg-[#C6C6C6] text-[#1A1A1A]"}`}>
+                                                    <div className="mb-2 flex">
+                                                        <p className={`text-base font-semibold ${isDark ? "text-white" : "text-[#1A1A1A]"}`}>
+                                                            {comment.message}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex justify-start gap-4">
+                                                        <button onClick={
+                                                            () => handleReplyToComment(comment)
+                                                        } className="text-sm font-medium text-[#1DBDF5] hover:cursor-pointer">
+                                                            Balas
+                                                        </button>
                                                     </div>
                                                 </div>
 
@@ -269,44 +248,18 @@ export default function CommentComponent({
                                                                 />
                                                             </div>
                                                         </div>
-                                                        <p className="text-[#F5F5F5] text-xs">Reply <span className="text-[#1DBDF5]">
-                                                            {comment.user.profileName
-                                                                ? comment.user.profileName
-                                                                : comment.user.username}
-                                                        </span>
-                                                        </p>
+                                                        <div className={`flex flex-col gap-4 p-2 rounded-md ${isDark ? "bg-[#515151] text-white" : "bg-[#C6C6C6] text-[#1A1A1A]"}`}>
+                                                            <p className="text-[#F5F5F5] text-xs">Reply <span className="text-[#1DBDF5]">
+                                                                {comment.user.profileName
+                                                                    ? comment.user.profileName
+                                                                    : comment.user.username}
+                                                            </span>
+                                                            </p>
 
-                                                        <div className="flex flex-col gap-2">
                                                             <div className="mb-2 flex">
                                                                 <p className="text-base font-semibold text-[#979797]">
                                                                     {reply.message}
                                                                 </p>
-                                                            </div>
-
-                                                            <div className="flex justify-start gap-4">
-                                                                <div className="flex gap-4">
-                                                                    <div className="flex items-center gap-1">
-                                                                        <Image
-                                                                            priority
-                                                                            className="h-5 w-5 focus-within:bg-purple-300"
-                                                                            width={35}
-                                                                            alt="logo-like"
-                                                                            src={iconLikeComment}
-                                                                        />
-                                                                        <p className="text-[#1DBDF5]">Ya</p>
-                                                                    </div>
-
-                                                                    <div className="flex items-center gap-1">
-                                                                        <Image
-                                                                            priority
-                                                                            className="h-5 w-5 focus-within:bg-purple-300"
-                                                                            width={35}
-                                                                            alt="logo-like"
-                                                                            src={iconDislikeComment}
-                                                                        />
-                                                                        <p className="text-[#1DBDF5]">Tidak</p>
-                                                                    </div>
-                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
