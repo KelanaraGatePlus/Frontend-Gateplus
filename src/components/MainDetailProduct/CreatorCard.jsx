@@ -84,7 +84,7 @@ export default function CreatorCard({
 
         {!isOwnChannel && (
           <button
-            className={`zeinFont mt-1 flex cursor-pointer items-center justify-center rounded-full ${!isSubscribed ? "bg-blue-800 hover:bg-blue-900" : "bg-gray-600 hover:bg-gray-700"} px-0 md:px-5 pt-1.5 pb-1 text-xl`}
+            className={`zeinFont mt-1 flex cursor-pointer items-center justify-center rounded-full ${!isSubscribed ? "bg-blue-800 hover:bg-blue-900" : "bg-gray-600 hover:bg-gray-700"} px-4 md:px-6 pt-1.5 pb-1 text-sm md:text-lg`}
             onClick={handleToggleSubscribe}
           >
             {isSubscribing ? (

@@ -177,9 +177,10 @@ export default function ProductEpisodeSection({
                       {/* Book Info */}
                       <div className="flex w-full justify-between items-center">
                         <div className="flex flex-col justify-between md:justify-center h-full py-2 md:py-0 items-start montserratFont text-[#AFAFAF]">
-                          <h1 className="text-white zeinFont font-bold text-xs md:text-2xl">{item.title}</h1>
+                          <h1 className="text-white zeinFont font-bold text-[16px] md:text-2xl">{item.title}</h1>
                           <p className="hidden text-start md:block" title={item.description}>{item.description?.substring(0, 265)}{item.description?.length > 265 ? '...' : ''}</p>
-                          <p className="text-[10px] md:text-[16px]">{formatDateTime(item.createdAt)}</p>
+                          <p className="text-sm md:text-[16px] block md:hidden">{formatDateTime(item.createdAt, 'short')}</p>
+                          <p className="text-sm md:text-[16px] hidden md:block">{formatDateTime(item.createdAt, 'long')}</p>
                         </div>
 
                         {/* Lock */}

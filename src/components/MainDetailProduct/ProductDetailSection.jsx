@@ -242,7 +242,7 @@ export default function ProductDetailSection({
                     <button
                       onClick={() => handleSubscribe(productID, subscriptionPrice)}
                       disabled={isSubscribe || isOwner}
-                      className={`w-full cursor-pointer rounded-3xl px-12 py-3 font-bold text-white md:w-auto 
+                      className={`w-full cursor-pointer rounded-3xl px-8 md:px-10 py-3 text-sm md:text-[16px] font-bold text-white md:w-auto 
                       ${isSubscribe || isOwner ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#0076E999] hover:bg-[#0076E999]/80'}`}
                     >
                       {isOwner ? 'Ini adalah konten milikmu' : isSubscribe ? 'Subscribed' : 'Subscribe'}
@@ -253,7 +253,7 @@ export default function ProductDetailSection({
                     <button
                       onClick={() => handleSubscribe(creatorDetail.id, productID, subscriptionPrice)}
                       disabled={isSubscribe || isOwner}
-                      className={`w-full cursor-pointer rounded-3xl px-12 py-3 font-bold text-white md:w-auto 
+                      className={`w-full cursor-pointer rounded-3xl px-8 md:px-10 py-3 font-bold text-white text-xs md:w-auto 
                       ${isSubscribe || isOwner ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#0076E999] hover:bg-[#0076E999]/80'}`}
                     >
                       {isOwner ? 'Ini adalah konten milikmu' : isSubscribe ? 'Subscribed' : 'Subscribe'}

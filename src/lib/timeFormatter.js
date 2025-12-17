@@ -13,6 +13,15 @@ export function formatDateTime(isoString, type = "long") {
       minute: "2-digit",
     };
     return date.toLocaleString("id-ID", options);
+  } else if (type === "short") {
+    const options = {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    };
+    return date.toLocaleString("id-ID", options);
   }
 
   const options = {
