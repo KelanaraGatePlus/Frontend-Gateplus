@@ -58,7 +58,7 @@ export default function UploadEbookEpisodeForm() {
             inputFile: [],
             termAccepted: false,
             agreementAccepted: false,
-            audioUrl: null,
+            audioUrl: [],
         },
     });
 
