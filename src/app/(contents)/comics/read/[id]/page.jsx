@@ -5,15 +5,14 @@ import Link from "next/link";
 import iconCommentComic from "@@/icons/icon-comment-comic.svg";
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
-import { formatDateTime } from "@/lib/timeFormatter";
 import { useGetEpisodeComicsByIdQuery } from "@/hooks/api/contentSliceAPI";
 import { useGetCommentByEpisodeComicQuery } from "@/hooks/api/commentSliceAPI";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import PropTypes from "prop-types";
-import CommentComponent from "@/components/Comment/page";
 import { useDeviceType } from "@/hooks/helper/deviceType";
 import iconFlag from "@@/icons/icon-flag.svg";
 import CommentModalComic from "@/components/CommentModalComic/page";
+import EpisodeController from "@/components/EpisodeController/EpisodeController";
 
 export default function ReadComicPage({ params }) {
   const { id } = params;
@@ -28,6 +27,8 @@ export default function ReadComicPage({ params }) {
   const comicSingleData = data?.data?.data;
   const comicData = comicSingleData?.fileImageComics || [];
   const title = comicSingleData?.comics?.title || "";
+  const episodeComicNextId = data?.data?.nextEpisode?.id || null;
+  const episodeComicPrevId = data?.data?.previousEpisode?.id || null;
 
   const { data: commentData, isLoading: isLoadingGetComment } =
     useGetCommentByEpisodeComicQuery(id, { skip: !id });
@@ -37,6 +38,12 @@ export default function ReadComicPage({ params }) {
     itemsPerPage > 0 ? Math.ceil(comicData.length / itemsPerPage) : 0;
   const logicalCurrentPage = Math.floor(currentPage / itemsPerPage) + 1;
   const maxCurrentPageIndex = Math.max(0, comicData.length - itemsPerPage);
+
+  useEffect(() => {
+    if (error && error.status === 403) {
+      window.location.href = "/payment/purchase/comics/x/" + comicSingleData.comics.id;
+    }
+  }, [data, isLoading]);
 
   useEffect(() => {
     if (!id) return;
@@ -303,6 +310,11 @@ export default function ReadComicPage({ params }) {
           </button>
         </div>
       </div>
+
+      <EpisodeController
+        prevEpisodeUrl={episodeComicPrevId ? `/comics/read/${episodeComicPrevId}` : null}
+        nextEpisodeUrl={episodeComicNextId ? `/comics/read/${episodeComicNextId}` : null}
+      />
 
       <CommentModalComic
         commentData={commentData?.data?.data || []}

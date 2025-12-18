@@ -2,13 +2,13 @@
 "use client";
 
 import PropTypes from "prop-types";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
-import ProductEpisodeSection from "@/components/MainDetailProduct/ProductEpisodeSection";
 import { useGetEpisodeSeriesByIdQuery } from "@/hooks/api/contentSliceAPI";
 import CommentComponent from "@/components/Comment/page";
 import { useGetCommentByEpisodeSeriesQuery } from "@/hooks/api/commentSliceAPI";
+import EpisodeController from "@/components/EpisodeController/EpisodeController";
 
 /* ===========================
    Halaman: DetailSeriesPage (JSX)
@@ -16,20 +16,16 @@ import { useGetCommentByEpisodeSeriesQuery } from "@/hooks/api/commentSliceAPI";
 export default function DetailSeriesPage({ params }) {
     const { id } = params;
     const { data, error } = useGetEpisodeSeriesByIdQuery(id);
-    const [loading] = useState(false);
 
     const episodeData = data?.data?.data || {};
     const seriesData = data?.data?.data?.series || {};
-    const episode_series = (seriesData.episodes || []).slice().sort((a, b) => {
-        return new Date(a.createdAt) - new Date(b.createdAt);
-    });
     const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByEpisodeSeriesQuery(id, {
         skip: !id,
     });
 
     useEffect(() => {
         if (error && error.status === 403) {
-            window.location.href = "/";
+            window.location.href = "/checkout/purchase/series/x/" + id;
         }
     }, [error]);
 
@@ -53,15 +49,13 @@ export default function DetailSeriesPage({ params }) {
                 </div>
             </section>
 
-            <main className="px-5 text-white">
-                <ProductEpisodeSection
-                    productType={'series'}
-                    productEpisodes={episode_series}
-                    isLoading={loading}
-                    handlePayment={() => {
-                        console.log('Payment initiated for series:');
-                    }}
-                />
+            <main className="md:px-5 text-white mt-8 md:mt-16">
+                <div className="px-5 md:px-16">
+                    <EpisodeController
+                        nextEpisodeUrl={data?.data?.nextEpisode ? `/series/watch/${data.data.nextEpisode.id}` : null}
+                        prevEpisodeUrl={data?.data?.previousEpisode ? `/series/watch/${data.data.previousEpisode.id}` : null}
+                    />
+                </div>
 
                 {/* Comment Baru */}
                 <div className="md:px-11">
