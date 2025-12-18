@@ -299,7 +299,7 @@ export default function PurchaseContentPaymentPage({ params }) {
                     >
                         Ulangi Pesanan
                     </button>
-                    <Link href={`/${contentTypeConst[contentType]['pluralName']}/detail/${contentId}`}
+                    <Link href={`/${contentTypeConst[contentType]['pluralName']}/detail/${contentData?.id}`}
                         className="rounded-4xl bg-[#686868] py-4 min-w-4xl font-semibold hover:cursor-pointer text-center text-white"
                     >
                         Kembali
