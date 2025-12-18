@@ -21,11 +21,10 @@ import CommentComponent from "@/components/Comment/page";
 import FontSizeController from "./Component/FontSizeController";
 
 /*[--- ASSETS IMPORT ---]*/
-import logoArrowDownDark from "@@/icons/icons-dashboard/icons-arrow-left.svg";
-import logoArrowDownLight from "@@/icons/icons-dashboard/icons-arrow-left-light.svg";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { Icon } from "@iconify/react";
 import AudioEbookButton from "@/components/AudioEbookButton/page";
+import EpisodeController from "@/components/EpisodeController/EpisodeController";
 
 export default function ReadEbookPage({ params }) {
   const { id } = React.use(params);
@@ -48,8 +47,9 @@ export default function ReadEbookPage({ params }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [audioEbookUrl, setAudioEbookUrl] = useState(null);
   const episodeEbookData = data?.data?.data || {};
-  const ebookData = episodeEbookData.ebooks || {};
-  const allEpisodes = ebookData.episode_ebooks || [];
+  const episodeEbookNextId = data?.data?.nextEpisode?.id || null;
+  const episodeEbookPrevId = data?.data?.previousEpisode?.id || null;
+  const ebookData = episodeEbookData.ebooks || {}
   let hasUpdatedViews = false;
 
   // Detect device type based on window width
@@ -60,12 +60,6 @@ export default function ReadEbookPage({ params }) {
     if (width < 1024) return 'TABLET';
     return 'DESKTOP';
   };
-
-  const currentIndex = allEpisodes.findIndex(
-    (ep) => ep.id === episodeEbookData.id,
-  );
-  const prevEpisode = allEpisodes[currentIndex - 1];
-  const nextEpisode = allEpisodes[currentIndex + 1];
 
   useEffect(() => {
     if (!id) return;
@@ -438,88 +432,17 @@ export default function ReadEbookPage({ params }) {
           </div>
         </section>
 
-        {/* Next / Previous Chapter */}
-        <section
-          className={`relative flex w-screen flex-row gap-2 px-4 py-2 ${isDark ? "text-white" : "text-[#222222]"} md:px-15`}
-        >
-          {prevEpisode ? (
-            <Link
-              href={`/ebooks/read/${prevEpisode.id}`}
-              className={`flex flex-1 justify-center gap-2 rounded-lg px-2 py-2 ${isDark ? "bg-[#3939394D]" : "bg-[#DEDEDE]"}`}
-            >
-              <div className="flex h-8 w-8 rotate-0 items-center justify-center self-center">
-                {isDark ? (
-                  <Image
-                    width={35}
-                    alt="logo-arrow-down"
-                    src={logoArrowDownDark}
-                    className="object-cover"
-                  />
-                ) : (
-                  <Image
-                    width={35}
-                    alt="logo-arrow-down"
-                    src={logoArrowDownLight}
-                    className="object-cover"
-                  />
-                )}
-              </div>
-              <p className="flex h-fit self-center leading-tight font-bold">
-                Episode Sebelumnya
-              </p>
-            </Link>
-          ) : (
-            <div
-              className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-2 py-2 ${isDark ? "bg-[#3939394D]" : "bg-[#DEDEDE]"}`}
-            >
-              <p className="text-sm">Tidak ada episode sebelumnya</p>
-            </div>
-          )}
-          {nextEpisode ? (
-            <Link
-              href={`/ebooks/read/${nextEpisode.id}`}
-              className={`flex flex-1 justify-center gap-2 rounded-lg px-2 py-2 ${isDark ? "bg-[#3939394D]" : "bg-[#DEDEDE]"}`}
-            >
-              <p className="flex h-fit self-center leading-tight font-bold">
-                Episode Selanjutnya
-              </p>
-              <div className="flex h-8 w-8 -rotate-180 items-center justify-center self-center">
-                {isDark ? (
-                  <Image
-                    width={35}
-                    alt="logo-arrow-down"
-                    src={logoArrowDownDark}
-                    className="object-cover"
-                  />
-                ) : (
-                  <Image
-                    width={35}
-                    alt="logo-arrow-down"
-                    src={logoArrowDownLight}
-                    className="object-cover"
-                  />
-                )}
-              </div>
-            </Link>
-          ) : (
-            <div
-              className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-2 py-2 ${isDark ? "bg-[#3939394D]" : "bg-[#DEDEDE]"}`}
-            >
-              <p className="text-sm">Tidak ada episode selanjutnya</p>
-            </div>
-          )}
-        </section>
-
-        <div className="flex flex-1 items-center justify-center text-center">
-          <p
-            className={`text-sm font-medium ${isDark ? "text-gray-400" : "text-gray-600"}`}
-          >
-            Episode {currentIndex + 1} dari {allEpisodes.length}
-          </p>
+        {/* Episode Controller */}
+        <div className="px-10 md:px-15 mt-5">
+          <EpisodeController
+            prevEpisodeUrl={episodeEbookPrevId ? `/ebooks/read/${episodeEbookPrevId}` : null}
+            nextEpisodeUrl={episodeEbookNextId ? `/ebooks/read/${episodeEbookNextId}` : null}
+            isDark={isDark}
+          />
         </div>
 
         {/* Comment Baru */}
-        <div className="md:px-11">
+        <div className="px-5 md:px-11">
           <CommentComponent
             commentData={commentData?.data?.data || []}
             isLoadingGetComment={isLoadingGetComment}
