@@ -273,7 +273,7 @@ export default function PurchaseContentPaymentPage({ params }) {
                         className="mx-auto"
                     />
                     <h2 className="text-center font-bold text-2xl text-[#C6C6C6]">Pembayaran Berhasil!</h2>
-                    <Link href={`/${contentTypeConst[contentType]['pluralName']}/detail/${contentId}`}
+                    <Link href={`/${contentTypeConst[contentType]['pluralName']}/detail/${contentData?.id}`}
                         className="rounded-4xl bg-[#0076E9CC] py-4 min-w-4xl font-semibold hover:cursor-pointer text-center text-white"
                     >
                         Lanjut Menonton
