@@ -20,7 +20,7 @@ import { useGetPublicEpisodeComicsByIdQuery, useGetPublicEpisodeEbookByIdQuery, 
 
 export default function PurchaseContentPaymentPage({ params }) {
     const resolvedParams = React.use(params);
-    const { contentType, contentId, id } = resolvedParams;
+    const { contentType, id } = resolvedParams;
     const searchParams = useSearchParams();
     const isSuccessParams = searchParams.get("isSuccess");
     const isFailedParams = searchParams.get("isFailed");
