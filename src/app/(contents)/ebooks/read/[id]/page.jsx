@@ -25,6 +25,7 @@ import logoArrowDownDark from "@@/icons/icons-dashboard/icons-arrow-left.svg";
 import logoArrowDownLight from "@@/icons/icons-dashboard/icons-arrow-left-light.svg";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { Icon } from "@iconify/react";
+import AudioEbookButton from "@/components/AudioEbookButton/page";
 
 export default function ReadEbookPage({ params }) {
   const { id } = React.use(params);
@@ -45,6 +46,7 @@ export default function ReadEbookPage({ params }) {
   const [fontSizeFactor, setFontSizeFactor] = useState(1.0);
   const [fontSizeModalOpen, setFontSizeModalOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [audioEbookUrl, setAudioEbookUrl] = useState(null);
   const episodeEbookData = data?.data?.data || {};
   const ebookData = episodeEbookData.ebooks || {};
   const allEpisodes = ebookData.episode_ebooks || [];
@@ -103,7 +105,8 @@ export default function ReadEbookPage({ params }) {
       setBannerStartEpisodeUrl(episodeEbookData.bannerStartEpisodeUrl);
       setBannerEndEpisodeUrl(episodeEbookData.bannerEndEpisodeUrl);
       setUpdatedAt(formatDateTime(episodeEbookData.updatedAt, "short"));
-      console.log(episodeEbookData);
+      setAudioEbookUrl(episodeEbookData.audioUrl);
+
       const existing = JSON.parse(localStorage.getItem("last_seen_content")) || [];
       const isAlreadyExist = existing.find(item => item.id === ebookData.id);
       let updated = existing;
@@ -153,7 +156,6 @@ export default function ReadEbookPage({ params }) {
   useEffect(() => {
     setShowSkeleton(isLoading);
   }, [isLoading]);
-
 
   if (showSkeleton) {
     return (
@@ -526,6 +528,11 @@ export default function ReadEbookPage({ params }) {
             isDark={isDark}
           />
         </div>
+
+        {/* Audio Book */}
+        {audioEbookUrl && (
+          <AudioEbookButton audioUrl={audioEbookUrl} isDark={isDark} />
+        )}
       </main>
     </div>
   );
