@@ -59,7 +59,7 @@ export default function CommentComponent({
             className={`flex pb-10 flex-col montserratFont text-white transition-all duration-200 ease-in-out ${isCommentVisible ? "my-4 w-1/2 pr-5" : isMobile ? "w-full p-0" : "w-full px-5 py-6"} ${isExpand ? "h-screen" : "h-full"}`}
         >
             <div
-                className={`${isMobile ? "" : "sticky top-0"} ${isPodcast ? "bg-[#171717]" : "bg-transparent"} z-10 flex w-full flex-col`}
+                className={`${isMobile ? "" : "sticky top-0"} ${isPodcast ? "bg-[#171717]" : "bg-transparent"} flex w-full flex-col`}
             >
                 <div className={`relative flex w-full justify-start py-2 ${isMobile ? "px-0" : isPodcast ? "" : "p-0"}`}>
                     <h3 className={`${isMobile ? "m-0 p-0" : isPodcast ? "ml-4" : "m-0"} zeinFont text-3xl font-extrabold ${isDark ? "text-white" : "text-[#1A1A1A]"}`}>

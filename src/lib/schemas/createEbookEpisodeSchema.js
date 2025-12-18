@@ -5,13 +5,25 @@ const validTypesEbook = [
     "application/msword",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ];
+const validTypesAudio = ["audio/mpeg", "audio/mp3"];
 const maxSize = 1000 * 1024;
 
 export const createEbookEpisodeSchema = z.object({
     ebookId: z.string().min(1, "Judul series wajib dipilih"),
     title: z.string().min(1, "Judul wajib diisi").max(50, "Maksimal 50 karakter"),
     description: z.string().min(1, "Deskripsi wajib diisi").max(300, "Maksimal 300 karakter"),
-    price: z.string().min(1, "Harga wajib diisi"),
+    price: z
+        .string()
+        .trim()
+        .min(1, "price is required")
+        .refine((val) => {
+            const normalized = val.toLowerCase();
+            if (normalized === "free") return true;
+            const numeric = Number(val);
+            return !Number.isNaN(numeric) && numeric >= 2000;
+        }, {
+            message: "Harga harus berupa 'free' atau minimal 2000",
+        }),
     notedEpisode: z
         .string()
         .min(1, "Catatan wajib diisi")
@@ -59,6 +71,13 @@ export const createEbookEpisodeSchema = z.object({
         .refine(
             (file) => file && file[0] && !file[0].name.includes(" "),
             "Nama file tidak boleh mengandung spasi"
+        ),
+    audioUrl: z
+        .any()
+        .optional()
+        .refine(
+            (file) => !file || file.length === 0 || (file[0] && validTypesAudio.includes(file[0].type)),
+            "Format file tidak valid, harus berformat .mp3"
         ),
     termAccepted: z.literal(true).refine(val => val === true, {
         message: "Syarat dan Ketentuan harus disetujui",

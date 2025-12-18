@@ -58,6 +58,7 @@ export default function UploadEbookEpisodeForm() {
             inputFile: [],
             termAccepted: false,
             agreementAccepted: false,
+            audioUrl: null,
         },
     });
 
@@ -76,6 +77,7 @@ export default function UploadEbookEpisodeForm() {
         formData.append("bannerStartEpisodeUrl", data.bannerStart[0]);
         formData.append("bannerEndEpisodeUrl", data.bannerEnd[0]);
         formData.append("ebookUrl", data.inputFile[0]);
+        formData.append("audioUrl", data.audioUrl ? data.audioUrl[0] : null);
 
         try {
             await createEpisode(formData).unwrap();
@@ -171,6 +173,24 @@ export default function UploadEbookEpisodeForm() {
                             label="Upload File"
                             description="Format input .docx"
                             accept=".doc,.docx"
+                            files={field.value}
+                            onUpload={(e) => field.onChange([...e.target.files])}
+                            onRemove={() => field.onChange([])}
+                            error={fieldState.error?.message}
+                        />
+                    )}
+                />
+
+                {/* Input audio opsional */}
+                <Controller
+                    name="audioUrl"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                        <InputFileDoc
+                            name="audioUrl"
+                            label="Upload File"
+                            description="Audio .mp3 untuk audiobook atau background audio"
+                            accept=".mp3"
                             files={field.value}
                             onUpload={(e) => field.onChange([...e.target.files])}
                             onRemove={() => field.onChange([])}
