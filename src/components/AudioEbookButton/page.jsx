@@ -78,4 +78,5 @@ export default function AudioEbookButton({ audioUrl, className, isDark }) {
 AudioEbookButton.propTypes = {
   audioUrl: PropTypes.string,
   className: PropTypes.string,
+  isDark: PropTypes.bool,
 };
