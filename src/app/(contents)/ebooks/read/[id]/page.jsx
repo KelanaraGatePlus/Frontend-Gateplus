@@ -136,9 +136,9 @@ export default function ReadEbookPage({ params }) {
     }
 
     if (error && error.status === 403) {
-      window.location.href = "/";
+      window.location.href = "/checkout/purchase/ebooks/x/" + id;
     }
-  }, [data, isLoading]);
+  }, [ebookData, data, isLoading]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {

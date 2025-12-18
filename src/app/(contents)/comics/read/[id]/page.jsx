@@ -23,7 +23,7 @@ export default function ReadComicPage({ params }) {
   const [isCommentVisible, setIsCommentVisible] = useState(false);
   const [createLog] = useCreateLogMutation();
 
-  const { data, isLoading } = useGetEpisodeComicsByIdQuery(id);
+  const { data, isLoading, error } = useGetEpisodeComicsByIdQuery(id);
   const comicSingleData = data?.data?.data;
   const comicData = comicSingleData?.fileImageComics || [];
   const title = comicSingleData?.comics?.title || "";
@@ -38,6 +38,12 @@ export default function ReadComicPage({ params }) {
     itemsPerPage > 0 ? Math.ceil(comicData.length / itemsPerPage) : 0;
   const logicalCurrentPage = Math.floor(currentPage / itemsPerPage) + 1;
   const maxCurrentPageIndex = Math.max(0, comicData.length - itemsPerPage);
+
+  useEffect(() => {
+    if (error && error.status === 403) {
+      window.location.href = "/payment/purchase/comics/x/" + comicSingleData.comics.id;
+    }
+  }, [data, isLoading]);
 
   useEffect(() => {
     if (!id) return;

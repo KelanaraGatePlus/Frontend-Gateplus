@@ -54,6 +54,22 @@ export const contentAPI = createApi({
                 `/episodePodcast/podcast/${id}?page=${page}&limit=${limit}&withPurchased=${withPurchased}&paginate=${paginate}`,
             providesTags: ["podcastContent"],
         }),
+        getPublicEpisodeEbookById: builder.query({
+            query: ({ id }) => `/episode/public/${id}`,
+            providesTags: ["ebookContent", "comicContent", "seriesContent", "podcastContent"],
+        }),
+        getPublicEpisodeComicsById: builder.query({
+            query: ({ id }) => `/episodeComics/public/${id}`,
+            providedTags: []
+        }),
+        getPublicEpisodeSeriesById: builder.query({
+            query: ({ id }) => `/episodeSeries/public/${id}`,
+            providedTags: []
+        }),
+        getPublicEpisodePodcastById: builder.query({
+            query: ({ id }) => `/episodePodcast/public/${id}`,
+            providedTags: []
+        }),
     }),
 });
 
@@ -72,4 +88,10 @@ export const {
     useLazyGetAllEpisodeBySeriesIdQuery,
     useLazyGetAllEpisodeByPodcastIdQuery,
     useLazyGetAllEpisodeByEbookIdQuery,
+
+    // Public Queries
+    useGetPublicEpisodeEbookByIdQuery,
+    useGetPublicEpisodeComicsByIdQuery,
+    useGetPublicEpisodeSeriesByIdQuery,
+    useGetPublicEpisodePodcastByIdQuery,
 } = contentAPI;

@@ -25,7 +25,7 @@ export default function DetailSeriesPage({ params }) {
 
     useEffect(() => {
         if (error && error.status === 403) {
-            window.location.href = "/";
+            window.location.href = "/checkout/purchase/series/x/" + id;
         }
     }, [error]);
 
