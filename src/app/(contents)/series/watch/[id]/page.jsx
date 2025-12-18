@@ -1,21 +1,9 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
 
-import {
-    Carousel,
-    CarouselContent,
-    CarouselItem,
-    CarouselNext,
-    CarouselPrevious,
-} from "@/components/ui/carousel";
 import PropTypes from "prop-types";
-
-import movie1 from "@@/logo/logoFilm/film_1.svg";
-import movie2 from "@@/logo/logoFilm/film_2.svg";
-import movie3 from "@@/logo/logoFilm/film_3.svg";
 import { useEffect, useState } from "react";
 
-import Image from "next/legacy/image";
 import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
 import ProductEpisodeSection from "@/components/MainDetailProduct/ProductEpisodeSection";
 import { useGetEpisodeSeriesByIdQuery } from "@/hooks/api/contentSliceAPI";
@@ -75,79 +63,15 @@ export default function DetailSeriesPage({ params }) {
                     }}
                 />
 
-                <section className="mt-5">
-                    <section className="my-10 flex flex-col">
-                        <section className="mt-10">
-                            <Carousel className="">
-                                <div className="flex justify-between text-white">
-                                    <p className="mb-5 text-[20px] font-bold md:ml-3">Dari Creator</p>
-                                    <p className="mb-5 text-[20px] font-bold md:ml-3">Lainnya</p>
-                                </div>
-                                <CarouselContent className="">
-                                    <CarouselItem className="">
-                                        <Image src={movie1} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie2} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie1} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie3} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie1} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie3} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie1} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                </CarouselContent>
-                                <CarouselPrevious />
-                                <CarouselNext />
-                            </Carousel>
-                        </section>
-
-                        <section className="mt-10">
-                            <Carousel className="sm:max-h-auto sm:max-w-auto">
-                                <div className="flex justify-between text-white">
-                                    <p className="mb-5 text-[20px] font-bold md:ml-3">Rekomendasi Serupa</p>
-                                    <p className="mb-5 text-[20px] font-bold md:ml-3">Lainnya</p>
-                                </div>
-                                <CarouselContent>
-                                    <CarouselItem>
-                                        <Image src={movie1} priority alt="logo-movie-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem>
-                                        <Image src={movie2} priority alt="logo-movie-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem>
-                                        <Image src={movie1} priority alt="logo-movie-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem>
-                                        <Image src={movie3} priority alt="logo-movie-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem>
-                                        <Image src={movie2} priority alt="logo-movie-banner" />
-                                    </CarouselItem>
-                                </CarouselContent>
-                                <CarouselPrevious />
-                                <CarouselNext />
-                            </Carousel>
-                        </section>
-                    </section>
-                </section>
-
                 {/* Comment Baru */}
-                <CommentComponent
-                    commentData={commentData?.data?.data || []}
-                    isLoadingGetComment={isLoadingGetComment}
-                    contentType={"SERIES"}
-                    episodeId={id}
-                />
+                <div className="md:px-11">
+                    <CommentComponent
+                        commentData={commentData?.data?.data || []}
+                        isLoadingGetComment={isLoadingGetComment}
+                        contentType={"SERIES"}
+                        episodeId={id}
+                    />
+                </div>
             </main>
         </div>
     );
