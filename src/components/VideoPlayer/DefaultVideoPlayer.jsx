@@ -22,6 +22,7 @@ export default function DefaultVideoPlayer({
   title,
   genre,
   ageRestriction,
+  playbackId
 }) {
   const videoRef = useRef(null);
   const containerRef = useRef(null); // Ref baru untuk container utama
@@ -165,9 +166,10 @@ export default function DefaultVideoPlayer({
           <Image src={iconFlag} alt="icons-flag" width={32} height={32} />
         </Link>
       </div>
+      {console.log(playbackId, src)}
       <MuxPlayer
         ref={videoRef}
-        playbackId={src}
+        {...(playbackId ? { playbackId } : src ? { src } : {})}
         poster={poster}
         streamType="on-demand"
         // Atur z-index MuxPlayer agar lebih rendah dari header overlay
@@ -212,7 +214,7 @@ export default function DefaultVideoPlayer({
 }
 
 DefaultVideoPlayer.propTypes = {
-  src: PropTypes.string.isRequired,
+  src: PropTypes.string,
   poster: PropTypes.string,
   className: PropTypes.string,
   contentType: PropTypes.oneOf(["MOVIE", "SERIES_EPISODE"]).isRequired,
@@ -222,4 +224,5 @@ DefaultVideoPlayer.propTypes = {
   title: PropTypes.string,
   genre: PropTypes.string,
   ageRestriction: PropTypes.string,
+  playbackId: PropTypes.string,
 };

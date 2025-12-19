@@ -36,6 +36,7 @@ export default function DetailSeriesPage({ params }) {
                 <div className="mx-auto my-auto flex w-screen justify-center rounded-lg object-cover">
                     {episodeData && <DefaultVideoPlayer
                         className="rounded-lg"
+                        playbackId={episodeData?.muxPlaybackId}
                         src={episodeData?.episodeFileUrl}
                         poster={episodeData?.thumbnailUrl}
                         startFrom={episodeData?.WatchProgress?.[0]?.progressSeconds || 0}

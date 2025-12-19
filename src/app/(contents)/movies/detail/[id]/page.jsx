@@ -157,6 +157,7 @@ function PlayingMoviePage({ params }) {
                         contentType="FILM"
                         logType={movieData?.isOwner || movieData?.isSubscribed || movieData?.price == 'Free' ? 'WATCH_CONTENT' : 'WATCH_TRAILER'}
                         className="rounded-lg"
+                        playbackId={movieData?.isOwner || movieData?.isSubscribed || movieData?.price == 'Free' ? movieData?.muxPlaybackId : null}
                         src={movieData?.isOwner || movieData?.isSubscribed || movieData?.price == 'Free' ? movieData?.movieFileUrl : movieData?.trailerFileUrl}
                         poster={movieData?.thumbnailImageUrl}
                         startFrom={movieData?.WatchProgress?.[0]?.progressSeconds || 0}
