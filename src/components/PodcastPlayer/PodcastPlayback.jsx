@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
 import { useSearchParams } from "next/navigation";
 import PropTypes from "prop-types";
 import AudioPlayer from "react-h5-audio-player";
@@ -8,35 +9,33 @@ import "react-h5-audio-player/lib/styles.css";
 
 /*[--- COMPONENT IMPORT ---]*/
 import AudioControl from "./AudioControl";
-import ExpandPodcast from "./ExpandView";
-import CollapsePodcast from "./CollapseView";
-import BottomSheet from "@/components/BottomSheet/page";
-import SwipeableBottomSheet from "@/components/SwipeableBottomSheet/page";
-import CloseCircleButton from "@/components/CloseCircleButton/page";
-import { formatDateTime } from "@/lib/timeFormatter";
+import ExpandView from "./ExpandView";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
+import CommentModalComic from "../CommentModalComic/page";
+import { useGetCommentByPodcastQuery } from "@/hooks/api/commentSliceAPI";
 
 export default function PodcastPlayback({
   isOpen,
   setIsOpen,
   currentlyPlaying,
-  handlePlayPodcast,
-  podcast,
-  episodePodcasts,
 }) {
   const searchParams = useSearchParams();
   const [isMobile, setIsMobile] = useState(false);
   const podcastId = searchParams.get("podcast_detail");
   const [isExpand, setIsExpand] = useState(false);
   const [isCommentVisible, setIsCommentVisible] = useState(false);
-  const [isPlay, setIsPlay] = useState(false);
+
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [blobUrl, setBlobUrl] = useState("");
   const [volume, setVolume] = useState(1);
-  const audioRef = useRef(null);
+  const { audioRef, isPlaying, togglePlay, play, pause, seek, seekBy, setPlayerVolume, setCurrentlyPlaying, playNextEpisode, playPrevEpisode } = usePodcastPlayer();
   const [episodePodcastData, setEpisodePodcastData] = useState({});
   const [createLog] = useCreateLogMutation();
+  const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByPodcastQuery(
+    podcastId,
+    { skip: !podcastId }
+  );
 
   // Refs untuk melacak apakah log sudah dikirim untuk episode saat ini
   const clickLogSentRef = useRef(false);
@@ -50,6 +49,7 @@ export default function PodcastPlayback({
       clickLogSentRef.current = false;
       watchLogSentRef.current = false;
     }
+    // (no-op) keep in sync via context
   }, [currentlyPlaying]);
 
   // Efek untuk membuka/menutup player berdasarkan URL search params
@@ -95,6 +95,16 @@ export default function PodcastPlayback({
 
       setCurrentTime(current_Time);
       setDuration(total_Duration);
+
+      // update playbackProgress in context so mini player can show progress
+      const playbackProgress = total_Duration > 0 ? current_Time / total_Duration : 0;
+      if (episodePodcastData.id && typeof setCurrentlyPlaying === "function") {
+        setCurrentlyPlaying((prev) => {
+          if (!prev || prev.id !== episodePodcastData.id) return prev;
+          if (prev.playbackProgress === playbackProgress) return prev;
+          return { ...prev, playbackProgress };
+        });
+      }
 
       // Cek jika durasi valid, log 'WATCH_CONTENT' belum dikirim, dan ada episode ID
       if (total_Duration > 0 && !watchLogSentRef.current && episodePodcastData.id) {
@@ -164,9 +174,7 @@ export default function PodcastPlayback({
     const newVolume = parseFloat(e.target.value);
     setVolume(newVolume);
     localStorage.setItem("volume", newVolume);
-    if (audioRef.current?.audio?.current) {
-      audioRef.current.audio.current.volume = newVolume;
-    }
+    setPlayerVolume(newVolume);
   };
 
   const handleDecreaseVolume = () => {
@@ -188,26 +196,14 @@ export default function PodcastPlayback({
   };
 
   const handlePlay = () => {
-    if (audioRef.current) {
-      if (isPlay) {
-        setIsPlay(false);
-        audioRef.current.audio.current.pause();
-      } else {
-        setIsPlay(true);
-        audioRef.current.audio.current.play();
-      }
-    }
+    togglePlay();
   };
   const handleSeekForward = () => {
-    if (audioRef.current) {
-      audioRef.current.audio.current.currentTime += 10;
-    }
+    seekBy(10);
   };
 
   const handleSeekBackward = () => {
-    if (audioRef.current) {
-      audioRef.current.audio.current.currentTime -= 10;
-    }
+    seekBy(-10);
   };
 
   const keyUp = (e) => {
@@ -223,12 +219,10 @@ export default function PodcastPlayback({
       handleDecreaseVolume();
     }
   };
-  
+
   const handleSeek = (e) => {
     const value = parseFloat(e.target.value);
-    if (audioRef.current?.audio?.current) {
-      audioRef.current.audio.current.currentTime = value;
-    }
+    seek(value);
   };
 
   useEffect(() => {
@@ -262,77 +256,52 @@ export default function PodcastPlayback({
 
   return (
     <div
-      className={`fixed inset-0 z-10 transition-all duration-150 ease-linear ${isOpen ? "pointer-events-auto bg-black/70 backdrop-blur-xs" : "pointer-events-none"} ${isExpand && isCommentVisible ? "bg-neutral-900" : ""}`}
+      className={`fixed h-max w-screen inset-0 z-40 transition-all duration-150 ease-linear ${isOpen ? "pointer-events-auto" : "pointer-events-none"} ${isExpand ? "bg-[#786151] overflow-hidden" : ""}`}
       tabIndex={0}
       onKeyUp={keyUp}
     >
-      <div className="flex h-screen w-screen flex-col relative">
-        {isOpen && (
-          <SwipeableBottomSheet isOpen={isOpen} isMobile={isMobile} onClose={handleClosePodcast}>
-            <div className="relative z-30 bg-neutral-900">
-              <BottomSheet />
-              <CloseCircleButton onClose={handleClosePodcast} />
+      {/* Expand View - Full Screen */}
+      {isExpand && (
+        <ExpandView
+          episodeId={episodePodcastData.id}
+          coverEpisodeUrl={episodePodcastData.coverPodcastEpisodeURL}
+          title={episodePodcastData.title}
+          description={episodePodcastData.description}
+          duration={duration}
+          currentTime={currentTime}
+          isExpand={isExpand}
+          isCommentVisible={isCommentVisible}
+          handleViewComments={handleViewComments}
+          handleExpand={handleExpand}
+        />
+      )}
 
-              {isExpand ? (
-                <ExpandPodcast
-                  episodeId={episodePodcastData.id}
-                  coverEpisodeUrl={episodePodcastData.coverPodcastEpisodeURL}
-                  title={episodePodcastData.title}
-                  description={episodePodcastData.description}
-                  duration={duration}
-                  currentTime={currentTime}
-                  isExpand={isExpand}
-                  isCommentVisible={isCommentVisible}
-                  handleViewComments={handleViewComments}
-                />
-              ) : (
-                <CollapsePodcast
-                  episodeId={episodePodcastData.id}
-                  coverEpisodeUrl={episodePodcastData.coverPodcastEpisodeURL}
-                  podcastTitle={podcast?.title || ""}
-                  title={episodePodcastData.title}
-                  description={episodePodcastData.description}
-                  createdAt={formatDateTime(episodePodcastData.createdAt, "short")}
-                  collaborators={episodePodcastData.collaborators || []}
-                  episodePodcasts={episodePodcasts || []}
-                  isExpand={isExpand}
-                  isCommentVisible={isCommentVisible}
-                  isMobile={isMobile}
-                  handleViewComments={handleViewComments}
-                  currentlyPlaying={currentlyPlaying}
-                  handlePlayPodcast={handlePlayPodcast}
-                />
-              )}
-            </div>
-          </SwipeableBottomSheet>
-        )}
-
-        {/* Kontrol dan Detail */}
-        <div className="absolute bottom-0 w-full z-30 pointer-events-auto">
-          <AudioControl
-            coverEpisodeUrl={episodePodcastData.coverPodcastEpisodeURL}
-            title={episodePodcastData.title}
-            description={episodePodcastData.description}
-            currentTime={currentTime}
-            duration={duration}
-            volume={volume}
-            isPlay={isPlay}
-            isExpand={isExpand}
-            isCommentVisible={isCommentVisible}
-            isOpenDetailPodcast={isOpen}
-            isMobile={isMobile}
-            handleSeekBackward={handleSeekBackward}
-            handleSeekForward={handleSeekForward}
-            handlePlay={handlePlay}
-            handleExpand={handleExpand}
-            handleViewComments={handleViewComments}
-            handleDecreaseVolume={handleDecreaseVolume}
-            handleVolumeChange={handleVolumeChange}
-            handleIncreaseVolume={handleIncreaseVolume}
-            handleSeek={handleSeek}
-            handleClosePodcast={handleClosePodcast}
-          />
-        </div>
+      {/* Kontrol dan Detail (selalu muncul, termasuk saat expand) */}
+      <div className="fixed bottom-0 w-full z-30 pointer-events-auto">
+        <AudioControl
+          coverEpisodeUrl={episodePodcastData.coverPodcastEpisodeURL}
+          title={episodePodcastData.title}
+          description={episodePodcastData.description}
+          currentTime={currentTime}
+          duration={duration}
+          volume={volume}
+          isPlay={isPlaying}
+          isExpand={isExpand}
+          isOpenDetailPodcast={isOpen}
+          isMobile={isMobile}
+          handleSeekBackward={handleSeekBackward}
+          handleSeekForward={handleSeekForward}
+          handlePlay={handlePlay}
+            handlePrevEpisode={playPrevEpisode}
+            handleNextEpisode={playNextEpisode}
+          handleExpand={handleExpand}
+          handleViewComments={handleViewComments}
+          handleDecreaseVolume={handleDecreaseVolume}
+          handleVolumeChange={handleVolumeChange}
+          handleIncreaseVolume={handleIncreaseVolume}
+          handleSeek={handleSeek}
+          handleClosePodcast={handleClosePodcast}
+        />
       </div>
 
       <div className="hidden">
@@ -348,6 +317,13 @@ export default function PodcastPlayback({
         />
       </div>
 
+      <CommentModalComic
+        episodeId={episodePodcastData.id}
+        isCommentVisible={isCommentVisible}
+        setIsCommentVisible={setIsCommentVisible}
+        commentData={commentData?.data?.data || []}
+        isLoadingGetComment={isLoadingGetComment}
+      />
     </div>
   );
 }

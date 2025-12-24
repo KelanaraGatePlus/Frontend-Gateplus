@@ -19,7 +19,7 @@ export default function CommentForm({
   contentType,
   episodeEbookId = null,
   episodeComicsId = null,
-  episode_podcastId = null,
+  podcastId = null,
   episodeSeriesId = null,
   movieId = null
 }) {
@@ -48,7 +48,7 @@ export default function CommentForm({
     const typeKeyMap = {
       ebook: { key: "episodeEbookId", value: episodeEbookId },
       comic: { key: "episodeComicsId", value: episodeComicsId },
-      podcast: { key: "episode_podcastId", value: episode_podcastId },
+      podcast: { key: "podcastId", value: podcastId },
       series: { key: "episodeSeriesId", value: episodeSeriesId },
       movie: { key: "movieId", value: movieId },
     };
@@ -62,7 +62,7 @@ export default function CommentForm({
       const candidates = [
         { key: "episodeEbookId", value: episodeEbookId },
         { key: "episodeComicsId", value: episodeComicsId },
-        { key: "episode_podcastId", value: episode_podcastId },
+        { key: "podcastId", value: podcastId },
         { key: "episodeSeriesId", value: episodeSeriesId },
         { key: "movieId", value: movieId },
       ];
@@ -198,7 +198,7 @@ CommentForm.propTypes = {
   contentType: propTypes.oneOf(["EBOOK", "COMIC", "PODCAST", "SERIES", "MOVIE"]),
   episodeEbookId: propTypes.string,
   episodeComicsId: propTypes.string,
-  episode_podcastId: propTypes.string,
+  podcastId: propTypes.string,
   episodeSeriesId: propTypes.string,
   movieId: propTypes.string,
 };
