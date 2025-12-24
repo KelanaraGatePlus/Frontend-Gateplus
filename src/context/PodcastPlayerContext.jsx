@@ -40,6 +40,7 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
     const audioRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [volume, setVolume] = useState(1);
+    const [episodeData, setEpisodeData] = useState(null);
 
     // Hydrate from storage once
     useEffect(() => {
@@ -49,13 +50,20 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
             setCurrentlyPlaying(stored.currentlyPlaying || null);
             setPodcastMeta(stored.podcastMeta || null);
             setEpisodeList(stored.episodeList || []);
+            setEpisodeData(stored.episodeData || null);
+            
         }
     }, []);
-
+    
     // Persist on change
     useEffect(() => {
-        saveState({ isOpen, currentlyPlaying, podcastMeta, episodeList });
+        saveState({ isOpen, currentlyPlaying, podcastMeta, episodeList, episodeData });
     }, [isOpen, currentlyPlaying, podcastMeta, episodeList]);
+
+    // keep episodeData in sync with currentlyPlaying
+    useEffect(() => {
+        setEpisodeData(currentlyPlaying || null);
+    }, [currentlyPlaying]);
 
     // If we need to fetch podcast detail (to get episodes), call the RTK Query hook
     const { data: fetchedPodcastResp } = useGetPodcastByIdQuery(
@@ -107,7 +115,7 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
         }
     };
 
-    const playNextEpisode = () => {
+    const playPrevEpisode = () => {
         if (!episodeList || !currentlyPlaying) return;
         const idx = episodeList.findIndex((e) => e.id === currentlyPlaying.id);
         if (idx >= 0 && idx < episodeList.length - 1) {
@@ -120,7 +128,7 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
         }
     };
 
-    const playPrevEpisode = () => {
+    const playNextEpisode = () => {
         if (!episodeList || !currentlyPlaying) return;
         const idx = episodeList.findIndex((e) => e.id === currentlyPlaying.id);
         if (idx > 0) {
@@ -157,20 +165,6 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
         }
     };
 
-    // When player is disabled (route like /login), ensure audio is paused and UI closed
-    React.useEffect(() => {
-        if (disablePlayer) {
-            try {
-                const audio = audioRef.current?.audio?.current;
-                if (audio) audio.pause();
-            } catch (err) {
-                // ignore
-            }
-            setIsPlaying(false);
-            setIsOpen(false);
-        }
-    }, [disablePlayer]);
-
     const togglePlay = () => {
         if (isPlaying) pause();
         else play();
@@ -197,6 +191,7 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
             isOpen,
             setIsOpen,
             currentlyPlaying,
+            episodeData,
             setCurrentlyPlaying,
             podcastMeta,
             episodeList,
@@ -216,7 +211,7 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
             volume,
             setPlayerVolume,
         }),
-        [isOpen, currentlyPlaying, podcastMeta, episodeList, isDetailPage, isPlaying, volume]
+        [isOpen, currentlyPlaying, episodeData, podcastMeta, episodeList, isDetailPage, isPlaying, volume]
     );
 
     return (
@@ -241,7 +236,9 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
                         <PodcastMiniPlayer
                             currentlyPlaying={currentlyPlaying}
                             podcastMeta={podcastMeta}
+                            coverImage={episodeData?.coverPodcastEpisodeURL || null}
                             onClick={() => setIsOpen(true)}
+                            subtitle={episodeData?.title}
                         />
                     )}
                 </>

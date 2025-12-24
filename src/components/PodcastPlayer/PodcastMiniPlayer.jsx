@@ -4,28 +4,26 @@ import PropTypes from "prop-types";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
 import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
+import Link from "next/link";
 
-export default function PodcastMiniPlayer({ currentlyPlaying, podcastMeta, onClick }) {
-  const { isPlaying, togglePlay, playEpisode, episodeList, playNextEpisode, playPrevEpisode } = usePodcastPlayer();
+export default function PodcastMiniPlayer({ currentlyPlaying, podcastMeta, onClick, coverImage, subtitle }) {
+  const { isPlaying, togglePlay, playEpisode, episodeList, playNextEpisode } = usePodcastPlayer();
 
   if (!currentlyPlaying) return null;
 
-  const coverSrc =
-    currentlyPlaying?.coverPodcastImage || podcastMeta?.coverPodcastImage || "/default-podcast-thumbnail.jpg";
-
   return (
     <div
-      className="group fixed bottom-6 left-21 rounded-full bg-[#156eb78a] backdrop-blur-md w-28 hover:w-1/5 h-max px-7 z-40 transition-all duration-500 ease-in"
+      className="group fixed bottom-15 left-11 hover:w-10/11 md:bottom-21 md:left-21 rounded-full bg-[#156eb78a] border border-white/60 backdrop-blur-md w-27 md:hover:w-2/5 2xl:hover:w-1/5 h-max px-7 z-40 transition-all duration-500 ease-in"
     >
       <div className="relative w-full">
-        <div className="h-2 w-full bg-[#F5F5F54D] rounded-full top-0 overflow-hidden transition-all duration-300">
+        <div className="h-2 w-full bg-[#F5F5F54D] rounded-full hidden md:block top-0 overflow-hidden transition-all duration-300">
           <div
-            className="h-full bg-[#1299dc] rounded-full transition-all duration-300"
+            className="h-full bg-[#1299dc] hidden md:block rounded-full transition-all duration-300"
             style={{ width: `${(currentlyPlaying.playbackProgress || 0) * 100}%` }}
           />
         </div>
-        <div className="flex flex-row justify-between items-center">
-          <div className="flex flex-row gap-2 items-center justify-center">
+        <div className="flex group-hover:flex-row justify-between items-center">
+          <div className="flex flex-row group-hover:gap-2 items-center justify-center">
             <button onClick={() => {
               if (!currentlyPlaying) {
                 // fallback: play first episode if none playing
@@ -35,15 +33,16 @@ export default function PodcastMiniPlayer({ currentlyPlaying, podcastMeta, onCli
               } else {
                 togglePlay();
               }
-            }} className="relative mb-2 mt-1 group/podcast">
+            }} className="relative w-[48px] h-[48px] mb-2 mt-2 md:mt-1 group/podcast flex-shrink-0">
               <Image
-                key={coverSrc}
-                className="w-12 h-12 object-cover rounded-sm flex-shrink-0"
-                src={coverSrc}
+                key={coverImage}
+                className="w-[48px] h-[48px] object-cover rounded-sm"
+                src={coverImage}
                 alt="Podcast"
                 width={48}
                 height={48}
                 unoptimized
+                style={{ willChange: "transform, opacity", backfaceVisibility: "hidden" }}
               />
               <Icon
                 icon={
@@ -51,44 +50,34 @@ export default function PodcastMiniPlayer({ currentlyPlaying, podcastMeta, onCli
                     ? "solar:pause-bold"
                     : "solar:play-bold"
                 }
-                className="
-                    absolute inset-0
-                    m-auto
-                    w-6 h-6
-                    text-white
-                    hidden group-hover/podcast:block
-                  "
+                className={
+                  "absolute inset-0 m-auto w-6 h-6 text-white pointer-events-none transition-opacity duration-150 opacity-0 group-hover/podcast:opacity-100"
+                }
               />
             </button>
             <div>
               <h1 className="zeinFont text-start font-bold text-white text-2xl group-hover:block hidden truncate whitespace-nowrap">
-                {currentlyPlaying?.title}
+                {podcastMeta?.title || "Unknown Podcast"}
               </h1>
               <p className="zeinFont text-start font-bold text-[#889fb1] text-sm group-hover:block hidden truncate whitespace-nowrap">
-                {currentlyPlaying?.title}
+                {subtitle}
               </p>
             </div>
           </div>
 
-            <div className="flex-row gap-2 items-center group-hover:flex hidden">
-            <button onClick={() => { if (playPrevEpisode) playPrevEpisode(); }}>
-              <Icon
-                icon={"solar:skip-previous-outline"}
-                className="w-6 h-6 text-white hover:text-gray-300"
-              />
-            </button>
+          <div className="flex-row gap-2 items-center group-hover:flex hidden">
             <button onClick={() => { if (playNextEpisode) playNextEpisode(); }}>
               <Icon
                 icon={"solar:skip-next-outline"}
                 className="w-6 h-6 text-white hover:text-gray-300"
               />
             </button>
-            <button onClick={onClick}>
+            <Link href={'/podcasts/detail/' + podcastMeta.id}>
               <Icon
                 icon={"solar:maximize-square-2-broken"}
                 className="w-8 h-8 text-white hover:text-gray-300"
               />
-            </button>
+            </Link>
           </div>
         </div>
       </div>

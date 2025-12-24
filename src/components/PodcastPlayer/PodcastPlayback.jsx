@@ -40,6 +40,7 @@ export default function PodcastPlayback({
   // Refs untuk melacak apakah log sudah dikirim untuk episode saat ini
   const clickLogSentRef = useRef(false);
   const watchLogSentRef = useRef(false);
+  const shouldAutoPlayRef = useRef(false);
 
   // Efek untuk update data episode & reset status log saat episode berganti
   useEffect(() => {
@@ -48,6 +49,8 @@ export default function PodcastPlayback({
     if (currentlyPlaying?.id) {
       clickLogSentRef.current = false;
       watchLogSentRef.current = false;
+      // mark that we should attempt to autoplay when media is ready
+      shouldAutoPlayRef.current = true;
     }
     // (no-op) keep in sync via context
   }, [currentlyPlaying]);
@@ -89,7 +92,7 @@ export default function PodcastPlayback({
     const audio = audioRef.current?.audio?.current;
     if (!audio) return;
 
-    const updateTime = () => {
+    const updateTime = (e) => {
       const current_Time = audio.currentTime;
       const total_Duration = audio.duration || 0;
 
@@ -130,16 +133,35 @@ export default function PodcastPlayback({
             });
         }
       }
+
+      // If media just loaded metadata (or became ready), try to autoplay if requested
+      if (e?.type === "loadedmetadata" && shouldAutoPlayRef.current) {
+        try {
+          play();
+        } catch (err) {
+          // ignore play errors (may be blocked by browser)
+        }
+        shouldAutoPlayRef.current = false;
+      }
     };
 
     audio.addEventListener("timeupdate", updateTime);
     audio.addEventListener("loadedmetadata", updateTime);
 
+    const onEnded = () => {
+      if (typeof playNextEpisode === "function") {
+        playNextEpisode();
+      }
+    };
+
+    audio.addEventListener("ended", onEnded);
+
     return () => {
       audio.removeEventListener("timeupdate", updateTime);
       audio.removeEventListener("loadedmetadata", updateTime);
+      audio.removeEventListener("ended", onEnded);
     };
-  }, [episodePodcastData.id, isMobile, createLog]);
+  }, [episodePodcastData.id, isMobile, createLog, playNextEpisode, play]);
 
 
   const handleClosePodcast = () => {
@@ -292,8 +314,8 @@ export default function PodcastPlayback({
           handleSeekBackward={handleSeekBackward}
           handleSeekForward={handleSeekForward}
           handlePlay={handlePlay}
-            handlePrevEpisode={playPrevEpisode}
-            handleNextEpisode={playNextEpisode}
+          handlePrevEpisode={playPrevEpisode}
+          handleNextEpisode={playNextEpisode}
           handleExpand={handleExpand}
           handleViewComments={handleViewComments}
           handleDecreaseVolume={handleDecreaseVolume}
