@@ -18,6 +18,7 @@ import RedeemVoucherModal from "@/components/Modal/RedeemVoucherModal";
 import { usePathname } from "next/navigation";
 import routeWithoutNavbar from "@/lib/constants/routeWithoutNavbar";
 import routeWithoutFooter from "@/lib/constants/routeWithoutFooter";
+import { PodcastPlayerProvider } from "@/context/PodcastPlayerContext";
 
 export default function RootLayout({ children }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,6 +50,9 @@ export default function RootLayout({ children }) {
   const hideNavbar = routeWithoutNavbar.some((pattern) => pattern.test(pathname));
   const hideFooter = routeWithoutFooter.some((pattern) => pattern.test(pathname));
 
+  const hidePlayerRoutes = [/^\/login$/, /^\/register$/];
+  const hidePlayer = hidePlayerRoutes.some((pattern) => pattern.test(pathname));
+
   return (
     <Provider store={store}>
       <html lang="en">
@@ -69,54 +73,55 @@ export default function RootLayout({ children }) {
         </head>
         <body className={`antialiased overflow-x-hidden`}>
           <AuthProvider>
-            {!hideNavbar && <Navbar openCreateContentModal={(objective) => {
-              setObjective(objective);
-              setIsModalOpen(true);
-            }}
-              openRedeemVoucherModal={() => {
-                setIsModalRedeemOpen(true);
+            <PodcastPlayerProvider disablePlayer={hidePlayer}>
+              {!hideNavbar && <Navbar openCreateContentModal={(objective) => {
+                setObjective(objective);
+                setIsModalOpen(true);
               }}
-            />}
-            <FlexModal isOpen={isModalOpen} onClose={() => {
-              setIsModalOpen(false);
-            }} title={"Kategori Upload Karya"}>
-              <div className="flex flex-row items-center text-white text-xs md:text-sm xl:text-md xl:px-52">
-                {Object.values(contentType)
-                  .filter((content) => {
-                    if (objective === "episode") {
-                      return content.haveEpisodes; // hanya yang true
-                    }
-                    return true; // tampilkan semua kalau bukan "episode"
-                  })
-                  .map((content) => (
-                    <button
-                      onClick={() => {
-                        setIsModalOpen(false);
-                        window.location.href = redirect(content.pluralName, objective);
-                      }}
-                      key={content.singleName}
-                      className="flex flex-col items-center justify-center mr-4 hover:cursor-pointer w-12 md:w-28 xl:w-[148px]"
-                    >
-                      <Image
-                        src={content.icon}
-                        alt={content.singleName}
-                      />
-                      <p>{content.pluralName.toUpperCase()}</p>
-                    </button>
-                  ))}
-              </div>
-            </FlexModal>
-
-            <RedeemVoucherModal isModalRedeemOpen={isModalRedeemOpen} setIsModalRedeemOpen={setIsModalRedeemOpen} />
-            <AppRouterCacheProvider>
-              {!hideNavbar && <div className="pt-12.5 md:pt-18.5 2xl:pt-[100px]">
-                {children}
-              </div>}
-              {hideNavbar && children}
-            </AppRouterCacheProvider>
-            {
-              !hideFooter && <Footer />
-            }
+                openRedeemVoucherModal={() => {
+                  setIsModalRedeemOpen(true);
+                }}
+              />}
+              <FlexModal isOpen={isModalOpen} onClose={() => {
+                setIsModalOpen(false);
+              }} title={"Kategori Upload Karya"}>
+                <div className="flex flex-row items-center text-white text-xs md:text-sm xl:text-md xl:px-52">
+                  {Object.values(contentType)
+                    .filter((content) => {
+                      if (objective === "episode") {
+                        return content.haveEpisodes; // hanya yang true
+                      }
+                      return true; // tampilkan semua kalau bukan "episode"
+                    })
+                    .map((content) => (
+                      <button
+                        onClick={() => {
+                          setIsModalOpen(false);
+                          window.location.href = redirect(content.pluralName, objective);
+                        }}
+                        key={content.singleName}
+                        className="flex flex-col items-center justify-center mr-4 hover:cursor-pointer w-12 md:w-28 xl:w-[148px]"
+                      >
+                        <Image
+                          src={content.icon}
+                          alt={content.singleName}
+                        />
+                        <p>{content.pluralName.toUpperCase()}</p>
+                      </button>
+                    ))}
+                </div>
+              </FlexModal>
+              <RedeemVoucherModal isModalRedeemOpen={isModalRedeemOpen} setIsModalRedeemOpen={setIsModalRedeemOpen} />
+              <AppRouterCacheProvider>
+                {!hideNavbar && <div className="pt-12.5 md:pt-18.5 2xl:pt-[100px]">
+                  {children}
+                </div>}
+                {hideNavbar && children}
+              </AppRouterCacheProvider>
+              {
+                !hideFooter && <Footer />
+              }
+            </PodcastPlayerProvider>
           </AuthProvider>
         </body>
       </html>

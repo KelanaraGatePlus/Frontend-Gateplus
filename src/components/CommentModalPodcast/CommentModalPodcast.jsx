@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import CommentComponent from "@/components/Comment/page";
 
-export default function CommentModalComic({
+export default function CommentModalPodcast({
     episodeId,
     isCommentVisible,
     setIsCommentVisible,
@@ -40,7 +40,7 @@ export default function CommentModalComic({
                 <CommentComponent
                     commentData={commentData}
                     isLoadingGetComment={isLoadingGetComment}
-                    contentType={"COMIC"}
+                    contentType={"EPISODE_PODCAST"}
                     episodeId={episodeId}
                 />
             </div>
@@ -48,7 +48,7 @@ export default function CommentModalComic({
     )
 }
 
-CommentModalComic.propTypes = {
+CommentModalPodcast.propTypes = {
     episodeId: PropTypes.string.isRequired,
     isCommentVisible: PropTypes.bool.isRequired,
     setIsCommentVisible: PropTypes.func.isRequired,

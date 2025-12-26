@@ -11,21 +11,18 @@ import { formatDateTime } from "@/lib/timeFormatter";
 
 /*[--- ASSETS IMPORT ---]*/
 import iconArrowDown from "@@/logo/logoDetailEbook/icon-arrow-down.svg";
-import iconUnlocked from "@@/icons/icons-unlocked.svg";
-import iconLocked from "@@/icons/icons-locked.svg";
-import iconSaveOutline from "@@/logo/logoDetailFilm/save-icons.svg";
 import iconMore from "@@/icons/icons-more.svg";
-import iconPlay from "@@/icons/icons-play.svg";
-import iconFlag from "@@/icons/icons-flag.svg";
 import Link from "next/link";
 import useGetLazyEpisodeByType from "@/hooks/helper/getEpisodeByType";
 import { Icon } from "@iconify/react";
-// import iconPause from "@@/icons/icons-pause.svg";
+import usePodcastController from "@/hooks/usePodcastController";
+import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
+import { DEFAULT_AVATAR } from "@/lib/defaults";
+import ExpandView from "../PodcastPlayer/ExpandView";
 
 export default function ProductEpisodeSection({
   productType,
   isLoading,
-  currentlyPlaying,
   handlePlayPodcast,
   handlePayment,
   isSubscribe = false,
@@ -41,6 +38,11 @@ export default function ProductEpisodeSection({
   const [totalEpisodes, setTotalEpisodes] = useState(0);
   const [imageStatus, setImageStatus] = useState({});
   const lastEpisodeRef = useRef(null);
+  const { isExpand, handleExpand, currentlyPlaying, isPlaying, bounceSpeed, speed } = usePodcastPlayer();
+  const [isCommentVisible, setIsCommentVisible] = useState(false);
+
+  // audio controller integration (moved to hook)
+  const { currentTime, duration, handleSeekEvent, togglePlay } = usePodcastController();
 
   // Hanya eksekusi sekali saja saat komponen dimount
   useEffect(() => {
@@ -239,153 +241,198 @@ export default function ProductEpisodeSection({
     return (
       <>
         {episodes.length > 0 ? (
-          <section className="relative mb-10 flex w-full flex-col py-0 text-white">
-            {episodes
-              .map((item, index) => (
-                <div
-                  key={index}
-                  className={`group flex cursor-pointer w-full gap-2 px-4 py-4 ${isOwner || item.isPurchased || item.price == 'Free' || isSubscribe ? "hover:bg-[#105CAC]" : "hover:bg-gray-900"} md:gap-4 md:rounded-lg transition-all duration-300 ease-in-out justify-between ${currentlyPlaying?.id === item.id ? "" : ""} `}
-                  onClick={isOwner || item.isPurchased || item.price == 'Free' || isSubscribe ? () => handlePlayPodcast(item) : () => { handlePayment(item.id, item.price) }}
+          <section className={`relative flex w-full flex-col gap-3 py-5 text-white ${containerClassname}`}>
+            {episodes.map((item) => {
+              const canAccess =
+                isOwner || item.isPurchased || item.price === "Free" || isSubscribe;
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={
+                    canAccess
+                      ? () => handlePlayPodcast(item)
+                      : () => handlePayment(item.id, item.price)
+                  }
+                  className="flex flex-col justify-between"
                 >
-                  <div className="flex gap-2 w-[200px] md:w-2xl">
-                    <div className="h-24 w-24 overflow-hidden rounded-lg bg-[#DEDEDE] md:h-36 md:w-36 relative group">
+                  <div
+                    className={`group flex cursor-pointer items-stretch gap-2 py-2 hover:bg-[#1F6E8A] md:gap-4 ${itemClassname}`}
+                  >
+                    {/* Thumbnail */}
+                    <div className="relative h-28 w-28 overflow-hidden rounded-lg bg-[#979797] 2xl:h-30 2xl:w-30">
                       <Image
                         priority
                         src={item.coverPodcastEpisodeURL}
-                        alt={`poster-${item.title}`}
-                        className="h-full w-full rounded object-cover object-center"
+                        alt={item.title}
+                        className="h-full w-full object-cover"
                         width={144}
                         height={144}
                       />
-                      {isOwner || item.isPurchased || item.price == 'Free' || isSubscribe ? (
-                        <div className="group-hover:opacity-100 opacity-0 transition-all duration-300 ease-in-out absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center h-full w-full">
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center bg-[radial-gradient(circle,_#193B89BF_0%,_transparent_80%)] h-20 w-20" />
-                          <div className="relative h-32 w-32">
-                            <Image
-                              priority
-                              src={iconPlay}
-                              alt="icon-play"
-                              className="h-full w-full rounded object-cover object-center"
-                              fill
-                            />
-                          </div>
-                        </div>) : (
-                        <div className="group-hover:opacity-100 opacity-0 transition-all duration-300 ease-in-out absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center h-full w-full">
-                          {/* Buat dia ditengah */}
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center bg-[radial-gradient(circle,_#193B89BF_0%,_transparent_80%)] h-20 w-20" />
-                          <div className="relative h-16 w-16">
-                            <Image
-                              priority
-                              src={iconLocked}
-                              alt="icon-locked"
-                              className="h-full w-full rounded object-cover object-center"
-                              fill
-                            />
-                          </div>
+
+                      {/* Overlay lock */}
+                      {!canAccess && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+                          <Icon
+                            icon="solar:lock-keyhole-minimalistic-linear"
+                            className="h-6 w-6 text-red-500"
+                          />
+                        </div>
+                      )}
+
+                      {/* Overlay play */}
+                      {canAccess && (
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 transition group-hover:opacity-100">
+                          <Icon
+                            icon="solar:play-circle-bold"
+                            className="h-10 w-10 text-white"
+                          />
                         </div>
                       )}
                     </div>
-                    <div className="flex flex-1 flex-col justify-between sm:w-3/5">
-                      <div className="flex flex-col">
-                        <h4
-                          className={`zeinFont mb-1 [display:-webkit-box] w-fit overflow-hidden text-xl leading-5 font-extrabold text-ellipsis [-webkit-box-orient:vertical] [-webkit-line-clamp:2] md:text-2xl`}
-                        >
-                          {item.title}
-                        </h4>
-                        <p className="text-xs font-normal text-white/50 lg:text-sm">
-                          <span className="md:hidden line-clamp-3">
-                            {item.description
-                              .split(" ")
-                              .slice(0, 5)
-                              .join(" ")}
-                            ...
-                          </span>
-                          <span className="hidden md:inline">
-                            {item.description}
-                          </span>
-                        </p>
+
+                    {/* Info */}
+                    <div className="flex flex-col w-full gap-2">
+                      <div className="flex w-full h-full justify-between items-start">
+                        <div className="flex flex-col justify-between py-1 h-full items-start montserratFont text-[#AFAFAF]">
+                          <div>
+                            <h1 className="zeinFont font-bold text-white text-[16px] md:text-2xl text-start">
+                              {item.title}
+                            </h1>
+                            <p className="hidden md:block text-start">
+                              {item.description?.substring(0, 120)}
+                              {item.description?.length > 120 && "..."}
+                            </p>
+                          </div>
+                          <p className="text-sm md:text-[16px] font-bold">
+                            {formatDateTime(item.createdAt, "short")}
+                          </p>
+                        </div>
+                        {/* Right Action */}
+                        <div className="flex items-center gap-3">
+                          {!canAccess && (
+                            <div className="flex flex-col items-end gap-4 h-full justify-between zeinFont">
+                              <div className="bg-[#63282e] flex items-center gap-2 rounded-lg px-2 py-1 border-2 border-[#967074]">
+                                <Icon icon="solar:lock-keyhole-minimalistic-linear" />
+                                <p className="font-bold">Terkunci</p>
+                              </div>
+                              <p className="font-bold">
+                                Rp{" "}
+                                {item.price === "Free"
+                                  ? "0"
+                                  : item.price.toLocaleString("id-ID")}
+                              </p>
+                            </div>
+                          )}
+                          {canAccess && !item.isWatched && (
+                            <div className="bg-[#1FC16B4D] px-3 py-1 rounded-lg border-2 border-[#F5F5F559] flex flex-row items-center justify-center gap-2">
+                              <Icon
+                                icon={'solar:notebook-minimalistic-linear'}
+                                className="w-4 h-4 rounded-md"
+                              />
+                              <p className="zeinFont font-bold">Putar</p>
+                            </div>
+                          )}
+                          {/* More */}
+                          <button
+                            className="relative h-6 w-6"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleSelectedPodcast(item);
+                            }}
+                          >
+                            <Image
+                              priority
+                              src={iconMore}
+                              alt="more"
+                              fill
+                              className="rotate-90"
+                            />
+                          </button>
+                        </div>
                       </div>
-                      <p className="text-[10px] font-normal text-white/70 md:text-sm">
-                        {formatDateTime(item.createdAt, "short")}
-                      </p>
+                      {(currentlyPlaying?.id == item.id) && <div className="flex flex-row justify-between items-center gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            togglePlay();
+                          }}
+                        >
+                          {isPlaying ? <Icon icon={'solar:pause-bold'} /> : <Icon icon={'solar:play-bold'} />}
+                        </button>
+                        <input
+                          type="range"
+                          name="track"
+                          id="track"
+                          className="w-full cursor-pointer appearance-none rounded-full accent-[#1297DC] h-1.5"
+                          min={0}
+                          max={duration || 0}
+                          value={currentTime}
+                          onChange={handleSeekEvent}
+                          style={{
+                            background: `linear-gradient(to right, #1297DC ${(currentTime / (duration || 1)) * 100}%, #616161 ${(currentTime / (duration || 1)) * 100}%)`,
+                          }}
+                        />
+                        <button onClick={() => {
+                          bounceSpeed();
+                        }}> 
+                          <p>{speed}x</p>
+                        </button>
+                        <button onClick={() => {
+                          handleExpand();
+                        }}>
+                          <Icon
+                            icon={'solar:maximize-square-2-outline'}
+                            className="h-5 w-5"
+                          />
+                        </button>
+                      </div>
+                      }
                     </div>
                   </div>
-
-                  <div className="w-1.2/5 montserratFont flex items-center justify-center text-xs font-semibold text-white/50 sm:w-1/5 lg:text-base line-clamp-1">
-                    17m
-                  </div>
-
-                  <div className="w-1.8/5 flex items-center justify-end gap-2 sm:w-1/5">
-                    <div className="rounded border-2 border-[#F5F5F524] bg-[#F5F5F524] p-1">
-                      <Image
-                        priority
-                        src={isOwner || item.isPurchased || item.price == 'Free' || isSubscribe ? iconUnlocked : iconLocked}
-                        alt="icon-locked"
-                        className="h-full w-full rounded object-cover object-center"
-                        width={16}
-                        height={16}
-                      />
-                    </div>
-                    <Link href={'/report/episode_podcast/' + item.id} className="relative h-6 w-6 cursor-pointer transition-transform duration-150 active:scale-90">
-                      <Image
-                        priority
-                        src={iconFlag}
-                        alt="icon-save-outline"
-                        className="rounded object-cover object-center"
-                        fill
-                      />
-                    </Link>
-                    <div className="relative h-6 w-6 cursor-pointer transition-transform duration-150 active:scale-90">
-                      <Image
-                        priority
-                        src={iconSaveOutline}
-                        alt="icon-save-outline"
-                        className="rounded object-cover object-center"
-                        fill
-                      />
-                    </div>
-                    <button
-                      className="relative z-0 h-6 w-6 cursor-pointer transition-transform duration-150 active:scale-90"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleSelectedPodcast(item);
-                      }}
-                    >
-                      <Image
-                        priority
-                        src={iconMore}
-                        alt="icon-more"
-                        className="rounded object-cover object-center"
-                        fill
-                      />
-                    </button>
-                  </div>
-
-                </div>
-
-              ))}
+                </button>
+              );
+            })}
 
             {episodes.length < totalEpisodes && (
-              <div className="flex w-full justify-center mt-4">
-                <button
-                  className="zeinFont rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-                  onClick={() => handleLoadAllEpisodes(false)}
-                >
-                  Load More Episodes
-                </button>
-              </div>
+              <SeeAnotherEpisodes
+                showAll={false}
+                handleShowAll={() => handleLoadAllEpisodes(false)}
+                itemClassname={itemClassname}
+              />
             )}
 
             {isPodcastModalVisible && (
+              console.log(selectedPodcast),
               <PodcastMoreDetail
+                id={selectedPodcast.id}
                 coverEpisodeUrl={selectedPodcast.coverPodcastEpisodeURL}
                 title={selectedPodcast.title}
                 description={selectedPodcast.description}
-                creator={selectedPodcast.creator}
+                collaborators={selectedPodcast.collaborators}
                 createdAt={formatDateTime(selectedPodcast.createdAt, "short")}
                 handlePodcastModal={handlePodcastModal}
               />
+            )}
+
+            {isExpand && (
+              <div className="fixed top-0 w-full z-40">
+                <ExpandView
+                  episodeId={selectedPodcast?.id}
+                  coverEpisodeUrl={selectedPodcast?.coverPodcastEpisodeURL}
+                  title={selectedPodcast?.title}
+                  description={selectedPodcast?.description}
+                  duration={duration}
+                  currentTime={currentTime}
+                  isExpand={isExpand}
+                  isCommentVisible={isCommentVisible}
+                  handleViewComments={() => setIsCommentVisible((s) => !s)}
+                  handleExpand={() => {
+                    handleExpand();
+                  }}
+                />
+              </div>
             )}
           </section>
         ) : (
@@ -444,11 +491,13 @@ function SeeAnotherEpisodes({ showAll, handleShowAll, itemClassname }) {
 }
 
 export function PodcastMoreDetail({
+  id,
   coverEpisodeUrl,
   title,
   description,
   createdAt,
   handlePodcastModal,
+  collaborators = [],
 }) {
   useEffect(() => {
     document.body.classList.add("overflow-hidden");
@@ -459,17 +508,23 @@ export function PodcastMoreDetail({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-5"
+      className="fixed inset-0 z-50 flex items-center justify-center p-5"
       onClick={handlePodcastModal}
     >
       <div
-        className="flex w-md flex-col rounded-2xl border-1 border-[#F5F5F580] bg-transparent px-4 pt-2 drop-shadow-2xl backdrop-blur-sm md:w-lg lg:w-xl"
+        className="flex w-md flex-col bg-[#333333] rounded-lg border-1 border-[#F5F5F580] px-4 pt-2 drop-shadow-2xl backdrop-blur-sm md:w-3xl lg:w-5xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative flex w-full items-center justify-center">
+        <div className="relative flex w-full items-center justify-between">
+          <Link href={"/report/episode_podcast/" + id} className="relative h-6 w-6">
+            <Icon
+              icon={'solar:flag-2-outline'}
+              className="h-6 w-6 text-white"
+            />
+          </Link>
           <p className="zeinFont py-2 text-xl font-semibold">Detail</p>
           <button
-            className="absolute top-1/2 right-0 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-[#97979766] text-xl font-bold text-white"
+            className="flex h-6 w-6 items-center justify-center rounded-full bg-[#97979766] text-xl font-bold text-white"
             onClick={handlePodcastModal}
           >
             <span className="lg:-mt-1">&times;</span>
@@ -477,7 +532,7 @@ export function PodcastMoreDetail({
         </div>
 
         <div className="flex w-full flex-col gap-4">
-          <div className="flex w-full items-center justify-center">
+          <div className="flex w-full gap-2 items-center">
             <figure className="relative h-36 w-36 rounded-lg">
               {coverEpisodeUrl && (
                 <Image
@@ -489,44 +544,32 @@ export function PodcastMoreDetail({
                 />
               )}
             </figure>
-          </div>
-
-          <div className="mt-2">
-            <h1 className="zeinFont text-2xl font-bold text-white">{title}</h1>
-            <p className="montserratFont line-clamp-3 text-justify text-sm text-[#F1F1F1] lg:line-clamp-5">
-              {description}
-            </p>
-          </div>
-
-          <div className="mt-2 flex flex-col gap-3">
-            <h2 className="zeinFont w-full text-center text-2xl font-bold text-white">
-              Kreator
-            </h2>
-
-            <div className="flex w-full flex-wrap justify-center gap-6">
-              {Array.from({ length: 6 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col items-center justify-center"
-                >
-                  <figure className="relative mb-3 h-15 w-15 rounded-full">
-                    <Image
-                      src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=687&q=80"
-                      alt="creator"
-                      className="h-full w-full rounded-full object-cover object-center"
-                      fill
-                      priority
-                    />
-                  </figure>
-                  <h4 className="zeinFont text-xl leading-3 font-bold">
-                    John Doe
-                  </h4>
-                  <p className="montserratFont text-[10px] leading-5 font-thin">
-                    @gustisan
-                  </p>
-                </div>
-              ))}
+            <div className="flex flex-col gap-2">
+              <h2 className="zeinFont font-bold">Kreator</h2>
+              <div className="flex flex-row gap-2">
+                {
+                  collaborators.map((item, index) => (
+                    <div key={index} className="flex flex-col items-center montserratFont">
+                      <Image
+                        size="sm"
+                        variant="circle"
+                        className="rounded-full h-16 w-16"
+                        src={item.imageUrl || DEFAULT_AVATAR}
+                      />
+                      <p className="font-bold">{item.profileName}</p>
+                      <p className="text-[#AFAFAF]">@{item.username}</p>
+                    </div>
+                  ))
+                }
+              </div>
             </div>
+          </div>
+
+          <div className="flex flex-col">
+            <h1 className="font-bold zeinFont text-2xl">
+              {title}
+            </h1>
+            <p className="montserratFont text-[#AFAFAF]">{description}</p>
           </div>
 
           <p className="montserratFont mb-2 flex w-full items-center justify-center py-1 text-center text-xs text-white/50 italic">
@@ -545,6 +588,7 @@ SeeAnotherEpisodes.propTypes = {
 };
 
 PodcastMoreDetail.propTypes = {
+  id: PropTypes.string.isRequired,
   coverEpisodeUrl: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
@@ -552,4 +596,5 @@ PodcastMoreDetail.propTypes = {
   createdAt: PropTypes.string.isRequired,
   handlePodcastModal: PropTypes.func.isRequired,
   withEpisodes: PropTypes.bool.isRequired,
+  collaborators: PropTypes.array,
 };

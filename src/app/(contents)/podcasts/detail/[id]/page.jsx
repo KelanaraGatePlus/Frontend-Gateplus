@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, Suspense, use } from "react";
+import React, { useState, useEffect, use } from "react";
 import PropTypes from "prop-types";
 
 /*[--- API HOOKS ---]*/
@@ -7,53 +7,51 @@ import { useGetPodcastByIdQuery } from "@/hooks/api/podcastSliceAPI";
 
 /*[--- UI COMPONENTS ---]*/
 import MainTemplateLayout from "@/components/MainDetailProduct/page";
-import PodcastPlayback from "@/components/PodcastPlayer/PodcastPlayback";
-import BottomSpacer from "@/components/BottomSpacer/page";
 import SimpleModal from "@/components/Modal/SimpleModal";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
+import CommentComponent from "@/components/Comment/page";
+import { useGetCommentByPodcastQuery } from "@/hooks/api/commentSliceAPI";
+import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
 
 export default function DetailPodcastPage({ params }) {
   const { id } = use(params);
   const [userId, setUserId] = useState(null);
-  const [isOpen, setIsOpen] = useState(false);
-  const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
-  const [selectedEpisode, setSelectedEpisode] = useState(null);
   const [selectedContentId, setSelectedContentId] = useState(null);
   const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPrice, setSelectedPrice] = useState(null);
   const [loading, setLoading] = useState(false);
   const [createLog] = useCreateLogMutation();
+  const { playEpisode, currentlyPlaying, setIsDetailPage } = usePodcastPlayer();
+
+  useEffect(() => {
+    setIsDetailPage(true);
+    return () => setIsDetailPage(false);
+  }, [setIsDetailPage]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       setUserId(localStorage.getItem("users_id"));
-      setCurrentlyPlaying(JSON.parse(null));
     }
   }, []);
 
   const skip = !id || !userId;
   const { data, isLoading } = useGetPodcastByIdQuery({ id, userId }, { skip });
+  const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByPodcastQuery(id, { skip });
   const podcastData = data?.data || {};
   const episode_podcasts = (podcastData?.episode_podcasts?.episodes || []).slice().sort((a, b) => {
     return new Date(a.createdAt) - new Date(b.createdAt);
   });
 
   const handlePlayPodcast = (episodeData) => {
-    setCurrentlyPlaying(episodeData);
-    localStorage.setItem("currentlyPlaying", JSON.stringify(episodeData));
+    playEpisode(episodeData, podcastData, episode_podcasts);
   };
 
-  const handleModalOpen = (episodeId, price) => {
-    setSelectedEpisode(episodeId);
-    setSelectedPrice(price);
-    setIsModalOpen(true);
-  }
-
-  const handleBuy = async () => {
+  const handleBuy = async (episodeId, selectedPrice) => {
+    setSelectedPrice(selectedPrice);
     setLoading(true);
-    window.location.href = `/checkout/purchase/podcasts/${id}/${selectedEpisode}`;
+    window.location.href = `/checkout/purchase/podcasts/${id}/${episodeId}`;
     setIsModalOpen(false);
     setLoading(false);
   };
@@ -89,26 +87,24 @@ export default function DetailPodcastPage({ params }) {
           isLoading={isLoading}
           currentlyPlaying={currentlyPlaying}
           handlePlayPodcast={handlePlayPodcast}
-          handlePayment={handleModalOpen}
+          handlePayment={handleBuy}
           handleSubscribe={handleSubscribe}
           topContentData={data?.data?.topContent || []}
           recomendationData={data?.data?.recommendation || []}
         />
 
-        <BottomSpacer height="h-42" />
-
-        <div className={`fixed bottom-0 ${isOpen ? "z-20" : "z-10"}`}>
-          <Suspense fallback="Loading...">
-            <PodcastPlayback
-              isOpen={isOpen}
-              setIsOpen={setIsOpen}
-              currentlyPlaying={currentlyPlaying}
-              handlePlayPodcast={handlePlayPodcast}
-              podcast={podcastData}
-              episodePodcasts={episode_podcasts}
-            />
-          </Suspense>
+        <div className="md:px-11">
+          <CommentComponent
+            contentType="PODCAST"
+            contentId={podcastData.id}
+            isLoading={isLoading}
+            commentData={commentData?.data?.data || []}
+            episodeId={podcastData.id}
+            isLoadingGetComment={isLoadingGetComment}
+          />
         </div>
+
+        {/* Playback is handled globally by PodcastPlayerProvider */}
 
         <SimpleModal
           title={"Konten ini masih terkunci, apakah kamu bersedia membeli nya dengan harga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}

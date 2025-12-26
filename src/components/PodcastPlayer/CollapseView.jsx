@@ -5,8 +5,6 @@ import PropTypes from "prop-types";
 
 import { formatDateTime } from "@/lib/timeFormatter";
 
-import { useGetCommentByEpisodePodcastQuery } from "@/hooks/api/commentSliceAPI"
-
 /*[--- COMPONENT IMPORT ---]*/
 import CommentComponent from "@/components/Comment/page";
 import BottomSpacer from '@/components/BottomSpacer/page';
@@ -16,6 +14,7 @@ import iconUnlocked from "@@/icons/icons-unlocked.svg";
 import iconLocked from "@@/icons/icons-locked.svg";
 import iconSaveOutline from "@@/logo/logoDetailFilm/save-icons.svg";
 import iconMore from "@@/icons/icons-more.svg";
+import { useGetCommentByPodcastQuery } from "@/hooks/api/commentSliceAPI";
 
 export default function CollapseView({
   episodeId,
@@ -34,7 +33,7 @@ export default function CollapseView({
   handlePlayPodcast,
 }) {
   const isLocked = useState(false);
-  const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByEpisodePodcastQuery(episodeId);
+  const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByPodcastQuery(episodeId);
 
   useEffect(() => {
     document.body.classList.add("overflow-hidden");
