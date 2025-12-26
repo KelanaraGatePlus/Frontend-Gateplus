@@ -204,4 +204,5 @@ CommentForm.propTypes = {
   podcastId: propTypes.string,
   episodeSeriesId: propTypes.string,
   movieId: propTypes.string,
+  episodePodcastId: propTypes.string,
 };
