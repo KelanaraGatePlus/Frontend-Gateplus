@@ -14,11 +14,13 @@ export const createCommentSchema = z.object({
         'COMIC',
         'PODCAST',
         'SERIES',
-        'MOVIE'
+        'MOVIE',
+        'EPISODE_PODCAST',
     ]),
     episodeEbookId: z.string().min(1).optional(),
     episodeComicsId: z.string().min(1).optional(),
     podcastId: z.string().min(1).optional(),
     episodeSeriesId: z.string().min(1).optional(),
     movieId: z.string().min(1).optional(),
+    episodePodcastId: z.string().min(1).optional(),
 });

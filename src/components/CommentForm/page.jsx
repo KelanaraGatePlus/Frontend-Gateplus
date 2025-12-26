@@ -21,6 +21,7 @@ export default function CommentForm({
   episodeComicsId = null,
   podcastId = null,
   episodeSeriesId = null,
+  episodePodcastId = null,
   movieId = null
 }) {
   const [createComment, { isLoading }] = useCreateCommentMutation();
@@ -51,6 +52,7 @@ export default function CommentForm({
       podcast: { key: "podcastId", value: podcastId },
       series: { key: "episodeSeriesId", value: episodeSeriesId },
       movie: { key: "movieId", value: movieId },
+      episodePodcast: { key: "episode_podcastId", value: episodePodcastId },
     };
 
     // Fallback detection when contentType not provided
@@ -65,6 +67,7 @@ export default function CommentForm({
         { key: "podcastId", value: podcastId },
         { key: "episodeSeriesId", value: episodeSeriesId },
         { key: "movieId", value: movieId },
+        { key: "episode_podcastId", value: episodePodcastId },
       ];
       chosen = candidates.find((c) => c.value != null) || null;
     }
@@ -195,7 +198,7 @@ export default function CommentForm({
 }
 
 CommentForm.propTypes = {
-  contentType: propTypes.oneOf(["EBOOK", "COMIC", "PODCAST", "SERIES", "MOVIE"]),
+  contentType: propTypes.oneOf(["EBOOK", "COMIC", "PODCAST", "SERIES", "MOVIE", "EPISODE_PODCAST"]).isRequired,
   episodeEbookId: propTypes.string,
   episodeComicsId: propTypes.string,
   podcastId: propTypes.string,

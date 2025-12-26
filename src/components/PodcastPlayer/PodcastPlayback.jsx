@@ -12,8 +12,8 @@ import AudioControl from "./AudioControl";
 import ExpandView from "./ExpandView";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { useCreateProgressWatchMutation } from "@/hooks/api/progressWatchAPI";
-import CommentModalComic from "../CommentModalComic/page";
-import { useGetCommentByPodcastQuery } from "@/hooks/api/commentSliceAPI";
+import { useGetCommentByEpisodePodcastQuery } from "@/hooks/api/commentSliceAPI";
+import CommentModalPodcast from "../CommentModalPodcast/CommentModalPodcast";
 
 export default function PodcastPlayback({
   isOpen,
@@ -43,10 +43,9 @@ export default function PodcastPlayback({
   useEffect(() => {
     createProgressWatchRef.current = createProgressWatch;
   }, [createProgressWatch]);
-  const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByPodcastQuery(
-    podcastId,
-    { skip: !podcastId }
-  );
+  const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByEpisodePodcastQuery(episodePodcastData?.id, {
+    skip: !episodePodcastData?.id
+  });
 
   // Refs untuk melacak apakah log sudah dikirim untuk episode saat ini
   const clickLogSentRef = useRef(false);
@@ -405,7 +404,7 @@ export default function PodcastPlayback({
         />
       </div>
 
-      <CommentModalComic
+      <CommentModalPodcast
         episodeId={episodePodcastData.id}
         isCommentVisible={isCommentVisible}
         setIsCommentVisible={setIsCommentVisible}

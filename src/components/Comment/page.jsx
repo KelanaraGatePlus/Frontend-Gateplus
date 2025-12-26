@@ -92,6 +92,7 @@ export default function CommentComponent({
                             podcastId={contentType === "PODCAST" ? episodeId : null}
                             episodeSeriesId={contentType === "SERIES" ? episodeId : null}
                             movieId={contentType === "MOVIE" ? episodeId : null}
+                            episodePodcastId={contentType === "EPISODE_PODCAST" ? episodeId : null}
                         />
                     }
 
