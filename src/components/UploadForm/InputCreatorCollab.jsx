@@ -2,6 +2,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import Image from "next/image";
+import { DEFAULT_AVATAR } from "@/lib/defaults";
 
 export default function InputCreatorCollab({
     query,
@@ -32,7 +33,7 @@ export default function InputCreatorCollab({
                                 <div className="flex flex-row items-center gap-3">
                                     <div className="relative w-10 h-10 rounded-full overflow-hidden">
                                         <Image
-                                            src={creator.imageUrl || "/default-profile.png"}
+                                            src={creator.imageUrl || DEFAULT_AVATAR}
                                             alt={creator.username}
                                             fill
                                             className="object-cover"
@@ -94,7 +95,7 @@ export default function InputCreatorCollab({
                                     <div className="flex flex-row items-center gap-3">
                                         <div className="relative w-10 h-10 rounded-full overflow-hidden">
                                             <Image
-                                                src={creator.imageUrl || "/default-profile.png"}
+                                                src={creator.imageUrl || DEFAULT_AVATAR}
                                                 alt={creator.username}
                                                 fill
                                                 className="object-cover"

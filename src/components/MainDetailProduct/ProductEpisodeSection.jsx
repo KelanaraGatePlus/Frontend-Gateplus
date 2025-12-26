@@ -15,12 +15,14 @@ import iconMore from "@@/icons/icons-more.svg";
 import Link from "next/link";
 import useGetLazyEpisodeByType from "@/hooks/helper/getEpisodeByType";
 import { Icon } from "@iconify/react";
-// import iconPause from "@@/icons/icons-pause.svg";
+import usePodcastController from "@/hooks/usePodcastController";
+import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
+import { DEFAULT_AVATAR } from "@/lib/defaults";
+import ExpandView from "../PodcastPlayer/ExpandView";
 
 export default function ProductEpisodeSection({
   productType,
   isLoading,
-  currentlyPlaying,
   handlePlayPodcast,
   handlePayment,
   isSubscribe = false,
@@ -36,6 +38,11 @@ export default function ProductEpisodeSection({
   const [totalEpisodes, setTotalEpisodes] = useState(0);
   const [imageStatus, setImageStatus] = useState({});
   const lastEpisodeRef = useRef(null);
+  const { isExpand, handleExpand, currentlyPlaying, isPlaying, bounceSpeed, speed } = usePodcastPlayer();
+  const [isCommentVisible, setIsCommentVisible] = useState(false);
+
+  // audio controller integration (moved to hook)
+  const { currentTime, duration, handleSeekEvent, togglePlay } = usePodcastController();
 
   // Hanya eksekusi sekali saja saat komponen dimount
   useEffect(() => {
@@ -235,7 +242,7 @@ export default function ProductEpisodeSection({
       <>
         {episodes.length > 0 ? (
           <section className={`relative flex w-full flex-col gap-3 py-5 text-white ${containerClassname}`}>
-            {episodes.map((item, index) => {
+            {episodes.map((item) => {
               const canAccess =
                 isOwner || item.isPurchased || item.price === "Free" || isSubscribe;
 
@@ -247,12 +254,13 @@ export default function ProductEpisodeSection({
                       ? () => handlePlayPodcast(item)
                       : () => handlePayment(item.id, item.price)
                   }
+                  className="flex flex-col justify-between"
                 >
                   <div
                     className={`group flex cursor-pointer items-stretch gap-2 py-2 hover:bg-[#1F6E8A] md:gap-4 ${itemClassname}`}
                   >
                     {/* Thumbnail */}
-                    <div className="relative h-20 w-20 overflow-hidden rounded-lg bg-[#979797] 2xl:h-25 2xl:w-25">
+                    <div className="relative h-28 w-28 overflow-hidden rounded-lg bg-[#979797] 2xl:h-30 2xl:w-30">
                       <Image
                         priority
                         src={item.coverPodcastEpisodeURL}
@@ -284,62 +292,103 @@ export default function ProductEpisodeSection({
                     </div>
 
                     {/* Info */}
-                    <div className="flex w-full justify-between items-center">
-                      <div className="flex flex-col justify-between py-1 items-start montserratFont text-[#AFAFAF]">
-                        <h1 className="zeinFont font-bold text-white text-[16px] md:text-2xl">
-                          {item.title}
-                        </h1>
-
-                        <p className="hidden md:block text-start">
-                          {item.description?.substring(0, 120)}
-                          {item.description?.length > 120 && "..."}
-                        </p>
-
-                        <p className="text-sm md:text-[16px]">
-                          {formatDateTime(item.createdAt, "short")}
-                        </p>
-                      </div>
-
-                      {/* Right Action */}
-                      <div className="flex items-center gap-3">
-                        {!canAccess && (
-                          <div className="flex flex-col items-end zeinFont">
-                            <div className="bg-[#63282e] flex items-center gap-2 rounded-lg px-2 py-1 border-2 border-[#967074]">
-                              <Icon icon="solar:lock-keyhole-minimalistic-linear" />
-                              <p className="font-bold">Terkunci</p>
-                            </div>
-                            <p className="font-bold">
-                              Rp{" "}
-                              {item.price === "Free"
-                                ? "0"
-                                : item.price.toLocaleString("id-ID")}
+                    <div className="flex flex-col w-full gap-2">
+                      <div className="flex w-full h-full justify-between items-start">
+                        <div className="flex flex-col justify-between py-1 h-full items-start montserratFont text-[#AFAFAF]">
+                          <div>
+                            <h1 className="zeinFont font-bold text-white text-[16px] md:text-2xl text-start">
+                              {item.title}
+                            </h1>
+                            <p className="hidden md:block text-start">
+                              {item.description?.substring(0, 120)}
+                              {item.description?.length > 120 && "..."}
                             </p>
                           </div>
-                        )}
-
-                        {canAccess && (
-                          <div className="bg-[#1FC16B4D] px-3 py-1 rounded-lg border-2 border-[#F5F5F559]">
-                            <p className="zeinFont font-bold">Play</p>
-                          </div>
-                        )}
-
-                        {/* More */}
+                          <p className="text-sm md:text-[16px] font-bold">
+                            {formatDateTime(item.createdAt, "short")}
+                          </p>
+                        </div>
+                        {/* Right Action */}
+                        <div className="flex items-center gap-3">
+                          {!canAccess && (
+                            <div className="flex flex-col items-end gap-4 h-full justify-between zeinFont">
+                              <div className="bg-[#63282e] flex items-center gap-2 rounded-lg px-2 py-1 border-2 border-[#967074]">
+                                <Icon icon="solar:lock-keyhole-minimalistic-linear" />
+                                <p className="font-bold">Terkunci</p>
+                              </div>
+                              <p className="font-bold">
+                                Rp{" "}
+                                {item.price === "Free"
+                                  ? "0"
+                                  : item.price.toLocaleString("id-ID")}
+                              </p>
+                            </div>
+                          )}
+                          {canAccess && !item.isWatched && (
+                            <div className="bg-[#1FC16B4D] px-3 py-1 rounded-lg border-2 border-[#F5F5F559] flex flex-row items-center justify-center gap-2">
+                              <Icon
+                                icon={'solar:notebook-minimalistic-linear'}
+                                className="w-4 h-4 rounded-md"
+                              />
+                              <p className="zeinFont font-bold">Putar</p>
+                            </div>
+                          )}
+                          {/* More */}
+                          <button
+                            className="relative h-6 w-6"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleSelectedPodcast(item);
+                            }}
+                          >
+                            <Image
+                              priority
+                              src={iconMore}
+                              alt="more"
+                              fill
+                              className="rotate-90"
+                            />
+                          </button>
+                        </div>
+                      </div>
+                      {(currentlyPlaying?.id == item.id) && <div className="flex flex-row justify-between items-center gap-2">
                         <button
-                          className="relative h-6 w-6"
                           onClick={(e) => {
-                            e.preventDefault();
                             e.stopPropagation();
-                            handleSelectedPodcast(item);
+                            togglePlay();
                           }}
                         >
-                          <Image
-                            priority
-                            src={iconMore}
-                            alt="more"
-                            fill
+                          {isPlaying ? <Icon icon={'solar:pause-bold'} /> : <Icon icon={'solar:play-bold'} />}
+                        </button>
+                        <input
+                          type="range"
+                          name="track"
+                          id="track"
+                          className="w-full cursor-pointer appearance-none rounded-full accent-[#1297DC] h-1.5"
+                          min={0}
+                          max={duration || 0}
+                          value={currentTime}
+                          onChange={handleSeekEvent}
+                          style={{
+                            background: `linear-gradient(to right, #1297DC ${(currentTime / (duration || 1)) * 100}%, #616161 ${(currentTime / (duration || 1)) * 100}%)`,
+                          }}
+                        />
+                        <button onClick={() => {
+                          bounceSpeed();
+                        }}> 
+                          <p>{speed}x</p>
+                        </button>
+                        <button onClick={() => {
+                          handleExpand();
+                        }}>
+                          <Icon
+                            icon={'solar:maximize-square-2-outline'}
+                            className="h-5 w-5"
                           />
                         </button>
                       </div>
+                      }
                     </div>
                   </div>
                 </button>
@@ -355,13 +404,35 @@ export default function ProductEpisodeSection({
             )}
 
             {isPodcastModalVisible && (
+              console.log(selectedPodcast),
               <PodcastMoreDetail
+                id={selectedPodcast.id}
                 coverEpisodeUrl={selectedPodcast.coverPodcastEpisodeURL}
                 title={selectedPodcast.title}
                 description={selectedPodcast.description}
+                collaborators={selectedPodcast.collaborators}
                 createdAt={formatDateTime(selectedPodcast.createdAt, "short")}
                 handlePodcastModal={handlePodcastModal}
               />
+            )}
+
+            {isExpand && (
+              <div className="fixed top-0 w-full z-40">
+                <ExpandView
+                  episodeId={selectedPodcast?.id}
+                  coverEpisodeUrl={selectedPodcast?.coverPodcastEpisodeURL}
+                  title={selectedPodcast?.title}
+                  description={selectedPodcast?.description}
+                  duration={duration}
+                  currentTime={currentTime}
+                  isExpand={isExpand}
+                  isCommentVisible={isCommentVisible}
+                  handleViewComments={() => setIsCommentVisible((s) => !s)}
+                  handleExpand={() => {
+                    handleExpand();
+                  }}
+                />
+              </div>
             )}
           </section>
         ) : (
@@ -420,11 +491,13 @@ function SeeAnotherEpisodes({ showAll, handleShowAll, itemClassname }) {
 }
 
 export function PodcastMoreDetail({
+  id,
   coverEpisodeUrl,
   title,
   description,
   createdAt,
   handlePodcastModal,
+  collaborators = [],
 }) {
   useEffect(() => {
     document.body.classList.add("overflow-hidden");
@@ -435,17 +508,23 @@ export function PodcastMoreDetail({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-5"
+      className="fixed inset-0 z-50 flex items-center justify-center p-5"
       onClick={handlePodcastModal}
     >
       <div
-        className="flex w-md flex-col rounded-2xl border-1 border-[#F5F5F580] bg-transparent px-4 pt-2 drop-shadow-2xl backdrop-blur-sm md:w-lg lg:w-xl"
+        className="flex w-md flex-col bg-[#333333] rounded-lg border-1 border-[#F5F5F580] px-4 pt-2 drop-shadow-2xl backdrop-blur-sm md:w-3xl lg:w-5xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative flex w-full items-center justify-center">
+        <div className="relative flex w-full items-center justify-between">
+          <Link href={"/report/episode_podcast/" + id} className="relative h-6 w-6">
+            <Icon
+              icon={'solar:flag-2-outline'}
+              className="h-6 w-6 text-white"
+            />
+          </Link>
           <p className="zeinFont py-2 text-xl font-semibold">Detail</p>
           <button
-            className="absolute top-1/2 right-0 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-[#97979766] text-xl font-bold text-white"
+            className="flex h-6 w-6 items-center justify-center rounded-full bg-[#97979766] text-xl font-bold text-white"
             onClick={handlePodcastModal}
           >
             <span className="lg:-mt-1">&times;</span>
@@ -453,7 +532,7 @@ export function PodcastMoreDetail({
         </div>
 
         <div className="flex w-full flex-col gap-4">
-          <div className="flex w-full items-center justify-center">
+          <div className="flex w-full gap-2 items-center">
             <figure className="relative h-36 w-36 rounded-lg">
               {coverEpisodeUrl && (
                 <Image
@@ -465,44 +544,32 @@ export function PodcastMoreDetail({
                 />
               )}
             </figure>
-          </div>
-
-          <div className="mt-2">
-            <h1 className="zeinFont text-2xl font-bold text-white">{title}</h1>
-            <p className="montserratFont line-clamp-3 text-justify text-sm text-[#F1F1F1] lg:line-clamp-5">
-              {description}
-            </p>
-          </div>
-
-          <div className="mt-2 flex flex-col gap-3">
-            <h2 className="zeinFont w-full text-center text-2xl font-bold text-white">
-              Kreator
-            </h2>
-
-            <div className="flex w-full flex-wrap justify-center gap-6">
-              {Array.from({ length: 6 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col items-center justify-center"
-                >
-                  <figure className="relative mb-3 h-15 w-15 rounded-full">
-                    <Image
-                      src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=687&q=80"
-                      alt="creator"
-                      className="h-full w-full rounded-full object-cover object-center"
-                      fill
-                      priority
-                    />
-                  </figure>
-                  <h4 className="zeinFont text-xl leading-3 font-bold">
-                    John Doe
-                  </h4>
-                  <p className="montserratFont text-[10px] leading-5 font-thin">
-                    @gustisan
-                  </p>
-                </div>
-              ))}
+            <div className="flex flex-col gap-2">
+              <h2 className="zeinFont font-bold">Kreator</h2>
+              <div className="flex flex-row gap-2">
+                {
+                  collaborators.map((item, index) => (
+                    <div key={index} className="flex flex-col items-center montserratFont">
+                      <Image
+                        size="sm"
+                        variant="circle"
+                        className="rounded-full h-16 w-16"
+                        src={item.imageUrl || DEFAULT_AVATAR}
+                      />
+                      <p className="font-bold">{item.profileName}</p>
+                      <p className="text-[#AFAFAF]">@{item.username}</p>
+                    </div>
+                  ))
+                }
+              </div>
             </div>
+          </div>
+
+          <div className="flex flex-col">
+            <h1 className="font-bold zeinFont text-2xl">
+              {title}
+            </h1>
+            <p className="montserratFont text-[#AFAFAF]">{description}</p>
           </div>
 
           <p className="montserratFont mb-2 flex w-full items-center justify-center py-1 text-center text-xs text-white/50 italic">
@@ -521,6 +588,7 @@ SeeAnotherEpisodes.propTypes = {
 };
 
 PodcastMoreDetail.propTypes = {
+  id: PropTypes.string.isRequired,
   coverEpisodeUrl: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
@@ -528,4 +596,5 @@ PodcastMoreDetail.propTypes = {
   createdAt: PropTypes.string.isRequired,
   handlePodcastModal: PropTypes.func.isRequired,
   withEpisodes: PropTypes.bool.isRequired,
+  collaborators: PropTypes.array,
 };

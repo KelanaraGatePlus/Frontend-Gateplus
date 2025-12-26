@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, use, Suspense } from "react";
+import React, { useState, useEffect, use } from "react";
 import PropTypes from "prop-types";
 
 /*[--- API HOOKS ---]*/
@@ -17,7 +17,6 @@ import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
 export default function DetailPodcastPage({ params }) {
   const { id } = use(params);
   const [userId, setUserId] = useState(null);
-  const [selectedEpisode, setSelectedEpisode] = useState(null);
   const [selectedContentId, setSelectedContentId] = useState(null);
   const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,15 +48,10 @@ export default function DetailPodcastPage({ params }) {
     playEpisode(episodeData, podcastData, episode_podcasts);
   };
 
-  const handleModalOpen = (episodeId, price) => {
-    setSelectedEpisode(episodeId);
-    setSelectedPrice(price);
-    setIsModalOpen(true);
-  }
-
-  const handleBuy = async () => {
+  const handleBuy = async (episodeId, selectedPrice) => {
+    setSelectedPrice(selectedPrice);
     setLoading(true);
-    window.location.href = `/checkout/purchase/podcasts/${id}/${selectedEpisode}`;
+    window.location.href = `/checkout/purchase/podcasts/${id}/${episodeId}`;
     setIsModalOpen(false);
     setLoading(false);
   };
@@ -93,7 +87,7 @@ export default function DetailPodcastPage({ params }) {
           isLoading={isLoading}
           currentlyPlaying={currentlyPlaying}
           handlePlayPodcast={handlePlayPodcast}
-          handlePayment={handleModalOpen}
+          handlePayment={handleBuy}
           handleSubscribe={handleSubscribe}
           topContentData={data?.data?.topContent || []}
           recomendationData={data?.data?.recommendation || []}

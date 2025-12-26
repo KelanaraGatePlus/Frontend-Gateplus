@@ -1,14 +1,15 @@
 "use client";
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState, Suspense } from "react";
 import PropTypes from "prop-types";
 import PodcastPlayback from "@/components/PodcastPlayer/PodcastPlayback";
 import PodcastMiniPlayer from "@/components/PodcastPlayer/PodcastMiniPlayer";
 import { useGetPodcastByIdQuery } from "@/hooks/api/podcastSliceAPI";
-import Image from "next/legacy/image";
 
 const STORAGE_KEY = "podcast_player_state";
+const SPEED_OPTIONS = [0.5, 1, 1.5, 2];
 
 const PodcastPlayerContext = createContext(null);
+const DEFAULT_SPEED = 1;
 
 function loadState() {
     if (typeof window === "undefined") return null;
@@ -37,10 +38,13 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
     const [episodeList, setEpisodeList] = useState([]);
     const [fetchPodcastId, setFetchPodcastId] = useState(null);
     const [isDetailPage, setIsDetailPage] = useState(false);
+    const [isExpand, setIsExpand] = useState(false);
     const audioRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [volume, setVolume] = useState(1);
     const [episodeData, setEpisodeData] = useState(null);
+    const [speed, setSpeed] = useState(DEFAULT_SPEED);
+    const [speedDirection, setSpeedDirection] = useState(1); // 1: forward, -1: backward
 
     // Hydrate from storage once
     useEffect(() => {
@@ -51,14 +55,14 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
             setPodcastMeta(stored.podcastMeta || null);
             setEpisodeList(stored.episodeList || []);
             setEpisodeData(stored.episodeData || null);
-            
+            setSpeed(stored.speed || DEFAULT_SPEED);
         }
     }, []);
-    
+
     // Persist on change
     useEffect(() => {
-        saveState({ isOpen, currentlyPlaying, podcastMeta, episodeList, episodeData });
-    }, [isOpen, currentlyPlaying, podcastMeta, episodeList]);
+        saveState({ isOpen, currentlyPlaying, podcastMeta, episodeList, episodeData, speed });
+    }, [isOpen, currentlyPlaying, podcastMeta, episodeList, episodeData, speed]);
 
     // keep episodeData in sync with currentlyPlaying
     useEffect(() => {
@@ -109,7 +113,7 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
                 try {
                     play();
                 } catch (err) {
-                    // swallow; play may fail if audio not ready yet
+                    console.error("Autoplay failed:", err);
                 }
             }, 200);
         }
@@ -186,6 +190,55 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
         setVolume(v);
     };
 
+    const handleExpand = () => {
+        console.log("Toggling expand");
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch((err) => {
+                console.error("Fullscreen error:", err);
+            });
+            setIsExpand(true);
+        } else {
+            document.exitFullscreen().catch((err) => {
+                console.error("Exit fullscreen error:", err);
+            });
+            setIsExpand(false);
+        }
+    };
+
+    const setPlaybackSpeed = (newSpeed) => {
+        const audio = audioRef.current?.audio?.current;
+        if (audio) audio.playbackRate = newSpeed;
+        setSpeed(newSpeed);
+    };
+
+    const bounceSpeed = () => {
+        const currentIdx = SPEED_OPTIONS.indexOf(speed);
+        const safeIdx = currentIdx === -1 ? SPEED_OPTIONS.indexOf(DEFAULT_SPEED) : currentIdx;
+        const nextIdx = safeIdx + speedDirection;
+
+        if (nextIdx >= SPEED_OPTIONS.length) {
+            // bounce back from upper bound
+            setSpeedDirection(-1);
+            setPlaybackSpeed(SPEED_OPTIONS[SPEED_OPTIONS.length - 2] || SPEED_OPTIONS[0]);
+            return;
+        }
+
+        if (nextIdx < 0) {
+            // bounce forward from lower bound
+            setSpeedDirection(1);
+            setPlaybackSpeed(SPEED_OPTIONS[1] || SPEED_OPTIONS[0]);
+            return;
+        }
+
+        setPlaybackSpeed(SPEED_OPTIONS[nextIdx]);
+    };
+
+    // keep playback rate synced with selected speed
+    useEffect(() => {
+        const audio = audioRef.current?.audio?.current;
+        if (audio) audio.playbackRate = speed;
+    }, [speed]);
+
     const value = useMemo(
         () => ({
             isOpen,
@@ -195,6 +248,8 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
             setCurrentlyPlaying,
             podcastMeta,
             episodeList,
+            isExpand,
+            setIsExpand,
             playEpisode,
             playNextEpisode,
             playPrevEpisode,
@@ -210,8 +265,28 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
             seekBy,
             volume,
             setPlayerVolume,
+            handleExpand,
+            speed,
+            bounceSpeed,
+            setPlaybackSpeed,
+            speedOptions: SPEED_OPTIONS,
         }),
-        [isOpen, currentlyPlaying, episodeData, podcastMeta, episodeList, isDetailPage, isPlaying, volume]
+        [
+            isOpen,
+            currentlyPlaying,
+            episodeData,
+            podcastMeta,
+            episodeList,
+            isDetailPage,
+            isPlaying,
+            volume,
+            isExpand,
+            setIsExpand,
+            handleExpand,
+            speed,
+            bounceSpeed,
+            setPlaybackSpeed,
+        ]
     );
 
     return (
@@ -220,19 +295,21 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
             {/* Mount playback UI only when player is not disabled */}
             {!disablePlayer && (
                 <>
-                    <div className={`${!isDetailPage ? "hidden" : ""}`}>
-                        <PodcastPlayback
-                            isOpen={isOpen}
-                            setIsOpen={setIsOpen}
-                            currentlyPlaying={currentlyPlaying}
-                            handlePlayPodcast={(episode) => playEpisode(episode, podcastMeta, episodeList)}
-                            podcast={podcastMeta}
-                            episodePodcasts={episodeList}
-                        />
+                    <div className={`${isDetailPage || isExpand ? "" : "hidden"}`}>
+                        <Suspense fallback={null}>
+                            <PodcastPlayback
+                                isOpen={isOpen}
+                                setIsOpen={setIsOpen}
+                                currentlyPlaying={currentlyPlaying}
+                                handlePlayPodcast={(episode) => playEpisode(episode, podcastMeta, episodeList)}
+                                podcast={podcastMeta}
+                                episodePodcasts={episodeList}
+                            />
+                        </Suspense>
                     </div>
 
                     {/* Render mini player on non-detail pages */}
-                    {!isDetailPage && (
+                    {!isDetailPage && !isExpand && (
                         <PodcastMiniPlayer
                             currentlyPlaying={currentlyPlaying}
                             podcastMeta={podcastMeta}
@@ -249,6 +326,7 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
 
 PodcastPlayerProvider.propTypes = {
     children: PropTypes.node.isRequired,
+    disablePlayer: PropTypes.bool,
 };
 
 export function usePodcastPlayer() {

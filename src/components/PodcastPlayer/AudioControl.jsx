@@ -45,13 +45,6 @@ export default function AudioControl({
     const router = useRouter();
     const [isVolumeVisible, setIsVolumeVisible] = useState(false);
     const volumeSliderRef = useRef(null);
-    const formatTime = (time) => {
-        if (isNaN(time)) return "00:00:00";
-        const hrs = Math.floor(time / 3600);
-        const mins = Math.floor((time % 3600) / 60);
-        const secs = Math.floor(time % 60);
-        return [hrs, mins, secs].map((v) => String(v).padStart(2, "0")).join(":");
-    };
 
     const toggleVolumeSlider = () => setIsVolumeVisible(!isVolumeVisible);
     const handleOpenPodcast = () => {
@@ -102,7 +95,7 @@ export default function AudioControl({
                 </div>
             </div>
             <div
-                className={`${isMobile ? "pb-10" : "pb-0"} z-40 flex flex-col items-center justify-center gap-0 px-5 transition-all duration-200 ease-in-out md:h-48 w-screen lg:px-10 bg-[#171717] backdrop-blur-2xl lg:pb-0`}
+                className={`${isMobile ? "pb-10" : "pb-0"} z-40 flex flex-col items-center justify-center gap-0 px-5 transition-all duration-200 ease-in-out h-max w-screen md:py-8 lg:px-10 bg-[#171717] backdrop-blur-2xl`}
             >
                 <div
                     className={`flex w-full flex-col justify-between ${isExpand && isCommentVisible ? "lg:flex-col" : "lg:flex-row lg:grid lg:grid-cols-3"}`}

@@ -11,6 +11,7 @@ import "react-h5-audio-player/lib/styles.css";
 import AudioControl from "./AudioControl";
 import ExpandView from "./ExpandView";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
+import { useCreateProgressWatchMutation } from "@/hooks/api/progressWatchAPI";
 import CommentModalComic from "../CommentModalComic/page";
 import { useGetCommentByPodcastQuery } from "@/hooks/api/commentSliceAPI";
 
@@ -22,16 +23,26 @@ export default function PodcastPlayback({
   const searchParams = useSearchParams();
   const [isMobile, setIsMobile] = useState(false);
   const podcastId = searchParams.get("podcast_detail");
-  const [isExpand, setIsExpand] = useState(false);
   const [isCommentVisible, setIsCommentVisible] = useState(false);
 
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [blobUrl, setBlobUrl] = useState("");
   const [volume, setVolume] = useState(1);
-  const { audioRef, isPlaying, togglePlay, play, pause, seek, seekBy, setPlayerVolume, setCurrentlyPlaying, playNextEpisode, playPrevEpisode } = usePodcastPlayer();
+  const { audioRef, isPlaying, togglePlay, play, seek, seekBy, setPlayerVolume, setCurrentlyPlaying, playNextEpisode, playPrevEpisode, isExpand, setIsExpand, handleExpand } = usePodcastPlayer();
   const [episodePodcastData, setEpisodePodcastData] = useState({});
   const [createLog] = useCreateLogMutation();
+  const [createProgressWatch] = useCreateProgressWatchMutation();
+  // keep a stable ref to the mutation fn so effects don't re-run when function identity changes
+  const createLogRef = useRef(createLog);
+  useEffect(() => {
+    createLogRef.current = createLog;
+  }, [createLog]);
+  // progress watch mutation ref
+  const createProgressWatchRef = useRef(createProgressWatch);
+  useEffect(() => {
+    createProgressWatchRef.current = createProgressWatch;
+  }, [createProgressWatch]);
   const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByPodcastQuery(
     podcastId,
     { skip: !podcastId }
@@ -40,6 +51,10 @@ export default function PodcastPlayback({
   // Refs untuk melacak apakah log sudah dikirim untuk episode saat ini
   const clickLogSentRef = useRef(false);
   const watchLogSentRef = useRef(false);
+  // tambahan: set untuk mencatat payload yang sudah dikirim (id|type)
+  const sentLogsRef = useRef(new Set());
+  // ref untuk menyimpan progress terakhir yang akan dikirim
+  const progressRef = useRef({ playedSeconds: 0, percentage: 0 });
   const shouldAutoPlayRef = useRef(false);
 
   // Efek untuk update data episode & reset status log saat episode berganti
@@ -49,6 +64,8 @@ export default function PodcastPlayback({
     if (currentlyPlaying?.id) {
       clickLogSentRef.current = false;
       watchLogSentRef.current = false;
+      // clear sent log records for new episode
+      sentLogsRef.current.clear();
       // mark that we should attempt to autoplay when media is ready
       shouldAutoPlayRef.current = true;
     }
@@ -68,26 +85,34 @@ export default function PodcastPlayback({
   // Efek untuk mengirim log 'CLICK' saat player terbuka untuk episode baru
   useEffect(() => {
     if (isOpen && episodePodcastData.id && !clickLogSentRef.current) {
-      const payload = {
-        contentType: "EPISODE_PODCAST",
-        logType: "CLICK",
-        contentId: episodePodcastData.id,
-        deviceType: isMobile ? "MOBILE" : "DESKTOP",
-      };
+      const key = `${episodePodcastData.id}|CLICK`;
+      if (!sentLogsRef.current.has(key)) {
+        const payload = {
+          contentType: "EPISODE_PODCAST",
+          logType: "CLICK",
+          contentId: episodePodcastData.id,
+          deviceType: isMobile ? "MOBILE" : "DESKTOP",
+        };
 
-      console.log("Sending CLICK log:", payload);
-      createLog(payload)
-        .unwrap()
-        .then(() => {
-          clickLogSentRef.current = true; // Tandai log CLICK sudah terkirim
-        })
-        .catch((err) => {
-          console.error("Failed to send CLICK log:", err);
-        });
+        // record before sending to avoid races
+        sentLogsRef.current.add(key);
+        clickLogSentRef.current = true;
+        createLogRef.current?.(payload)
+          .unwrap?.()
+          .then(() => {
+            // ok
+          })
+          .catch((err) => {
+            console.error("Failed to send CLICK log:", err);
+            // on failure, remove key so future attempts can retry
+            sentLogsRef.current.delete(key);
+            clickLogSentRef.current = false;
+          });
+      }
     }
-  }, [isOpen, episodePodcastData.id, isMobile, createLog]);
+  }, [isOpen, episodePodcastData.id, isMobile]);
 
-  // Efek untuk memantau waktu putar & mengirim log 'WATCH_CONTENT' saat mencapai 70%
+  // Efek untuk memantau waktu putar & mengirim log 'WATCH_CONTENT' saat mencapai 50%
   useEffect(() => {
     const audio = audioRef.current?.audio?.current;
     if (!audio) return;
@@ -109,28 +134,50 @@ export default function PodcastPlayback({
         });
       }
 
+      // update progress ref for periodic save
+      progressRef.current = {
+        playedSeconds: current_Time,
+        percentage: Math.round(playbackProgress * 100),
+      };
+
       // Cek jika durasi valid, log 'WATCH_CONTENT' belum dikirim, dan ada episode ID
       if (total_Duration > 0 && !watchLogSentRef.current && episodePodcastData.id) {
-        const playbackPercent = (current_Time / total_Duration) * 100;
+        // Jika total durasi < 20 menit -> butuh 50% durasi
+        // Jika total durasi >= 20 menit -> butuh 12 menit (720 detik)
+        const twentyMinutesSec = 20 * 60;
+        const twelveMinutesSec = 12 * 60;
+        const requiredSeconds = total_Duration < twentyMinutesSec ? total_Duration * 0.5 : twelveMinutesSec;
 
-        // Jika persentase mencapai 70% atau lebih
-        if (playbackPercent >= 70) {
-          const payload = {
-            contentType: "EPISODE_PODCAST",
-            logType: "WATCH_CONTENT",
-            contentId: episodePodcastData.id,
-            deviceType: isMobile ? "MOBILE" : "DESKTOP",
-          };
+        // jika current time melewati ambang waktu yang dibutuhkan
+        if (current_Time >= requiredSeconds) {
+          const key = `${episodePodcastData.id}|WATCH_CONTENT`;
+          if (!sentLogsRef.current.has(key)) {
+            // mark immediately to prevent multiple calls from repeated events
+            sentLogsRef.current.add(key);
+            watchLogSentRef.current = true;
 
-          console.log("Sending WATCH_CONTENT log (70% reached):", payload);
-          createLog(payload)
-            .unwrap()
-            .then(() => {
-              watchLogSentRef.current = true; // Tandai log WATCH_CONTENT sudah terkirim
-            })
-            .catch((err) => {
-              console.error("Failed to send WATCH_CONTENT log:", err);
-            });
+            const payload = {
+              contentType: "EPISODE_PODCAST",
+              logType: "WATCH_CONTENT",
+              contentId: episodePodcastData.id,
+              deviceType: isMobile ? "MOBILE" : "DESKTOP",
+              // optionally include the threshold used for debugging
+              // thresholdSeconds: requiredSeconds,
+            };
+
+            console.log(`Sending WATCH_CONTENT log (threshold ${Math.round(requiredSeconds)}s reached):`, payload);
+            createLogRef.current?.(payload)
+              .unwrap?.()
+              .then(() => {
+                // already marked
+              })
+              .catch((err) => {
+                console.error("Failed to send WATCH_CONTENT log:", err);
+                // allow retry on failure
+                sentLogsRef.current.delete(key);
+                watchLogSentRef.current = false;
+              });
+          }
         }
       }
 
@@ -139,7 +186,7 @@ export default function PodcastPlayback({
         try {
           play();
         } catch (err) {
-          // ignore play errors (may be blocked by browser)
+          console.error("Autoplay failed:", err);
         }
         shouldAutoPlayRef.current = false;
       }
@@ -161,7 +208,40 @@ export default function PodcastPlayback({
       audio.removeEventListener("loadedmetadata", updateTime);
       audio.removeEventListener("ended", onEnded);
     };
-  }, [episodePodcastData.id, isMobile, createLog, playNextEpisode, play]);
+  }, [episodePodcastData.id, isMobile, playNextEpisode, play]);
+
+  // Periodically save watch progress every 10 seconds
+  useEffect(() => {
+    if (!episodePodcastData.id) return;
+
+    const sendProgress = () => {
+      const { playedSeconds, percentage } = progressRef.current;
+      if (!playedSeconds || playedSeconds <= 0) return;
+
+      const payload = {
+        contentId: episodePodcastData.id,
+        contentType: "EPISODE_PODCAST",
+        progressSeconds: Math.floor(playedSeconds),
+        progressPercentage: percentage,
+        isCompleted: percentage >= 20,
+        device: isMobile ? "MOBILE" : "DESKTOP",
+      };
+
+      createProgressWatchRef.current?.(payload);
+    };
+
+    const interval = setInterval(sendProgress, 10000);
+
+    const handleBeforeUnload = () => sendProgress();
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      // send one last time on cleanup
+      sendProgress();
+    };
+  }, [episodePodcastData.id, isMobile]);
 
 
   const handleClosePodcast = () => {
@@ -171,20 +251,6 @@ export default function PodcastPlayback({
     setIsOpen(false);
     if (isExpand) {
       handleExpand();
-    }
-  };
-
-  const handleExpand = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch((err) => {
-        console.error("Fullscreen error:", err);
-      });
-      setIsExpand(true);
-    } else {
-      document.exitFullscreen().catch((err) => {
-        console.error("Exit fullscreen error:", err);
-      });
-      setIsExpand(false);
     }
   };
 

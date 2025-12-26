@@ -4,8 +4,9 @@ import PropTypes from 'prop-types';
 
 /*[--- COMPONENT IMPORT ---]*/
 /*[--- ASSETS IMPORT ---]*/
-import iconMore from "@@/icons/icons-more.svg";
 import iconFlag from "@@/icons/icons-flag.svg";
+import BackButton from '../BackButton/page';
+import { useRouter } from "next/navigation";
 
 export default function ExpandView({
     coverEpisodeUrl,
@@ -15,24 +16,17 @@ export default function ExpandView({
     currentTime,
     handleExpand,
 }) {
+    const router = useRouter();
     return (
         <div className="flex w-full h-[calc(100vh-120px)] bg-[#786151]">
             {/* Main Area */}
             <div className="w-full flex flex-col items-center justify-center relative px-6 py-10 lg:py-16 pb-32">
                 {/* Top bar: back & report */}
                 <div className="absolute top-4 left-0 right-0 flex items-center justify-between px-6">
-                    <button
-                        className="relative h-8 w-8 cursor-pointer transition-transform duration-150 active:scale-90"
-                        onClick={handleExpand}
-                    >
-                        <Image
-                            priority
-                            src={iconMore}
-                            alt="icon-back"
-                            className="object-cover object-center rotate-180"
-                            fill
-                        />
-                    </button>
+                    <BackButton onClick={() => {
+                        router.back(); 
+                        handleExpand();
+                    }} />
                     <button className="relative h-8 w-8 cursor-pointer transition-transform duration-150 active:scale-90">
                         <Image
                             priority
@@ -45,7 +39,7 @@ export default function ExpandView({
                 </div>
 
                 {/* Cover */}
-                <figure className="relative w-[90vw] max-w-[600px] aspect-square rounded-lg shadow-2xl overflow-hidden">
+                <figure className="relative w-[90vw] max-w-[600px] aspect-square rounded-md shadow-2xl overflow-hidden">
                     {coverEpisodeUrl && (
                         <Image
                             priority
