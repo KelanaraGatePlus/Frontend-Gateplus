@@ -11,7 +11,8 @@ export default function PriceSelector({
     error,
     freeValue = "Free",           // nilai untuk GRATIS (bisa angka/string)
     freeLabel = "Gratis",    // teks tombol gratis
-    canFree = true
+    canFree = true,
+    placeholder = "Pilih harga jual per bab atau pilih GRATIS."
 }) {
     const [customValue, setCustomValue] = useState("");
 
@@ -56,6 +57,7 @@ export default function PriceSelector({
                 <h3 className="montserratFont text-base font-semibold md:text-base lg:text-xl">
                     {label}
                 </h3>
+                <p>{placeholder}</p>
             </div>
 
             {/* GRID: kiri (3 kolom) untuk input+opsi, kanan (1 kolom) untuk simulasi */}
@@ -150,5 +152,6 @@ PriceSelector.propTypes = {
     error: PropTypes.string,
     freeValue: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     freeLabel: PropTypes.string,
-    canFree: PropTypes.bool
+    canFree: PropTypes.bool,
+    placeholder: PropTypes.string,
 };

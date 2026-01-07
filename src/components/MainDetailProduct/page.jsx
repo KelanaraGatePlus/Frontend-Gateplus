@@ -5,8 +5,8 @@ import PropTypes from "prop-types";
 /*[--- COMPONENTS IMPORT ---]*/
 import ProductDetailSection from "@/components/MainDetailProduct/ProductDetailSection";
 import ProductEpisodeSection from "@/components/MainDetailProduct/ProductEpisodeSection";
-import ProductDonationSection from "@/components/MainDetailProduct/ProductDonationSection";
 import CarouselTemplate from "../Carousel/carouselTemplate";
+import { cn } from "@/lib/utils";
 
 export default function MainTemplateLayout({
   productType,
@@ -20,14 +20,13 @@ export default function MainTemplateLayout({
   topContentData,
   recomendationData,
 }) {
-  console.log("productDetail", productDetail);
   return (
     <main className="flex flex-col">
       <ProductDetailSection
         productType={productType}
         productID={productDetail.id}
         productBanner={productDetail.posterImageUrl}
-        productCover={productType === 'podcast' ? productDetail.coverPodcastImage : productDetail.coverImageUrl}
+        productCover={productType === 'podcast' ? productDetail.coverPodcastImage : productDetail.posterImageUrl}
         productTitle={productDetail.title}
         productDescription={productDetail.description}
         productAgeRestriction={productDetail.ageRestriction}
@@ -53,7 +52,7 @@ export default function MainTemplateLayout({
         isOwner={productDetail?.isOwner || false}
       />
 
-      <div className="px-4 pmd:px-15">
+      <div>
         <ProductEpisodeSection
           productType={productType}
           productEpisodes={productEpisode}
@@ -64,6 +63,7 @@ export default function MainTemplateLayout({
           isSubscribe={productDetail?.isSubscribe && productDetail?.canSubscribe ? true : false}
           productId={productDetail?.id}
           isOwner={productDetail?.isOwner || false}
+          itemClassname={cn("px-4 md:px-15")}
         />
       </div>
 
@@ -80,17 +80,12 @@ export default function MainTemplateLayout({
         contents={recomendationData}
         isLoading={isLoading}
       />
-      <div className="px-15 mt-10 md:mt-20">
-        <ProductDonationSection
-          creatorId={productDetail?.creatorId}
-        />
-      </div>
     </main>
   );
 }
 
 MainTemplateLayout.propTypes = {
-  productType: PropTypes.string.isRequired,
+  productType: PropTypes.oneOf(['podcast', 'ebook', 'comic']).isRequired,
   productDetail: PropTypes.object.isRequired,
   productEpisode: PropTypes.array.isRequired,
   isLoading: PropTypes.bool,

@@ -3,175 +3,157 @@
 "use client";
 
 import ePub from "epubjs";
-import { useEffect, useRef } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 
-export default function EpubReader({
-  epubUrl,
-  isDark = true,
-  preventCopy = true,
-  preventScreenshot = true,
-  preventRecord = true,
-  preventDevtools = true,
-}) {
+const EpubReader = forwardRef(
+  (
+    {
+      epubUrl,
+      isDark = true,
+      preventCopy = true,
+      initialFontSizeFactor = 1.0,
+      onFontSizeChange = null,
+    },
+    ref
+  ) => {
+    const viewerRef = useRef(null);
+    const renditionRef = useRef(null);
+    const [fontSizeFactor, setFontSizeFactor] = useState(initialFontSizeFactor);
 
-  const viewerRef = useRef(null);
-  const renditionRef = useRef(null);
+    const MIN_FACTOR = 0.8;
+    const MAX_FACTOR = 1.5;
 
-  // =====================================
-  // 🔒 GLOBAL PROTECT: outside the EPUB iframe
-  // =====================================
-  useEffect(() => {
-    // 🛑 Prevent Copy, Cut, Paste
-    if (preventCopy) {
-      const block = (e) => e.preventDefault();
-      document.addEventListener("copy", block);
-      document.addEventListener("cut", block);
-      document.addEventListener("paste", block);
-      document.addEventListener("contextmenu", block);
-    }
-
-    // 🛑 Prevent Screenshot: detect PrintScreen key
-    const handlePrintScreen = (e) => {
-      if (preventScreenshot && e.key === "PrintScreen") {
-        navigator.clipboard.writeText("");
-        alert("Screenshot disabled on this EPUB.");
-      }
-    };
-    document.addEventListener("keydown", handlePrintScreen);
-
-    // 🛑 Basic Anti Screen Recording: blur when tab inactive
-    const handleVisibility = () => {
-      const viewer = viewerRef.current;
-      if (!viewer) return;
-
-      if (preventRecord) {
-        viewer.style.filter = document.hidden ? "blur(12px)" : "none";
-      }
-    };
-    document.addEventListener("visibilitychange", handleVisibility);
-
-    // 🛑 Detect DevTools: time-based debugger detection
-    let devtoolsInterval;
-    if (preventDevtools) {
-      devtoolsInterval = setInterval(() => {
-        const start = performance.now();
-        if (performance.now() - start > 200) {
-          const viewer = viewerRef.current;
-          if (viewer) viewer.style.filter = "blur(12px)";
-        }
-      }, 1000);
-    }
-
-    return () => {
-      document.oncopy = null;
-      document.oncut = null;
-      document.onpaste = null;
-      clearInterval(devtoolsInterval);
-    };
-  }, [preventCopy, preventScreenshot, preventRecord, preventDevtools]);
-
-  // =====================================
-  // 📚 Load EPUB & apply in-iframe protection
-  // =====================================
-  useEffect(() => {
-    const bookInstance = ePub(epubUrl);
-    const rendition = bookInstance.renderTo(viewerRef.current, {
-      width: "100%",
-      height: "auto",
-      flow: "scrolled-doc",
-      spread: "none",
-    });
-
-    renditionRef.current = rendition;
-
-    // Load non-TOC content first
-    bookInstance.ready.then(() => {
-      const spineItems = bookInstance.spine.items;
-      const firstRealContent = spineItems.find(
-        (item) =>
-          !item.href.includes("toc") &&
-          !item.href.includes("nav") &&
-          !item.href.includes("cover")
+    /* =====================================
+       🔒 GLOBAL PROTECTION
+    ===================================== */
+    useEffect(() => {
+      const block = (e) => preventCopy && e.preventDefault();
+      ["copy", "cut", "paste", "contextmenu"].forEach((evt) =>
+        document.addEventListener(evt, block)
       );
-      rendition.display(firstRealContent ? firstRealContent.href : undefined);
-    });
 
-    // =====================================
-    // 🔒 PROTECT INSIDE IFRAME
-    // =====================================
-    rendition.on("rendered", () => {
-      const iframe = viewerRef.current.querySelector("iframe");
-      if (!iframe) return;
-      const doc = iframe.contentDocument;
-
-      // 🛑 Prevent copy/cut/paste inside EPUB iframe
-      if (preventCopy) {
-        const block = (e) => e.preventDefault();
+      return () => {
         ["copy", "cut", "paste", "contextmenu"].forEach((evt) =>
-          doc.addEventListener(evt, block)
+          document.removeEventListener(evt, block)
         );
-        doc.body.style.userSelect = "none";
-      }
+      };
+    }, [preventCopy]);
 
-      // 🛑 Anti screenshot: blur on PrintScreen
-      if (preventScreenshot) {
-        document.addEventListener("keydown", (e) => {
-          if (e.key === "PrintScreen") {
-            navigator.clipboard.writeText("");
-            doc.body.style.filter = "blur(12px)";
-            setTimeout(() => {
-              doc.body.style.filter = "none";
-            }, 1500);
-          }
-        });
-      }
+    /* =====================================
+       📚 LOAD EPUB
+    ===================================== */
+    useEffect(() => {
+      const book = ePub(epubUrl);
+      const rendition = book.renderTo(viewerRef.current, {
+        width: "100%",
+        height: "auto",
+        flow: "scrolled",
+        spread: "none",
+      });
 
-      // 🛑 Anti Screen Recording (basic)
-      if (preventRecord) {
-        document.addEventListener("visibilitychange", () => {
-          doc.body.style.filter = document.hidden ? "blur(12px)" : "none";
-        });
-      }
-    });
+      renditionRef.current = rendition;
 
-    // =====================================
-    // 🎨 THEMES
-    // =====================================
-    const themeStyles = isDark
-      ? {
-          body: {
-            background: "#222 !important",
-            color: "#fff !important",
-            padding: "1em",
-            fontSize: "110%",
-            lineHeight: "1.6",
-            userSelect: "none",
-          },
+      book.ready.then(() => {
+        const firstRealContent = book.spine.items.find(
+          (item) => !/toc|nav|cover|contents/i.test(item.href)
+        );
+        rendition.display(firstRealContent?.href);
+        rendition.themes.fontSize(`${fontSizeFactor}rem`);
+      });
+
+      /* =====================================
+         🔥 REMOVE "CONTENT"
+      ===================================== */
+      rendition.on("rendered", () => {
+        const iframe = viewerRef.current?.querySelector("iframe");
+        if (!iframe) return;
+
+        const doc = iframe.contentDocument;
+        if (!doc || !doc.body) return;
+
+        // Remove heading "Content / Contents"
+        doc
+          .querySelectorAll("h1, h2, header, nav, .epub-view-title")
+          .forEach((el) => {
+            const text = el.textContent?.trim().toLowerCase();
+            if (text === "content" || text === "contents") el.remove();
+          });
+
+        if (preventCopy) {
+          doc.body.style.userSelect = "none";
         }
-      : {
-          body: {
-            background: "#fff !important",
-            color: "#000 !important",
-            padding: "1em",
-            fontSize: "110%",
-            lineHeight: "1.6",
-            userSelect: "none",
-          },
-        };
+      });
 
-    rendition.themes.default(themeStyles);
+      /* =====================================
+         🎨 THEME (FIXED DARK MODE)
+      ===================================== */
+      const textColor = isDark ? "#ffffff" : "#000000";
+      const bgColor = isDark ? "#1A1A1A" : "#ffffff";
 
-    return () => {
-      bookInstance.destroy();
+      rendition.themes.default({
+        body: {
+          background: `${bgColor} !important`,
+          color: `${textColor} !important`,
+          "font-family": "Montserrat, sans-serif !important",
+          padding: "32px !important",
+          lineHeight: "1.8 !important",
+          margin: "0 !important",
+        },
+
+        /* 🔥 FORCE COLOR ON ALL TEXT ELEMENTS */
+        "p, span, div, li, a, h1, h2, h3, h4, h5, h6, blockquote": {
+          color: `${textColor} !important`,
+          "font-family": "Montserrat, sans-serif !important",
+          lineHeight: "1.8 !important",
+          margin: "0 0 1em 0 !important",
+        },
+
+        /* HIDE NAV / TITLE */
+        "nav, header, .epub-view-title, h1:first-of-type": {
+          display: "none !important",
+        },
+      });
+
+      return () => book.destroy();
+    }, [epubUrl, isDark]);
+
+    /* =====================================
+       🔠 FONT SIZE CONTROL
+    ===================================== */
+    const changeFontSize = (delta) => {
+      const rendition = renditionRef.current;
+      if (!rendition) return;
+
+      const next = Math.max(
+        MIN_FACTOR,
+        Math.min(MAX_FACTOR, fontSizeFactor + delta)
+      );
+
+      if (next === fontSizeFactor) return;
+
+      setFontSizeFactor(next);
+      rendition.themes.fontSize(`${next}rem`);
+      onFontSizeChange?.(next);
     };
-  }, [epubUrl, isDark, preventCopy, preventScreenshot, preventRecord, preventDevtools]);
 
-  // =====================================
-  // RENDER
-  // =====================================
-  return (
-    <div className={`${isDark ? "bg-[#222]" : "bg-white"} h-auto min-h-fit`}>
-      <div ref={viewerRef} />
-    </div>
-  );
-}
+    useImperativeHandle(ref, () => ({
+      changeFontSize,
+      getCurrentFontSize: () => fontSizeFactor,
+    }));
+
+    return (
+      <div className="w-full">
+        <div ref={viewerRef} style={{ minHeight: "70vh" }} />
+      </div>
+    );
+  }
+);
+
+EpubReader.displayName = "EpubReader";
+export default EpubReader;

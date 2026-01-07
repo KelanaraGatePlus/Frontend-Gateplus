@@ -86,7 +86,7 @@ export default function UploadComicEpisodeForm() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <InputSelect
-                            label="Judul Series"
+                            label="Bagian dari Serial Komik Induk"
                             name="series"
                             options={creatorDetailQuery.data?.data?.data?.Comics || []}
                             value={field.value}
@@ -99,17 +99,17 @@ export default function UploadComicEpisodeForm() {
                 />
 
                 <InputText
-                    label="Judul Episode"
+                    label="Judul Chapter / Episode (Nomor & Sub-Judul)"
                     name="title"
-                    placeholder="Masukkan judul episode"
+                    placeholder='Tulis judul chapter yang spesifik. Gabungkan nomor dan kata kunci plot utama (Contoh: "Chapter 45: Pertarungan di Menara Iblis")'
                     {...register("title")}
                     error={errors.title?.message}
                 />
 
                 <InputTextArea
-                    label="Deskripsi"
+                    label="Sinopsis & Detail Chapter Lengkap"
                     name="description"
-                    placeholder="Deskripsi"
+                    placeholder="Jelaskan plot spesifik chapter ini, kejadian penting, dan karakter yang terlibat. Jangan gunakan sinopsis umum seri. Mesin pencari membaca teks ini."
                     {...register("description")}
                     error={errors.description?.message}
                 />
@@ -119,9 +119,9 @@ export default function UploadComicEpisodeForm() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <InputImageBanner
-                            type="cover"
-                            label="Cover Episode"
-                            description="Format 1x1 dengan maksimal 500kb."
+                            type="thumbnail"
+                            label="Thumbnail Chapter (Still Image)"
+                            description="Gunakan rasio 1:1 atau sesuai standar platform, format JPG/PNG, maks 500KB. Pilih satu panel paling menarik atau representatif dari chapter ini untuk memancing klik (High CTR)."
                             name="episodeCover"
                             icon={IconsGalery}
                             files={field.value}
@@ -138,6 +138,8 @@ export default function UploadComicEpisodeForm() {
                     render={({ field, fieldState }) => (
                         <InputComicPic
                             uploadedFiles={{ inputFile: field.value }}
+                            description="Unggah semua halaman chapter dalam format urutan yang benar (JPG/PNG disarankan). Pastikan resolusi cukup tinggi untuk dibaca dengan nyaman."
+                            label="File Gambar Chapter Komik (Halaman Lengkap)"
                             handleFileUpload={(e) => field.onChange([...field.value, ...e.target.files].sort((a, b) => a.name.localeCompare(b.name)))}
                             handleRemoveFile={(_, index) => {
                                 const updated = [...field.value];
@@ -162,7 +164,7 @@ export default function UploadComicEpisodeForm() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <PriceSelector
-                            label="Harga"
+                            label="Harga Karya"
                             options={priceOption}
                             selected={field.value}
                             onSelect={(val) => {

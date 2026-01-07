@@ -26,8 +26,8 @@ export const commentAPI = createApi({
             query: (id) => `/comment/episode-comic/${id}`,
             providesTags: ["comment"],
         }),
-        getCommentByEpisodePodcast: builder.query({
-            query: (id) => `/comment/episode-podcast/${id}`,
+        getCommentByPodcast: builder.query({
+            query: (id) => `/comment/podcast/${id}`,
             providesTags: ["comment"],
         }),
         getCommentByEpisodeSeries: builder.query({
@@ -36,6 +36,10 @@ export const commentAPI = createApi({
         }),
         getCommentByMovie: builder.query({
             query: (id) => `/comment/movie/${id}`,
+            providesTags: ["comment"],
+        }),
+        getCommentByEpisodePodcast: builder.query({
+            query: (id) => `/comment/episode-podcast/${id}`,
             providesTags: ["comment"],
         }),
         createComment: builder.mutation({
@@ -66,9 +70,10 @@ export const commentAPI = createApi({
 export const {
     useGetCommentByEpisodeEbookQuery,
     useGetCommentByEpisodeComicQuery,
-    useGetCommentByEpisodePodcastQuery,
+    useGetCommentByPodcastQuery,
     useCreateCommentMutation,
     useGetCommentByEpisodeSeriesQuery,
     useGetCommentByMovieQuery,
     useReplyCommentMutation,
+    useGetCommentByEpisodePodcastQuery,
 } = commentAPI;

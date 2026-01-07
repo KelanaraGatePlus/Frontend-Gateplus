@@ -91,7 +91,7 @@ export default function UploadSeriesEpisodeForm() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <InputSelect
-                            label="Judul Series"
+                            label="Judul Utama Seri Film (Main Series Title)"
                             name="series"
                             options={creatorDetailQuery.data?.data?.data?.series || []}
                             value={field.value}
@@ -105,18 +105,18 @@ export default function UploadSeriesEpisodeForm() {
 
                 {/* Judul Episode */}
                 <InputText
-                    label="Judul Episode"
+                    label="Judul Episode (Sub-Judul & Nomor)"
                     name="title"
-                    placeholder="Masukkan judul episode"
+                    placeholder='Tulis judul episode yang spesifik, menarik, dan mengandung kata kunci plot utama (Contoh: "Ep 5: Pertempuran di Benteng Kegelapan")'
                     {...register("title")}
                     error={errors.title?.message}
                 />
 
                 {/* Deskripsi */}
                 <InputTextArea
-                    label="Deskripsi"
+                    label="Sinopsis & Detail Episode Lengkap"
                     name="description"
-                    placeholder="Deskripsi"
+                    placeholder="Jelaskan plot spesifik episode ini, konflik yang terjadi, dan karakter yang terlibat. Jangan gunakan sinopsis umum seri. Mesin pencari membaca teks ini."
                     {...register("description")}
                     error={errors.description?.message}
                 />
@@ -127,9 +127,9 @@ export default function UploadSeriesEpisodeForm() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <InputImageBanner
-                            type="coverEpisode"
-                            label="Episode Cover"
-                            description="Format dimensi cover adalah 1x1 dengan maksimal ukuran 500kb."
+                            type="thumbnail"
+                            label="Thumbnail Episode (Still Image)"
+                            description="Gunakan rasio 16:9 (landscape), format JPG/PNG, maks 500KB. Pilih satu frame adegan paling dramatis dari episode ini untuk memancing klik (High CTR)."
                             name="coverEpisode"
                             icon={IconsGalery}
                             files={field.value}
@@ -150,7 +150,8 @@ export default function UploadSeriesEpisodeForm() {
                                 prefix="series/episode"
                                 setDataUrl={field.onChange}
                                 name={'episodeFileUrl'}
-                                label="Episode Upload"
+                                label="File Master Video Episode"
+                                description="Gunakan rasio 16:9 (1920x1080 px), format MP4/MOV disarankan. Pastikan kualitas visual dan audio adalah yang terbaik."
                             />
                             <input type="hidden" {...field} value={field.value || ""} />
                             {fieldState.error?.message && (
@@ -166,7 +167,7 @@ export default function UploadSeriesEpisodeForm() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <PriceSelector
-                            label="Price"
+                            label="Harga Akses Episode (Monetisasi)"
                             options={priceOption}
                             selected={field.value}
                             onSelect={(val) => {

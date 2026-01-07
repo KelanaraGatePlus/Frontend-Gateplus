@@ -87,18 +87,18 @@ export default function UploadEbookSeriesForm() {
                 <div className="flex flex-col gap-2">
                     {/* Judul */}
                     <InputText
-                        label="Judul"
+                        label="Judul Utama"
                         name="title"
-                        placeholder="Judul Series"
+                        placeholder="Judul Utama Seri Karya, Contoh: Petualangan Abadi di Lembah Sunyi"
                         {...register("title")}
                         error={errors.title?.message}
                     />
 
                     {/* Deskripsi */}
                     <InputTextArea
-                        label="Deskripsi"
+                        label="Sinopsis Lengkap Seri"
                         name="description"
-                        placeholder="Deskripsi"
+                        placeholder="Tuliskan ringkasan cerita Anda yang paling menarik, meliputi genre, latar belakang, dan karakter utama (minimal 200 kata)."
                         {...register("description")}
                         error={errors.description?.message}
                     />
@@ -113,7 +113,7 @@ export default function UploadEbookSeriesForm() {
                                 label="Genre"
                                 name="genre"
                                 options={genresData?.data.data || []}
-                                placeholder="Pilih Genre"
+                                placeholder="Pilih genre yang paling sesuai: Fantasi, Romantis, Thriller, Sejarah, dsb."
                                 value={field.value}
                                 onChange={field.onChange}
                                 onBlur={field.onBlur}
@@ -192,17 +192,16 @@ export default function UploadEbookSeriesForm() {
                             )}
                         />
                     )}
-                    
-                    {/* Poster Banner */}
+
                     <Controller
                         name="posterBanner"
                         control={control}
-                        rules={{ required: "Poster banner wajib diunggah" }}
+                        rules={{ required: "Cover book wajib diunggah" }}
                         render={({ field, fieldState }) => (
                             <InputImageBanner
-                                type="banner"
-                                label="Poster Banner"
-                                description="Gunakan rasio 16:9 (1920x1080 px), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten."
+                                type="cover"
+                                label="Sampul Utama Seri"
+                                description="Gunakan rasio 1,6:2 (1600x2560), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten. Poster ini krusial untuk tampilan di aplikasi seluler (portrait view). Pastikan judul dan visual utama langsung menarik perhatian."
                                 name="posterBanner"
                                 icon={IconsGalery}
                                 inputRef={posterBannerInputRef}
@@ -218,16 +217,17 @@ export default function UploadEbookSeriesForm() {
                             />
                         )}
                     />
-                    {/* Cover Book */}
+
+                    {/* Poster Banner */}
                     <Controller
                         name="coverBook"
                         control={control}
-                        rules={{ required: "Cover book wajib diunggah" }}
+                        rules={{ required: "Poster banner wajib diunggah" }}
                         render={({ field, fieldState }) => (
                             <InputImageBanner
-                                type="cover"
-                                label="Cover Book"
-                                description="Gunakan rasio 1,6:2 (1600x2560), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten."
+                                type="banner"
+                                label="Poster Banner"
+                                description="Gunakan rasio 16:9 (1920x1080 px), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten. Poster ini akan digunakan pada tampilan desktop dan landscape (web view). Pastikan detail visual utama terlihat jelas."
                                 name="coverBook"
                                 icon={IconsGalery}
                                 inputRef={coverBookInputRef}
@@ -243,6 +243,8 @@ export default function UploadEbookSeriesForm() {
                             />
                         )}
                     />
+                    {/* Cover Book */}
+
                 </div>
 
                 <ButtonSubmit type="submit" icon={IconsButtonSubmit} label="Buat Series" isLoading={isLoading} />

@@ -78,18 +78,18 @@ export default function UploadPodcastSeriesForm() {
                 <div className="flex flex-col gap-2">
                     {/* Judul */}
                     <InputText
-                        label="Judul"
+                        label="Judul Seri Podcast"
                         name="title"
-                        placeholder="Judul Series"
+                        placeholder="Tulis nama podcast yang unik dan mudah diingat (Contoh: Podkeskak)"
                         {...register("title")}
                         error={errors.title?.message}
                     />
 
                     {/* Deskripsi */}
                     <InputTextArea
-                        label="Deskripsi"
+                        label="Sinopsis Lengkap Podcast"
                         name="description"
-                        placeholder="Deskripsi"
+                        placeholder="Jelaskan topik utama, format acara, dan siapa target pendengar Anda agar mudah ditemukan."
                         {...register("description")}
                         error={errors.description?.message}
                     />
@@ -101,7 +101,7 @@ export default function UploadPodcastSeriesForm() {
                         rules={{ required: "Genre wajib dipilih" }}
                         render={({ field, fieldState }) => (
                             <InputSelect
-                                label="Genre"
+                                label="Kategori Topik Utama"
                                 name="genre"
                                 options={genresData?.data.data || []}
                                 placeholder="Pilih Genre"
@@ -120,10 +120,10 @@ export default function UploadPodcastSeriesForm() {
                         rules={{ required: "Bahasa wajib dipilih" }}
                         render={({ field, fieldState }) => (
                             <InputSelect
-                                label="Bahasa"
+                                label="Bahasa Pengantar Audio"
                                 name="language"
                                 options={languageOptions}
-                                placeholder="Pilih Bahasa"
+                                placeholder="Pilih bahasa utama yang digunakan dalam rekaman (Misal: Indonesia)"
                                 value={field.value}
                                 onChange={field.onChange}
                                 onBlur={field.onBlur}
@@ -153,9 +153,9 @@ export default function UploadPodcastSeriesForm() {
                         rules={{ required: "Cover podcast wajib diunggah" }}
                         render={({ field, fieldState }) => (
                             <InputImageBanner
-                                type="cover"
-                                label="Cover Podcast"
-                                description="Gunakan rasio 1,6:2 (1600x2560), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten."
+                                type="thumbnail"
+                                label="Sampul Seri Utama (Cover Art)"
+                                description="Rasio: 1:1 Format: JPG/PNG Ukuran Maksimal: 500 KB"
                                 name="coverPodcast"
                                 icon={IconsGalery}
                                 inputRef={coverPodcastInputRef}

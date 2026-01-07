@@ -78,6 +78,18 @@ export default function HomePage() {
     return () => observer.disconnect();
   }, [groupCount]);
 
+  // {useEffect(() => {
+  //   // blok klik kanan
+  //   document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+  //   // blok CTRL+C, CTRL+U, CTRL+S
+  //   document.addEventListener("keydown", (e) => {
+  //     if (e.ctrlKey && ["c", "u", "s",].includes(e.key.toLowerCase())) {
+  //       e.preventDefault();
+  //     }
+  //   });
+  // }, []);}
+
   return (
     <div className="flex flex-col overflow-x-hidden">
       <head>

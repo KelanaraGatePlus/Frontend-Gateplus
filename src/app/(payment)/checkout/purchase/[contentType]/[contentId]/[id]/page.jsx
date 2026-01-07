@@ -7,10 +7,6 @@ import RacunSangga from "@@/poster/poster-content-racunSangga.svg";
 import { usePayment } from "@/hooks/api/paymentAPI";
 
 // Import semua query
-import { useGetEbookByIdQuery } from "@/hooks/api/ebookSliceAPI";
-import { useGetComicByIdQuery } from "@/hooks/api/comicSliceAPI";
-import { useGetSeriesByIdQuery } from "@/hooks/api/seriesSliceAPI";
-import { useGetPodcastByIdQuery } from "@/hooks/api/podcastSliceAPI";
 import { fee } from "@/lib/constants/fee";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import { useGetDiscountByVoucherDiscountCodeMutation } from "@/hooks/api/discountVoucherAPI";
@@ -20,10 +16,11 @@ import { contentType as contentTypeConst } from "@/lib/constants/contentType";
 import PaymentSuccessImage from "@@/AdditionalImages/payment-success.svg";
 import PaymentFailedImage from "@@/AdditionalImages/payment-failed.svg";
 import { useSearchParams } from "next/navigation";
+import { useGetPublicEpisodeComicsByIdQuery, useGetPublicEpisodeEbookByIdQuery, useGetPublicEpisodePodcastByIdQuery, useGetPublicEpisodeSeriesByIdQuery } from "@/hooks/api/contentSliceAPI";
 
 export default function PurchaseContentPaymentPage({ params }) {
     const resolvedParams = React.use(params);
-    const { contentType, contentId, id } = resolvedParams;
+    const { contentType, id } = resolvedParams;
     const searchParams = useSearchParams();
     const isSuccessParams = searchParams.get("isSuccess");
     const isFailedParams = searchParams.get("isFailed");
@@ -37,25 +34,22 @@ export default function PurchaseContentPaymentPage({ params }) {
     const { pay } = usePayment();
     const [getDiscount, { isLoading: getDiscountLoading, error: getDiscountError, isSuccess }] = useGetDiscountByVoucherDiscountCodeMutation();
 
-    // Simulasi userId kalau diperlukan
-    const userId = 1;
-
-    const { data: ebookData, isLoading: ebookLoading } = useGetEbookByIdQuery(
-        { id: contentId, withEpisodes: true },
+    const { data: ebookData, isLoading: ebookLoading } = useGetPublicEpisodeEbookByIdQuery(
+        { id },
         { skip: contentType !== "ebooks" }
     );
 
-    const { data: comicData, isLoading: comicLoading } = useGetComicByIdQuery(
-        { id: contentId, userId, withEpisodes: true },
+    const { data: comicData, isLoading: comicLoading } = useGetPublicEpisodeComicsByIdQuery(
+        { id },
         { skip: contentType !== "comics" }
     );
 
-    const { data: seriesData, isLoading: seriesLoading } = useGetSeriesByIdQuery({ id: contentId, withEpisodes: true }, {
+    const { data: seriesData, isLoading: seriesLoading } = useGetPublicEpisodeSeriesByIdQuery({ id, withEpisodes: true }, {
         skip: contentType !== "series",
     });
 
-    const { data: podcastData, isLoading: podcastLoading } = useGetPodcastByIdQuery(
-        { id: contentId, userId, withEpisodes: true },
+    const { data: podcastData, isLoading: podcastLoading } = useGetPublicEpisodePodcastByIdQuery(
+        { id },
         { skip: contentType !== "podcasts" }
     );
 
@@ -65,38 +59,35 @@ export default function PurchaseContentPaymentPage({ params }) {
 
     switch (contentType) {
         case "ebooks":
-            contentData = ebookData?.data;
+            contentData = ebookData?.data?.data?.ebooks;
             isLoading = ebookLoading;
             break;
         case "comics":
-            contentData = comicData?.data;
+            contentData = comicData?.data?.data?.comics;
             isLoading = comicLoading;
             break;
         case "series":
-            contentData = seriesData?.data?.data;
-            console.log("Series Data:", contentData);
+            contentData = seriesData?.data?.data?.series;
             isLoading = seriesLoading;
             break;
         case "podcasts":
-            contentData = podcastData?.data;
+            contentData = podcastData?.data?.data?.podcasts;
             isLoading = podcastLoading;
             break;
         default:
             contentData = null;
     }
 
-    let episodeList = [];
-    if (contentType === 'ebooks' && contentData?.episode_ebooks?.episodes) { // Asumsi nama array, sesuaikan
-        episodeList = contentData.episode_ebooks.episodes;
-    } else if (contentType === 'comics' && contentData?.episode_comics?.episodes) { // Asumsi nama array, sesuaikan
-        episodeList = contentData.episode_comics.episodes;
-    } else if (contentType === 'podcasts' && contentData?.episode_podcasts?.episodes) { // Asumsi nama array, sesuaikan
-        episodeList = contentData.episode_podcasts.episodes;
-    } else if (contentType === 'series' && contentData?.episodes?.episodes) { // Asumsi nama array, sesuaikan
-        episodeList = contentData.episodes.episodes;
+    let episodeData = null;
+    if (contentType === 'ebooks' && ebookData?.data?.data) { // Asumsi nama array, sesuaikan
+        episodeData = ebookData.data.data;
+    } else if (contentType === 'comics' && comicData?.data?.data) { // Asumsi nama array, sesuaikan
+        episodeData = comicData.data.data;
+    } else if (contentType === 'podcasts' && podcastData?.data?.data) { // Asumsi nama array, sesuaikan
+        episodeData = podcastData.data.data;
+    } else if (contentType === 'series' && seriesData?.data?.data) { // Asumsi nama array, sesuaikan
+        episodeData = seriesData.data.data;
     }
-
-    const episodeData = episodeList.find(episode => episode.id === id);
 
     async function handlePayment() {
         try {
@@ -152,7 +143,7 @@ export default function PurchaseContentPaymentPage({ params }) {
                     {/* Produk */}
                     <div className="flex flex-row gap-2">
                         <Image
-                            src={contentData?.coverImageUrl || RacunSangga}
+                            src={contentData?.coverImageUrl || contentData?.coverPodcastImage || RacunSangga}
                             alt="Poster"
                             width={100}
                             height={150}
@@ -282,7 +273,7 @@ export default function PurchaseContentPaymentPage({ params }) {
                         className="mx-auto"
                     />
                     <h2 className="text-center font-bold text-2xl text-[#C6C6C6]">Pembayaran Berhasil!</h2>
-                    <Link href={`/${contentTypeConst[contentType]['pluralName']}/detail/${contentId}`}
+                    <Link href={`/${contentTypeConst[contentType]['pluralName']}/detail/${contentData?.id}`}
                         className="rounded-4xl bg-[#0076E9CC] py-4 min-w-4xl font-semibold hover:cursor-pointer text-center text-white"
                     >
                         Lanjut Menonton
@@ -308,7 +299,7 @@ export default function PurchaseContentPaymentPage({ params }) {
                     >
                         Ulangi Pesanan
                     </button>
-                    <Link href={`/${contentTypeConst[contentType]['pluralName']}/detail/${contentId}`}
+                    <Link href={`/${contentTypeConst[contentType]['pluralName']}/detail/${contentData?.id}`}
                         className="rounded-4xl bg-[#686868] py-4 min-w-4xl font-semibold hover:cursor-pointer text-center text-white"
                     >
                         Kembali
@@ -321,7 +312,7 @@ export default function PurchaseContentPaymentPage({ params }) {
 
 PurchaseContentPaymentPage.propTypes = {
     params: PropTypes.shape({
-        contentType: PropTypes.oneOf(["ebook", "comic", "podcast", "series"]).isRequired,
+        contentType: PropTypes.oneOf(["ebooks", "comics", "podcasts", "series"]).isRequired,
         contentId: PropTypes.string.isRequired,
         id: PropTypes.string.isRequired,
     }).isRequired,

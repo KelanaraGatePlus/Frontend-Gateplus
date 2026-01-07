@@ -16,6 +16,7 @@ import ProfileModal from "@/components/Modal/ProfileModal";
 import { useUpdateCreatorMutation } from "@/hooks/api/creatorSliceAPI";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import { useAuth } from "@/components/Context/AuthContext";
+import ImageCropperModal from "@/components/UploadForm/ImageCropperModal";
 
 export default function CreatorSettingsPage() {
   const router = useRouter();
@@ -40,6 +41,10 @@ export default function CreatorSettingsPage() {
   const [toastType, setToastType] = useState("");
   const [selectedIconUrl, setSelectedIconUrl] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showCropper, setShowCropper] = useState(false);
+  const [cropTarget, setCropTarget] = useState(null);
+  const [pendingFileName, setPendingFileName] = useState("");
+  const [cropSource, setCropSource] = useState(null);
 
   const [profilePicturePreview, setProfilePicturePreview] = useState(null);
   const [bannerProfilePicturePreview, setBannerProfilePicturePreview] =
@@ -152,24 +157,66 @@ export default function CreatorSettingsPage() {
     }
   }, []);
 
+  const openCropper = (file, target) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropSource(reader.result);
+      setPendingFileName(file.name);
+      setCropTarget(target);
+      setShowCropper(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCropComplete = async (croppedBlob) => {
+    if (!cropTarget) return;
+    const fileName = pendingFileName || `${cropTarget}-image.jpg`;
+    const croppedFile = new File([croppedBlob], fileName, {
+      type: "image/jpeg",
+      lastModified: Date.now(),
+    });
+
+    const nextObjectUrl = URL.createObjectURL(croppedFile);
+
+    if (cropTarget === "profile") {
+      if (profilePicturePreview) URL.revokeObjectURL(profilePicturePreview);
+      setProfilePicturePreview(nextObjectUrl);
+      setProfilePictureUrl(croppedFile);
+      setSelectedIconUrl(null);
+    } else if (cropTarget === "banner") {
+      if (bannerProfilePicturePreview) URL.revokeObjectURL(bannerProfilePicturePreview);
+      setBannerProfilePicturePreview(nextObjectUrl);
+      setBannerProfileUrl(croppedFile);
+    }
+
+    setShowCropper(false);
+    setCropSource(null);
+    setPendingFileName("");
+    setCropTarget(null);
+  };
+
+  const handleCropCancel = () => {
+    setShowCropper(false);
+    setCropSource(null);
+    setPendingFileName("");
+    setCropTarget(null);
+  };
+
+  const getCropAspect = () => (cropTarget === "banner" ? 16 / 9 : 1);
+
   const handleFileUpload = (event, type) => {
-    console.log("Profile image upload");
-    if (type == "profile") {
-      console.log("Profile image upload");
+    if (type === "profile") {
       const file = event.target.files[0];
       if (file) {
-        console.log("Profile image upload");
-        setProfilePicturePreview(URL.createObjectURL(file));
-        setProfilePictureUrl(file);
-        setSelectedIconUrl(null); // reset kalau user upload foto
+        openCropper(file, "profile");
       }
     }
 
     if (event.target.id === "banner-profile-picture") {
       const file = event.target.files[0];
       if (file) {
-        setBannerProfilePicturePreview(URL.createObjectURL(file));
-        setBannerProfileUrl(file);
+        openCropper(file, "banner");
       }
     }
   };
@@ -184,6 +231,16 @@ export default function CreatorSettingsPage() {
 
   return (
     <>
+      {showCropper && cropSource && (
+        <ImageCropperModal
+          image={cropSource}
+          aspectRatio={getCropAspect()}
+          cropShape={cropTarget === "banner" ? "rect" : "round"}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+          title={cropTarget === "banner" ? "Crop Banner" : "Crop Profile Picture"}
+        />
+      )}
       <main className="mx-2 my-2 flex flex-col lg:mx-6 lg:mb-10 lg:h-fit text-white">
         {/* Back Menu */}
         <BackButton />
@@ -505,10 +562,8 @@ export default function CreatorSettingsPage() {
           onImageUpload={(e) => {
             const file = e.target.files[0];
             if (file) {
-              setProfilePicturePreview(URL.createObjectURL(file));
-              setProfilePictureUrl(file);
-              setSelectedIconUrl(null); // reset icon kalau upload foto
               setShowProfileModal(false);
+              openCropper(file, "profile");
             }
           }}
           onIconSelect={(iconImage, iconUrl) => {

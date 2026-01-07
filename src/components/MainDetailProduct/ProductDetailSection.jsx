@@ -165,19 +165,17 @@ export default function ProductDetailSection({
     <>
       <section className="relative w-full">
         {/* banner */}
-        {productType !== 'podcast' && (
-          <div className="absolute -z-10 h-64 w-full overflow-hidden">
-            {productBanner && (
-              <Image
-                src={productBanner}
-                alt="Poster"
-                fill
-                className="object-cover bg-[#2E2E2E]"
-              />
-            )}
-            <div className="absolute top-0 left-0 z-0 h-full w-full bg-[linear-gradient(to_bottom,_#FFFFFF00,_#FFFFFF00,_#FFFFFF00,_#FFFFFF00,_#737373A1,_#595959BF,_#3F3F3FDE,_#303030ED,_#222222FF)]" />
-          </div>
-        )}
+        <div className="absolute -z-10 h-64 w-full overflow-hidden">
+          {productBanner && (
+            <Image
+              src={productBanner}
+              alt="Poster"
+              fill
+              className="object-cover bg-[#2E2E2E]"
+            />
+          )}
+          <div className="absolute top-0 left-0 z-0 h-full w-full bg-[linear-gradient(to_bottom,_#FFFFFF00,_#FFFFFF00,_#FFFFFF00,_#FFFFFF00,_#737373A1,_#595959BF,_#3F3F3FDE,_#303030ED,_#222222FF)]" />
+        </div>
 
         {/* Back menu */}
         <BackButton />
@@ -185,7 +183,7 @@ export default function ProductDetailSection({
         {/* container content */}
         <div className="flex w-screen flex-col items-center gap-4 px-4 py-8 md:px-15 lg:flex-row">
           {/* cover buku */}
-          <div className={`relative overflow-hidden rounded-lg md:rounded ${productType === 'podcast' ? 'h-[200px] w-[200px] md:h-[337px] md:w-[337px]' : 'h-[300px] w-[200px] md:h-[500px] md:w-[337px]'}`}>
+          <div className={`relative overflow-hidden rounded-lg md:rounded h-[300px] w-[200px] md:h-[500px] md:w-[337px]`}>
             {productCover && (
               <Image
                 src={productCover}
@@ -207,21 +205,17 @@ export default function ProductDetailSection({
               </h1>
               <div className="flex items-center justify-center gap-1 text-sm font-light lg:justify-start">
                 <div className="flex h-4 items-center justify-start gap-1">
-                  {
-                    productType !== 'podcast' && (
-                      <>
-                        <Image
-                          src={iconViews}
-                          alt="icon-view"
-                          width={20}
-                          height={20}
-                          className="object-cover opacity-70"
-                          priority
-                        />
-                        <p>{productTotalViews}</p>
-                      </>
-                    )
-                  }
+                  <>
+                    <Image
+                      src={iconViews}
+                      alt="icon-view"
+                      width={20}
+                      height={20}
+                      className="object-cover opacity-70"
+                      priority
+                    />
+                    <p>{productTotalViews}</p>
+                  </>
                 </div>
                 <p>|</p>
                 <div className="flex h-4 items-center justify-start gap-1">
@@ -234,7 +228,7 @@ export default function ProductDetailSection({
               </div>
             </div>
 
-            <div className={`flex  ${productType === 'podcast' ? "flex-row justify-between" : "flex-col gap-4"}`}>
+            <div className={`flex flex-col gap-4`}>
               {/* action button */}
               <div className="flex w-fit justify-center gap-2 self-center md:justify-start lg:self-auto">
                 <div className="flex w-fit flex-1 gap-3 items-center justify-center md:flex-none montserratFont">
@@ -242,7 +236,7 @@ export default function ProductDetailSection({
                     <button
                       onClick={() => handleSubscribe(productID, subscriptionPrice)}
                       disabled={isSubscribe || isOwner}
-                      className={`w-full cursor-pointer rounded-3xl px-12 py-3 font-bold text-white md:w-auto 
+                      className={`w-full cursor-pointer rounded-3xl px-8 md:px-10 py-3 text-sm md:text-[16px] font-bold text-white md:w-auto 
                       ${isSubscribe || isOwner ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#0076E999] hover:bg-[#0076E999]/80'}`}
                     >
                       {isOwner ? 'Ini adalah konten milikmu' : isSubscribe ? 'Subscribed' : 'Subscribe'}
@@ -250,11 +244,10 @@ export default function ProductDetailSection({
                   )}
 
                   {productType === "podcast" && canSubscribe ? (
-                    console.log("productID", productID),
                     <button
                       onClick={() => handleSubscribe(creatorDetail.id, productID, subscriptionPrice)}
                       disabled={isSubscribe || isOwner}
-                      className={`w-full cursor-pointer rounded-3xl px-12 py-3 font-bold text-white md:w-auto 
+                      className={`w-full cursor-pointer rounded-3xl px-8 md:px-10 py-3 font-bold text-white text-xs md:w-auto 
                       ${isSubscribe || isOwner ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#0076E999] hover:bg-[#0076E999]/80'}`}
                     >
                       {isOwner ? 'Ini adalah konten milikmu' : isSubscribe ? 'Subscribed' : 'Subscribe'}
@@ -265,65 +258,54 @@ export default function ProductDetailSection({
                         {productType === "podcast" ? "Dengarkan" : "Baca"}
                       </button>
                     </Link>
-                  ) : (
-                    <button
-                      disabled
-                      className="w-full cursor-not-allowed rounded-3xl bg-gray-400 px-12 py-3 font-bold text-white md:w-auto"
-                    >
-                      Belum Ada
-                    </button>
-                  )}
+                  ) : null}
                 </div>
-                {productType !== "podcast" && (
-                  <>
-                    <div
-                      className={`flex cursor-pointer items-center justify-center gap-1 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 ${isLiked ? "animate-like" : ""}`}
-                      onClick={handleToggleLike}
-                    >
-                      {isLiked ? (
-                        <Image
-                          priority
-                          className="focus-within:bg-purple-300"
-                          width={35}
-                          alt="icon-like-solid"
-                          src={iconLikeSolid}
-                        />
-                      ) : (
-                        <Image
-                          priority
-                          className="focus-within:bg-purple-300"
-                          width={35}
-                          alt="icon-like-outline"
-                          src={iconLikeOutline}
-                        />
-                      )}
-                      <p className="montserratFont mt-1 text-base font-bold">
-                        {totalLike}
-                      </p>
-                    </div>
-                    <div
-                      className={`flex cursor-pointer items-center justify-center gap-1 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 ${isDisliked ? "animate-like" : ""}`}
-                      onClick={handleToggleDislike}
-                    >{isDisliked ? (
-                      <Image
-                        priority
-                        className="focus-within:bg-purple-300"
-                        width={45}
-                        alt="icon-dislike-solid"
-                        src={iconDislikeSolid}
-                      />
-                    ) : (
-                      <Image
-                        priority
-                        className="focus-within:bg-purple-300"
-                        width={35}
-                        alt="icon-like-outline"
-                        src={iconDislike}
-                      />
-                    )}
-                    </div>
-                  </>
+                <div
+                  className={`flex cursor-pointer items-center justify-center gap-1 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 ${isLiked ? "animate-like" : ""}`}
+                  onClick={handleToggleLike}
+                >
+                  {isLiked ? (
+                    <Image
+                      priority
+                      className="focus-within:bg-purple-300"
+                      width={35}
+                      alt="icon-like-solid"
+                      src={iconLikeSolid}
+                    />
+                  ) : (
+                    <Image
+                      priority
+                      className="focus-within:bg-purple-300"
+                      width={35}
+                      alt="icon-like-outline"
+                      src={iconLikeOutline}
+                    />
+                  )}
+                  <p className="montserratFont mt-1 text-base font-bold">
+                    {totalLike}
+                  </p>
+                </div>
+                <div
+                  className={`flex cursor-pointer items-center justify-center gap-1 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 ${isDisliked ? "animate-like" : ""}`}
+                  onClick={handleToggleDislike}
+                >{isDisliked ? (
+                  <Image
+                    priority
+                    className="focus-within:bg-purple-300"
+                    width={45}
+                    alt="icon-dislike-solid"
+                    src={iconDislikeSolid}
+                  />
+                ) : (
+                  <Image
+                    priority
+                    className="focus-within:bg-purple-300"
+                    width={35}
+                    alt="icon-like-outline"
+                    src={iconDislike}
+                  />
                 )}
+                </div>
                 <div
                   className={`flex cursor-pointer items-center justify-center transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 ${isSaved ? "animate-like" : ""}`}
                   onClick={handleToggleSave}

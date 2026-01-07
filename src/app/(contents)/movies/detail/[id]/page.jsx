@@ -13,7 +13,6 @@ import { useLikeContent } from "@/lib/features/useLikeContent";
 import { useDislikeContent } from "@/lib/features/useDislikeContent";
 import DefaultShareButton from "@/components/ShareButton/DefaultShareButton";
 import PropTypes from 'prop-types';
-import ProductDonationSection from "@/components/MainDetailProduct/ProductDonationSection";
 import iconLikeSolid from "@@/logo/logoDetailFilm/liked-icons.svg";
 import iconDislikeSolid from "@@/logo/logoDetailFilm/dislike-icons-solid.svg";
 import iconSaveSolid from "@@/logo/logoDetailFilm/saved-icons.svg";
@@ -158,8 +157,9 @@ function PlayingMoviePage({ params }) {
                         contentType="FILM"
                         logType={movieData?.isOwner || movieData?.isSubscribed || movieData?.price == 'Free' ? 'WATCH_CONTENT' : 'WATCH_TRAILER'}
                         className="rounded-lg"
+                        playbackId={movieData?.isOwner || movieData?.isSubscribed || movieData?.price == 'Free' ? movieData?.muxPlaybackId : null}
                         src={movieData?.isOwner || movieData?.isSubscribed || movieData?.price == 'Free' ? movieData?.movieFileUrl : movieData?.trailerFileUrl}
-                        poster={movieData?.thumbnailImageUrl}
+                        poster={movieData?.posterImageUrl}
                         startFrom={movieData?.WatchProgress?.[0]?.progressSeconds || 0}
                         title={movieData?.title}
                         genre={movieData?.categories?.tittle}
@@ -168,8 +168,8 @@ function PlayingMoviePage({ params }) {
                 </div>
             </section>
 
-            <main className="px-5 text-white">
-                <section className="w-full flex flex-col gap-4 md:gap-0 md:flex-row md:items-center justify-between pt-2 pb-4">
+            <main className="text-white mt-10">
+                <section className="w-full flex flex-col gap-4 md:gap-0 md:flex-row md:items-center justify-between pt-2 pb-4 px-4 md:px-15">
                     <div className="flex flex-col gap-4 md:w-1/2 w-full">
                         <div className="flex flex-col gap-0">
                             <h1 className="font-black text-4xl">
@@ -267,20 +267,20 @@ function PlayingMoviePage({ params }) {
                     </div>
                 </section>
 
-                <section className="flex flex-row gap-3 items-stretch">
+                <section className="flex flex-row gap-3 items-stretch mt-5 px-4 md:px-15">
                     {/* Poster 3:2 */}
                     <div className="relative aspect-[2/3] w-[220px] sm:w-[160px] lg:w-[250px] flex-shrink-0">
-                        {movieData.posterImageUrl && <Image
-                            src={movieData.posterImageUrl}
+                        {movieData.thumbnailImageUrl && <Image
+                            src={movieData.thumbnailImageUrl}
                             alt="logo-racunsangga-movie"
                             layout="fill"
-                            className="rounded-xl object-cover"
+                            className="rounded-md object-cover"
                             priority
                         />}
                     </div>
 
                     {/* Deskripsi */}
-                    <div className="rounded-xl bg-[#393939] flex-1">
+                    <div className="rounded-md bg-[#393939] flex-1">
                         <div className="mx-4 my-4 text-white h-full flex flex-col">
                             <p>{movieData?.description}</p>
 
@@ -298,10 +298,6 @@ function PlayingMoviePage({ params }) {
                             </div>
                         </div>
                     </div>
-                </section>
-
-                <section className="mt-5">
-                    <ProductDonationSection creatorId={movieData?.creator?.id} />
                 </section>
 
                 <section className="mt-5">
@@ -327,12 +323,14 @@ function PlayingMoviePage({ params }) {
                 </section>
 
                 {/* Comment Baru */}
-                {commentData && <CommentComponent
-                    commentData={commentData?.data?.data || []}
-                    isLoadingGetComment={isLoadingGetComment}
-                    typeContent={"movie"}
-                    episodeId={id}
-                />}
+                {commentData && <div className="md:px-11">
+                    <CommentComponent
+                        commentData={commentData?.data?.data || []}
+                        isLoadingGetComment={isLoadingGetComment}
+                        contentType={"MOVIE"}
+                        episodeId={id}
+                    />
+                </div>}
 
                 <SimpleModal
                     title={"Subscribe untuk menikmati seluruh episode dari konten ini selama sebulan seharga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}

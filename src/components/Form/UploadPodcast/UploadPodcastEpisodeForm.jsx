@@ -101,7 +101,7 @@ export default function UploadPodcastEpisodeForm() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <InputSelect
-                            label="Judul Series"
+                            label="Judul Seri Podcast"
                             name="series"
                             options={creatorDetailQuery.data?.data?.data?.Podcast || []}
                             value={field.value}
@@ -115,18 +115,18 @@ export default function UploadPodcastEpisodeForm() {
 
                 {/* Judul Episode */}
                 <InputText
-                    label="Judul Episode"
+                    label="Judul Episode (Topik Utama)"
                     name="title"
-                    placeholder="Masukkan judul episode"
+                    placeholder='Tulis judul yang memikat dan mengandung kata kunci topik pembahasan (Contoh: "Strategi Marketing 2024 - Ep. 5")'
                     {...register("title")}
                     error={errors.title?.message}
                 />
 
                 {/* Deskripsi */}
                 <InputTextArea
-                    label="Deskripsi"
+                    label="Show Notes (Deskripsi Lengkap Episode)"
                     name="description"
-                    placeholder="Deskripsi"
+                    placeholder="Tulis ringkasan padat, poin-poin pembahasan (timestamps), nama narasumber/tamu, dan tautan relevan."
                     {...register("description")}
                     error={errors.description?.message}
                 />
@@ -137,9 +137,9 @@ export default function UploadPodcastEpisodeForm() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <InputImageBanner
-                            type="cover"
-                            label="Cover Episode"
-                            description="Format banner its 1x1 with maks 500kb."
+                            type="thumbnail"
+                            label="Sampul Episode (Cover Art)"
+                            description="Rasio: 1:1, JPG/PNG, Ukuran Maksimal: 500 KB"
                             name="coverPodcastEpisodeURL"
                             icon={IconsGalery}
                             files={field.value}
@@ -156,8 +156,8 @@ export default function UploadPodcastEpisodeForm() {
                     render={({ field, fieldState }) => (
                         <InputFileDoc
                             name="podcastFileURL"
-                            label="Upload File"
-                            description="Audio Input .mp3, dll"
+                            label="File Audio Podcast Utama"
+                            description="Unggah file rekaman akhir (MP3 disarankan) dengan kualitas audio terbaik agar nyaman didengar."
                             accept=".mp3"
                             files={field.value}
                             onUpload={(e) => field.onChange([...e.target.files])}
@@ -192,7 +192,7 @@ export default function UploadPodcastEpisodeForm() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <PriceSelector
-                            label="Price"
+                            label="Harga Karya"
                             options={priceOption}
                             selected={field.value}
                             onSelect={(val) => {

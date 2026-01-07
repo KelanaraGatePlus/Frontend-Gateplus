@@ -3,8 +3,6 @@
 import PropTypes from 'prop-types';
 import React from "react";
 
-import logoPinComment from "@@/icons/icon-comment.svg";
-import logoUsersComment from "@@/icons/logo-users-comment.svg";
 import logoDislike from "@@/logo/logoDetailFilm/dislike-icons.svg";
 import logoLike from "@@/logo/logoDetailFilm/like-icons.svg";
 import logoSave from "@@/logo/logoDetailFilm/save-icons.svg";
@@ -20,7 +18,6 @@ import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { useLikeContent } from "@/lib/features/useLikeContent";
 import { useDislikeContent } from "@/lib/features/useDislikeContent";
 import DefaultShareButton from "@/components/ShareButton/DefaultShareButton";
-import ProductDonationSection from '@/components/MainDetailProduct/ProductDonationSection';
 import iconLikeSolid from "@@/logo/logoDetailFilm/liked-icons.svg";
 import iconDislikeSolid from "@@/logo/logoDetailFilm/dislike-icons-solid.svg";
 import iconSaveSolid from "@@/logo/logoDetailFilm/saved-icons.svg";
@@ -176,7 +173,7 @@ function DetailSeriesPage({ params }) {
                     <DefaultVideoPlayer
                         className="rounded-lg"
                         src={seriesData?.trailerFileUrl}
-                        poster={seriesData?.thumbnailImageUrl}
+                        poster={seriesData?.posterImageUrl}
                         logType={"WATCH_TRAILER"}
                         contentType={"SERIES"}
                         contentId={seriesData?.id}
@@ -187,8 +184,8 @@ function DetailSeriesPage({ params }) {
                 </div>
             </section>
 
-            <main className="px-5 text-white">
-                <section className="w-full flex flex-col gap-4 md:gap-0 md:flex-row md:items-center justify-between pt-2 pb-4">
+            <main className="text-white mt-10">
+                <section className="w-full px-4 md:px-15 flex flex-col gap-4 md:gap-0 md:flex-row md:items-center justify-between pb-4">
                     <div className="flex flex-col gap-4 md:w-1/2 w-full">
                         <div className="flex flex-col gap-2">
                             <h1 className="font-black text-4xl">
@@ -200,8 +197,8 @@ function DetailSeriesPage({ params }) {
                         </div>
                         <div className="flex flex-row gap-6">
                             <div className="flex items-center justify-center w-max">
-                                <button onClick={seriesData?.isOwner ? null : !seriesData?.isSubscribed && seriesData?.canSubscribe ? () => { handleModalSubscribeOpen(seriesData?.id, seriesData?.subscriptionPrice) } : null} className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
-                                    {seriesData?.isOwner ? "Series ini adalah karya mu" : !seriesData?.canSubscribe ? 'Buy Episode To Watch' : seriesData?.isSubscribed ? "Watch" : "Buy"}
+                                <button disabled={seriesData?.isOwner || seriesData?.isSubscribed} onClick={seriesData?.isOwner ? null : !seriesData?.isSubscribed && seriesData?.canSubscribe ? () => { handleModalSubscribeOpen(seriesData?.id, seriesData?.subscriptionPrice) } : null} className="rounded-3xl bg-[#0076E999] disabled:bg-[#9CA3AF] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
+                                    {seriesData?.isOwner ? "Series ini adalah karya mu" : !seriesData?.canSubscribe ? 'Buy Episode To Watch' : seriesData?.isSubscribed ? "Watch" : "Subscribe"}
                                 </button>
                             </div>
                             <div onClick={handleToggleLike} className="flex items-center justify-center transition delay-150 duration-400 ease-linear hover:-translate-y-1 hover:scale-x-110 hover:scale-y-110 cursor-pointer">
@@ -284,20 +281,20 @@ function DetailSeriesPage({ params }) {
                     </div>
                 </section>
 
-                <section className="flex flex-row gap-3 items-stretch">
+                <section className="flex flex-row gap-3 items-stretch px-4 md:px-15 mt-5">
                     {/* Poster 3:2 */}
                     <div className="relative aspect-[2/3] w-[220px] sm:w-[160px] lg:w-[250px] flex-shrink-0">
-                        {seriesData.posterImageUrl && <Image
-                            src={seriesData.posterImageUrl}
+                        {seriesData.thumbnailImageUrl && <Image
+                            src={seriesData.thumbnailImageUrl}
                             alt="logo-racunsangga-movie"
                             layout="fill"
-                            className="rounded-xl object-cover"
+                            className="rounded-md object-cover"
                             priority
                         />}
                     </div>
 
                     {/* Deskripsi */}
-                    <div className="rounded-xl bg-[#393939] flex-1">
+                    <div className="rounded-md bg-[#393939] flex-1">
                         <div className="mx-4 my-4 text-white h-full flex flex-col">
                             <p>{seriesData?.description}</p>
 
@@ -327,13 +324,8 @@ function DetailSeriesPage({ params }) {
                         seriesData?.id
                     }
                     isOwner={seriesData?.isOwner}
+                    itemClassname='px-4 md:px-15'
                 />
-
-                <div className="mt-10 md:mt-20">
-                    <ProductDonationSection
-                        creatorId={seriesData?.creatorId}
-                    />
-                </div>
 
                 <section className="mt-5">
                     <section className="my-10 flex flex-col">
@@ -349,93 +341,12 @@ function DetailSeriesPage({ params }) {
                         <section className="mt-10">
                             <CarouselTemplate
                                 label="Rekomendasi Serupa"
-                                type="movie"
+                                type="seriess"
                                 contents={data?.data?.recommendation || []}
                                 isLoading={!data}
                             />
                         </section>
                     </section>
-                </section>
-
-                <section className="grid grid-flow-row">
-                    <div className="grid grid-flow-row">
-                        <div className="flex flex-col">
-                            <p className="mx-2 font-mono text-3xl font-bold text-white">Komentar</p>
-                            <div className="flex justify-start">
-                                <textarea
-                                    placeholder="Tell us about you, maxs 150 character."
-                                    className="my-2 mt-2 h-25 max-h-screen w-full resize rounded-md bg-gray-500 px-2.5 py-2.5 text-white saturate-50 placeholder:text-white focus-visible:placeholder:invisible"
-                                />
-                            </div>
-                            <button className="w-full rounded-md bg-blue-500 py-2 text-white">Kirim</button>
-                        </div>
-
-                        <div className="mt-10 flex flex-col gap-10">
-                            <div className="flex justify-between text-3xl">
-                                <div className="flex w-1/3 flex-col">
-                                    <div className="flex flex-row">
-                                        <div className="mx-2">
-                                            <Image
-                                                className="rounded-full bg-white"
-                                                src={logoUsersComment}
-                                                alt="logo-usercomment"
-                                            />
-                                        </div>
-                                        <div className="flex flex-col text-sm font-medium text-white">
-                                            <div className="text-lg font-semibold">Cetul Leather Hearth</div>
-                                            <div>11 Mar 2025</div>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div>
-                                            <input
-                                                placeholder="  Komen"
-                                                className="placeholder:text-sm placeholder:font-semibold placeholder:text-white"
-                                            />
-                                            <p className="mx-2 text-lg text-blue-400">Balas</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="mx-3 flex flex-col">
-                                    <Image alt="pin-comment" src={logoPinComment} />
-                                </div>
-                            </div>
-
-                            <div className="flex justify-between text-3xl">
-                                <div className="flex w-1/3 flex-col">
-                                    <div className="flex flex-row">
-                                        <div className="mx-2">
-                                            <Image
-                                                className="rounded-full bg-blue-300"
-                                                src={logoUsersComment}
-                                                alt="logo-usercomment"
-                                            />
-                                        </div>
-                                        <div className="flex flex-col text-sm font-medium text-white">
-                                            <div className="text-lg font-semibold">User Premium</div>
-                                            <div>11 Mar 2025</div>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div>
-                                            <input
-                                                placeholder="  Mantap Movie Nya"
-                                                className="placeholder:text-sm placeholder:font-semibold placeholder:text-white"
-                                            />
-                                            <p className="mx-2 text-lg text-blue-400">Balas</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="mx-3 flex flex-col">
-                                    <Image src={logoPinComment} alt="pin-commentusers" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <button className="mt-5 rounded-xl border border-gray-400 py-2 font-mono font-semibold text-white">
-                            Komentar Lainnya
-                        </button>
-                    </div>
                 </section>
 
                 <SimpleModal
