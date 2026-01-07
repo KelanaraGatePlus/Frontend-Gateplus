@@ -110,9 +110,9 @@ export default function UploadEbookEpisodeForm() {
 
                 {/* Judul Episode */}
                 <InputText
-                    label="Judul Episode"
+                    label="Judul Bab/Episode"
                     name="title"
-                    placeholder="Masukkan judul episode"
+                    placeholder="Contoh: Bab 1: Perjumpaan di Kota Tua"
                     {...register("title")}
                     error={errors.title?.message}
                 />
@@ -132,9 +132,9 @@ export default function UploadEbookEpisodeForm() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <InputImageBanner
-                            type="cover"
+                            type="thumbnail"
                             label="Cover Episode"
-                            description="Format banner its 1x1 with maks 500kb."
+                            description="Rasio: 1:1, Format: JPG/PNG, Ukuran Maksimal: 500 KB. Unggah sampul khusus untuk bab ini."
                             name="episodeCover"
                             icon={IconsGalery}
                             files={field.value}
@@ -153,7 +153,7 @@ export default function UploadEbookEpisodeForm() {
                         <InputImageBanner
                             type="banner"
                             label="Banner Cover Episode Start"
-                            description="maks upload per content 5gb, please make part while uploading and naming ascending number"
+                            description="maks upload per content 5mb, please make part while uploading and naming ascending number"
                             name="bannerStart"
                             icon={IconsGalery}
                             files={field.value}
@@ -170,8 +170,8 @@ export default function UploadEbookEpisodeForm() {
                     render={({ field, fieldState }) => (
                         <InputFileDoc
                             name="inputFile"
-                            label="Upload File"
-                            description="Format input .docx"
+                            label="Unggah File Naskah (.docx)"
+                            description="Pastikan file Anda berformat Microsoft Word (.docx). Klik untuk unggah."
                             accept=".doc,.docx"
                             files={field.value}
                             onUpload={(e) => field.onChange([...e.target.files])}
@@ -188,9 +188,9 @@ export default function UploadEbookEpisodeForm() {
                     render={({ field, fieldState }) => (
                         <InputFileDoc
                             name="audioUrl"
-                            label="Upload File"
-                            description="Audio .mp3 untuk audiobook atau background audio"
-                            accept=".mp3"
+                            label="File Audio (Opsional)"
+                            description="Pilih file audio (MP3/WAV, maks. 3MB) untuk backsound atau audio Transkrip episode ini."
+                            accept=".mp3,.wav"
                             files={field.value}
                             onUpload={(e) => field.onChange([...e.target.files])}
                             onRemove={() => field.onChange([])}
@@ -233,7 +233,7 @@ export default function UploadEbookEpisodeForm() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <PriceSelector
-                            label="Price"
+                            label="Harga Jual"
                             options={priceOption}
                             selected={field.value}
                             onSelect={(val) => {

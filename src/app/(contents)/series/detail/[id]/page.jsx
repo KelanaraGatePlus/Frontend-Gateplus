@@ -173,7 +173,7 @@ function DetailSeriesPage({ params }) {
                     <DefaultVideoPlayer
                         className="rounded-lg"
                         src={seriesData?.trailerFileUrl}
-                        poster={seriesData?.thumbnailImageUrl}
+                        poster={seriesData?.posterImageUrl}
                         logType={"WATCH_TRAILER"}
                         contentType={"SERIES"}
                         contentId={seriesData?.id}
@@ -284,8 +284,8 @@ function DetailSeriesPage({ params }) {
                 <section className="flex flex-row gap-3 items-stretch px-4 md:px-15 mt-5">
                     {/* Poster 3:2 */}
                     <div className="relative aspect-[2/3] w-[220px] sm:w-[160px] lg:w-[250px] flex-shrink-0">
-                        {seriesData.posterImageUrl && <Image
-                            src={seriesData.posterImageUrl}
+                        {seriesData.thumbnailImageUrl && <Image
+                            src={seriesData.thumbnailImageUrl}
                             alt="logo-racunsangga-movie"
                             layout="fill"
                             className="rounded-md object-cover"

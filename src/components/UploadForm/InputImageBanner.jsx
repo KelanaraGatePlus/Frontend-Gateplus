@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Image from "next/image";
 import PropTypes from "prop-types";
+import ImageCropperModal from './ImageCropperModal';
 
 export default function InputImageBanner({
     type,
@@ -14,9 +15,87 @@ export default function InputImageBanner({
     icon,
     inputRef,
     error,
+    enableCrop = true,
+    cropAspectRatio,
 }) {
+    const [showCropper, setShowCropper] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [originalFileName, setOriginalFileName] = useState('');
+
+    const handleFileSelect = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!enableCrop) {
+            onUpload(e, name);
+            return;
+        }
+
+        // Store original filename
+        setOriginalFileName(file.name);
+
+        // Create preview URL for cropper
+        const reader = new FileReader();
+        reader.onload = () => {
+            setSelectedImage(reader.result);
+            setShowCropper(true);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleCropComplete = async (croppedBlob) => {
+        // Convert blob to File object with original filename
+        const croppedFile = new File([croppedBlob], originalFileName, {
+            type: 'image/jpeg',
+            lastModified: Date.now(),
+        });
+
+        // Create a synthetic event to pass to onUpload
+        const syntheticEvent = {
+            target: {
+                files: [croppedFile],
+                name: name,
+            }
+        };
+
+        onUpload(syntheticEvent, name);
+        setShowCropper(false);
+        setSelectedImage(null);
+
+        // Reset input
+        if (inputRef?.current) {
+            inputRef.current.value = '';
+        }
+    };
+
+    const handleCropCancel = () => {
+        setShowCropper(false);
+        setSelectedImage(null);
+        
+        // Reset input
+        if (inputRef?.current) {
+            inputRef.current.value = '';
+        }
+    };
+
+    // Determine aspect ratio based on type
+    const getAspectRatio = () => {
+        if (cropAspectRatio) return cropAspectRatio;
+        return type === 'banner' ? 16 / 9 : type === 'thumbnail' ? 1 / 1 : 2 / 3;
+    };
     return (
-        <section className="flex items-start gap-2 text-[#979797] montserratFont">
+        <>
+            {showCropper && selectedImage && (
+                <ImageCropperModal
+                    image={selectedImage}
+                    onCropComplete={handleCropComplete}
+                    onCancel={handleCropCancel}
+                    aspectRatio={getAspectRatio()}
+                    title={`Crop ${type === 'banner' ? 'Banner' : 'Image'}`}
+                />
+            )}
+            
+            <section className="flex items-start gap-2 text-[#979797] montserratFont">
             <div className="flex flex-2 flex-col">
                 <h3 className="montserratFont text-base font-semibold md:text-base lg:text-xl">
                     {label}
@@ -38,7 +117,7 @@ export default function InputImageBanner({
                                 hidden
                                 accept={accept}
                                 ref={inputRef}
-                                onChange={(e) => onUpload(e, name)}
+                                onChange={handleFileSelect}
                             />
                             <label
                                 htmlFor={`upload-${name}`}
@@ -128,6 +207,7 @@ export default function InputImageBanner({
                 {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
             </div>
         </section>
+        </>
     );
 }
 
@@ -143,4 +223,6 @@ InputImageBanner.propTypes = {
     icon: PropTypes.any,
     inputRef: PropTypes.any,
     error: PropTypes.string,
+    enableCrop: PropTypes.bool,
+    cropAspectRatio: PropTypes.number,
 };

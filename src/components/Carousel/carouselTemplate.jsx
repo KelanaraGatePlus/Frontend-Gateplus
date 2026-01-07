@@ -50,11 +50,11 @@ export default function CarouselTemplate({ label, type, contents, isLoading, isT
                                                         )}
 
                                                         {fixedType == 'movie' && !isTopTen && (
-                                                            <MovieCard title={item.title} rank={index + 1} id={item.id} coverUrl={item.posterImageUrl} hasNewEpisode={item.hasNewEpisode} />
+                                                            <MovieCard title={item.title} rank={index + 1} id={item.id} coverUrl={item.thumbnailImageUrl} hasNewEpisode={item.hasNewEpisode} />
                                                         )}
 
                                                         {fixedType == 'series' && !isTopTen && (
-                                                            <SeriesCard title={item.title} rank={index + 1} id={item.id} coverUrl={item.posterImageUrl} hasNewEpisode={item.hasNewEpisode} />
+                                                            <SeriesCard title={item.title} rank={index + 1} id={item.id} coverUrl={item.thumbnailImageUrl} hasNewEpisode={item.hasNewEpisode} />
                                                         )}
 
                                                         {fixedType == 'podcast' && type == null && !isTopTen && (

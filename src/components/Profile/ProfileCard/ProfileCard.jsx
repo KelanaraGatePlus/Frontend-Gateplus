@@ -60,7 +60,7 @@ export default function ProfileCard({
     console.log(data);
     return (
         <>
-            <div className="relative mt-1 flex h-fit w-full flex-col items-center justify-center overflow-hidden rounded-xl bg-[#FFFFFF1A] p-4 transition-all duration-300 ease-out md:max-w-[300px] md:min-w-[300px]">
+            <div className="relative mt-1 flex h-fit w-full flex-col items-center justify-center overflow-hidden rounded-xl backdrop-blur-lg border-gray-500 border bg-[#FFFFFF1A] p-4 transition-all duration-300 ease-out md:max-w-[300px] md:min-w-[300px]">
                 {profileFor === "creator" && (
                     <section className="absolute top-0 mb-2 h-36 w-full overflow-hidden md:hidden md:h-32 lg:w-full">
                         {data?.bannerImageUrl && data?.bannerImageUrl !== "null" ? (

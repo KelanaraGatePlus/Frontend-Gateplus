@@ -115,7 +115,7 @@ export default function UploadSeriesForm() {
                 <div className="flex flex-col gap-2">
                     {/* Judul */}
                     <InputText
-                        label="Judul"
+                        label="Judul Utama Seri (Main Series Title)"
                         name="title"
                         placeholder="Judul Series"
                         {...register("title")}
@@ -124,9 +124,9 @@ export default function UploadSeriesForm() {
 
                     {/* Deskripsi */}
                     <InputTextArea
-                        label="Deskripsi"
+                        label="Sinopsis Lengkap Seri"
                         name="description"
-                        placeholder="Deskripsi"
+                        placeholder="Jelaskan premis utama dunia cerita, konflik sentral, karakter utama, dan tema yang diangkat. Mesin pencari menggunakan teks ini untuk mempertemukan karyamu dengan pembaca yang tepat."
                         {...register("description")}
                         error={errors.description?.message}
                     />
@@ -138,10 +138,10 @@ export default function UploadSeriesForm() {
                         rules={{ required: "Genre wajib dipilih" }}
                         render={({ field, fieldState }) => (
                             <InputSelect
-                                label="Genre"
+                                label="Genre / Kategori Utama Film"
                                 name="genre"
                                 options={genresData?.data.data || []}
-                                placeholder="Pilih Genre"
+                                placeholder="Pilih satu atau lebih genre yang paling menggambarkan film ini (Misal: Aksi, Horor, Drama Komedi, Sci-Fi)."
                                 value={field.value}
                                 onChange={field.onChange}
                                 onBlur={field.onBlur}
@@ -151,53 +151,53 @@ export default function UploadSeriesForm() {
                     />
 
                     <InputText
-                        label={"Rumah Produksi"}
+                        label={"Rumah Produksi (Production House / Studio)"}
                         name="productionHouse"
-                        placeholder="Production House"
+                        placeholder="Tulis nama resmi studio atau perusahaan produksi yang bertanggung jawab"
                         {...register("productionHouse")}
                         error={errors.productionHouse?.message}
                     />
 
                     <InputText
-                        label={"Sutradara"}
+                        label={"Sutradara (Director)"}
                         name="director"
-                        placeholder="Name"
+                        placeholder="Tulis nama lengkap sutradara film ini. Pastikan ejaan benar agar muncul di hasil pencarian profil mereka."
                         {...register("director")}
                         error={errors.director?.message}
                     />
 
                     {/* Produser */}
                     <InputText
-                        label={"Produser"}
+                        label={"Produser (Producer)"}
                         name="producer"
-                        placeholder="Name"
+                        placeholder="Tulis nama produser utama atau produser eksekutif."
                         {...register("producer")}
                         error={errors.producer?.message}
                     />
 
                     {/* Penulis */}
                     <InputText
-                        label={"Penulis"}
+                        label={"Penulis Naskah (Screenwriter)"}
                         name="writer"
-                        placeholder="Full Name"
+                        placeholder="Tulis nama penulis skenario atau cerita asli (Original Story)."
                         {...register("writer")}
                         error={errors.writer?.message}
                     />
 
                     {/* Pemain */}
                     <InputText
-                        label={"Pemain"}
+                        label={"Pemeran & Kru (Cast & Crew)"}
                         name="talent"
-                        placeholder="Full Name"
+                        placeholder="Tag nama aktor utama, sutradara, atau produser agar film muncul saat nama mereka dicari."
                         {...register("talent")}
                         error={errors.talent?.message}
                     />
 
                     {/* Tahun Rilis */}
                     <InputText
-                        label={"Tahun Rilis"}
+                        label={"Tahun Rilis Perdana"}
                         name="releaseYear"
-                        placeholder="Year"
+                        placeholder="Masukkan tahun tayang perdana film ini secara publik (Format: YYYY, Contoh: 2024)."
                         {...register("releaseYear")}
                         error={errors.releaseYear?.message}
                     />
@@ -209,10 +209,10 @@ export default function UploadSeriesForm() {
                         rules={{ required: "Bahasa wajib dipilih" }}
                         render={({ field, fieldState }) => (
                             <InputSelect
-                                label="Bahasa"
+                                label="Bahasa Utama Konten (Original Language)"
                                 name="language"
                                 options={languageOptions}
-                                placeholder="Pilih Bahasa"
+                                placeholder="Pilih bahasa pengantar yang digunakan dalam seri ini."
                                 value={field.value}
                                 onChange={field.onChange}
                                 onBlur={field.onBlur}
@@ -264,7 +264,8 @@ export default function UploadSeriesForm() {
                                     prefix="series/trailer"
                                     setDataUrl={field.onChange}
                                     name={'trailer'}
-                                    label="Trailer Upload"
+                                    label="Video Trailer Seri Utama (Teaser)"
+                                    description="Gunakan rasio 16:9, format MP4/MOV, maks 500KB. Trailer yang menarik sangat penting untuk memancing penonton pertama kali dan meningkatkan visibilitas di hasil pencarian video."
                                 />
                                 <input type="hidden" {...field} value={field.value || ""} />
                                 {fieldState.error?.message && (
@@ -282,8 +283,8 @@ export default function UploadSeriesForm() {
                         render={({ field, fieldState }) => (
                             <InputImageBanner
                                 type="cover"
-                                label="Thumbnail"
-                                description="Gunakan rasio 1,6:2 (1600x2560), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten."
+                                label="Poster Utama Film (Key Visual / Cover Art)"
+                                description='Gunakan rasio 1,6:2 (1600x2560), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten. Gunakan gambar beresolusi tinggi (format vertikal/portrait biasanya standar industri film). Ini adalah "wajah" film Anda di seluruh platform dan hasil pencarian Google. Pastikan gambarnya profesional, memuat judul yang jelas, dan sangat memancing klik (High CTR).'
                                 name="thumbnail"
                                 icon={IconsGalery}
                                 inputRef={coverBookInputRef}

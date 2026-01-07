@@ -26,7 +26,7 @@ export default function MainTemplateLayout({
         productType={productType}
         productID={productDetail.id}
         productBanner={productDetail.posterImageUrl}
-        productCover={productType === 'podcast' ? productDetail.coverPodcastImage : productDetail.coverImageUrl}
+        productCover={productType === 'podcast' ? productDetail.coverPodcastImage : productDetail.posterImageUrl}
         productTitle={productDetail.title}
         productDescription={productDetail.description}
         productAgeRestriction={productDetail.ageRestriction}
