@@ -174,7 +174,7 @@ export default function ProductDetailSection({
               className="object-cover bg-[#2E2E2E]"
             />
           )}
-          <div className="absolute top-0 left-0 z-0 h-full w-full bg-[linear-gradient(to_bottom,_#FFFFFF00,_#FFFFFF00,_#FFFFFF00,_#FFFFFF00,_#737373A1,_#595959BF,_#3F3F3FDE,_#303030ED,_#222222FF)]" />
+          <div className="absolute top-0 left-0 z-0 h-full w-full bg-gradient-to-t from-[#222222] to-[#22222200]" />
         </div>
 
         {/* Back menu */}

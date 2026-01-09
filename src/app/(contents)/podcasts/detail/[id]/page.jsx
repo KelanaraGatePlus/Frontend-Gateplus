@@ -89,8 +89,8 @@ export default function DetailPodcastPage({ params }) {
           handlePlayPodcast={handlePlayPodcast}
           handlePayment={handleBuy}
           handleSubscribe={handleSubscribe}
-          topContentData={data?.data?.topContent || []}
-          recomendationData={data?.data?.recommendation || []}
+          topContentData={data?.topContent || []}
+          recomendationData={data?.recommendation || []}
         />
 
         <div className="md:px-11">

@@ -28,6 +28,7 @@ import LoadingOverlay from "@/components/LoadingOverlay/page";
 /*[--- ASSETS PUBLIC ---]*/
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
+import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
 
 export default function UploadEbookSeriesForm() {
     const router = useRouter();
@@ -45,7 +46,7 @@ export default function UploadEbookSeriesForm() {
         defaultValues: {
             title: "",
             description: "",
-            genre: "",
+            genre: [],
             language: "",
             ageRestriction: "",
             posterBanner: null,
@@ -63,7 +64,8 @@ export default function UploadEbookSeriesForm() {
         const formData = new FormData();
         formData.append("title", data.title);
         formData.append("description", data.description);
-        formData.append("categoriesId", data.genre);
+        const selectedGenres = Array.isArray(data.genre) ? data.genre : [data.genre].filter(Boolean);
+        formData.append("categoriesId", JSON.stringify(selectedGenres));
         formData.append("language", data.language);
         formData.append("ageRestriction", data.ageRestriction);
         formData.append("canSubscribe", data.canSubscribe);
@@ -109,14 +111,16 @@ export default function UploadEbookSeriesForm() {
                         control={control}
                         rules={{ required: "Genre wajib dipilih" }}
                         render={({ field, fieldState }) => (
-                            <InputSelect
+                            <GenreMultiSelect
                                 label="Genre"
                                 name="genre"
                                 options={genresData?.data.data || []}
-                                placeholder="Pilih genre yang paling sesuai: Fantasi, Romantis, Thriller, Sejarah, dsb."
-                                value={field.value}
-                                onChange={field.onChange}
-                                onBlur={field.onBlur}
+                                placeholder="Pilih satu atau lebih genre yang paling menggambarkan film ini (Misal: Aksi, Horor, Drama Komedi, Sci-Fi)."
+                                value={field.value || []}
+                                onChange={(val) => {
+                                    field.onChange(val);
+                                    field.onBlur();
+                                }}
                                 error={fieldState.error?.message}
                             />
                         )}

@@ -31,6 +31,7 @@ import UploadLargeFile from "@/components/UploadForm/UploadLargeFile";
 import PriceSelector from "@/components/UploadForm/PriceSelector";
 import { priceOption } from "@/lib/constants/priceOptions";
 import { useCreateSeriesMutation } from "@/hooks/api/seriesSliceAPI";
+import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
 
 
 
@@ -50,7 +51,7 @@ export default function UploadSeriesForm() {
         defaultValues: {
             title: "",
             description: "",
-            genre: "",
+            genre: [],
             language: "",
             ageRestriction: "",
             posterBanner: null,
@@ -75,7 +76,8 @@ export default function UploadSeriesForm() {
             const formData = new FormData();
             formData.append("title", data.title);
             formData.append("description", data.description);
-            formData.append("categoriesId", data.genre);
+            const selectedGenres = Array.isArray(data.genre) ? data.genre : [data.genre].filter(Boolean);
+            formData.append("categoriesId", JSON.stringify(selectedGenres));
             formData.append("language", data.language);
             formData.append("ageRestriction", data.ageRestriction);
             formData.append("subscriptionPrice", data.subscriptionPrice);
@@ -137,14 +139,16 @@ export default function UploadSeriesForm() {
                         control={control}
                         rules={{ required: "Genre wajib dipilih" }}
                         render={({ field, fieldState }) => (
-                            <InputSelect
-                                label="Genre / Kategori Utama Film"
+                            <GenreMultiSelect
+                                label="Genre"
                                 name="genre"
                                 options={genresData?.data.data || []}
                                 placeholder="Pilih satu atau lebih genre yang paling menggambarkan film ini (Misal: Aksi, Horor, Drama Komedi, Sci-Fi)."
-                                value={field.value}
-                                onChange={field.onChange}
-                                onBlur={field.onBlur}
+                                value={field.value || []}
+                                onChange={(val) => {
+                                    field.onChange(val);
+                                    field.onBlur();
+                                }}
                                 error={fieldState.error?.message}
                             />
                         )}

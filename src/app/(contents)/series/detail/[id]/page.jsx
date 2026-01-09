@@ -179,7 +179,7 @@ function DetailSeriesPage({ params }) {
                         contentId={seriesData?.id}
                         ageRestriction={seriesData?.ageRestriction}
                         title={'Trailer ' + seriesData?.title}
-                        genre={seriesData?.categories?.tittle}
+                        genre={Array.isArray(seriesData?.categories) ? seriesData.categories.map(cat => cat.category.tittle || cat.category.title).join(', ') : seriesData?.categories?.tittle || seriesData?.categories?.title}
                     />
                 </div>
             </section>
@@ -306,7 +306,7 @@ function DetailSeriesPage({ params }) {
                                 <p>Penulis Cerita : {seriesData.writer}</p>
                                 <p>Pemeran : {seriesData.talent}</p>
                                 <p>Durasi : {seriesData.duration}</p>
-                                <p>Genre : {seriesData?.categories?.tittle}</p>
+                                <p>Genre : {Array.isArray(seriesData?.categories) ? seriesData.categories.map(cat => cat.category.tittle || cat.category.title).join(', ') : seriesData?.categories?.tittle || seriesData?.categories?.title}</p>
                                 <p>Tahun Rilis : {seriesData.releaseYear}</p>
                                 <p>Bahasa : {seriesData.language}</p>
                             </div>

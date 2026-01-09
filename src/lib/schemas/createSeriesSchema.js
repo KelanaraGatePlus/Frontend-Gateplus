@@ -6,7 +6,9 @@ const maxSize = 1000 * 1024;
 export const createSeriesSchema = z.object({
     title: z.string().min(1, "Judul wajib diisi").max(50, "Maksimal 50 karakter"),
     description: z.string().min(1, "Deskripsi wajib diisi"),
-    genre: z.string().min(1, "Genre wajib dipilih"),
+    genre: z
+        .array(z.string().min(1, "Genre wajib dipilih"))
+        .min(1, "Genre wajib dipilih"),
     language: z.string().min(1, "Bahasa wajib dipilih"),
     ageRestriction: z.string().min(1, "Batasan usia wajib dipilih"),
     subscriptionPrice: z.string()
@@ -15,7 +17,8 @@ export const createSeriesSchema = z.object({
         .refine(
             (val) => val === "Free" || /^\d+$/.test(val),
             { message: "Harga hanya boleh berisi angka atau tulisan 'Free'" }
-        ),
+        )
+        .optional(),
     director: z.string().min(1, "Sutradara wajib diisi").max(100, "Maksimal 100 karakter"),
     producer: z.string().min(1, "Produser wajib diisi").max(100, "Maksimal 100 karakter"),
     writer: z.string().min(1, "Penulis wajib diisi").max(100, "Maksimal 100 karakter"),

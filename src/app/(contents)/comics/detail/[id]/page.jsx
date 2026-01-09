@@ -70,8 +70,8 @@ export default function DetailComicPage({ params }) {
   const episode_comics = (comicData?.episode_comics?.episodes || []).slice().sort((a, b) => {
     return new Date(a.createdAt) - new Date(b.createdAt);
   });
-  const topContent = data?.data?.topContent || [];
-  const recommendedContent = data?.data?.recommendation || [];
+  const topContent = data?.topContent || [];
+  const recommendedContent = data?.recommendation || [];
 
   return (
     comicData && (

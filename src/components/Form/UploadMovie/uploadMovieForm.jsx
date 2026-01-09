@@ -19,6 +19,7 @@ import { languageOptions } from '@/lib/constants/languageOptions';
 import ButtonSubmit from '@/components/UploadForm/ButtonSubmit';
 import InputAgeResctriction from '@/components/UploadForm/InputAgeResctriction';
 import InputImageBanner from '@/components/UploadForm/InputImageBanner';
+import GenreMultiSelect from '@/components/UploadForm/GenreMultiSelect';
 import InputSelect from '@/components/UploadForm/InputSelect';
 import InputText from '@/components/UploadForm/InputText';
 import InputTextArea from '@/components/UploadForm/InputTextArea';
@@ -51,7 +52,7 @@ export default function UploadMovieForm() {
         defaultValues: {
             title: "",
             description: "",
-            genre: "",
+            genre: [],
             language: "",
             ageRestriction: "",
             posterBanner: null,
@@ -78,7 +79,8 @@ export default function UploadMovieForm() {
             const formData = new FormData();
             formData.append("title", data.title);
             formData.append("description", data.description);
-            formData.append("categoriesId", data.genre);
+            const selectedGenres = Array.isArray(data.genre) ? data.genre : [data.genre].filter(Boolean);
+            formData.append("categoriesId", JSON.stringify(selectedGenres));
             formData.append("language", data.language);
             formData.append("ageRestriction", data.ageRestriction);
             formData.append("price", data.price);
@@ -141,14 +143,16 @@ export default function UploadMovieForm() {
                         control={control}
                         rules={{ required: "Genre wajib dipilih" }}
                         render={({ field, fieldState }) => (
-                            <InputSelect
+                            <GenreMultiSelect
                                 label="Genre"
                                 name="genre"
                                 options={genresData?.data.data || []}
                                 placeholder="Pilih satu atau lebih genre yang paling menggambarkan film ini (Misal: Aksi, Horor, Drama Komedi, Sci-Fi)."
-                                value={field.value}
-                                onChange={field.onChange}
-                                onBlur={field.onBlur}
+                                value={field.value || []}
+                                onChange={(val) => {
+                                    field.onChange(val);
+                                    field.onBlur();
+                                }}
                                 error={fieldState.error?.message}
                             />
                         )}
