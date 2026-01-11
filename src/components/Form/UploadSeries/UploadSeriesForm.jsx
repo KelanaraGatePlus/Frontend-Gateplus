@@ -363,10 +363,12 @@ export default function UploadSeriesForm() {
                         render={({ field, fieldState }) => (
                             <PriceSelector
                                 label="Subscription Price"
-                                options={priceOption}
+                                options={[
+                                    "5000", "10000", "20000", "50000", "100000"
+                                ]}
                                 selected={field.value}
                                 onSelect={(val) => {
-                                    field.onChange(val);
+                                    field.onChange(Number(val));
                                     field.onBlur();
                                 }}
                                 error={fieldState.error?.message}

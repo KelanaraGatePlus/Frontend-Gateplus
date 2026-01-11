@@ -29,6 +29,7 @@ import LoadingOverlay from "@/components/LoadingOverlay/page";
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
 import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
+import PriceSelector from "@/components/UploadForm/PriceSelector";
 
 export default function UploadComicSeriesForm() {
     const router = useRouter();
@@ -185,14 +186,19 @@ export default function UploadComicSeriesForm() {
                             control={control}
                             rules={{ required: "Harga langganan wajib diisi" }}
                             render={({ field, fieldState }) => (
-                                <InputText
-                                    label="Harga Langganan"
-                                    name="subscriptionPrice"
-                                    type="number"
-                                    placeholder="Masukkan harga langganan"
-                                    value={field.value}
-                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                <PriceSelector
+                                    label="Harga Langganan Seri"
+                                    options={[
+                                        "5000", "10000", "15000", "25000", "50000"
+                                    ]}
+                                    selected={field.value}
+                                    onSelect={(val) => {
+                                        field.onChange(parseInt(val, 10));
+                                        field.onBlur();
+                                    }}
                                     error={fieldState.error?.message}
+                                    placeholder="Tentukan harga jual untuk kelas ini."
+                                    canFree={false}
                                 />
                             )}
                         />
