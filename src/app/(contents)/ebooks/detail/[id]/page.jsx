@@ -24,28 +24,32 @@ export default function DetailEbookPage({ params }) {
   const [selectedPrice, setSelectedPrice] = useState(null);
   const [createLog] = useCreateLogMutation();
 
-  const handleModalOpen = (episodeId, price) => {
+  // const handleModalOpen = (episodeId, price) => {
+  //   setSelectedEpisode(episodeId);
+  //   setSelectedPrice(price);
+  //   setIsModalOpen(true);
+  // };
+
+  // const handleModalSubscribeOpen = (contentId, price) => {
+  //   setSelectedContentId(contentId);
+  //   setSelectedPrice(price);
+  //   setIsModalSubscribeOpen(true);
+  // };
+
+  const handleBuy = async (episodeId, price) => {
+    setLoading(true);
     setSelectedEpisode(episodeId);
     setSelectedPrice(price);
-    setIsModalOpen(true);
-  };
-
-  const handleModalSubscribeOpen = (contentId, price) => {
-    setSelectedContentId(contentId);
-    setSelectedPrice(price);
-    setIsModalSubscribeOpen(true);
-  };
-
-  const handleBuy = async () => {
-    setLoading(true);
-    window.location.href = `/checkout/purchase/ebooks/${id}/${selectedEpisode}`;
+    window.location.href = `/checkout/purchase/ebooks/${id}/${episodeId}`;
     setIsModalOpen(false);
     setLoading(false);
   };
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = async (contentId, price) => {
     setLoading(true);
-    window.location.href = `/checkout/subscribe/ebooks/${selectedContentId}`;
+    setSelectedContentId(contentId);
+    setSelectedPrice(price);
+    window.location.href = `/checkout/subscribe/ebooks/${contentId}`;
     setIsModalSubscribeOpen(false);
     setLoading(false);
   };
@@ -72,8 +76,8 @@ export default function DetailEbookPage({ params }) {
         productDetail={ebookData}
         productEpisode={episode_ebooks}
         isLoading={isLoading}
-        handlePayment={handleModalOpen}
-        handleSubscribe={handleModalSubscribeOpen}
+        handlePayment={handleBuy}
+        handleSubscribe={handleSubscribe}
         topContentData={data?.topContent || []}
         recomendationData={data?.recommendation || []}
       />

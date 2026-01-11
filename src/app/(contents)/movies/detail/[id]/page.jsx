@@ -181,7 +181,7 @@ function PlayingMoviePage({ params }) {
                         </div>
                         <div className="flex flex-row gap-6">
                             <div className="flex items-center justify-center w-48">
-                                <button onClick={movieData?.isOwner || movieData?.isSubscribed || movieData?.price == 'Free' ? null : () => { handleModalOpen(movieData?.id, movieData?.price) }} className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
+                                <button onClick={movieData?.isOwner || movieData?.isSubscribed || movieData?.price == 'Free' ? null : () => { handleSubscribe()}} className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
                                     {movieData?.isOwner || movieData?.isSubscribed || movieData?.price == 'Free' ? "Watch" : "Buy"}
                                 </button>
                             </div>

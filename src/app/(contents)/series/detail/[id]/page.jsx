@@ -64,16 +64,20 @@ function DetailSeriesPage({ params }) {
         setIsModalOpen(true);
     };
 
-    const handleBuy = async () => {
+    const handleBuy = async (episodeId, price) => {
         setLoading(true);
-        window.location.href = `/checkout/purchase/series/${id}/${selectedEpisode}`;
+        setSelectedEpisode(episodeId);
+        setSelectedPrice(price);
+        window.location.href = `/checkout/purchase/series/${id}/${episodeId}`;
         setIsModalOpen(false);
         setLoading(false);
     };
 
-    const handleSubscribe = async () => {
+    const handleSubscribe = async (contentId, price) => {
         setLoading(true);
-        window.location.href = `/checkout/subscribe/series/${selectedContentId}`;
+        setSelectedContentId(contentId);
+        setSelectedPrice(price);
+        window.location.href = `/checkout/subscribe/series/${contentId}`;
         setIsModalSubscribeOpen(false);
         setLoading(false);
     };
@@ -197,7 +201,7 @@ function DetailSeriesPage({ params }) {
                         </div>
                         <div className="flex flex-row gap-6">
                             <div className="flex items-center justify-center w-max">
-                                <button disabled={seriesData?.isOwner || seriesData?.isSubscribed} onClick={seriesData?.isOwner ? null : !seriesData?.isSubscribed && seriesData?.canSubscribe ? () => { handleModalSubscribeOpen(seriesData?.id, seriesData?.subscriptionPrice) } : null} className="rounded-3xl bg-[#0076E999] disabled:bg-[#9CA3AF] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
+                                <button disabled={seriesData?.isOwner || seriesData?.isSubscribed} onClick={seriesData?.isOwner ? null : !seriesData?.isSubscribed && seriesData?.canSubscribe ? () => { handleSubscribe(seriesData?.id, seriesData?.subscriptionPrice) } : null} className="rounded-3xl bg-[#0076E999] disabled:bg-[#9CA3AF] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
                                     {seriesData?.isOwner ? "Series ini adalah karya mu" : !seriesData?.canSubscribe ? 'Buy Episode To Watch' : seriesData?.isSubscribed ? "Watch" : "Subscribe"}
                                 </button>
                             </div>
@@ -319,7 +323,7 @@ function DetailSeriesPage({ params }) {
                     productEpisodes={episode_series}
                     isLoading={loading}
                     isSubscribe={seriesData?.isSubscribed}
-                    handlePayment={handleModalOpen}
+                    handlePayment={handleBuy}
                     productId={
                         seriesData?.id
                     }

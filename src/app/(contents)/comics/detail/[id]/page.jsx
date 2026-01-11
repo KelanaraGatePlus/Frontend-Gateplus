@@ -23,28 +23,32 @@ export default function DetailComicPage({ params }) {
   const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
   const [createLog] = useCreateLogMutation();
 
-  const handleModalSubscribeOpen = (contentId, price) => {
-    setSelectedContentId(contentId);
-    setSelectedPrice(price);
-    setIsModalSubscribeOpen(true);
-  };
+  // const handleModalSubscribeOpen = (contentId, price) => {
+  //   setSelectedContentId(contentId);
+  //   setSelectedPrice(price);
+  //   setIsModalSubscribeOpen(true);
+  // };
 
-  const handleModalOpen = (episodeId, price) => {
+  // const handleModalOpen = (episodeId, price) => {
+  //   setSelectedEpisode(episodeId);
+  //   setSelectedPrice(price);
+  //   setIsModalOpen(true);
+  // }
+
+  const handleBuy = async (episodeId, price ) => {
+    setLoading(true);
     setSelectedEpisode(episodeId);
     setSelectedPrice(price);
-    setIsModalOpen(true);
-  }
-
-  const handleBuy = async () => {
-    setLoading(true);
-    window.location.href = `/checkout/purchase/comics/${id}/${selectedEpisode}`;
+    window.location.href = `/checkout/purchase/comics/${id}/${episodeId}`;
     setIsModalOpen(false);
     setLoading(false);
   };
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = async (contentId, price) => {
     setLoading(true);
-    window.location.href = `/checkout/subscribe/comics/${selectedContentId}`;
+    setSelectedContentId(contentId);
+    setSelectedPrice(price);
+    window.location.href = `/checkout/subscribe/comics/${contentId}`;
     setIsModalSubscribeOpen(false);
     setLoading(false);
   };
@@ -81,8 +85,8 @@ export default function DetailComicPage({ params }) {
           productDetail={comicData}
           productEpisode={episode_comics}
           isLoading={isLoading}
-          handlePayment={handleModalOpen}
-          handleSubscribe={handleModalSubscribeOpen}
+          handlePayment={handleBuy}
+          handleSubscribe={handleSubscribe}
           topContentData={topContent}
           recomendationData={recommendedContent}
         />
