@@ -13,7 +13,7 @@ export default function InputAgeResctriction({ onChange, error }) {
     return (
         <div className="flex items-center gap-2">
             <div className='flex flex-row gap-1 items-center flex-2'>
-                <h3 className="montserratFont text-base font-semibold text-[#979797] md:text-base lg:text-xl">
+                <h3 className="montserratFont text-base font-semibold text-white md:text-base lg:text-xl">
                     Rating Batasan Usia (Age Restriction)
                 </h3>
                 <button onClick={() => setModalOpen(true)}>

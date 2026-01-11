@@ -52,12 +52,12 @@ export default function PriceSelector({
     const isFreeActive = String(selected) === String(freeValue);
 
     return (
-        <section className="flex items-start gap-2 text-[#979797] montserratFont">
+        <section className="flex items-start gap-2 text-white montserratFont">
             <div className="flex flex-2 flex-col">
                 <h3 className="montserratFont text-base font-semibold md:text-base lg:text-xl">
                     {label}
                 </h3>
-                <p>{placeholder}</p>
+                <p className="text-[#979797] ">{placeholder}</p>
             </div>
 
             {/* GRID: kiri (3 kolom) untuk input+opsi, kanan (1 kolom) untuk simulasi */}
