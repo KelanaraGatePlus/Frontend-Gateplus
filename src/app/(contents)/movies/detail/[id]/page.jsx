@@ -33,8 +33,8 @@ function PlayingMoviePage({ params }) {
     const movieData = data?.data?.data || {}; // Pindahkan ke atas agar bisa dipakai di useEffect
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedContentId, setSelectedContentId] = useState(null);
-    const [selectedPrice, setSelectedPrice] = useState(null);
+    // const [selectedContentId, setSelectedContentId] = useState(null);
+    // const [selectedPrice, setSelectedPrice] = useState(null);
     const [createLog] = useCreateLogMutation();
     const { toggleLike } = useLikeContent();
     const { toggleDislike } = useDislikeContent();
@@ -118,11 +118,11 @@ function PlayingMoviePage({ params }) {
         window.location.href = `/checkout/subscribe/movie/${selectedContentId}`;
     };
 
-    const handleModalOpen = (contentId, price) => {
-        setSelectedContentId(contentId);
-        setSelectedPrice(price);
-        setIsModalOpen(true);
-    };
+    // const handleModalOpen = (contentId, price) => {
+    //     setSelectedContentId(contentId);
+    //     setSelectedPrice(price);
+    //     setIsModalOpen(true);
+    // };
 
     const handleToggleSave = () => {
         toggleSave({

@@ -30,7 +30,6 @@ import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
 import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
 import PriceSelector from "@/components/UploadForm/PriceSelector";
-import { priceOption } from "@/lib/constants/priceOptions";
 
 export default function UploadEbookSeriesForm() {
     const router = useRouter();

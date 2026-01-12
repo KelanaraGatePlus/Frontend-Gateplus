@@ -17,8 +17,8 @@ export default function DetailEbookPage({ params }) {
   const { id } = React.use(params);
   const userId = useGetUserId();
   const [loading, setLoading] = useState(false);
-  const [selectedEpisode, setSelectedEpisode] = useState(null);
-  const [selectedContentId, setSelectedContentId] = useState(null);
+  // const [selectedEpisode, setSelectedEpisode] = useState(null);
+  // const [selectedContentId, setSelectedContentId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
   const [selectedPrice, setSelectedPrice] = useState(null);
@@ -38,8 +38,6 @@ export default function DetailEbookPage({ params }) {
 
   const handleBuy = async (episodeId, price) => {
     setLoading(true);
-    setSelectedEpisode(episodeId);
-    setSelectedPrice(price);
     window.location.href = `/checkout/purchase/ebooks/${id}/${episodeId}`;
     setIsModalOpen(false);
     setLoading(false);
@@ -47,8 +45,6 @@ export default function DetailEbookPage({ params }) {
 
   const handleSubscribe = async (contentId, price) => {
     setLoading(true);
-    setSelectedContentId(contentId);
-    setSelectedPrice(price);
     window.location.href = `/checkout/subscribe/ebooks/${contentId}`;
     setIsModalSubscribeOpen(false);
     setLoading(false);

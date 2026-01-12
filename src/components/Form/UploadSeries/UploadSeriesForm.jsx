@@ -29,7 +29,6 @@ import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
 import UploadLargeFile from "@/components/UploadForm/UploadLargeFile";
 import PriceSelector from "@/components/UploadForm/PriceSelector";
-import { priceOption } from "@/lib/constants/priceOptions";
 import { useCreateSeriesMutation } from "@/hooks/api/seriesSliceAPI";
 import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
 

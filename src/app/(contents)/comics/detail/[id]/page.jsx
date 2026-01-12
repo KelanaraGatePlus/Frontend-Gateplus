@@ -15,11 +15,11 @@ import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 export default function DetailComicPage({ params }) {
   const { id } = use(params);
   const [userId, setUserId] = useState(null);
-  const [selectedEpisode, setSelectedEpisode] = useState(null);
+  // const [selectedEpisode, setSelectedEpisode] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPrice, setSelectedPrice] = useState(null);
+  // const [selectedPrice, setSelectedPrice] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [selectedContentId, setSelectedContentId] = useState(null);
+  // const [selectedContentId, setSelectedContentId] = useState(null);
   const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
   const [createLog] = useCreateLogMutation();
 
@@ -35,19 +35,15 @@ export default function DetailComicPage({ params }) {
   //   setIsModalOpen(true);
   // }
 
-  const handleBuy = async (episodeId, price ) => {
+  const handleBuy = async (episodeId ) => {
     setLoading(true);
-    setSelectedEpisode(episodeId);
-    setSelectedPrice(price);
     window.location.href = `/checkout/purchase/comics/${id}/${episodeId}`;
     setIsModalOpen(false);
     setLoading(false);
   };
 
-  const handleSubscribe = async (contentId, price) => {
+  const handleSubscribe = async (contentId) => {
     setLoading(true);
-    setSelectedContentId(contentId);
-    setSelectedPrice(price);
     window.location.href = `/checkout/subscribe/comics/${contentId}`;
     setIsModalSubscribeOpen(false);
     setLoading(false);

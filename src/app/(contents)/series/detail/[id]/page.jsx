@@ -29,11 +29,11 @@ function DetailSeriesPage({ params }) {
     const { id } = params;
     const { data } = useGetSeriesByIdQuery({ id, withEpisodes: false });
     const [loading, setLoading] = useState(false);
-    const [selectedContentId, setSelectedContentId] = useState(null);
+    // const [selectedContentId, setSelectedContentId] = useState(null);
     const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
-    const [selectedPrice, setSelectedPrice] = useState(null);
+    // const [selectedPrice, setSelectedPrice] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedEpisode, setSelectedEpisode] = useState(null);
+    // const [selectedEpisode, setSelectedEpisode] = useState(null);
     const [createLog] = useCreateLogMutation();
     const { toggleLike } = useLikeContent();
     const { toggleDislike } = useDislikeContent();
@@ -52,31 +52,27 @@ function DetailSeriesPage({ params }) {
         return new Date(a.createdAt) - new Date(b.createdAt);
     });
 
-    const handleModalSubscribeOpen = (contentId, price) => {
-        setSelectedContentId(contentId);
-        setSelectedPrice(price);
-        setIsModalSubscribeOpen(true);
-    };
+    // const handleModalSubscribeOpen = (contentId, price) => {
+    //     setSelectedContentId(contentId);
+    //     setSelectedPrice(price);
+    //     setIsModalSubscribeOpen(true);
+    // };
 
-    const handleModalOpen = (episodeId, price) => {
-        setSelectedEpisode(episodeId);
-        setSelectedPrice(price);
-        setIsModalOpen(true);
-    };
+    // const handleModalOpen = (episodeId, price) => {
+    //     setSelectedEpisode(episodeId);
+    //     setSelectedPrice(price);
+    //     setIsModalOpen(true);
+    // };
 
-    const handleBuy = async (episodeId, price) => {
+    const handleBuy = async (episodeId) => {
         setLoading(true);
-        setSelectedEpisode(episodeId);
-        setSelectedPrice(price);
         window.location.href = `/checkout/purchase/series/${id}/${episodeId}`;
         setIsModalOpen(false);
         setLoading(false);
     };
 
-    const handleSubscribe = async (contentId, price) => {
+    const handleSubscribe = async (contentId) => {
         setLoading(true);
-        setSelectedContentId(contentId);
-        setSelectedPrice(price);
         window.location.href = `/checkout/subscribe/series/${contentId}`;
         setIsModalSubscribeOpen(false);
         setLoading(false);
