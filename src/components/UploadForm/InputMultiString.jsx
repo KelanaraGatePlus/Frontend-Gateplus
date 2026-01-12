@@ -1,9 +1,9 @@
 "use client";
 import React, { useState } from "react";
+import PropTypes from "prop-types";
 
 export default function InputMultiString({
     label,
-    name,
     placeholder = "Tambahkan item",
     values = [],
     onChange,
@@ -101,3 +101,14 @@ export default function InputMultiString({
         </div>
     );
 }
+
+InputMultiString.propTypes = {
+    label: PropTypes.string.isRequired,
+    placeholder: PropTypes.string,
+    values: PropTypes.arrayOf(PropTypes.string),
+    onChange: PropTypes.func.isRequired,
+    error: PropTypes.string,
+    addButtonLabel: PropTypes.string,
+    removeButtonLabel: PropTypes.string,
+    description: PropTypes.string,
+};
