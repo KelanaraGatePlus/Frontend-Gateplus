@@ -13,7 +13,6 @@ import Image from "next/image";
 import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
 import { useGetSeriesByIdQuery } from "@/hooks/api/seriesSliceAPI";
 import ProductEpisodeSection from "@/components/MainDetailProduct/ProductEpisodeSection";
-import SimpleModal from "@/components/Modal/SimpleModal";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { useLikeContent } from "@/lib/features/useLikeContent";
 import { useDislikeContent } from "@/lib/features/useDislikeContent";
@@ -29,10 +28,10 @@ function DetailSeriesPage({ params }) {
     const { id } = params;
     const { data } = useGetSeriesByIdQuery({ id, withEpisodes: false });
     const [loading, setLoading] = useState(false);
-    // const [selectedContentId, setSelectedContentId] = useState(null);
-    const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
-    // const [selectedPrice, setSelectedPrice] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    // // const [selectedContentId, setSelectedContentId] = useState(null);
+    // const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
+    // // const [selectedPrice, setSelectedPrice] = useState(null);
+    // const [isModalOpen, setIsModalOpen] = useState(false);
     // const [selectedEpisode, setSelectedEpisode] = useState(null);
     const [createLog] = useCreateLogMutation();
     const { toggleLike } = useLikeContent();
@@ -67,14 +66,12 @@ function DetailSeriesPage({ params }) {
     const handleBuy = async (episodeId) => {
         setLoading(true);
         window.location.href = `/checkout/purchase/series/${id}/${episodeId}`;
-        setIsModalOpen(false);
         setLoading(false);
     };
 
     const handleSubscribe = async (contentId) => {
         setLoading(true);
         window.location.href = `/checkout/subscribe/series/${contentId}`;
-        setIsModalSubscribeOpen(false);
         setLoading(false);
     };
 
@@ -349,7 +346,7 @@ function DetailSeriesPage({ params }) {
                     </section>
                 </section>
 
-                <SimpleModal
+                {/* <SimpleModal
                     title={"Subscribe untuk menikmati seluruh episode dari konten ini selama sebulan seharga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
                     isOpen={isModalSubscribeOpen}
                     onClose={() => setIsModalSubscribeOpen(false)}
@@ -361,7 +358,7 @@ function DetailSeriesPage({ params }) {
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     onConfirm={handleBuy}
-                />
+                /> */}
             </main>
         </div>
     );

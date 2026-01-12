@@ -7,7 +7,6 @@ import Image from "next/image";
 import { useGetMovieByIdQuery } from "@/hooks/api/movieSliceAPI";
 import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
 import React, { useEffect, useState } from "react";
-import SimpleModal from "@/components/Modal/SimpleModal";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { useLikeContent } from "@/lib/features/useLikeContent";
 import { useDislikeContent } from "@/lib/features/useDislikeContent";
@@ -32,7 +31,7 @@ function PlayingMoviePage({ params }) {
     const { data } = useGetMovieByIdQuery(id);
     const movieData = data?.data?.data || {}; // Pindahkan ke atas agar bisa dipakai di useEffect
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    // const [isModalOpen, setIsModalOpen] = useState(false);
     // const [selectedContentId, setSelectedContentId] = useState(null);
     // const [selectedPrice, setSelectedPrice] = useState(null);
     const [createLog] = useCreateLogMutation();
@@ -115,7 +114,7 @@ function PlayingMoviePage({ params }) {
     };
 
     const handleSubscribe = async () => {
-        window.location.href = `/checkout/subscribe/movie/${selectedContentId}`;
+        window.location.href = `/checkout/subscribe/movie/${movieData.id}`;
     };
 
     // const handleModalOpen = (contentId, price) => {
@@ -332,12 +331,12 @@ function PlayingMoviePage({ params }) {
                     />
                 </div>}
 
-                <SimpleModal
+                {/* <SimpleModal
                     title={"Subscribe untuk menikmati seluruh episode dari konten ini selama sebulan seharga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     onConfirm={() => handleSubscribe()}
-                />
+                /> */}
             </main>
         </div>
     );

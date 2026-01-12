@@ -8,7 +8,6 @@ import { useGetComicByIdQuery } from "@/hooks/api/comicSliceAPI";
 
 /*[--- UI COMPONENTS ---]*/
 import MainTemplateLayout from "@/components/MainDetailProduct/page";
-import SimpleModal from "@/components/Modal/SimpleModal";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 
@@ -16,11 +15,11 @@ export default function DetailComicPage({ params }) {
   const { id } = use(params);
   const [userId, setUserId] = useState(null);
   // const [selectedEpisode, setSelectedEpisode] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // const [isModalOpen, setIsModalOpen] = useState(false);
   // const [selectedPrice, setSelectedPrice] = useState(null);
   const [loading, setLoading] = useState(false);
   // const [selectedContentId, setSelectedContentId] = useState(null);
-  const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
+  // const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
   const [createLog] = useCreateLogMutation();
 
   // const handleModalSubscribeOpen = (contentId, price) => {
@@ -35,17 +34,15 @@ export default function DetailComicPage({ params }) {
   //   setIsModalOpen(true);
   // }
 
-  const handleBuy = async (episodeId ) => {
+  const handleBuy = async (episodeId) => {
     setLoading(true);
     window.location.href = `/checkout/purchase/comics/${id}/${episodeId}`;
-    setIsModalOpen(false);
     setLoading(false);
   };
 
   const handleSubscribe = async (contentId) => {
     setLoading(true);
     window.location.href = `/checkout/subscribe/comics/${contentId}`;
-    setIsModalSubscribeOpen(false);
     setLoading(false);
   };
 
@@ -86,7 +83,7 @@ export default function DetailComicPage({ params }) {
           topContentData={topContent}
           recomendationData={recommendedContent}
         />
-        <SimpleModal
+        {/* <SimpleModal
           title={"Konten ini masih terkunci, apakah kamu bersedia membeli nya dengan harga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
@@ -97,7 +94,7 @@ export default function DetailComicPage({ params }) {
           isOpen={isModalSubscribeOpen}
           onClose={() => setIsModalSubscribeOpen(false)}
           onConfirm={handleSubscribe}
-        />
+        /> */}
         {loading && <LoadingOverlay />}
       </div>
     )
