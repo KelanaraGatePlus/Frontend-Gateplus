@@ -77,7 +77,7 @@ export default function UploadEbookEpisodeForm() {
         formData.append("bannerStartEpisodeUrl", data.bannerStart[0]);
         formData.append("bannerEndEpisodeUrl", data.bannerEnd[0]);
         formData.append("ebookUrl", data.inputFile[0]);
-        formData.append("audioUrl", data.audioUrl ? data.audioUrl[0] : null);
+        formData.append("audioUrl", data.audioUrl[0] ? data.audioUrl[0] : null);
 
         try {
             await createEpisode(formData).unwrap();
