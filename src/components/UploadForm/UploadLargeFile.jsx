@@ -53,7 +53,7 @@ export default function UploadLargeFile({ label = "Film", prefix, setDataUrl, se
     return (
         <div className="flex items-start gap-2">
             <div className="flex-2 flex flex-col">
-                <h3 className="montserratFont flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
+                <h3 className="montserratFont flex-2 text-base font-semibold text-white md:text-base lg:text-xl">
                     {label}
                 </h3>
                 <p className="montserratFont text-[#979797]">{description}</p>

@@ -359,7 +359,7 @@ export default function ReadEbookPage({ params }) {
               />
             )}
             <div
-              className={`absolute top-0 left-0 z-0 h-full w-full bg-gradient-to-b`}
+              className={`absolute top-0 left-0 z-0 h-full w-full bg-gradient-to-t from-[#222222] to-[#22222200]`}
             ></div>
           </div>
         </section>
@@ -408,11 +408,8 @@ export default function ReadEbookPage({ params }) {
             />
           )}
           <div
-            className={`absolute top-0 left-0 z-0 h-full w-full ${isDark
-              ? "bg-[linear-gradient(to_top,#FFFFFF00,#FFFFFF00,#737373A1,#595959BF,#3F3F3FDE,#303030ED,#222222FF)]"
-              : "bg-[linear-gradient(to_top,#00000000,#00000000,#E5E5E5A1,#E0E0E0BF,#D4D4D4DE,#CCCCCCED,#FFFFFF)]"
-              }`}
-          />
+            className={`absolute top-0 left-0 z-0 h-full w-full bg-gradient-to-b from-[#222222] to-[#22222200]`}
+          ></div>
         </div>
         {/* Catatan Kreator */}
         <section

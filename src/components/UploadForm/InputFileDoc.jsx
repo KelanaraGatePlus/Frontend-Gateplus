@@ -14,11 +14,11 @@ export default function InputFileDoc({
     error,
 }) {
     return (
-        <section className="flex items-start gap-2 text-[#979797] montserratFont">
+        <section className="flex items-start gap-2 text-white montserratFont">
             <div className="flex flex-2 flex-col">
                 <h3 className="text-base font-semibold md:text-base lg:text-xl">{label}</h3>
                 {description && (
-                    <p className="text-[10px] italic whitespace-pre-line md:text-sm">{description}</p>
+                    <p className="text-[10px] italic whitespace-pre-line text-[#979797] md:text-sm">{description}</p>
                 )}
             </div>
 

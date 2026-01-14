@@ -28,6 +28,8 @@ import LoadingOverlay from "@/components/LoadingOverlay/page";
 /*[--- ASSETS PUBLIC ---]*/
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
+import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
+import PriceSelector from "@/components/UploadForm/PriceSelector";
 
 export default function UploadComicSeriesForm() {
     const router = useRouter();
@@ -45,7 +47,7 @@ export default function UploadComicSeriesForm() {
         defaultValues: {
             title: "",
             description: "",
-            genre: "",
+            genre: [],
             language: "",
             ageRestriction: "",
             posterBanner: null,
@@ -63,7 +65,8 @@ export default function UploadComicSeriesForm() {
         const formData = new FormData();
         formData.append("title", data.title);
         formData.append("description", data.description);
-        formData.append("categoriesId", data.genre);
+        const selectedGenres = Array.isArray(data.genre) ? data.genre : [data.genre].filter(Boolean);
+        formData.append("categoriesId", JSON.stringify(selectedGenres));
         formData.append("language", data.language);
         formData.append("ageRestriction", data.ageRestriction);
         formData.append("canSubscribe", data.canSubscribe);
@@ -109,14 +112,16 @@ export default function UploadComicSeriesForm() {
                         control={control}
                         rules={{ required: "Genre wajib dipilih" }}
                         render={({ field, fieldState }) => (
-                            <InputSelect
+                            <GenreMultiSelect
                                 label="Genre"
-                                name="Genre / Kategori Utama Komik"
+                                name="genre"
                                 options={genresData?.data.data || []}
-                                placeholder="Pilih Genre"
-                                value={field.value}
-                                onChange={field.onChange}
-                                onBlur={field.onBlur}
+                                placeholder="Pilih satu atau lebih genre yang paling menggambarkan film ini (Misal: Aksi, Horor, Drama Komedi, Sci-Fi)."
+                                value={field.value || []}
+                                onChange={(val) => {
+                                    field.onChange(val);
+                                    field.onBlur();
+                                }}
                                 error={fieldState.error?.message}
                             />
                         )}
@@ -181,14 +186,19 @@ export default function UploadComicSeriesForm() {
                             control={control}
                             rules={{ required: "Harga langganan wajib diisi" }}
                             render={({ field, fieldState }) => (
-                                <InputText
-                                    label="Harga Langganan"
-                                    name="subscriptionPrice"
-                                    type="number"
-                                    placeholder="Masukkan harga langganan"
-                                    value={field.value}
-                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                <PriceSelector
+                                    label="Harga Langganan Seri"
+                                    options={[
+                                        "5000", "10000", "15000", "25000", "50000"
+                                    ]}
+                                    selected={field.value}
+                                    onSelect={(val) => {
+                                        field.onChange(parseInt(val, 10));
+                                        field.onBlur();
+                                    }}
                                     error={fieldState.error?.message}
+                                    placeholder="Tentukan harga jual untuk kelas ini."
+                                    canFree={false}
                                 />
                             )}
                         />

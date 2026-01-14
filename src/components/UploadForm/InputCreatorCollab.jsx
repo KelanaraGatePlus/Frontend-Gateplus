@@ -16,7 +16,7 @@ export default function InputCreatorCollab({
     return (
         <section className="flex items-start gap-2 text-[#979797]">
             <div className="flex flex-2 flex-col">
-                <h3 className="montserratFont text-base font-semibold text-[#979797] md:text-base lg:text-xl">
+                <h3 className="montserratFont text-base font-semibold text-white md:text-base lg:text-xl">
                     Kolaborator / Bintang Tamu (Guest Star)
                 </h3>
                 <p className="text-[10px] text-[#979797] italic md:text-sm">Opsional</p>

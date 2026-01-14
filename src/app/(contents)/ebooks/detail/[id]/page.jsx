@@ -8,7 +8,7 @@ import { useGetUserId } from "@/lib/features/useGetUserId";
 
 /*[--- API HOOKS ---]*/
 import { useGetEbookByIdQuery } from "@/hooks/api/ebookSliceAPI";
-import SimpleModal from "@/components/Modal/SimpleModal";
+// import SimpleModal from "@/components/Modal/SimpleModal";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 
@@ -17,36 +17,34 @@ export default function DetailEbookPage({ params }) {
   const { id } = React.use(params);
   const userId = useGetUserId();
   const [loading, setLoading] = useState(false);
-  const [selectedEpisode, setSelectedEpisode] = useState(null);
-  const [selectedContentId, setSelectedContentId] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
-  const [selectedPrice, setSelectedPrice] = useState(null);
+  // const [selectedEpisode, setSelectedEpisode] = useState(null);
+  // const [selectedContentId, setSelectedContentId] = useState(null);
+  // const [isModalOpen, setIsModalOpen] = useState(false);
+  // const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
+  // const [selectedPrice, setSelectedPrice] = useState(null);
   const [createLog] = useCreateLogMutation();
 
-  const handleModalOpen = (episodeId, price) => {
-    setSelectedEpisode(episodeId);
-    setSelectedPrice(price);
-    setIsModalOpen(true);
-  };
+  // const handleModalOpen = (episodeId, price) => {
+  //   setSelectedEpisode(episodeId);
+  //   setSelectedPrice(price);
+  //   setIsModalOpen(true);
+  // };
 
-  const handleModalSubscribeOpen = (contentId, price) => {
-    setSelectedContentId(contentId);
-    setSelectedPrice(price);
-    setIsModalSubscribeOpen(true);
-  };
+  // const handleModalSubscribeOpen = (contentId, price) => {
+  //   setSelectedContentId(contentId);
+  //   setSelectedPrice(price);
+  //   setIsModalSubscribeOpen(true);
+  // };
 
-  const handleBuy = async () => {
+  const handleBuy = async (episodeId) => {
     setLoading(true);
-    window.location.href = `/checkout/purchase/ebooks/${id}/${selectedEpisode}`;
-    setIsModalOpen(false);
+    window.location.href = `/checkout/purchase/ebooks/${id}/${episodeId}`;
     setLoading(false);
   };
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = async (contentId) => {
     setLoading(true);
-    window.location.href = `/checkout/subscribe/ebooks/${selectedContentId}`;
-    setIsModalSubscribeOpen(false);
+    window.location.href = `/checkout/subscribe/ebooks/${contentId}`;
     setLoading(false);
   };
 
@@ -72,12 +70,12 @@ export default function DetailEbookPage({ params }) {
         productDetail={ebookData}
         productEpisode={episode_ebooks}
         isLoading={isLoading}
-        handlePayment={handleModalOpen}
-        handleSubscribe={handleModalSubscribeOpen}
+        handlePayment={handleBuy}
+        handleSubscribe={handleSubscribe}
         topContentData={data?.topContent || []}
         recomendationData={data?.recommendation || []}
       />
-      <SimpleModal
+      {/* <SimpleModal
         title={"Konten ini masih terkunci, apakah kamu bersedia membeli nya dengan harga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -88,7 +86,7 @@ export default function DetailEbookPage({ params }) {
         isOpen={isModalSubscribeOpen}
         onClose={() => setIsModalSubscribeOpen(false)}
         onConfirm={handleSubscribe}
-      />
+      /> */}
       {loading && <LoadingOverlay />}
     </div>
   );

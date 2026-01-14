@@ -99,7 +99,7 @@ export default function ImageCropperModal({
         </div>
 
         {/* Cropper Area */}
-        <div className="relative h-[400px] md:h-[500px] bg-black">
+        <div className="relative h-[40vh] bg-black">
           <Cropper
             image={image}
             crop={crop}

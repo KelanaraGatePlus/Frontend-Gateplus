@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 export default function InputTextArea({ label, name, placeholder, onChange, error, ...props }) {
     return (
         <div className="flex items-start gap-2">
-            {label && <h3 className="montserratFont bg-[#2a2a2a]md:text-base flex-2 text-base font-semibold text-[#979797] lg:text-xl">
+            {label && <h3 className="montserratFont bg-[#2a2a2a]md:text-base flex-2 text-base font-semibold text-white lg:text-xl">
                 {label}
             </h3>}
             <div className="flex w-full flex-4 text-white md:flex-10 flex-col">

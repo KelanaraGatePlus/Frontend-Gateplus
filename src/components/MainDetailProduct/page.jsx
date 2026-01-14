@@ -30,7 +30,7 @@ export default function MainTemplateLayout({
         productTitle={productDetail.title}
         productDescription={productDetail.description}
         productAgeRestriction={productDetail.ageRestriction}
-        productGenre={productDetail.categories?.tittle}
+        productGenre={Array.isArray(productDetail?.categories) ? productDetail.categories.map(cat => cat.category.tittle || cat.category.title).join(', ') : productDetail?.categories?.tittle || productDetail?.categories?.title}
         productLanguage={productDetail.language}
         productFirstEpisode={productEpisode?.[0]}
         productIsLiked={productDetail.isLiked}

@@ -28,6 +28,8 @@ import LoadingOverlay from "@/components/LoadingOverlay/page";
 /*[--- ASSETS PUBLIC ---]*/
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
+import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
+import PriceSelector from "@/components/UploadForm/PriceSelector";
 
 export default function UploadEbookSeriesForm() {
     const router = useRouter();
@@ -45,13 +47,13 @@ export default function UploadEbookSeriesForm() {
         defaultValues: {
             title: "",
             description: "",
-            genre: "",
+            genre: [],
             language: "",
             ageRestriction: "",
             posterBanner: null,
             coverBook: null,
             canSubscribe: false,
-            subscriptionPrice: 0, // Optional field, can be undefined
+            subscriptionPrice: 5000, // Optional field, can be undefined
         },
     });
 
@@ -63,11 +65,17 @@ export default function UploadEbookSeriesForm() {
         const formData = new FormData();
         formData.append("title", data.title);
         formData.append("description", data.description);
-        formData.append("categoriesId", data.genre);
+        const selectedGenres = Array.isArray(data.genre) ? data.genre : [data.genre].filter(Boolean);
+        formData.append("categoriesId", JSON.stringify(selectedGenres));
         formData.append("language", data.language);
         formData.append("ageRestriction", data.ageRestriction);
         formData.append("canSubscribe", data.canSubscribe);
-        formData.append("subscriptionPrice", data.subscriptionPrice); // Ensure it's a
+        console.log(data);
+        if (data.canSubscribe == true && data.subscriptionPrice) {
+            formData.append("subscriptionPrice", data.subscriptionPrice);
+        } else {
+            formData.append("subscriptionPrice", null);
+        }
 
         if (data.coverBook?.[0]) formData.append("coverImageUrl", data.coverBook[0]);
         if (data.posterBanner?.[0]) formData.append("posterImageUrl", data.posterBanner[0]);
@@ -109,14 +117,16 @@ export default function UploadEbookSeriesForm() {
                         control={control}
                         rules={{ required: "Genre wajib dipilih" }}
                         render={({ field, fieldState }) => (
-                            <InputSelect
+                            <GenreMultiSelect
                                 label="Genre"
                                 name="genre"
                                 options={genresData?.data.data || []}
-                                placeholder="Pilih genre yang paling sesuai: Fantasi, Romantis, Thriller, Sejarah, dsb."
-                                value={field.value}
-                                onChange={field.onChange}
-                                onBlur={field.onBlur}
+                                placeholder="Pilih satu atau lebih genre yang paling menggambarkan film ini (Misal: Aksi, Horor, Drama Komedi, Sci-Fi)."
+                                value={field.value || []}
+                                onChange={(val) => {
+                                    field.onChange(val);
+                                    field.onBlur();
+                                }}
                                 error={fieldState.error?.message}
                             />
                         )}
@@ -180,14 +190,19 @@ export default function UploadEbookSeriesForm() {
                             control={control}
                             rules={{ required: "Harga langganan wajib diisi" }}
                             render={({ field, fieldState }) => (
-                                <InputText
-                                    label="Harga Langganan"
-                                    name="subscriptionPrice"
-                                    type="number"
-                                    placeholder="Masukkan harga langganan"
-                                    value={field.value}
-                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                <PriceSelector
+                                    label="Harga Langganan Seri"
+                                    options={[
+                                        "5000", "10000", "15000", "25000", "50000"
+                                    ]}
+                                    selected={field.value}
+                                    onSelect={(val) => {
+                                        field.onChange(parseInt(val, 10));
+                                        field.onBlur();
+                                    }}
                                     error={fieldState.error?.message}
+                                    placeholder="Tentukan harga jual untuk kelas ini."
+                                    canFree={false}
                                 />
                             )}
                         />

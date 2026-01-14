@@ -95,13 +95,13 @@ export default function InputImageBanner({
                 />
             )}
             
-            <section className="flex items-start gap-2 text-[#979797] montserratFont">
+            <section className="flex items-start gap-2 text-white montserratFont">
             <div className="flex flex-2 flex-col">
                 <h3 className="montserratFont text-base font-semibold md:text-base lg:text-xl">
                     {label}
                 </h3>
                 {description && (
-                    <p className="text-[10px] italic md:text-sm">{description}</p>
+                    <p className="text-[10px] text-[#979797] italic md:text-sm">{description}</p>
                 )}
             </div>
 

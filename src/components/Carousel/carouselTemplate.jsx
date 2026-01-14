@@ -87,13 +87,13 @@ export default function CarouselTemplate({ label, type, contents, isLoading, isT
 
                                                             {fixedType == 'movie' && isTopTen && (
                                                                 <div className="aspect-[2/3] rounded-md overflow-hidden col-span-9">
-                                                                    <MovieCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
+                                                                    <MovieCard title={item.title} id={item.id} coverUrl={item.thumbnailImageUrl} />
                                                                 </div>
                                                             )}
 
                                                             {fixedType == 'series' && isTopTen && (
                                                                 <div className="aspect-[2/3] rounded-md overflow-hidden col-span-9">
-                                                                    <SeriesCard title={item.title} id={item.id} coverUrl={item.posterImageUrl} />
+                                                                    <SeriesCard title={item.title} id={item.id} coverUrl={item.thumbnailImageUrl} />
                                                                 </div>
                                                             )}
 

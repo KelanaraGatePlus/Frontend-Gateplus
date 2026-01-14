@@ -13,7 +13,6 @@ import Image from "next/image";
 import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
 import { useGetSeriesByIdQuery } from "@/hooks/api/seriesSliceAPI";
 import ProductEpisodeSection from "@/components/MainDetailProduct/ProductEpisodeSection";
-import SimpleModal from "@/components/Modal/SimpleModal";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { useLikeContent } from "@/lib/features/useLikeContent";
 import { useDislikeContent } from "@/lib/features/useDislikeContent";
@@ -29,11 +28,11 @@ function DetailSeriesPage({ params }) {
     const { id } = params;
     const { data } = useGetSeriesByIdQuery({ id, withEpisodes: false });
     const [loading, setLoading] = useState(false);
-    const [selectedContentId, setSelectedContentId] = useState(null);
-    const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
-    const [selectedPrice, setSelectedPrice] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedEpisode, setSelectedEpisode] = useState(null);
+    // // const [selectedContentId, setSelectedContentId] = useState(null);
+    // const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
+    // // const [selectedPrice, setSelectedPrice] = useState(null);
+    // const [isModalOpen, setIsModalOpen] = useState(false);
+    // const [selectedEpisode, setSelectedEpisode] = useState(null);
     const [createLog] = useCreateLogMutation();
     const { toggleLike } = useLikeContent();
     const { toggleDislike } = useDislikeContent();
@@ -52,29 +51,27 @@ function DetailSeriesPage({ params }) {
         return new Date(a.createdAt) - new Date(b.createdAt);
     });
 
-    const handleModalSubscribeOpen = (contentId, price) => {
-        setSelectedContentId(contentId);
-        setSelectedPrice(price);
-        setIsModalSubscribeOpen(true);
-    };
+    // const handleModalSubscribeOpen = (contentId, price) => {
+    //     setSelectedContentId(contentId);
+    //     setSelectedPrice(price);
+    //     setIsModalSubscribeOpen(true);
+    // };
 
-    const handleModalOpen = (episodeId, price) => {
-        setSelectedEpisode(episodeId);
-        setSelectedPrice(price);
-        setIsModalOpen(true);
-    };
+    // const handleModalOpen = (episodeId, price) => {
+    //     setSelectedEpisode(episodeId);
+    //     setSelectedPrice(price);
+    //     setIsModalOpen(true);
+    // };
 
-    const handleBuy = async () => {
+    const handleBuy = async (episodeId) => {
         setLoading(true);
-        window.location.href = `/checkout/purchase/series/${id}/${selectedEpisode}`;
-        setIsModalOpen(false);
+        window.location.href = `/checkout/purchase/series/${id}/${episodeId}`;
         setLoading(false);
     };
 
-    const handleSubscribe = async () => {
+    const handleSubscribe = async (contentId) => {
         setLoading(true);
-        window.location.href = `/checkout/subscribe/series/${selectedContentId}`;
-        setIsModalSubscribeOpen(false);
+        window.location.href = `/checkout/subscribe/series/${contentId}`;
         setLoading(false);
     };
 
@@ -179,7 +176,7 @@ function DetailSeriesPage({ params }) {
                         contentId={seriesData?.id}
                         ageRestriction={seriesData?.ageRestriction}
                         title={'Trailer ' + seriesData?.title}
-                        genre={seriesData?.categories?.tittle}
+                        genre={Array.isArray(seriesData?.categories) ? seriesData.categories.map(cat => cat.category.tittle || cat.category.title).join(', ') : seriesData?.categories?.tittle || seriesData?.categories?.title}
                     />
                 </div>
             </section>
@@ -197,7 +194,7 @@ function DetailSeriesPage({ params }) {
                         </div>
                         <div className="flex flex-row gap-6">
                             <div className="flex items-center justify-center w-max">
-                                <button disabled={seriesData?.isOwner || seriesData?.isSubscribed} onClick={seriesData?.isOwner ? null : !seriesData?.isSubscribed && seriesData?.canSubscribe ? () => { handleModalSubscribeOpen(seriesData?.id, seriesData?.subscriptionPrice) } : null} className="rounded-3xl bg-[#0076E999] disabled:bg-[#9CA3AF] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
+                                <button disabled={seriesData?.isOwner || seriesData?.isSubscribed} onClick={seriesData?.isOwner ? null : !seriesData?.isSubscribed && seriesData?.canSubscribe ? () => { handleSubscribe(seriesData?.id, seriesData?.subscriptionPrice) } : null} className="rounded-3xl bg-[#0076E999] disabled:bg-[#9CA3AF] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
                                     {seriesData?.isOwner ? "Series ini adalah karya mu" : !seriesData?.canSubscribe ? 'Buy Episode To Watch' : seriesData?.isSubscribed ? "Watch" : "Subscribe"}
                                 </button>
                             </div>
@@ -306,7 +303,7 @@ function DetailSeriesPage({ params }) {
                                 <p>Penulis Cerita : {seriesData.writer}</p>
                                 <p>Pemeran : {seriesData.talent}</p>
                                 <p>Durasi : {seriesData.duration}</p>
-                                <p>Genre : {seriesData?.categories?.tittle}</p>
+                                <p>Genre : {Array.isArray(seriesData?.categories) ? seriesData.categories.map(cat => cat.category.tittle || cat.category.title).join(', ') : seriesData?.categories?.tittle || seriesData?.categories?.title}</p>
                                 <p>Tahun Rilis : {seriesData.releaseYear}</p>
                                 <p>Bahasa : {seriesData.language}</p>
                             </div>
@@ -319,7 +316,7 @@ function DetailSeriesPage({ params }) {
                     productEpisodes={episode_series}
                     isLoading={loading}
                     isSubscribe={seriesData?.isSubscribed}
-                    handlePayment={handleModalOpen}
+                    handlePayment={handleBuy}
                     productId={
                         seriesData?.id
                     }
@@ -349,7 +346,7 @@ function DetailSeriesPage({ params }) {
                     </section>
                 </section>
 
-                <SimpleModal
+                {/* <SimpleModal
                     title={"Subscribe untuk menikmati seluruh episode dari konten ini selama sebulan seharga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
                     isOpen={isModalSubscribeOpen}
                     onClose={() => setIsModalSubscribeOpen(false)}
@@ -361,7 +358,7 @@ function DetailSeriesPage({ params }) {
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     onConfirm={handleBuy}
-                />
+                /> */}
             </main>
         </div>
     );

@@ -7,7 +7,6 @@ import Image from "next/image";
 import { useGetMovieByIdQuery } from "@/hooks/api/movieSliceAPI";
 import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
 import React, { useEffect, useState } from "react";
-import SimpleModal from "@/components/Modal/SimpleModal";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { useLikeContent } from "@/lib/features/useLikeContent";
 import { useDislikeContent } from "@/lib/features/useDislikeContent";
@@ -32,9 +31,9 @@ function PlayingMoviePage({ params }) {
     const { data } = useGetMovieByIdQuery(id);
     const movieData = data?.data?.data || {}; // Pindahkan ke atas agar bisa dipakai di useEffect
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedContentId, setSelectedContentId] = useState(null);
-    const [selectedPrice, setSelectedPrice] = useState(null);
+    // const [isModalOpen, setIsModalOpen] = useState(false);
+    // const [selectedContentId, setSelectedContentId] = useState(null);
+    // const [selectedPrice, setSelectedPrice] = useState(null);
     const [createLog] = useCreateLogMutation();
     const { toggleLike } = useLikeContent();
     const { toggleDislike } = useDislikeContent();
@@ -115,14 +114,14 @@ function PlayingMoviePage({ params }) {
     };
 
     const handleSubscribe = async () => {
-        window.location.href = `/checkout/subscribe/movie/${selectedContentId}`;
+        window.location.href = `/checkout/subscribe/movie/${movieData.id}`;
     };
 
-    const handleModalOpen = (contentId, price) => {
-        setSelectedContentId(contentId);
-        setSelectedPrice(price);
-        setIsModalOpen(true);
-    };
+    // const handleModalOpen = (contentId, price) => {
+    //     setSelectedContentId(contentId);
+    //     setSelectedPrice(price);
+    //     setIsModalOpen(true);
+    // };
 
     const handleToggleSave = () => {
         toggleSave({
@@ -162,7 +161,7 @@ function PlayingMoviePage({ params }) {
                         poster={movieData?.posterImageUrl}
                         startFrom={movieData?.WatchProgress?.[0]?.progressSeconds || 0}
                         title={movieData?.title}
-                        genre={movieData?.categories?.tittle}
+                        genre={Array.isArray(movieData?.categories) ? movieData.categories.map(cat => cat.category.tittle).join(', ') : movieData?.categories?.title}
                         ageRestriction={movieData?.ageRestriction}
                     />}
                 </div>
@@ -176,12 +175,12 @@ function PlayingMoviePage({ params }) {
                                 {movieData?.title || "Judul Movie Tidak Tersedia"}
                             </h1>
                             <p className=" text-sm/normal">
-                                {formatDuration(movieData?.duration)} | {movieData?.ageRestriction} | {movieData?.categories?.tittle}
+                                {formatDuration(movieData?.duration)} | {movieData?.ageRestriction} | {Array.isArray(movieData?.categories) ? movieData.categories.map(cat => cat.tittle || cat.title).join(', ') : movieData?.categories?.tittle || movieData?.categories?.title}
                             </p>
                         </div>
                         <div className="flex flex-row gap-6">
                             <div className="flex items-center justify-center w-48">
-                                <button onClick={movieData?.isOwner || movieData?.isSubscribed || movieData?.price == 'Free' ? null : () => { handleModalOpen(movieData?.id, movieData?.price) }} className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
+                                <button onClick={movieData?.isOwner || movieData?.isSubscribed || movieData?.price == 'Free' ? null : () => { handleSubscribe()}} className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
                                     {movieData?.isOwner || movieData?.isSubscribed || movieData?.price == 'Free' ? "Watch" : "Buy"}
                                 </button>
                             </div>
@@ -292,7 +291,7 @@ function PlayingMoviePage({ params }) {
                                 <p>Penulis Cerita : {movieData.writer}</p>
                                 <p>Pemeran : {movieData.talent}</p>
                                 <p>Durasi : {formatDuration(movieData.duration)}</p>
-                                <p>Genre : {movieData?.categories?.tittle}</p>
+                                <p>Genre : {Array.isArray(movieData?.categories) ? movieData.categories.map(cat => cat.category.tittle || cat.category.title).join(', ') : movieData?.categories?.tittle || movieData?.categories?.title}</p>
                                 <p>Tahun Rilis : {movieData.releaseYear}</p>
                                 <p>Bahasa : {movieData.language}</p>
                             </div>
@@ -332,12 +331,12 @@ function PlayingMoviePage({ params }) {
                     />
                 </div>}
 
-                <SimpleModal
+                {/* <SimpleModal
                     title={"Subscribe untuk menikmati seluruh episode dari konten ini selama sebulan seharga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     onConfirm={() => handleSubscribe()}
-                />
+                /> */}
             </main>
         </div>
     );
