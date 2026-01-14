@@ -26,8 +26,9 @@ export const createEbookEpisodeSchema = z.object({
         }),
     notedEpisode: z
         .string()
-        .min(1, "Catatan wajib diisi")
-        .max(150, "Maksimal 150 karakter"),
+        .max(150, "Maksimal 150 karakter")
+        .nullable()
+        .optional(),
     episodeCover: z
         .any()
         .refine((file) => file && file.length > 0, "Cover episode ebook wajib diunggah")
@@ -74,6 +75,7 @@ export const createEbookEpisodeSchema = z.object({
         ),
     audioUrl: z
         .any()
+        .nullable()
         .optional()
         .refine(
             (file) => !file || file.length === 0 || (file[0] && validTypesAudio.includes(file[0].type)),
