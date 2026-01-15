@@ -108,4 +108,5 @@ ComicCard.propTypes = {
     rank: PropTypes.number,
     isOriginal: PropTypes.bool,
     hasNewEpisode: PropTypes.bool,
+    withTopTag: PropTypes.bool,
 };

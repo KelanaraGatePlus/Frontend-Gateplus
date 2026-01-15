@@ -104,4 +104,5 @@ MovieCard.propTypes = {
     coverUrl: PropTypes.string.isRequired,
     rank: PropTypes.number,
     isOriginal: PropTypes.bool,
+    withTopTag: PropTypes.bool,
 };
