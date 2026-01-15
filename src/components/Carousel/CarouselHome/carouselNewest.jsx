@@ -11,6 +11,7 @@ export default function CarouselNewest() {
             label={"Newest"}
             contents={newestData}
             isLoading={isLoading}
+            withTopTag={false}
         />
     );
 }

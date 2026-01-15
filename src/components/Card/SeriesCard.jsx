@@ -8,7 +8,7 @@ import blur from "@@/poster/blur.svg";
 // import iconMore from "@@/icons/icon_more.svg";
 import PropTypes from "prop-types";
 
-export default function SeriesCard({ title, id, coverUrl, rank = null, isOriginal = false, hasNewEpisode = false }) {
+export default function SeriesCard({ title, id, coverUrl, rank = null, isOriginal = false, hasNewEpisode = false, withTopTag = true }) {
     return (
         <Link href={`/${contentType.series.pluralName}/detail/${id}`} className="h-full w-full">
             <div className="relative h-full w-full rounded-[6px] overflow-hidden group">
@@ -18,7 +18,7 @@ export default function SeriesCard({ title, id, coverUrl, rank = null, isOrigina
                         className="flex flex-row items-start gap-1 
                                    opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out"
                     >
-                        {rank && <div className="flex flex-col rounded-sm bg-[#22222233] backdrop-blur-xs py-1 px-4 font-black items-center text-cyan-400 zeinFont">
+                        {withTopTag &&rank && <div className="flex flex-col rounded-sm bg-[#22222233] backdrop-blur-xs py-1 px-4 font-black items-center text-cyan-400 zeinFont">
                             <span className="text-sm">Teratas</span>
                             <span className="text-3xl">{rank || 1}</span>
                         </div>}

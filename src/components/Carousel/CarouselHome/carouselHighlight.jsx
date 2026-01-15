@@ -8,7 +8,7 @@ export default function CarouselHighlight() {
 
     return (
         <CarouselTemplate
-            label={"Hightlight"}
+            label={"Highlight"}
             contents={hightlightData}
             isLoading={isLoading}
         />
