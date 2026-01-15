@@ -141,4 +141,5 @@ CarouselTemplate.propTypes = {
     isTopTen: PropTypes.bool,
     isOnCreatorProfile: PropTypes.bool,
     withGradient: PropTypes.bool,
+    withTopTag: PropTypes.bool,
 }
