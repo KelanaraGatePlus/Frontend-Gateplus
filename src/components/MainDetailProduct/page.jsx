@@ -72,6 +72,7 @@ export default function MainTemplateLayout({
         type={productType}
         contents={topContentData}
         isLoading={isLoading}
+        withTopTag={false}
       />
 
       <CarouselTemplate
@@ -79,6 +80,7 @@ export default function MainTemplateLayout({
         type={productType}
         contents={recomendationData}
         isLoading={isLoading}
+        withTopTag={false}
       />
     </main>
   );

@@ -18,7 +18,7 @@ import SeriesCard from "../Card/SeriesCard";
 import PodcastCard from "../Card/PodcastCard";
 import PodcastUniqueCard from "../Card/PodcastUniqueCard";
 
-export default function CarouselTemplate({ label, type, contents, isLoading, isTopTen = false, isOnCreatorProfile = false, withGradient = true, withTopTag = true }) {
+export default function CarouselTemplate({ label, type, contents, isLoading, isTopTen = false, isOnCreatorProfile = false, withGradient = true, withTopTag = true, withNewestTag = false }) {
     return (
         <div>
             <section className={`px-8 ${isOnCreatorProfile ? "md:px-8" : "md:px-16"}`}>
@@ -42,23 +42,23 @@ export default function CarouselTemplate({ label, type, contents, isLoading, isT
                                                         className={`overflow-hidden group relative flex items-center ${isTopTen ? "w-[240px] sm:w-[180px] md:w-[460px]" : "w-[120px] sm:w-[140px] md:w-[230px] aspect-[2/3]"} cursor-pointer rounded-md group`}
                                                     >
                                                         {fixedType == 'ebook' && !isTopTen && (
-                                                            <EbookCard withTopTag={withTopTag} title={item.title} rank={index + 1} id={item.id} coverUrl={item.posterImageUrl} hasNewEpisode={item.hasNewEpisodes} />
+                                                            <EbookCard withTopTag={withTopTag} title={item.title} rank={index + 1} id={item.id} coverUrl={item.posterImageUrl} hasNewEpisode={item.hasNewEpisodes} withNewestTag={withNewestTag} />
                                                         )}
 
                                                         {fixedType == 'comic' && !isTopTen && (
-                                                            <ComicCard withTopTag={withTopTag} title={item.title} rank={index + 1} id={item.id} coverUrl={item.posterImageUrl} hasNewEpisode={item.hasNewEpisodes} />
+                                                            <ComicCard withTopTag={withTopTag} title={item.title} rank={index + 1} id={item.id} coverUrl={item.posterImageUrl} hasNewEpisode={item.hasNewEpisodes} withNewestTag={withNewestTag} />
                                                         )}
 
                                                         {fixedType == 'movie' && !isTopTen && (
-                                                            <MovieCard withTopTag={withTopTag} title={item.title} rank={index + 1} id={item.id} coverUrl={item.thumbnailImageUrl} hasNewEpisode={item.hasNewEpisodes} />
+                                                            <MovieCard withTopTag={withTopTag} title={item.title} rank={index + 1} id={item.id} coverUrl={item.thumbnailImageUrl} hasNewEpisode={item.hasNewEpisodes} withNewestTag={withNewestTag} />
                                                         )}
 
                                                         {fixedType == 'series' && !isTopTen && (
-                                                            <SeriesCard withTopTag={withTopTag} title={item.title} rank={index + 1} id={item.id} coverUrl={item.thumbnailImageUrl} hasNewEpisode={item.hasNewEpisodes} />
+                                                            <SeriesCard withTopTag={withTopTag} title={item.title} rank={index + 1} id={item.id} coverUrl={item.thumbnailImageUrl} hasNewEpisode={item.hasNewEpisodes} withNewestTag={withNewestTag} />
                                                         )}
 
                                                         {fixedType == 'podcast' && type == null && !isTopTen && (
-                                                            <PodcastCard withTopTag={withTopTag} title={item.title} rank={index + 1} id={item.id} coverUrl={item.coverPodcastImage} hasNewEpisode={item.hasNewEpisodes} />
+                                                            <PodcastCard withTopTag={withTopTag} title={item.title} rank={index + 1} id={item.id} coverUrl={item.coverPodcastImage} hasNewEpisode={item.hasNewEpisodes} withNewestTag={withNewestTag} />
                                                         )}
 
                                                         {fixedType == 'podcast' && type && !isTopTen && (
@@ -75,31 +75,31 @@ export default function CarouselTemplate({ label, type, contents, isLoading, isT
                                                             )}
                                                             {fixedType == 'ebook' && isTopTen && (
                                                                 <div className="aspect-[2/3] rounded-md overflow-hidden col-span-9">
-                                                                    <EbookCard withTopTag={withTopTag} title={item.title} id={item.id} coverUrl={item.posterImageUrl} hasNewEpisode={item.hasNewEpisodes} />
+                                                                    <EbookCard withTopTag={withTopTag} title={item.title} id={item.id} coverUrl={item.posterImageUrl} hasNewEpisode={item.hasNewEpisodes} withNewestTag={withNewestTag} />
                                                                 </div>
                                                             )}
 
                                                             {fixedType == 'comic' && isTopTen && (
                                                                 <div className="aspect-[2/3] rounded-md overflow-hidden col-span-9">
-                                                                    <ComicCard withTopTag={withTopTag} title={item.title} id={item.id} coverUrl={item.posterImageUrl} hasNewEpisode={item.hasNewEpisodes} />
+                                                                    <ComicCard withTopTag={withTopTag} title={item.title} id={item.id} coverUrl={item.posterImageUrl} hasNewEpisode={item.hasNewEpisodes} withNewestTag={withNewestTag} />
                                                                 </div>
                                                             )}
 
                                                             {fixedType == 'movie' && isTopTen && (
                                                                 <div className="aspect-[2/3] rounded-md overflow-hidden col-span-9">
-                                                                    <MovieCard withTopTag={withTopTag} title={item.title} id={item.id} coverUrl={item.thumbnailImageUrl} hasNewEpisode={item.hasNewEpisodes} />
+                                                                    <MovieCard withTopTag={withTopTag} title={item.title} id={item.id} coverUrl={item.thumbnailImageUrl} hasNewEpisode={item.hasNewEpisodes} withNewestTag={withNewestTag} />
                                                                 </div>
                                                             )}
 
                                                             {fixedType == 'series' && isTopTen && (
                                                                 <div className="aspect-[2/3] rounded-md overflow-hidden col-span-9">
-                                                                    <SeriesCard withTopTag={withTopTag} title={item.title} id={item.id} coverUrl={item.thumbnailImageUrl} hasNewEpisode={item.hasNewEpisodes} />
+                                                                    <SeriesCard withTopTag={withTopTag} title={item.title} id={item.id} coverUrl={item.thumbnailImageUrl} hasNewEpisode={item.hasNewEpisodes} withNewestTag={withNewestTag} />
                                                                 </div>
                                                             )}
 
                                                             {fixedType == 'podcast' && isTopTen && (
                                                                 <div className="aspect-[2/3] rounded-md overflow-hidden col-span-9">
-                                                                    <PodcastCard withTopTag={withTopTag} title={item.title} id={item.id} coverUrl={item.coverPodcastImage} hasNewEpisode={item.hasNewEpisodes} />
+                                                                    <PodcastCard withTopTag={withTopTag} title={item.title} id={item.id} coverUrl={item.coverPodcastImage} hasNewEpisode={item.hasNewEpisodes} withNewestTag={withNewestTag} />
                                                                 </div>
                                                             )}
                                                         </div>
@@ -142,4 +142,5 @@ CarouselTemplate.propTypes = {
     isOnCreatorProfile: PropTypes.bool,
     withGradient: PropTypes.bool,
     withTopTag: PropTypes.bool,
+    withNewestTag: PropTypes.bool,
 }

@@ -12,6 +12,7 @@ export default function CarouselNewest() {
             contents={newestData}
             isLoading={isLoading}
             withTopTag={false}
+            withNewestTag={true}
         />
     );
 }

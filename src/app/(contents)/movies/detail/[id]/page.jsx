@@ -307,6 +307,8 @@ function PlayingMoviePage({ params }) {
                                 type="movie"
                                 contents={data?.data?.topContent || []}
                                 isLoading={!data}
+                                withTopTag={false}
+                                withNewestTag={false}
                             />
                         </section>
 
@@ -316,6 +318,8 @@ function PlayingMoviePage({ params }) {
                                 type="movie"
                                 contents={data?.data?.recommendation || []}
                                 isLoading={!data}
+                                withTopTag={false}
+                                withNewestTag={false}
                             />
                         </section>
                     </section>
