@@ -77,10 +77,6 @@ export const createEbookEpisodeSchema = z.object({
         .refine(
             (file) => file && file[0] && validTypesEbook.includes(file[0].type),
             "Format file tidak valid, harus berformat .doc atau .docx"
-        )
-        .refine(
-            (file) => file && file[0] && !file[0].name.includes(" "),
-            "Nama file tidak boleh mengandung spasi"
         ),
     audioUrl: z
         .any()
