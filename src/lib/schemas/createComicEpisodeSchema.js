@@ -44,9 +44,6 @@ export const createComicEpisodeSchema = z.object({
         }, {
             message: "Format file harus jpg, png, atau webp",
         })
-        .refine((files) => files.length <= 10, {
-            message: "Maksimal 10 file yang bisa diunggah",
-        })
         .refine((files) => {
             const names = files.map((f) => f.name.toLowerCase());
             const uniqueNames = new Set(names);
