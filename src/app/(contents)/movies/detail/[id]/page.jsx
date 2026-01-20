@@ -254,7 +254,6 @@ function PlayingMoviePage({ params }) {
                                 alt="logo-subscribers"
                                 className="rounded-full"
                                 src={movieData?.creator?.imageUrl !== 'null' && movieData?.creator?.imageUrl !== null ? movieData?.creator?.imageUrl : DEFAULT_AVATAR}
-                                priority
                             />
                         </div>
                         <Link href={`/creator/${movieData?.creator?.id}`} className="grid grid-rows-2">
@@ -274,7 +273,6 @@ function PlayingMoviePage({ params }) {
                             alt="logo-racunsangga-movie"
                             layout="fill"
                             className="rounded-md object-cover"
-                            priority
                         />}
                     </div>
 

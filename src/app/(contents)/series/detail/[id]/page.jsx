@@ -267,7 +267,6 @@ function DetailSeriesPage({ params }) {
                                 width={60}
                                 alt="logo-subscribers"
                                 src={seriesData?.creator?.imageUrl || DEFAULT_AVATAR.src}
-                                priority
                             />
                         </div>
                         <Link href={`/creator/${seriesData?.creator?.id}`} className="grid grid-rows-2">
