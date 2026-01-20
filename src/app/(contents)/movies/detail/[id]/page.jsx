@@ -248,7 +248,7 @@ function PlayingMoviePage({ params }) {
                     </div>
                     <div className="flex flex-row items-center md:justify-end w-full md:w-1/2 gap-3">
                         <div className="flex items-center justify-center">
-                            <Image
+                            <img
                                 width={60}
                                 height={60}
                                 alt="logo-subscribers"
@@ -269,7 +269,7 @@ function PlayingMoviePage({ params }) {
                 <section className="flex flex-row gap-3 items-stretch mt-5 px-4 md:px-15">
                     {/* Poster 3:2 */}
                     <div className="relative aspect-[2/3] w-[220px] sm:w-[160px] lg:w-[250px] flex-shrink-0">
-                        {movieData.thumbnailImageUrl && <Image
+                        {movieData.thumbnailImageUrl && <img
                             src={movieData.thumbnailImageUrl}
                             alt="logo-racunsangga-movie"
                             layout="fill"

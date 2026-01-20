@@ -23,6 +23,7 @@ import iconSaveSolid from "@@/logo/logoDetailFilm/saved-icons.svg";
 import { useSaveContent } from '@/lib/features/useSaveContent';
 import CarouselTemplate from '@/components/Carousel/carouselTemplate';
 import Link from 'next/link';
+import { DEFAULT_AVATAR } from '@/lib/defaults';
 
 function DetailSeriesPage({ params }) {
     const { id } = params;
@@ -262,10 +263,10 @@ function DetailSeriesPage({ params }) {
                     </div>
                     <div className="flex flex-row items-center md:justify-end w-full md:w-1/2 gap-3">
                         <div className="flex items-center justify-center">
-                            <Image
+                            <img
                                 width={60}
                                 alt="logo-subscribers"
-                                src={logoSubscribe}
+                                src={seriesData?.creator?.imageUrl || DEFAULT_AVATAR.src}
                                 priority
                             />
                         </div>
@@ -281,12 +282,10 @@ function DetailSeriesPage({ params }) {
                 <section className="flex flex-row gap-3 items-stretch px-4 md:px-15 mt-5">
                     {/* Poster 3:2 */}
                     <div className="relative aspect-[2/3] w-[220px] sm:w-[160px] lg:w-[250px] flex-shrink-0">
-                        {seriesData.thumbnailImageUrl && <Image
+                        {seriesData.thumbnailImageUrl && <img
                             src={seriesData.thumbnailImageUrl}
                             alt="logo-racunsangga-movie"
-                            layout="fill"
-                            className="rounded-md object-cover"
-                            priority
+                            className="rounded-md object-cover h-full w-full"
                         />}
                     </div>
 

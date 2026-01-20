@@ -153,7 +153,7 @@ export default function ProductDetailSection({
     });
   };
 
-  
+
 
   useEffect(() => {
     setShowSkeleton(isLoading);
@@ -167,14 +167,13 @@ export default function ProductDetailSection({
         {/* banner */}
         <div className="absolute -z-10 h-64 w-full overflow-hidden">
           {productBanner && (
-            <Image
+            <img
               src={productBanner}
               alt="Poster"
-              fill
-              className="object-cover bg-[#2E2E2E]"
+              className="h-full w-full object-cover bg-[#2E2E2E]"
             />
           )}
-          <div className="absolute top-0 left-0 z-0 h-full w-full bg-gradient-to-t from-[#222222] to-[#22222200]" />
+          <div className="absolute top-0 left-0 z-0 h-full w-full bg-gradient-to-t from-[#222222] to-transparent" />
         </div>
 
         {/* Back menu */}
@@ -185,11 +184,10 @@ export default function ProductDetailSection({
           {/* cover buku */}
           <div className={`relative overflow-hidden rounded-lg md:rounded h-[300px] w-[200px] md:h-[500px] md:w-[337px]`}>
             {productCover && (
-              <Image
+              <img
                 src={productCover}
                 alt="Poster"
-                fill
-                className="object-cover bg-[#2E2E2E]"
+                className="object-cover bg-[#2E2E2E] h-full w-full"
               />
             )}
           </div>
