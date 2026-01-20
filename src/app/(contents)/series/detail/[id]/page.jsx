@@ -6,7 +6,6 @@ import React from "react";
 import logoDislike from "@@/logo/logoDetailFilm/dislike-icons.svg";
 import logoLike from "@@/logo/logoDetailFilm/like-icons.svg";
 import logoSave from "@@/logo/logoDetailFilm/save-icons.svg";
-import logoSubscribe from "@@/logo/logoDetailFilm/subscribe-icon-kelanara.svg";
 import { useEffect, useState } from "react";
 
 import Image from "next/image";

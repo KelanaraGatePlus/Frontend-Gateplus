@@ -271,7 +271,6 @@ function PlayingMoviePage({ params }) {
                         {movieData.thumbnailImageUrl && <img
                             src={movieData.thumbnailImageUrl}
                             alt="logo-racunsangga-movie"
-                            layout="fill"
                             className="rounded-md object-cover"
                         />}
                     </div>
