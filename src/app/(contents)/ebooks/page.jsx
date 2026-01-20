@@ -69,12 +69,15 @@ function EbookContent() {
                 isLoading={isLoading}
                 type={"ebook"}
                 isTopTen={true}
+                withTopTag={true}
             />
             <CarouselTemplate
                 label={"Newest"}
                 contents={newestData}
                 isLoading={isLoading}
                 type={"ebook"}
+                withNewestTag={true}
+                withTopTag={false}
             />
         </>
     );

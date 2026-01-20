@@ -10,8 +10,17 @@ const maxSize = 1000 * 1024;
 
 export const createEbookEpisodeSchema = z.object({
     ebookId: z.string().min(1, "Judul series wajib dipilih"),
-    title: z.string().min(1, "Judul wajib diisi").max(50, "Maksimal 50 karakter"),
-    description: z.string().min(1, "Deskripsi wajib diisi").max(300, "Maksimal 300 karakter"),
+    title: z.string().min(1, "Judul wajib diisi").max(100, "Maksimal 100 karakter"),
+    description: z
+        .string()
+        .refine((val) => {
+            const words = val ? val.trim().split(/\s+/).filter(Boolean) : [];
+            return words.length >= 15;
+        }, "Deskripsi minimal 15 kata")
+        .refine((val) => {
+            const words = val ? val.trim().split(/\s+/).filter(Boolean) : [];
+            return words.length <= 500;
+        }, "Maksimal 500 kata"),
     price: z
         .string()
         .trim()
@@ -68,10 +77,6 @@ export const createEbookEpisodeSchema = z.object({
         .refine(
             (file) => file && file[0] && validTypesEbook.includes(file[0].type),
             "Format file tidak valid, harus berformat .doc atau .docx"
-        )
-        .refine(
-            (file) => file && file[0] && !file[0].name.includes(" "),
-            "Nama file tidak boleh mengandung spasi"
         ),
     audioUrl: z
         .any()

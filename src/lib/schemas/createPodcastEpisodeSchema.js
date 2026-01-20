@@ -9,8 +9,17 @@ const maxSize = 1000 * 1024;
 
 export const createPodcastEpisodeSchema = z.object({
     podcastId: z.string().min(1, "Judul series wajib dipilih"),
-    title: z.string().min(1, "Judul wajib diisi").max(50, "Maksimal 50 karakter"),
-    description: z.string().min(1, "Deskripsi wajib diisi"),
+    title: z.string().min(1, "Judul wajib diisi").max(100, "Maksimal 100 karakter"),
+    description: z
+        .string()
+        .refine((val) => {
+            const words = val ? val.trim().split(/\s+/).filter(Boolean) : [];
+            return words.length >= 15;
+        }, "Deskripsi minimal 15 kata")
+        .refine((val) => {
+            const words = val ? val.trim().split(/\s+/).filter(Boolean) : [];
+            return words.length <= 500;
+        }, "Maksimal 500 kata"),
     price: z.string().min(1, "Harga wajib diisi"),
     notedPodcast: z
         .string()

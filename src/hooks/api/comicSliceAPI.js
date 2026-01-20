@@ -69,7 +69,16 @@ export const comicApi = createApi({
                 formData: true,
             }),
             invalidatesTags: ["comic"],
-        })
+        }),
+        changeVisibility: builder.mutation({
+            query: ({ id, formData }) => ({
+                url: `/comics/${id}/privacy`,
+                method: "PATCH",
+                body: formData,
+                formData: true,
+            }),
+            invalidatesTags: ["comic"],
+        }),
     }),
 });
 
@@ -82,4 +91,5 @@ export const {
     useDeleteComicMutation,
     useUpdateComicMutation,
     useGetComicPerContentAnalyticsQuery,
+    useChangeVisibilityMutation,
 } = comicApi;

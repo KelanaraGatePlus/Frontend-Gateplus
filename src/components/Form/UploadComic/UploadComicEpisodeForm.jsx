@@ -57,7 +57,6 @@ export default function UploadComicEpisodeForm() {
     const creatorDetailQuery = useGetCreatorDetailQuery({ id: creatorId, userId }, { skip });
 
     const onSubmit = async (data) => {
-        const sortedFiles = data.inputFile.sort((a, b) => a.name.localeCompare(b.name));
         const formData = new FormData();
         formData.append("comicsId", data.comicId);
         formData.append("title", data.title);
@@ -66,7 +65,7 @@ export default function UploadComicEpisodeForm() {
         formData.append("notedEpisode", data.notedEpisode);
         formData.append("coverImageUrl", data.episodeCover[0]);
 
-        sortedFiles.forEach((file) => {
+        data.inputFile.forEach((file) => {
             formData.append("fileImageComics", file);
         });
 
@@ -138,7 +137,7 @@ export default function UploadComicEpisodeForm() {
                     render={({ field, fieldState }) => (
                         <InputComicPic
                             uploadedFiles={{ inputFile: field.value }}
-                            description="Unggah semua halaman chapter dalam format urutan yang benar (JPG/PNG disarankan). Pastikan resolusi cukup tinggi untuk dibaca dengan nyaman."
+                            description="Unggah semua halaman chapter (JPG/PNG). Setelah upload, geser/drag gambar untuk mengatur urutan halaman."
                             label="File Gambar Chapter Komik (Halaman Lengkap)"
                             handleFileUpload={(e) => field.onChange([...field.value, ...e.target.files].sort((a, b) => a.name.localeCompare(b.name)))}
                             handleRemoveFile={(_, index) => {
@@ -146,6 +145,7 @@ export default function UploadComicEpisodeForm() {
                                 updated.splice(index, 1);
                                 field.onChange(updated);
                             }}
+                            onReorder={(reorderedFiles) => field.onChange(reorderedFiles)}
                             error={fieldState.error?.message}
                         />
                     )}

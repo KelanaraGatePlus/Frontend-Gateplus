@@ -332,6 +332,8 @@ function DetailSeriesPage({ params }) {
                                 type="series"
                                 contents={data?.data?.topContent || []}
                                 isLoading={!data}
+                                withTopTag={false}
+                                withNewestTag={false}
                             />
                         </section>
 
@@ -341,6 +343,8 @@ function DetailSeriesPage({ params }) {
                                 type="seriess"
                                 contents={data?.data?.recommendation || []}
                                 isLoading={!data}
+                                withTopTag={false}
+                                withNewestTag={false}
                             />
                         </section>
                     </section>

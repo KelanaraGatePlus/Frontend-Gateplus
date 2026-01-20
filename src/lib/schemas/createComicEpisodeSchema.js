@@ -5,13 +5,23 @@ const maxSize = 1000 * 1024;
 
 export const createComicEpisodeSchema = z.object({
     comicId: z.string().min(1, "Judul series wajib dipilih"),
-    title: z.string().min(1, "Judul wajib diisi").max(50, "Maksimal 50 karakter"),
-    description: z.string().min(1, "Deskripsi wajib diisi"),
+    title: z.string().min(1, "Judul wajib diisi").max(100, "Maksimal 100 karakter"),
+    description: z
+        .string()
+        .refine((val) => {
+            const words = val ? val.trim().split(/\s+/).filter(Boolean) : [];
+            return words.length >= 15;
+        }, "Deskripsi minimal 15 kata")
+        .refine((val) => {
+            const words = val ? val.trim().split(/\s+/).filter(Boolean) : [];
+            return words.length <= 500;
+        }, "Maksimal 500 kata"),
     price: z.string().min(1, "Harga wajib diisi"),
     notedEpisode: z
         .string()
-        .min(1, "Catatan wajib diisi")
-        .max(150, "Maksimal 150 karakter"),
+        .max(200, "Maksimal 200 karakter")
+        .optional()
+        .nullable(),
     episodeCover: z
         .any()
         .refine((file) => file && file.length > 0, "Cover episode ebook wajib diunggah")
@@ -33,20 +43,6 @@ export const createComicEpisodeSchema = z.object({
             return files.every((file) => allowedTypes.includes(file.type));
         }, {
             message: "Format file harus jpg, png, atau webp",
-        })
-        .refine((files) => {
-            const namePattern = /^\d{2}/;
-            return files.every((file) => namePattern.test(file.name));
-        }, {
-            message: "Nama file harus diawali 2 digit angka (contoh: 01_nama.jpg)",
-        })
-        .refine((files) => {
-            return files.every((file) => !file.name.includes(" "));
-        }, {
-            message: "Nama file tidak boleh mengandung spasi",
-        })
-        .refine((files) => files.length <= 10, {
-            message: "Maksimal 10 file yang bisa diunggah",
         })
         .refine((files) => {
             const names = files.map((f) => f.name.toLowerCase());

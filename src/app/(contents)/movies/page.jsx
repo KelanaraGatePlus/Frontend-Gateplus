@@ -60,12 +60,15 @@ function MovieContent() {
                 isLoading={isLoading}
                 type={"movie"}
                 isTopTen={true}
+                withTopTag={false}
             />
             <CarouselTemplate
                 label={"Newest"}
                 contents={newestData}
                 isLoading={isLoading}
                 type={"movie"}
+                withNewestTag={true}
+                withTopTag={false}
             />
         </>
     )
