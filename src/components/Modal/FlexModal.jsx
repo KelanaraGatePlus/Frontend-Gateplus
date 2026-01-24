@@ -4,7 +4,7 @@ import { XIcon } from "flowbite-react";
 
 export default function FlexModal({ isOpen, onClose, title, children }) {
     return (
-        <div className={`fixed inset-0 flex items-center justify-center z-50 ${isOpen ? '' : 'hidden'}`}>
+        <div className={`fixed inset-0 flex items-center justify-center max-h-screen overflow-y-scroll z-50 ${isOpen ? '' : 'hidden'}`}>
             {/* Background Overlay */}
             <div className="fixed inset-0 bg-black opacity-40" onClick={onClose}></div>
 

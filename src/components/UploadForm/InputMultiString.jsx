@@ -35,7 +35,7 @@ export default function InputMultiString({
 
     return (
         <div className="flex items-start gap-2">
-            <h3 className="montserratFont flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
+            <h3 className="montserratFont flex-2 text-base font-semibold text-white md:text-base lg:text-xl">
                 {label}
             </h3>
             

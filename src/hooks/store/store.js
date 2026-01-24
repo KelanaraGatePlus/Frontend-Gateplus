@@ -27,6 +27,10 @@ import { discountVoucherAPI } from "../api/discountVoucherAPI";
 import { redeemVoucherAPI } from "../api/redeemVoucherAPI";
 import { savedContentAPI } from "../api/savedContentAPI";
 import { oneTimePasswordAPI } from "../api/oneTimePasswordAPI";
+import { educationAPI } from "../api/educationSliceAPI";
+import { educationCategoryAPI } from "../api/educationCategorySliceAPI";
+import { educationEpisodeAPI } from "../api/educationEpisodeSliceAPI";
+import { quizAPI } from "../api/quizSliceAPI";
 
 const rootReducer = combineReducers({
   [ebookApi.reducerPath]: ebookApi.reducer,
@@ -53,7 +57,11 @@ const rootReducer = combineReducers({
   [discountVoucherAPI.reducerPath]: discountVoucherAPI.reducer,
   [redeemVoucherAPI.reducerPath]: redeemVoucherAPI.reducer,
   [savedContentAPI.reducerPath]: savedContentAPI.reducer,
-  [oneTimePasswordAPI.reducerPath]: oneTimePasswordAPI.reducer
+  [oneTimePasswordAPI.reducerPath]: oneTimePasswordAPI.reducer,
+  [educationAPI.reducerPath]: educationAPI.reducer,
+  [educationCategoryAPI.reducerPath]: educationCategoryAPI.reducer,
+  [educationEpisodeAPI.reducerPath]: educationEpisodeAPI.reducer,
+  [quizAPI.reducerPath]: quizAPI.reducer,
 });
 
 export const store = configureStore({
@@ -84,7 +92,11 @@ export const store = configureStore({
       discountVoucherAPI.middleware,
       redeemVoucherAPI.middleware,
       savedContentAPI.middleware,
-      oneTimePasswordAPI.middleware
+      oneTimePasswordAPI.middleware,
+      educationAPI.middleware,
+      educationCategoryAPI.middleware,
+      educationEpisodeAPI.middleware,
+      quizAPI.middleware
     ),
 });
 
