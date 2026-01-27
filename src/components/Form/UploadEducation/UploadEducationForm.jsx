@@ -448,7 +448,7 @@ export default function UploadEducationForm() {
                             <Controller
                                 name="passingGrade"
                                 control={control}
-                                render={({ field, fieldState }) => (
+                                render={({ field }) => (
                                     <StepSlider
                                         label="Nilai Kelulusan (%)"
                                         min={0}
@@ -632,7 +632,7 @@ export default function UploadEducationForm() {
                                             </div>
                                             {questionFields.length === 0 && (
                                                 <div className="text-center py-6 text-[#979797] text-sm montserratFont border border-dashed border-[#F5F5F540] rounded-md bg-[#1a1a1a]">
-                                                    Belum ada soal. Klik "Tambah Soal" untuk membuat soal pertama.
+                                                    Belum ada soal. Klik &quot;Tambah Soal&quot; untuk membuat soal pertama.
                                                 </div>
                                             )}
                                             {questionFields.map((field, qIndex) => (

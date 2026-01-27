@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 
 export default function StepSlider({

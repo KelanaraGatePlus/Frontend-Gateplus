@@ -1,3 +1,5 @@
+import React from 'react';
+import PropTypes from 'prop-types';
 export default function DefaultAvatar({ src, size = 40 }) {
     return (
         <img
@@ -8,3 +10,8 @@ export default function DefaultAvatar({ src, size = 40 }) {
         />
     );
 }
+
+DefaultAvatar.propTypes = {
+    src: PropTypes.string,
+    size: PropTypes.number,
+};

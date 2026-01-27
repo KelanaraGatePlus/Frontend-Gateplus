@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
+import PropTypes from 'prop-types';
 
 /*[--- THIRD PARTY LIBRARIES ---]*/
 import { useForm, Controller } from "react-hook-form";
@@ -14,7 +15,7 @@ import LoadingOverlay from "@/components/LoadingOverlay/page";
 import UploadLargeFile from "@/components/UploadForm/UploadLargeFile";
 import InputFileDoc from "@/components/UploadForm/InputFileDoc";
 import { editEducationEpisodeSchema } from "@/lib/schemas/editEducationEpisodeSchema";
-import { useGetEducationEpisodeByIdQuery, useUpdateEducationEpisodeByIdMutation, useUpdateEducationEpisodeMutation } from "@/hooks/api/educationEpisodeSliceAPI";
+import { useGetEducationEpisodeByIdQuery, useUpdateEducationEpisodeByIdMutation } from "@/hooks/api/educationEpisodeSliceAPI";
 import { Icon } from "@iconify/react";
 
 const getFileName = (url) => {
@@ -26,15 +27,13 @@ const getFileName = (url) => {
 };
 
 export default function EditEducationEpisodeForm({ episodeId, onClose }) {
-    const [isEditMode, setIsEditMode] = useState(false);
-    const {data: episodeData, isLoading: isEpisodeLoading} = useGetEducationEpisodeByIdQuery(episodeId);
+    const {data: episodeData} = useGetEducationEpisodeByIdQuery(episodeId);
     const {
         register,
         handleSubmit,
         control,
         formState: { errors },
         setValue,
-        trigger,
     } = useForm({
         resolver: zodResolver(editEducationEpisodeSchema),
         mode: "onChange",
@@ -57,7 +56,6 @@ export default function EditEducationEpisodeForm({ episodeId, onClose }) {
     useEffect(() => {
         if (episodeData?.data) {
             const episode = episodeData.data;
-            setIsEditMode(true);
             
             setValue("title", episode.title || "");
             setValue("description", episode.description || "");
@@ -288,3 +286,8 @@ export default function EditEducationEpisodeForm({ episodeId, onClose }) {
         </>
     )
 }
+
+EditEducationEpisodeForm.propTypes = {
+    episodeId: PropTypes.string.isRequired,
+    onClose: PropTypes.func.isRequired
+};

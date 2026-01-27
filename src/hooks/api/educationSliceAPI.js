@@ -58,6 +58,33 @@ export const educationAPI = createApi({
             }),
             invalidatesTags: ["education"],
         }),
+        getEducationHomeData: builder.query({
+            query: () => ({
+                url: `/education/home`,
+                method: "GET",
+            }),
+            providesTags: ["education"],
+        }),
+        getEducationProgressById: builder.query({
+            query: (id) => ({
+                url: `/education/progress/${id}`,
+                method: "GET",
+            }),
+            providesTags: ["education"],
+        }),
+        generateEducationCertificate: builder.query({
+            query: (id) => ({
+                url: `education/generate-certificate/${id}`,
+                method: "GET",
+            }),
+        }),
+        getRecomendationEducation: builder.query({
+            query: (categoriesId) => ({
+                url: `/education/recommendation/${categoriesId}`,
+                method: "GET",
+            }),
+            providesTags: ["education"],
+        }),
     }),
 });
 
@@ -66,5 +93,10 @@ export const {
     useGetEducationByCreatorIdQuery,
     useGetEducationByIdQuery,
     usePublishEducationByIdMutation,
-    useUpdateEducationByIdMutation
+    useUpdateEducationByIdMutation,
+    useGetEducationHomeDataQuery,
+    useGetEducationProgressByIdQuery,
+    useGenerateEducationCertificateQuery,
+    useLazyGenerateEducationCertificateQuery,
+    useGetRecomendationEducationQuery,
 } = educationAPI;

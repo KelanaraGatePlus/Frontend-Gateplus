@@ -4,4 +4,5 @@ export const navbarOptions = [
     { id: 3, tittle: "Podcast", url: "/podcasts" },
     { id: 4, tittle: "Movie", url: "/movies" },
     { id: 5, tittle: "Series", url: "/series" },
+    { id: 6, tittle: "Education", url: "/education" },
 ];

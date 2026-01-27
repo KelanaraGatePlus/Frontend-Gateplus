@@ -1,3 +1,5 @@
+import React from 'react';
+import PropTypes from 'prop-types';
 import DefaultAvatar from "@/components/Avatar/DefaultAvatar";
 import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
 import { useGetEducationByIdQuery, usePublishEducationByIdMutation } from "@/hooks/api/educationSliceAPI";
@@ -12,14 +14,11 @@ import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 export default function PreviewEducation({ educationId }) {
     const { data: educationData, isLoading: isEducationLoading } = useGetEducationByIdQuery(educationId);
-    const [publishEducation, { isLoading, isSuccess, isError, error }] = usePublishEducationByIdMutation();
+    const [publishEducation, { isLoading }] = usePublishEducationByIdMutation();
 
     const {
-        register,
         handleSubmit,
         control,
-        watch,
-        formState: { errors },
     } = useForm({
         resolver: zodResolver(publishEducationSchema),
         mode: "onChange",
@@ -108,9 +107,9 @@ export default function PreviewEducation({ educationId }) {
                         </div>
                     </div>
                     <div className="flex flex-col gap-3">
-                        <h1>What You'll Learn</h1>
+                        <h1>What You&apos;ll Learn</h1>
                         <div className="flex flex-row">
-                            {educationData?.data?.benefit.map(benefit => <div className="flex flex-row items-center gap-2">
+                            {educationData?.data?.benefit.map((benefit, index) => <div key={index} className="flex flex-row items-center gap-2">
                                 <Icon
                                     icon={'solar:check-circle-outline'}
                                     className="text-green-500"
@@ -168,3 +167,7 @@ export default function PreviewEducation({ educationId }) {
         </div>
     );
 }
+
+PreviewEducation.propTypes = {
+    educationId: PropTypes.string.isRequired
+};

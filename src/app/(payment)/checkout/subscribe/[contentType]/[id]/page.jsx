@@ -19,6 +19,7 @@ import FlexModal from "@/components/Modal/FlexModal";
 import PaymentSuccessImage from "@@/AdditionalImages/payment-success.svg";
 import Link from "next/link";
 import { contentType as contentTypeConst } from "@/lib/constants/contentType";
+import { useGetEducationByIdQuery } from "@/hooks/api/educationSliceAPI";
 
 export default function PaymentCheckoutPage({ params }) {
     const resolvedParams = React.use(params);
@@ -60,6 +61,11 @@ export default function PaymentCheckoutPage({ params }) {
         { skip: contentType !== "podcasts" }
     );
 
+    const {data: educationData, isLoading: educationLoading} = useGetEducationByIdQuery(
+        id,
+        {skip: contentType !== "education"}
+    );
+
     // Gabungkan data & loading berdasarkan contentType yang aktif
     let contentData;
     let isLoading = false;
@@ -84,6 +90,10 @@ export default function PaymentCheckoutPage({ params }) {
         case "podcasts":
             contentData = podcastData?.data;
             isLoading = podcastLoading;
+            break;
+        case "education":
+            contentData = educationData?.data;
+            isLoading = educationLoading;
             break;
         default:
             contentData = null;
@@ -138,7 +148,7 @@ export default function PaymentCheckoutPage({ params }) {
     }
 
     const isSubscribe = (contentType !== 'movie' && contentType !== 'series') ? contentData?.isSubscribe : contentData?.isSubscribed;
-    const price = contentType === 'movie' ? contentData?.price : contentData?.subscriptionPrice;
+    const price = contentType === 'movie' || contentType === 'education' ? contentData?.price : contentData?.subscriptionPrice;
 
     return (
         <div className="w-full h-max flex justify-center items-center mt-10">

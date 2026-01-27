@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import {
     FormControl,
@@ -6,7 +6,6 @@ import {
     Radio,
     RadioGroup,
 } from "@mui/material";
-import { Icon } from '@iconify/react';
 
 export default function InputEducationLevel({ onChange, error, value }) {
     return (

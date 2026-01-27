@@ -1,5 +1,6 @@
 "use client";
-import React, { useRef, useEffect, useState } from "react";
+import React, { useEffect } from "react";
+import PropTypes from 'prop-types';
 import { useRouter } from "next/navigation";
 
 /*[--- THIRD PARTY LIBRARIES ---]*/
@@ -8,7 +9,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 /*[--- UI COMPONENTS ---]*/
 import ButtonSubmit from '@/components/UploadForm/ButtonSubmit';
-import InputSelect from '@/components/UploadForm/InputSelect';
 import InputText from '@/components/UploadForm/InputText';
 import InputTextArea from '@/components/UploadForm/InputTextArea';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
@@ -16,7 +16,6 @@ import LoadingOverlay from "@/components/LoadingOverlay/page";
 /*[--- ASSETS PUBLIC ---]*/
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
 import UploadLargeFile from "@/components/UploadForm/UploadLargeFile";
-import { useGetEducationByCreatorIdQuery } from "@/hooks/api/educationSliceAPI";
 import InputFileDoc from "@/components/UploadForm/InputFileDoc";
 import { createEducationEpisodeSchema } from "@/lib/schemas/createEducationEpisodeSchema";
 import { useCreateNewEducationEpisodeMutation } from "@/hooks/api/educationEpisodeSliceAPI";
@@ -60,7 +59,6 @@ export default function UploadEducationEpisodeForm({ educationId }) {
 
     const [createEducationEpisode, { isLoading, error }] = useCreateNewEducationEpisodeMutation();
     const watchHasQuiz = watch("hasQuiz");
-    const { data: creatorEducationData } = useGetEducationByCreatorIdQuery();
 
     // Reset quizData when hasQuiz is unchecked
     useEffect(() => {
@@ -303,7 +301,7 @@ export default function UploadEducationEpisodeForm({ educationId }) {
 
                                         {questionFields.length === 0 && (
                                             <div className="text-center py-6 text-[#979797] text-sm montserratFont border border-dashed border-[#F5F5F540] rounded-md bg-[#1a1a1a]">
-                                                Belum ada soal. Klik "Tambah Soal" untuk membuat soal pertama.
+                                                Belum ada soal. Klik &quot;Tambah Soal&quot; untuk membuat soal pertama.
                                             </div>
                                         )}
 
@@ -433,3 +431,7 @@ export default function UploadEducationEpisodeForm({ educationId }) {
         </>
     )
 }
+
+UploadEducationEpisodeForm.propTypes = {
+    educationId: PropTypes.string.isRequired
+};

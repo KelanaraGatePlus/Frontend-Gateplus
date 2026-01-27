@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import PropTypes from 'prop-types';
 import FlexModal from "@/components/Modal/FlexModal";
 import DefaultProgressBar from "@/components/ProgressBar/DefaultProgressBar";
 import { Icon } from "@iconify/react";
@@ -7,6 +8,7 @@ import UploadEducationEpisodeForm from "./UploadEducationEpisodeForm";
 import EditEducationEpisodeForm from "./EditEducationEpisodeForm";
 import { useDeleteEducationEpisodeByIdMutation, useGetEducationEpisodeByEducationIdQuery } from "@/hooks/api/educationEpisodeSliceAPI";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+import EducationModal from "@/components/Modal/EducationModal";
 
 export default function EpisodeEducationForm({ educationId, step = null, setStep = null }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,7 +41,7 @@ export default function EpisodeEducationForm({ educationId, step = null, setStep
                     Episode Education
                 </h3>
                 <div className="relative flex w-full flex-4 text-white md:flex-10 montserratFont flex-col gap-2">
-                    {episodeEducationData?.data?.map((episode, index) => (<div className="border border-[#515151] rounded-lg p-4 flex flex-row justify-between items-center">
+                    {episodeEducationData?.data?.map((episode, index) => (<div key={episode.id} className="border border-[#515151] rounded-lg p-4 flex flex-row justify-between items-center">
                         <div className="flex flex-row gap-4 items-center">
                             <div className="rounded-full bg-[#C6C6C6] text-[#156EB7] px-4 py-2 w-auto h-max montserratFont font-semibold">
                                 {index + 1}
@@ -115,13 +117,13 @@ export default function EpisodeEducationForm({ educationId, step = null, setStep
                         </div>
                     </button>
                 </div>
-                <FlexModal isOpen={isModalOpen} setIsOpen={setIsModalOpen} title="Tambah Episode Baru" onClose={() => {
+                <EducationModal isOpen={isModalOpen} setIsOpen={setIsModalOpen} title="Tambah Episode Baru" onClose={() => {
                     setIsModalOpen(false)
                 }}>
                     <UploadEducationEpisodeForm educationId={educationId} />
-                </FlexModal>
+                </EducationModal>
 
-                <FlexModal isOpen={isEditModalOpen} setIsOpen={setIsEditModalOpen} title="Edit Episode" onClose={() => {
+                <EducationModal isOpen={isEditModalOpen} setIsOpen={setIsEditModalOpen} title="Edit Episode" onClose={() => {
                     setIsEditModalOpen(false);
                     setSelectedEpisodeForEdit(null);
                 }}>
@@ -134,7 +136,7 @@ export default function EpisodeEducationForm({ educationId, step = null, setStep
                             }} 
                         />
                     )}
-                </FlexModal>
+                </EducationModal>
             </div>
             {step && setStep && <div className="w-full flex flex-row justify-between">
                 <button onClick={() => {
@@ -192,3 +194,9 @@ export default function EpisodeEducationForm({ educationId, step = null, setStep
         </div>
     )
 }
+
+EpisodeEducationForm.propTypes = {
+    educationId: PropTypes.string.isRequired,
+    step: PropTypes.number,
+    setStep: PropTypes.func
+};

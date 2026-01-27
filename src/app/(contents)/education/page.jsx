@@ -1,14 +1,13 @@
 "use client";
 import React, { Suspense } from 'react';
 import CarouselTemplate from '@/components/Carousel/carouselTemplate';
-import { useGetSeriesHomeDataQuery } from '@/hooks/api/seriesSliceAPI';
 import StaticBannerPromo from '@/components/BannerPromoSlider/StaticBannerPromo';
 import BackButton from '@/components/BackButton/page';
-import Filter from '@/components/FilterComponent/FIlter';
-import { useSearchParams } from 'next/navigation';
 import LoadingOverlay from '@/components/LoadingOverlay/page';
+import { useGetEducationHomeDataQuery } from '@/hooks/api/educationSliceAPI';
+import EducationCard from '@/components/Card/EducationCard';
 
-export default function SeriesPage() {
+export default function EducationPage() {
     return (
         <div className='w-full h-full flex flex-col gap-4 md:gap-10'>
             <div className="absolute left-2 md:left-13 top-2">
@@ -16,63 +15,52 @@ export default function SeriesPage() {
             </div>
             <div className='w-full h-max flex flex-col gap-6'>
                 <StaticBannerPromo
-                    title="Series"
-                    subtitle="Serial TV dan series terbaik untuk binge watching"
+                    title="Education"
+                    subtitle="Expand your knowledge with our curated educational content."
                     bgColor="#5856D64D"
                     titleColor="#6A67FF"
                 />
-                <div className='relative w-full h-full'>
-                    <div className='px-2 md:px-16 absolute -bottom-6 w-full'>
-                        <Suspense fallback={<LoadingOverlay />}>
-                            <Filter
-                                contentType="Series"
-                                textColor="#6A67FF"
-                                buttonColor={
-                                    {
-                                        activeFrom: "#5856D6",
-                                        activeTo: "#6A67FF"
-                                    }
-                                }
-                            />
-                        </Suspense>
-                    </div>
-                </div>
             </div>
             <Suspense fallback={<LoadingOverlay />}>
-                <SeriesContent />
+                <EducationContent />
             </Suspense>
         </div>
     )
 }
 
-function SeriesContent() {
-    const searchParams = useSearchParams();
-    const { data, isLoading } = useGetSeriesHomeDataQuery(searchParams.get("cat") || "");
-    const newestData = data?.data?.newReleaseSeries || [];
-    const topTenData = data?.data?.topTenSeries || [];
-    const highlightedData = data?.data?.highlightsSeries || [];
+function EducationContent() {
+    const { data, isLoading } = useGetEducationHomeDataQuery();
+    const popular = data?.popular || [];
+    const featured = data?.featured || [];
 
     return (
         <>
             <CarouselTemplate
-                label={"Highlight Series"}
-                contents={highlightedData}
+                label={"Top 10 Education"}
+                contents={popular}
                 isLoading={isLoading}
-                type={"series"}
+                type={"education"}
             />
-            <CarouselTemplate
-                label={"Top 10 Series"}
-                contents={topTenData}
-                isLoading={isLoading}
-                type={"series"}
-                isTopTen={true}
-            />
-            <CarouselTemplate
-                label={"Newest"}
-                contents={newestData}
-                isLoading={isLoading}
-                type={"series"}
-            />
+
+            <div className='px-4 md:px-15'>
+                <h2 className="zeinFont text-white md:mb-4 mb-2 text-2xl md:text-3xl lg:text-4xl xl:text-[40px] font-extrabold">
+                    Featured Education
+                </h2>
+                <div className='grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-12 '>
+                    {
+                        featured.map((item, index) => (
+                            <EducationCard
+                                key={index}
+                                title={item.title}
+                                id={item.id}
+                                coverUrl={item.bannerUrl}
+                                creatorName={item.creator.profileName}
+                                releaseDate={item.createdAt}
+                            />
+                        ))
+                    }
+                </div>
+            </div>
         </>
     )
 }

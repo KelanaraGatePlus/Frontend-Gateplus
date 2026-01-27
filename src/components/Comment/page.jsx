@@ -93,6 +93,7 @@ export default function CommentComponent({
                             episodeSeriesId={contentType === "SERIES" ? episodeId : null}
                             movieId={contentType === "MOVIE" ? episodeId : null}
                             episodePodcastId={contentType === "EPISODE_PODCAST" ? episodeId : null}
+                            educationId={contentType === "EDUCATION" ? episodeId : null}
                         />
                     }
 
@@ -125,7 +126,9 @@ export default function CommentComponent({
                                             (contentType === "PODCAST" &&
                                                 comment.Episode_podcast?.podcasts?.Creator?.id === comment.user.creator.id) ||
                                             (contentType === "COMIC" &&
-                                                comment.comics_episode?.comics?.creators?.id === comment.user.creator.id)
+                                                comment.comics_episode?.comics?.creators?.id === comment.user.creator.id) ||
+                                            (contentType === "EDUCATION" &&
+                                                comment.Education?.creator?.id === comment.user.creator.id)
                                         );
 
                                     return (

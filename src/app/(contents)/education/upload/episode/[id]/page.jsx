@@ -5,6 +5,7 @@ import EpisodeEducationForm from "@/components/Form/UploadEducation/EpisodeUploa
 import EducationHeaderTab from "@/components/UploadForm/EducationHeaderTab";
 import PreviewEducation from "@/components/Form/UploadEducation/PreviewEducation";
 import EditEducationForm from "@/components/Form/UploadEducation/EditEducationForm";
+import PropTypes from "prop-types";
 
 export default function UploadEbookEpisodePage({ params }) {
   const [step, setStep] = useState(3);
@@ -21,3 +22,9 @@ export default function UploadEbookEpisodePage({ params }) {
     </Suspense>
   );
 }
+
+UploadEbookEpisodePage.propTypes = {
+  params: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+  }).isRequired,
+};

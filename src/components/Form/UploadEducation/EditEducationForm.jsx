@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useRef } from "react";
+import PropTypes from 'prop-types';
 
 /*[--- THIRD PARTY LIBRARIES ---]*/
 import { useForm, Controller } from "react-hook-form";
@@ -18,20 +19,18 @@ import UploadLargeFile from "@/components/UploadForm/UploadLargeFile";
 import PriceSelector from "@/components/UploadForm/PriceSelector";
 import { priceOption } from "@/lib/constants/priceOptions";
 import { editEducationSchema } from "@/lib/schemas/editEducationSchema";
-import { useCreateNewEducationMutation, useGetEducationByIdQuery, useUpdateEducationByIdMutation } from "@/hooks/api/educationSliceAPI";
+import { useGetEducationByIdQuery, useUpdateEducationByIdMutation } from "@/hooks/api/educationSliceAPI";
 import InputFileDoc from "@/components/UploadForm/InputFileDoc";
 import InputMultiString from "@/components/UploadForm/InputMultiString";
 import { useGetAllEducationCategoriesQuery } from "@/hooks/api/educationCategorySliceAPI";
 import InputEducationLevel from "@/components/UploadForm/InputEducationLevel";
-import EducationHeaderTab from "@/components/UploadForm/EducationHeaderTab";
 import { Icon } from "@iconify/react";
 import StepSlider from "@/components/Slider/StepSlider";
 import Switch from "@/components/Switch/Switch";
 
 export default function EditEducationForm({ educationId, step, setStep }) {
     const coverBookInputRef = useRef(null);
-    const [isEditMode, setIsEditMode] = React.useState(false);
-    const { data: educationData, isLoading: isEducationLoading } = useGetEducationByIdQuery(educationId);
+    const { data: educationData } = useGetEducationByIdQuery(educationId);
     const {
         register,
         handleSubmit,
@@ -39,7 +38,6 @@ export default function EditEducationForm({ educationId, step, setStep }) {
         watch,
         formState: { errors },
         setValue,
-        unregister,
         trigger,
     } = useForm({
         resolver: zodResolver(editEducationSchema),
@@ -54,7 +52,7 @@ export default function EditEducationForm({ educationId, step, setStep }) {
             requirement: [],
             thirdPartyUrl: "",
             finalProjectType: "NONE",
-            price: 5000,
+            price: null,
             moduleUrl: null,
             passingGrade: 70,
             haveFinalProject: false,
@@ -75,7 +73,6 @@ export default function EditEducationForm({ educationId, step, setStep }) {
     useEffect(() => {
         if (educationData?.data) {
             const education = educationData.data;
-            setIsEditMode(true);
 
             setValue("title", education.title || "");
             setValue("description", education.description || "");
@@ -86,7 +83,7 @@ export default function EditEducationForm({ educationId, step, setStep }) {
             setValue("requirement", education.requirement || []);
             setValue("thirdPartyUrl", education.thirdPartyUrl || "");
             setValue("finalProjectType", education.finalProjectType || "NONE");
-            setValue("price", education.price || 5000);
+            setValue("price", education.price ?? 0);
             setValue("moduleUrl", education.moduleUrl || null);
             setValue("passingGrade", education.passingGrade || 70);
             setValue("haveFinalProject", education.haveFinalProject || false);
@@ -465,7 +462,7 @@ export default function EditEducationForm({ educationId, step, setStep }) {
                             <Controller
                                 name="passingGrade"
                                 control={control}
-                                render={({ field, fieldState }) => (
+                                render={({ field }) => (
                                     <StepSlider
                                         label="Nilai Kelulusan (%)"
                                         min={0}
@@ -540,3 +537,9 @@ export default function EditEducationForm({ educationId, step, setStep }) {
         </>
     )
 }
+
+EditEducationForm.propTypes = {
+    educationId: PropTypes.string.isRequired,
+    step: PropTypes.number.isRequired,
+    setStep: PropTypes.func.isRequired
+};

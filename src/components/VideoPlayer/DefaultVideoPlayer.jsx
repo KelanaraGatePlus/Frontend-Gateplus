@@ -122,7 +122,7 @@ export default function DefaultVideoPlayer({
   }, [contentId, contentType, createProgressWatch, logType, device]);
 
   const throttledSaveProgress = useCallback(
-    throttle(handleSaveProgress, 60000, { leading: false, trailing: true }),
+    throttle(handleSaveProgress, 5000, { leading: false, trailing: true }),
     [handleSaveProgress]
   );
 

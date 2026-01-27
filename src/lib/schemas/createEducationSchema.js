@@ -8,7 +8,7 @@ export const createEducationSchema = z
             .trim()
             .min(1, "description is required")
             .min(10, "description must be at least 10 characters")
-            .max(500, "description must be at most 500 characters"),
+            .max(5000, "description must be at most 5000 characters"),
         trailerUrl: z
             .string()
             .trim()

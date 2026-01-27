@@ -22,7 +22,8 @@ export default function CommentForm({
   podcastId = null,
   episodeSeriesId = null,
   episodePodcastId = null,
-  movieId = null
+  movieId = null,
+  educationId = null
 }) {
   const [createComment, { isLoading }] = useCreateCommentMutation();
   const { display } = useDisplayPayment();
@@ -53,6 +54,7 @@ export default function CommentForm({
       series: { key: "episodeSeriesId", value: episodeSeriesId },
       movie: { key: "movieId", value: movieId },
       episodePodcast: { key: "episode_podcastId", value: episodePodcastId },
+      education: { key: "educationId", value: educationId },
     };
 
     // Fallback detection when contentType not provided
@@ -68,6 +70,7 @@ export default function CommentForm({
         { key: "episodeSeriesId", value: episodeSeriesId },
         { key: "movieId", value: movieId },
         { key: "episode_podcastId", value: episodePodcastId },
+        { key: "educationId", value: educationId },
       ];
       chosen = candidates.find((c) => c.value != null) || null;
     }
@@ -198,11 +201,12 @@ export default function CommentForm({
 }
 
 CommentForm.propTypes = {
-  contentType: propTypes.oneOf(["EBOOK", "COMIC", "PODCAST", "SERIES", "MOVIE", "EPISODE_PODCAST"]).isRequired,
+  contentType: propTypes.oneOf(["EBOOK", "COMIC", "PODCAST", "SERIES", "MOVIE", "EPISODE_PODCAST", "EDUCATION"]).isRequired,
   episodeEbookId: propTypes.string,
   episodeComicsId: propTypes.string,
   podcastId: propTypes.string,
   episodeSeriesId: propTypes.string,
   movieId: propTypes.string,
   episodePodcastId: propTypes.string,
+  educationId: propTypes.string,
 };

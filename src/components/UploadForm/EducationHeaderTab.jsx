@@ -1,15 +1,9 @@
 import React from 'react';
-import Link from "next/link";
 import Image from "next/image";
 import ArrowRight from "@@/icons/icons-arrow-right.svg";
 import PropTypes from 'prop-types';
-import { usePathname } from 'next/navigation';
 
 export default function EducationHeaderTab({ step, setStep }) {
-    const pathname = usePathname();
-    const isStep1 = pathname.endsWith('/upload');
-    const isStep2 = pathname.endsWith('/episode');
-
     return (
         <section className="montserratFont mb-4 flex flex-row items-center justify-center gap-3">
             {/* STEP 1 */}
@@ -124,4 +118,6 @@ export default function EducationHeaderTab({ step, setStep }) {
 
 EducationHeaderTab.propTypes = {
     type: PropTypes.string,
+    setStep: PropTypes.func.isRequired,
+    step: PropTypes.number.isRequired,
 }
