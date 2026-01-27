@@ -106,7 +106,7 @@ export default function FormRegisterCreator() {
             storeCreatorData(response.data.data);
             refreshUser();
             reset();
-            router.push("/");
+            router.back();
         } catch (error) {
             console.error("Register Creator failed:", error);
 

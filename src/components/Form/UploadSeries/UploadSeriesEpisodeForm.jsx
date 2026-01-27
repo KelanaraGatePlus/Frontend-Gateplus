@@ -36,6 +36,7 @@ export default function UploadSeriesEpisodeForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const seriesFromUrl = searchParams.get("series") || "";
+    const fromEducation = searchParams.get("education") || null;
     const creatorId = useGetCreatorId();
     const userId = useGetUserId();
 
@@ -76,6 +77,10 @@ export default function UploadSeriesEpisodeForm() {
 
         try {
             await createEpisodeSeries(formData).unwrap();
+            if(fromEducation) {
+                router.push(`/education/detail/${fromEducation}`);
+                return;
+            }
             router.push(`/series/detail/${data.seriesId}`);
         } catch (err) {
             console.error("Error creating episode of series:", err);

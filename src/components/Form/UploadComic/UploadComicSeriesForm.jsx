@@ -1,6 +1,6 @@
 "use client";
 import React, { useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 /*[--- THIRD PARTY LIBRARIES ---]*/
 import { useForm, Controller } from "react-hook-form";
@@ -34,6 +34,8 @@ import PriceSelector from "@/components/UploadForm/PriceSelector";
 export default function UploadComicSeriesForm() {
     const router = useRouter();
     const posterBannerInputRef = useRef(null);
+    const searchParams = useSearchParams();
+    const fromEducation = searchParams.get("education") || null;
     const coverBookInputRef = useRef(null);
     const {
         register,
@@ -77,6 +79,10 @@ export default function UploadComicSeriesForm() {
 
         try {
             const result = await createComic(formData).unwrap();
+            if (fromEducation) {
+                router.push(`/education/detail/${fromEducation}`);
+                return;
+            }
             router.push(`/comics/upload/episode?series=${result.data.id}`);
         } catch (err) {
             console.error("Error creating comic:", err);

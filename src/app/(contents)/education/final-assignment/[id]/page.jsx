@@ -105,7 +105,13 @@ export default function LastAssignmentPage() {
 				<div className="flex flex-col gap-4 items-center">
 					<div className="flex flex-col gap-2 items-center">
 						<h1 className="text-center font-bold montserratFont text-xl">Final Project Instructions</h1>
-						<button onClick={() => setIsModalOpen(true)} className="bg-blue-600 w-max rounded-full outline-2 transition-all outline-blue-400 hover:bg-blue-800 px-6 py-2">Upload Konten</button>
+						<button onClick={() => {
+							if (localStorage.getItem("isCreator") !== "true") {
+								window.location.href = '/register-creators';
+							} else {
+								setIsModalOpen(true)
+							};
+						}} className="bg-blue-600 w-max rounded-full outline-2 transition-all outline-blue-400 hover:bg-blue-800 px-6 py-2">Upload Konten</button>
 					</div>
 					<iframe
 						src={`https://docs.google.com/gview?url=${encodeURIComponent(educationData?.data?.finalProjectInstructionUrl)}&embedded=true`}
@@ -117,29 +123,29 @@ export default function LastAssignmentPage() {
 			)}
 
 			{isModalOpen && (
-				<ModalCreateContent isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} objective={'upload'} />
+				<ModalCreateContent isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} objective={'upload'} educationId={educationData?.data?.id} />
 			)}
 		</div>
 	);
 }
 
-function ModalCreateContent({ isModalOpen, setIsModalOpen, objective }) {
+function ModalCreateContent({ isModalOpen, setIsModalOpen, objective, educationId }) {
 	const redirect = (type, objective) => {
 		setIsModalOpen(false);
 		const url = objective == 'upload' ? 'upload' : 'upload/episode';
 		switch (type) {
 			case "movies":
-				return `/movies/${url}`;
+				return `/movies/${url}?education=${educationId || ''}`;
 			case "series":
-				return `/series/${url}`;
+				return `/series/${url}?education=${educationId || ''}`;
 			case "podcasts":
-				return `/podcasts/${url}`;
+				return `/podcasts/${url}?education=${educationId || ''}`;
 			case "ebooks":
-				return `/ebooks/${url}`;
+				return `/ebooks/${url}?education=${educationId || ''}`;
 			case "comics":
-				return `/comics/${url}`;
+				return `/comics/${url}?education=${educationId || ''}`;
 			case "education":
-				return `/education/${url}`;
+				return `/education/${url}?education=${educationId || ''}`;
 			default:
 				return "/";
 		}
@@ -180,7 +186,8 @@ function ModalCreateContent({ isModalOpen, setIsModalOpen, objective }) {
 ModalCreateContent.propTypes = {
 	isModalOpen: PropTypes.bool.isRequired,
 	setIsModalOpen: PropTypes.func.isRequired,
-	objective: PropTypes.string.isRequired
+	objective: PropTypes.string.isRequired,
+	educationId: PropTypes.string.isRequired,
 };
 
 /* ===================================================== */

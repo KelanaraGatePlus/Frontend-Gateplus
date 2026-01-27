@@ -1,6 +1,6 @@
 "use client";
 import React, { useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 /*[--- THIRD PARTY LIBRARIES ---]*/
 import { useForm, Controller } from "react-hook-form";
@@ -33,6 +33,8 @@ import PriceSelector from "@/components/UploadForm/PriceSelector";
 
 export default function UploadEbookSeriesForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const fromEducation = searchParams.get("education") || null;
     const posterBannerInputRef = useRef(null);
     const coverBookInputRef = useRef(null);
     const {
@@ -82,6 +84,10 @@ export default function UploadEbookSeriesForm() {
 
         try {
             const result = await createEbook(formData).unwrap();
+            if(fromEducation) {
+                router.push(`/ebooks/upload/episode?education=${fromEducation}&series=${result.data.id}`);
+                return;
+            }
             router.push(`/ebooks/upload/episode?series=${result.data.id}`);
         } catch (err) {
             console.error("Error creating ebook:", err);

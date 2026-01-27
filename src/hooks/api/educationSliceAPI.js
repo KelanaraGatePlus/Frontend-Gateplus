@@ -72,10 +72,11 @@ export const educationAPI = createApi({
             }),
             providesTags: ["education"],
         }),
-        generateEducationCertificate: builder.query({
-            query: (id) => ({
-                url: `education/generate-certificate/${id}`,
-                method: "GET",
+        generateEducationCertificate: builder.mutation({
+            query: (body) => ({
+                url: `education/generate-certificate`,
+                method: "POST",
+                body: body,
             }),
         }),
         getRecomendationEducation: builder.query({
@@ -96,7 +97,6 @@ export const {
     useUpdateEducationByIdMutation,
     useGetEducationHomeDataQuery,
     useGetEducationProgressByIdQuery,
-    useGenerateEducationCertificateQuery,
-    useLazyGenerateEducationCertificateQuery,
+    useGenerateEducationCertificateMutation,
     useGetRecomendationEducationQuery,
 } = educationAPI;

@@ -6,12 +6,13 @@ import PropTypes from 'prop-types';
 import DefaultVideoPlayer from '@/components/VideoPlayer/DefaultVideoPlayer';
 import CommentComponent from '@/components/Comment/page';
 import CarouselTemplate from '@/components/Carousel/carouselTemplate';
-import { useGetEducationByIdQuery, useGetEducationProgressByIdQuery, useGetRecomendationEducationQuery, useLazyGenerateEducationCertificateQuery } from '@/hooks/api/educationSliceAPI';
+import { useGenerateEducationCertificateMutation, useGetEducationByIdQuery, useGetEducationProgressByIdQuery, useGetRecomendationEducationQuery } from '@/hooks/api/educationSliceAPI';
 import LoadingOverlay from '@/components/LoadingOverlay/page';
 import { DEFAULT_AVATAR } from '@/lib/defaults';
 import { useGetCommentByEducationQuery } from '@/hooks/api/commentSliceAPI';
 import { Icon } from '@iconify/react';
 import DefaultProgressBar from '@/components/ProgressBar/DefaultProgressBar';
+import FlexModal from '@/components/Modal/FlexModal';
 
 // ==================== COURSE HEADER COMPONENT ====================
 
@@ -100,7 +101,11 @@ CourseHeader.propTypes = {
 // ==================== STATS CARDS COMPONENT ====================
 
 function StatsCards({ stats, course, progress }) {
-    const [generateCertificate, { isLoading }] = useLazyGenerateEducationCertificateQuery(course?.id);
+    const [generateCertificate, { isLoading }] = useGenerateEducationCertificateMutation();
+    const [showCertificateModal, setShowCertificateModal] = useState(false);
+    const [nameOnCertificate, setNameOnCertificate] = useState('');
+    const [isGeneratingCert, setIsGeneratingCert] = useState(false);
+
     const countTotalMinutes = (episodes = []) => {
         const totalSeconds = episodes.reduce((total, ep) => {
             return total + (Number(ep.duration) || 0);
@@ -113,20 +118,186 @@ function StatsCards({ stats, course, progress }) {
         try {
             if (!course?.id) return;
 
+            // Jika haveCertificate == false, tampilkan modal
+            if (!course?.userHasCertificate) {
+                setShowCertificateModal(true);
+                return;
+            }
+
+            // Jika haveCertificate == true, langsung generate
+            setIsGeneratingCert(true);
             const response = await generateCertificate(course.id).unwrap();
 
-            // contoh: jika API mengembalikan URL sertifikat
+            if (response?.data?.certificateId) {
+                window.open('/education/certificate/' + response.data.certificateId, "_blank");
+            }
+        } catch (error) {
+            console.error("Failed to generate certificate:", error);
+        } finally {
+            setIsGeneratingCert(false);
+        }
+    };
+
+    const handleSubmitCertificateForm = async (e) => {
+        e.preventDefault();
+
+        if (!nameOnCertificate.trim()) {
+            alert('Nama lengkap harus diisi');
+            return;
+        }
+
+        try {
+            setIsGeneratingCert(true);
+            const payload = {
+                educationId: course.id,
+                nameOnCertificate: nameOnCertificate.trim()
+            };
+
+            const response = await generateCertificate(payload).unwrap();
+
             if (response?.data?.certificateId) {
                 window.open('/education/certificate/' + response.data.certificateId, "_blank");
             }
 
+            setShowCertificateModal(false);
+            setNameOnCertificate('');
         } catch (error) {
             console.error("Failed to generate certificate:", error);
+            alert('Gagal generate sertifikat. Silakan coba lagi.');
+        } finally {
+            setIsGeneratingCert(false);
         }
     };
 
     return (
         <div className='flex flex-col gap-4'>
+            <FlexModal
+                isOpen={showCertificateModal}
+                onClose={() => {
+                    setShowCertificateModal(false);
+                    setNameOnCertificate('');
+                }}
+                title="Informasi Sertifikat"
+                size="md"
+            >
+                <form onSubmit={handleSubmitCertificateForm} className="space-y-6">
+
+                    {/* ===== INFO SECTION ===== */}
+                    <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-4 space-y-2">
+                        <h3 className="text-white font-semibold text-sm">
+                            Data Sertifikat
+                        </h3>
+                        <p className="text-gray-400 text-sm leading-relaxed">
+                            Pastikan nama yang Anda masukkan sudah benar dan sesuai dengan
+                            identitas yang ingin ditampilkan pada sertifikat.
+                        </p>
+                    </div>
+
+                    {/* ===== INPUT ===== */}
+                    <div className="space-y-2">
+                        <label className="block text-white font-semibold">
+                            Nama Lengkap
+                        </label>
+                        <input
+                            type="text"
+                            name="nameOnCertificate"
+                            value={nameOnCertificate}
+                            onChange={(e) => setNameOnCertificate(e.target.value)}
+                            placeholder="Contoh: Jay Pratama"
+                            className="
+                    w-full px-4 py-3
+                    bg-gray-700
+                    text-white
+                    rounded-lg
+                    border border-gray-600
+                    focus:outline-none
+                    focus:border-orange-400
+                    focus:ring-2 focus:ring-orange-300/40
+                    transition-all
+                "
+                            disabled={isGeneratingCert}
+                            required
+                        />
+                        <p className="text-gray-400 text-sm">
+                            Nama ini akan dicetak langsung pada sertifikat.
+                        </p>
+                    </div>
+
+                    {/* ===== WARNING ===== */}
+                    <div className="
+            flex gap-3
+            bg-orange-500/10
+            border border-orange-400/40
+            rounded-xl
+            p-4
+        ">
+                        <div className="text-orange-400 text-lg">⚠️</div>
+                        <p className="text-orange-200 text-sm leading-relaxed">
+                            <span className="font-semibold">Perhatian:</span>
+                            Setelah sertifikat berhasil digenerate,
+                            <span className="font-semibold">
+                                nama pada sertifikat tidak dapat diubah kembali
+                            </span>.
+                            Pastikan penulisan sudah benar sebelum melanjutkan.
+                        </p>
+                    </div>
+
+                    {/* ===== ACTION BUTTONS ===== */}
+                    <div className="flex gap-3 pt-2">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setShowCertificateModal(false);
+                                setNameOnCertificate('');
+                            }}
+                            disabled={isGeneratingCert}
+                            className="
+                    flex-1 px-4 py-2.5
+                    bg-gray-700
+                    border border-gray-600
+                    text-white
+                    rounded-lg
+                    font-semibold
+                    transition-all duration-200
+                    hover:bg-gray-600
+                    active:scale-[0.98]
+                    disabled:opacity-50 disabled:cursor-not-allowed
+                "
+                        >
+                            Batal
+                        </button>
+
+                        <button
+                            type="submit"
+                            disabled={isGeneratingCert}
+                            className="
+                    flex-1 px-4 py-2.5
+                    bg-orange-500
+                    border-2 border-orange-400
+                    text-white
+                    rounded-lg
+                    font-semibold
+                    transition-all duration-200
+                    hover:bg-orange-600 hover:border-orange-500
+                    active:scale-[0.98]
+                    focus:outline-none focus:ring-2 focus:ring-orange-300
+                    disabled:opacity-50 disabled:cursor-not-allowed
+                    flex items-center justify-center gap-2
+                "
+                        >
+                            {isGeneratingCert ? (
+                                <>
+                                    <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                    Generating...
+                                </>
+                            ) : (
+                                'Generate Sertifikat'
+                            )}
+                        </button>
+                    </div>
+                </form>
+            </FlexModal>
+
             {course?.haveCertificate && progress?.averageScore >= course?.passingGrade && progress?.progressPercentage >= 100 && (
                 <div className="bg-[#FAD1B04D] border border-[#FAD1B0] rounded-xl p-2 md:p-4">
                     <div className="flex items-start justify-between">
@@ -144,8 +315,8 @@ function StatsCards({ stats, course, progress }) {
                                 </p>
                             </div>
                         </div>
-                        <button onClick={handleGenerateCertificate} disabled={isLoading} className="bg-orange-500 border-2 border-orange-400 self-center hover:bg-orange-400 text-white px-4 py-2 rounded-lg font-semibold transition-all text-sm md:text-base shadow-lg flex items-center gap-2">
-                            {isLoading ? "Generating..." : "Generate Certificate"}
+                        <button onClick={handleGenerateCertificate} disabled={isLoading || isGeneratingCert} className="bg-orange-500 border-2 border-orange-400 self-center hover:bg-orange-400 text-white px-4 py-2 rounded-lg font-semibold transition-all text-sm md:text-base shadow-lg flex items-center gap-2">
+                            {isLoading || isGeneratingCert ? "Generating..." : "Generate Certificate"}
                         </button>
                     </div>
                 </div>
