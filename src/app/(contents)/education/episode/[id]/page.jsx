@@ -930,7 +930,10 @@ function QuizTab({ quizData, nextEpisodeId = null, finalAssignmentId = null, hav
 }
 
 QuizTab.propTypes = {
-    quizData: PropTypes.object
+    quizData: PropTypes.object,
+    nextEpisodeId: PropTypes.string,
+    finalAssignmentId: PropTypes.string,
+    haveFinalAssignment: PropTypes.bool
 };
 
 CourseDetail.propTypes = {
