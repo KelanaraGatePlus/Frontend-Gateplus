@@ -185,6 +185,26 @@ export default function CourseDetail({ params }) {
         skip: !quizId,
     });
 
+    // Determine next episode
+    const nextEpisode = React.useMemo(() => {
+        if (!courseData?.data?.EducationEpisode || !data?.data?.id) return null;
+
+        const episodes = courseData.data.EducationEpisode;
+        const currentEpisodeId = data.data.id;
+
+        // Find current episode index by id
+        const currentIndex = episodes.findIndex(ep => ep.id === currentEpisodeId);
+        
+        // Get next episode from array
+        if (currentIndex !== -1 && currentIndex < episodes.length - 1) {
+            const next = episodes[currentIndex + 1];
+            console.log("Next Episode:", next);
+            return next;
+        }
+        
+        return null;
+    }, [courseData?.data?.EducationEpisode, data?.data?.id]);
+
     if (isLoading || quizLoading) {
         return <LoadingOverlay />;
     }
@@ -335,7 +355,12 @@ export default function CourseDetail({ params }) {
             )}
 
             {/* ================= QUIZ ================= */}
-            {activeTab === "quiz" && <QuizTab quizData={quizData} />}
+            {activeTab === "quiz" && <QuizTab
+                quizData={quizData}
+                nextEpisodeId={nextEpisode?.id || null}
+                finalAssignmentId={courseData?.data?.id}
+                haveFinalAssignment={courseData?.data?.haveFinalProject || false}
+            />}
         </div>
     );
 }
@@ -344,7 +369,7 @@ export default function CourseDetail({ params }) {
 /* ====================== QUIZ TAB ===================== */
 /* ===================================================== */
 
-function QuizTab({ quizData }) {
+function QuizTab({ quizData, nextEpisodeId = null, finalAssignmentId = null, haveFinalAssignment = false }) {
     const [answers, setAnswers] = React.useState({});
     const [submitted, setSubmitted] = React.useState(false);
     const [score, setScore] = React.useState(0);
@@ -580,16 +605,23 @@ function QuizTab({ quizData }) {
                     <p className="text-sm text-gray-500">Anda tidak perlu mengerjakan ulang.</p>
                 </div>
 
+
                 <button
                     className="w-full bg-[#1e4e9e] text-white rounded-lg p-3 font-medium hover:bg-[#163a78] transition-colors flex items-center justify-center gap-2"
                     onClick={() => {
-                        // TODO: navigate to next episode if available
-                        console.log("Next episode clicked");
+                        if (nextEpisodeId) {
+                            window.location.href = '/education/episode/' + nextEpisodeId;
+                        } else if (haveFinalAssignment) {
+                            window.location.href = '/education/final-assignment/' + finalAssignmentId;
+                        } else {
+                            window.location.href = '/education/detail/' + finalAssignmentId;
+                        }
                     }}
                 >
-                    Next Episode
+                    {nextEpisodeId ? "Next Episode" : haveFinalAssignment ? "Go to Final Assignment" : "Complete Course"}
                     <Icon icon="solar:arrow-right-bold" />
                 </button>
+
             </div>
         );
     }
