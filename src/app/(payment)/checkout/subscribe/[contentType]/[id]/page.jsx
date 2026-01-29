@@ -13,6 +13,7 @@ import { useGetComicByIdQuery } from "@/hooks/api/comicSliceAPI";
 import { useGetSeriesByIdQuery } from "@/hooks/api/seriesSliceAPI";
 import { useGetPodcastByIdQuery } from "@/hooks/api/podcastSliceAPI";
 import { fee } from "@/lib/constants/fee";
+import { countAdminFee, paymentMethods } from "@/lib/constants/paymentMethod";
 import { useGetDiscountByVoucherDiscountCodeMutation } from "@/hooks/api/discountVoucherAPI";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import FlexModal from "@/components/Modal/FlexModal";
@@ -28,6 +29,7 @@ export default function PaymentCheckoutPage({ params }) {
     const [totalDiscount, setTotalDiscount] = useState(0);
     const [voucherCode, setVoucherCode] = useState("");
     const [successModal, setSuccessModal] = useState(false);
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
 
     const [selectedTip, setSelectedTip] = useState(null);
     const { pay: subscribePay } = usePayment('SUBSCRIBE');
@@ -101,9 +103,13 @@ export default function PaymentCheckoutPage({ params }) {
 
     async function handlePayment() {
         try {
+            if (!selectedPaymentMethod) {
+                alert("❌ Silakan pilih metode pembayaran.");
+                return;
+            }
             setIsShowInput(false);
             if (contentType == 'movie') {
-                await pay({ episodeId: id, contentType: contentTypeConst[contentType]['singleName'].toUpperCase(), tip: selectedTip, voucherCode },
+                await pay({ episodeId: id, contentType: contentTypeConst[contentType]['singleName'].toUpperCase(), tip: selectedTip, voucherCode, paymentMethod: selectedPaymentMethod },
                     {
                         onSuccess: (result) => {
                             console.log("✅ Sukses:", result);
@@ -115,7 +121,7 @@ export default function PaymentCheckoutPage({ params }) {
                     }
                 );
             } else {
-                await subscribePay({ contentId: id, contentType: contentTypeConst[contentType]['singleName'].toUpperCase(), tip: selectedTip, voucherCode },
+                await subscribePay({ contentId: id, contentType: contentTypeConst[contentType]['singleName'].toUpperCase(), tip: selectedTip, voucherCode, paymentMethod: selectedPaymentMethod },
                     {
                         onSuccess: (result) => {
                             console.log("✅ Sukses:", result);
@@ -152,12 +158,12 @@ export default function PaymentCheckoutPage({ params }) {
 
     return (
         <div className="w-full h-max flex justify-center items-center mt-10">
-            {isShowInput && <div className="bg-[#0881AB] sm:w-min-w-2xl md:min-w-3xl xl:min-w-5xl 2xl:min-w-6xl text-xs md:text-[16px] max-w-max rounded-md montserratFont text-white">
+            {isShowInput && <div className="bg-[#515151] drop-shadow-md drop-shadow-[#0000004D] sm:w-min-w-2xl md:min-w-3xl xl:min-w-5xl 2xl:min-w-6xl text-xs md:text-[16px] max-w-max rounded-md montserratFont text-white">
                 <div className="px-8 pt-4 pb-10 flex flex-col gap-8">
                     <h1 className="zeinFont font-black text-xl md:text-3xl text-center">Konfirmasi Pesanan</h1>
 
                     {/* Produk */}
-                    <div className="flex flex-row gap-2">
+                    <div className="flex flex-row gap-2 md:px-8">
                         <Image
                             src={contentData?.coverImageUrl || RacunSangga}
                             alt="Poster"
@@ -179,11 +185,37 @@ export default function PaymentCheckoutPage({ params }) {
                         </div>
                     </div>
 
+                    {/* Pemilihan metode pembayaran */}
+                    <div className="flex flex-col gap-2 md:px-8">
+                        <div className="bg-[#2222224D] p-4 rounded-md">
+                            <p className="font-bold">Pilih Metode Pembayaran</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2.5">
+                            {Object.entries(paymentMethods)
+                                .filter(([_, method]) => method.isActive)
+                                .map(([key, method]) => {
+                                    const isSelected = selectedPaymentMethod === key;
+                                    return (
+                                        <button
+                                            key={method.midtrans_code}
+                                            onClick={() => setSelectedPaymentMethod(prev => prev === key ? null : key)}
+                                            className={`py-4 px-2 drop-shadow-md drop-shadow-[#00000040] rounded-md font-semibold transition hover:cursor-pointer ${
+                                                isSelected ? "bg-[#0075e9]" : "bg-[#686868] hover:bg-[#686868]"
+                                            }`}
+                                        >
+                                            {method.display_name}
+                                        </button>
+                                    );
+                                })}
+                        </div>
+                        {!selectedPaymentMethod && <p className="text-red-600 text-sm font-semibold">Pilih metode pembayaran terlebih dahulu</p>}
+                    </div>
+
                     {/* Voucher & Tip Section */}
                     <div className="flex flex-col px-0 md:px-8 gap-8">
-                        <div className="flex flex-col gap-2">
-                            {price && <div className="flex md:flex-row flex-col bg-[#DEDEDE4D] rounded-lg overflow-hidden">
-                                <button disabled={!voucherCode} onClick={() => handleApplyVoucher(voucherCode, Number(price))} className="px-6 md:px-12 py-3 bg-[#0075e9c4] font-semibold whitespace-nowrap rounded-sm hover:cursor-pointer">
+                        <div className="flex flex-col gap-2 overflow-hidden">
+                            {price && <div className="flex md:flex-row flex-col bg-[#DEDEDE4D] rounded-l-full overflow-hidden">
+                                <button disabled={!voucherCode} onClick={() => handleApplyVoucher(voucherCode, Number(price))} className="px-6 md:px-12 py-3 bg-[#0075e9c4] rounded-full font-semibold whitespace-nowrap hover:cursor-pointer">
                                     Gunakan Voucher
                                 </button>
                                 <input
@@ -226,7 +258,7 @@ export default function PaymentCheckoutPage({ params }) {
                 </div>
 
                 {/* Rincian Pembayaran */}
-                <div className="bg-[#1A207480] p-8 flex flex-col gap-4">
+                <div className="bg-[#222222] p-8 flex flex-col gap-4">
                     <h2 className="font-bold text-2xl">Rincian</h2>
                     <div className="flex flex-col gap-1">
                         <div className="flex flex-row justify-between">
@@ -244,17 +276,17 @@ export default function PaymentCheckoutPage({ params }) {
                             <p className="font-bold text-red-600">- Rp {Math.round(totalDiscount).toLocaleString("id-ID")}</p>
                         </div>
                         <div className="flex flex-row justify-between">
-                            <p>Biaya Admin</p>
-                            <p className="font-bold">Rp {Math.round(((Number(price) - totalDiscount + (Number(selectedTip) || 0)) * fee.serviceFee)).toLocaleString("id-ID")}</p>
+                            <p>Biaya Transfer</p>
+                            <p className="font-bold">Rp {Math.round((Number(price) - totalDiscount + (Number(selectedTip) || 0)) === 0 ? 0 : countAdminFee(Number(price) - totalDiscount + (Number(selectedTip) || 0), selectedPaymentMethod)).toLocaleString("id-ID")}</p>
                         </div>
                         <div className="flex flex-row justify-between border-b border-white pb-2">
-                            <p>Pajak</p>
-                            <p className="font-bold">Rp {Math.round(((Number(price) - totalDiscount + (Number(selectedTip) || 0)) * fee.taxFee)).toLocaleString("id-ID")}</p>
+                            <p>Biaya Layanan</p>
+                            <p className="font-bold">Rp {Math.round((Number(price) - totalDiscount + (Number(selectedTip) || 0)) === 0 ? 0 : fee.serviceFee).toLocaleString("id-ID")}</p>
                         </div>
                         <div className="flex flex-row justify-between border-white pb-2 text-xl">
                             <p>Total</p>
                             <p className="font-bold">
-                                Rp {Math.round((Number(price) - totalDiscount + (Number(selectedTip) || 0) + ((Number(price) - totalDiscount + (Number(selectedTip) || 0)) * (fee.taxFee + fee.serviceFee)))).toLocaleString("id-ID")}
+                                Rp {Math.round((Number(price) - totalDiscount + (Number(selectedTip) || 0)) === 0 ? 0 : (Number(price) - totalDiscount + (Number(selectedTip) || 0) + countAdminFee(Number(price) - totalDiscount + (Number(selectedTip) || 0), selectedPaymentMethod) + fee.serviceFee)).toLocaleString("id-ID")}
                             </p>
                         </div>
                     </div>
@@ -267,7 +299,12 @@ export default function PaymentCheckoutPage({ params }) {
                             Kamu sudah berlangganan
                         </button> : <button
                             onClick={handlePayment}
-                            className="rounded-4xl bg-[#0076E9CC] py-4 font-semibold hover:cursor-pointer"
+                            disabled={!selectedPaymentMethod}
+                            className={`rounded-4xl py-4 font-semibold ${
+                                selectedPaymentMethod
+                                    ? "bg-[#0076E9CC] hover:bg-[#005bb5] hover:cursor-pointer"
+                                    : "bg-[#686868] hover:cursor-not-allowed opacity-50"
+                            }`}
                         >
                             Pay Now
                         </button>

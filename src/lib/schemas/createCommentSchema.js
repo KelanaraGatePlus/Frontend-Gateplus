@@ -25,4 +25,5 @@ export const createCommentSchema = z.object({
     movieId: z.string().min(1).optional(),
     episodePodcastId: z.string().min(1).optional(),
     educationId: z.string().min(1).optional(),
+    paymentMethod: z.string().optional(),
 });

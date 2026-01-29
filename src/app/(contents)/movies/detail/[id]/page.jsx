@@ -161,7 +161,7 @@ function PlayingMoviePage({ params }) {
                         poster={movieData?.posterImageUrl}
                         startFrom={movieData?.WatchProgress?.[0]?.progressSeconds || 0}
                         title={movieData?.title}
-                        genre={Array.isArray(movieData?.categories) ? movieData.categories.map(cat => cat.category.tittle).join(', ') : movieData?.categories?.title}
+                        genre={Array.isArray(movieData?.categories) ? movieData.categories.map(cat => cat.category?.tittle || cat.category?.title).filter(Boolean).join(', ') : movieData?.categories?.tittle || movieData?.categories?.title}
                         ageRestriction={movieData?.ageRestriction}
                     />}
                 </div>
@@ -175,7 +175,7 @@ function PlayingMoviePage({ params }) {
                                 {movieData?.title || "Judul Movie Tidak Tersedia"}
                             </h1>
                             <p className=" text-sm/normal">
-                                {formatDuration(movieData?.duration)} | {movieData?.ageRestriction} | {Array.isArray(movieData?.categories) ? movieData.categories.map(cat => cat.tittle || cat.title).join(', ') : movieData?.categories?.tittle || movieData?.categories?.title}
+                                {formatDuration(movieData?.duration)} | {movieData?.ageRestriction} | {Array.isArray(movieData?.categories) ? movieData.categories.map(cat => cat.category?.tittle || cat.category?.title).filter(Boolean).join(', ') : movieData?.categories?.tittle || movieData?.categories?.title}
                             </p>
                         </div>
                         <div className="flex flex-row gap-6">
@@ -253,7 +253,7 @@ function PlayingMoviePage({ params }) {
                                 height={60}
                                 alt="logo-subscribers"
                                 className="rounded-full"
-                                src={movieData?.creator?.imageUrl !== 'null' && movieData?.creator?.imageUrl !== null ? movieData?.creator?.imageUrl : DEFAULT_AVATAR}
+                                src={movieData?.creator?.imageUrl !== 'null' && movieData?.creator?.imageUrl !== null ? movieData?.creator?.imageUrl : DEFAULT_AVATAR.src}
                             />
                         </div>
                         <Link href={`/creator/${movieData?.creator?.id}`} className="grid grid-rows-2">
@@ -288,7 +288,7 @@ function PlayingMoviePage({ params }) {
                                 <p>Penulis Cerita : {movieData.writer}</p>
                                 <p>Pemeran : {movieData.talent}</p>
                                 <p>Durasi : {formatDuration(movieData.duration)}</p>
-                                <p>Genre : {Array.isArray(movieData?.categories) ? movieData.categories.map(cat => cat.category.tittle || cat.category.title).join(', ') : movieData?.categories?.tittle || movieData?.categories?.title}</p>
+                                <p>Genre : {Array.isArray(movieData?.categories) ? movieData.categories.map(cat => cat.category?.tittle || cat.category?.title).filter(Boolean).join(', ') : movieData?.categories?.tittle || movieData?.categories?.title}</p>
                                 <p>Tahun Rilis : {movieData.releaseYear}</p>
                                 <p>Bahasa : {movieData.language}</p>
                             </div>
