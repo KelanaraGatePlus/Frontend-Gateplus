@@ -14,6 +14,7 @@ import { useDisplayPayment } from "@/hooks/api/paymentAPI";
 import { Icon } from "@iconify/react";
 import CommentDonationForm from "./CommentDonationForm";
 import DonationLabel from "./DonationLabel";
+import TipPaymentModal from "./TipPaymentModal";
 
 export default function CommentForm({
   contentType,
@@ -29,6 +30,7 @@ export default function CommentForm({
   const { display } = useDisplayPayment();
   const [tipValue, setTipValue] = React.useState(null);
   const [withTip, setWithTip] = React.useState(false);
+  const [showTipPaymentModal, setShowTipPaymentModal] = React.useState(false);
 
   const {
     register,
@@ -42,10 +44,19 @@ export default function CommentForm({
       message: "",
       contentType: contentType || "",
       tipAmount: tipValue || null,
+      paymentMethod: "bri_va",
     },
   });
 
-  const onSubmit = async (data) => {
+  const submitComment = async (data, options = {}) => {
+    const { paymentMethod, skipTipModal = false } = options;
+
+    // If there's a tip, always show modal first unless skipped
+    if (withTip && Number(tipValue) > 0 && !skipTipModal) {
+      setShowTipPaymentModal(true);
+      return;
+    }
+
     // Determine which id to send based on contentType or available ids
     const typeKeyMap = {
       ebook: { key: "episodeEbookId", value: episodeEbookId },
@@ -79,6 +90,7 @@ export default function CommentForm({
       message: data.message,
       contentType,
       ...(withTip && Number(tipValue) > 0 ? { tipAmount: Number(tipValue) } : {}),
+      ...(paymentMethod ? { paymentMethod } : {}),
       ...(chosen ? { [chosen.key]: chosen.value } : {}),
     };
 
@@ -99,6 +111,7 @@ export default function CommentForm({
               reset();
               setTipValue(null);
               setWithTip(false);
+              setShowTipPaymentModal(false);
             },
             onPending: (paymentResult) => {
               console.log("Pembayaran pending:", paymentResult);
@@ -107,6 +120,7 @@ export default function CommentForm({
             onError: (paymentError) => {
               console.error("Pembayaran gagal:", paymentError);
               alert("Pembayaran gagal. Silakan coba lagi.");
+              setShowTipPaymentModal(false);
             },
             onClose: () => {
               console.log("Payment dialog ditutup");
@@ -114,6 +128,7 @@ export default function CommentForm({
               reset();
               setTipValue(null);
               setWithTip(false);
+              setShowTipPaymentModal(false);
             },
           }
         );
@@ -122,11 +137,25 @@ export default function CommentForm({
         reset();
         setTipValue(null);
         setWithTip(false);
+        setShowTipPaymentModal(false);
       }
     } catch (err) {
       console.error("Error creating comment:", err);
       alert("Gagal mengirim komentar. Silakan coba lagi.");
+      setShowTipPaymentModal(false);
     }
+  };
+
+  const onSubmit = (data) => submitComment(data);
+
+  const handleTipPaymentConfirm = (paymentMethod) => {
+    setShowTipPaymentModal(false);
+
+    setTimeout(() => {
+      handleSubmit((data) =>
+        submitComment(data, { paymentMethod, skipTipModal: true })
+      )();
+    }, 0);
   };
 
 
@@ -196,6 +225,17 @@ export default function CommentForm({
           )}
         </form>
       </div>
+
+      {/* Tip Payment Modal */}
+      <TipPaymentModal
+        isOpen={showTipPaymentModal}
+        onClose={() => {
+          setShowTipPaymentModal(false);
+        }}
+        tipAmount={tipValue}
+        onConfirm={handleTipPaymentConfirm}
+        isLoading={isLoading}
+      />
     </section>
   );
 }
