@@ -12,8 +12,6 @@ import { useGetEbookByIdQuery } from "@/hooks/api/ebookSliceAPI";
 import { useGetComicByIdQuery } from "@/hooks/api/comicSliceAPI";
 import { useGetSeriesByIdQuery } from "@/hooks/api/seriesSliceAPI";
 import { useGetPodcastByIdQuery } from "@/hooks/api/podcastSliceAPI";
-import { fee } from "@/lib/constants/fee";
-import { countAdminFee, paymentMethods } from "@/lib/constants/paymentMethod";
 import { useGetDiscountByVoucherDiscountCodeMutation } from "@/hooks/api/discountVoucherAPI";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import FlexModal from "@/components/Modal/FlexModal";
@@ -21,6 +19,10 @@ import PaymentSuccessImage from "@@/AdditionalImages/payment-success.svg";
 import Link from "next/link";
 import { contentType as contentTypeConst } from "@/lib/constants/contentType";
 import { useGetEducationByIdQuery } from "@/hooks/api/educationSliceAPI";
+import PaymentMethodSelector from "@/components/Payment/PaymentMethodSelector";
+import VoucherInput from "@/components/Payment/VoucherInput";
+import TipSelector from "@/components/Payment/TipSelector";
+import PaymentSummary from "@/components/Payment/PaymentSummary";
 
 export default function PaymentCheckoutPage({ params }) {
     const resolvedParams = React.use(params);
@@ -157,8 +159,8 @@ export default function PaymentCheckoutPage({ params }) {
     const price = contentType === 'movie' || contentType === 'education' ? contentData?.price : contentData?.subscriptionPrice;
 
     return (
-        <div className="w-full h-max flex justify-center items-center mt-10">
-            {isShowInput && <div className="bg-[#515151] drop-shadow-md drop-shadow-[#0000004D] sm:w-min-w-2xl md:min-w-3xl xl:min-w-5xl 2xl:min-w-6xl text-xs md:text-[16px] max-w-max rounded-md montserratFont text-white">
+        <div className="w-full h-max flex justify-center items-center mt-10 px-2">
+            {isShowInput && <div className="bg-[#515151] drop-shadow-md drop-shadow-[#0000004D] min-w-full px md:min-w-3xl xl:min-w-5xl 2xl:min-w-6xl text-xs md:text-[16px] max-w-max rounded-md montserratFont text-white">
                 <div className="px-8 pt-4 pb-10 flex flex-col gap-8">
                     <h1 className="zeinFont font-black text-xl md:text-3xl text-center">Konfirmasi Pesanan</h1>
 
@@ -186,118 +188,54 @@ export default function PaymentCheckoutPage({ params }) {
                     </div>
 
                     {/* Pemilihan metode pembayaran */}
-                    <div className="flex flex-col gap-2 md:px-8">
-                        <div className="bg-[#2222224D] p-4 rounded-md">
-                            <p className="font-bold">Pilih Metode Pembayaran</p>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2.5">
-                            {Object.entries(paymentMethods)
-                                .filter(([_, method]) => method.isActive)
-                                .map(([key, method]) => {
-                                    const isSelected = selectedPaymentMethod === key;
-                                    return (
-                                        <button
-                                            key={method.midtrans_code}
-                                            onClick={() => setSelectedPaymentMethod(prev => prev === key ? null : key)}
-                                            className={`py-4 px-2 drop-shadow-md drop-shadow-[#00000040] rounded-md font-semibold transition hover:cursor-pointer ${
-                                                isSelected ? "bg-[#0075e9]" : "bg-[#686868] hover:bg-[#686868]"
-                                            }`}
-                                        >
-                                            {method.display_name}
-                                        </button>
-                                    );
-                                })}
-                        </div>
-                        {!selectedPaymentMethod && <p className="text-red-600 text-sm font-semibold">Pilih metode pembayaran terlebih dahulu</p>}
-                    </div>
+                    <PaymentMethodSelector
+                        selectedPaymentMethod={selectedPaymentMethod}
+                        onMethodChange={setSelectedPaymentMethod}
+                        showError={!selectedPaymentMethod}
+                    />
 
                     {/* Voucher & Tip Section */}
                     <div className="flex flex-col px-0 md:px-8 gap-8">
-                        <div className="flex flex-col gap-2 overflow-hidden">
-                            {price && <div className="flex md:flex-row flex-col bg-[#DEDEDE4D] rounded-l-full overflow-hidden">
-                                <button disabled={!voucherCode} onClick={() => handleApplyVoucher(voucherCode, Number(price))} className="px-6 md:px-12 py-3 bg-[#0075e9c4] rounded-full font-semibold whitespace-nowrap hover:cursor-pointer">
-                                    Gunakan Voucher
-                                </button>
-                                <input
-                                    type="text"
-                                    className="flex-1 text-center placeholder:text-center px-2 py-3 outline-none"
-                                    placeholder="Gunakan / Masukan Kode Voucher"
-                                    onChange={
-                                        (e) => setVoucherCode(e.target.value)
-                                    }
-                                />
-                            </div>}
-                            <div className="flex items-center">
-                                {getDiscountLoading && <LoadingOverlay />}
-                                {getDiscountError && <p className="text-red-500">{getDiscountError.data.message}</p>}
-                                {isSuccess && <p className="text-green-500">Voucher applied successfully!</p>}
-                            </div>
-                        </div>
+                        {price && (
+                            <VoucherInput
+                                voucherCode={voucherCode}
+                                onVoucherChange={setVoucherCode}
+                                onApplyVoucher={(code) =>
+                                    handleApplyVoucher(code, Number(price))
+                                }
+                                isLoading={getDiscountLoading}
+                                error={getDiscountError}
+                                isSuccess={isSuccess}
+                            />
+                        )}
 
-                        <div className="flex flex-col gap-2">
-                            <div className="bg-[#2222224D] p-4 rounded-md">
-                                <p><b>Sawerkuy!</b> kasih tip biar kreator hepi</p>
-                            </div>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-                                {[5000, 10000, 15000, 20000].map((amount) => {
-                                    const isSelected = selectedTip === amount;
-                                    return (
-                                        <button
-                                            key={amount}
-                                            onClick={() => setSelectedTip(prev => prev === amount ? null : amount)}
-                                            className={`py-4 rounded-md font-semibold transition hover:cursor-pointer ${isSelected ? "bg-[#1A207480]" : "bg-[#0075E9C4] hover:bg-[#0075e9]"
-                                                }`}
-                                        >
-                                            Rp {amount.toLocaleString("id-ID")}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
+                        <TipSelector
+                            selectedTip={selectedTip}
+                            onTipChange={setSelectedTip}
+                        />
                     </div>
                 </div>
 
                 {/* Rincian Pembayaran */}
+                <PaymentSummary
+                    price={price}
+                    selectedTip={selectedTip}
+                    totalDiscount={totalDiscount}
+                    selectedPaymentMethod={selectedPaymentMethod}
+                />
+
+                {/* Payment Buttons */}
                 <div className="bg-[#222222] p-8 flex flex-col gap-4">
-                    <h2 className="font-bold text-2xl">Rincian</h2>
-                    <div className="flex flex-col gap-1">
-                        <div className="flex flex-row justify-between">
-                            <p>Harga konten</p>
-                            <p className="font-bold">
-                                Rp {(Number(price) || 0).toLocaleString("id-ID")}
-                            </p>
-                        </div>
-                        <div className="flex flex-row justify-between">
-                            <p>Sawerin</p>
-                            <p className="font-bold">Rp {selectedTip ? Number(selectedTip).toLocaleString("id-ID") : "0"}</p>
-                        </div>
-                        <div className="flex flex-row justify-between">
-                            <p>Voucher</p>
-                            <p className="font-bold text-red-600">- Rp {Math.round(totalDiscount).toLocaleString("id-ID")}</p>
-                        </div>
-                        <div className="flex flex-row justify-between">
-                            <p>Biaya Transfer</p>
-                            <p className="font-bold">Rp {Math.round((Number(price) - totalDiscount + (Number(selectedTip) || 0)) === 0 ? 0 : countAdminFee(Number(price) - totalDiscount + (Number(selectedTip) || 0), selectedPaymentMethod)).toLocaleString("id-ID")}</p>
-                        </div>
-                        <div className="flex flex-row justify-between border-b border-white pb-2">
-                            <p>Biaya Layanan</p>
-                            <p className="font-bold">Rp {Math.round((Number(price) - totalDiscount + (Number(selectedTip) || 0)) === 0 ? 0 : fee.serviceFee).toLocaleString("id-ID")}</p>
-                        </div>
-                        <div className="flex flex-row justify-between border-white pb-2 text-xl">
-                            <p>Total</p>
-                            <p className="font-bold">
-                                Rp {Math.round((Number(price) - totalDiscount + (Number(selectedTip) || 0)) === 0 ? 0 : (Number(price) - totalDiscount + (Number(selectedTip) || 0) + countAdminFee(Number(price) - totalDiscount + (Number(selectedTip) || 0), selectedPaymentMethod) + fee.serviceFee)).toLocaleString("id-ID")}
-                            </p>
-                        </div>
-                    </div>
-                    {isSubscribe ?
+                    {isSubscribe ? (
                         <button
                             onClick={handlePayment}
                             disabled
                             className="rounded-4xl bg-[#0076E9CC] py-4 font-semibold hover:cursor-not-allowed"
                         >
                             Kamu sudah berlangganan
-                        </button> : <button
+                        </button>
+                    ) : (
+                        <button
                             onClick={handlePayment}
                             disabled={!selectedPaymentMethod}
                             className={`rounded-4xl py-4 font-semibold ${
@@ -308,7 +246,7 @@ export default function PaymentCheckoutPage({ params }) {
                         >
                             Pay Now
                         </button>
-                    }
+                    )}
                 </div>
             </div>}
             <FlexModal isOpen={successModal} onClose={() => { setSuccessModal(false) }}>

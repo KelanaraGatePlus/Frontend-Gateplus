@@ -1,7 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { countAdminFee, paymentMethods } from "@/lib/constants/paymentMethod";
 import { fee } from "@/lib/constants/fee";
+import PaymentMethodSelector from "@/components/Payment/PaymentMethodSelector";
+import PaymentSummary from "@/components/Payment/PaymentSummary";
 
 export default function TipPaymentModal({
   isOpen,
@@ -13,9 +14,6 @@ export default function TipPaymentModal({
   const [selectedPaymentMethod, setSelectedPaymentMethod] = React.useState(null);
 
   const subtotal = Number(tipAmount) || 0;
-  const adminFee = subtotal === 0 ? 0 : countAdminFee(subtotal, selectedPaymentMethod);
-  const serviceFee = subtotal === 0 ? 0 : fee.serviceFee;
-  const total = subtotal + adminFee + serviceFee;
 
   const handleConfirm = () => {
     if (!selectedPaymentMethod) {
@@ -63,74 +61,26 @@ export default function TipPaymentModal({
             </div>
           </div>
 
-          {/* Payment Method Selection */}
+          {/* Pemilihan metode pembayaran */}
           <div className="flex flex-col gap-2 md:px-8">
-            <div className="bg-[#2222224D] p-4 rounded-md">
-              <p className="font-bold">Pilih Metode Pembayaran</p>
-            </div>
-            <div className="grid grid-cols-2 gap-2.5">
-              {Object.entries(paymentMethods)
-                .filter(([_, method]) => method.isActive)
-                .map(([key, method]) => {
-                  const isSelected = selectedPaymentMethod === key;
-                  return (
-                    <button
-                      key={method.midtrans_code}
-                      onClick={() =>
-                        setSelectedPaymentMethod((prev) =>
-                          prev === key ? null : key
-                        )
-                      }
-                      className={`py-4 px-2 drop-shadow-md drop-shadow-[#00000040] rounded-md font-semibold transition hover:cursor-pointer ${
-                        isSelected
-                          ? "bg-[#0075e9]"
-                          : "bg-[#686868] hover:bg-[#686868]"
-                      }`}
-                    >
-                      {method.display_name}
-                    </button>
-                  );
-                })}
-            </div>
-            {!selectedPaymentMethod && (
-              <p className="text-red-500 text-sm font-semibold">
-                ❌ Pilih metode pembayaran terlebih dahulu
-              </p>
-            )}
+            <PaymentMethodSelector
+              selectedPaymentMethod={selectedPaymentMethod}
+              onMethodChange={setSelectedPaymentMethod}
+              showError={!selectedPaymentMethod}
+            />
           </div>
         </div>
 
         {/* Payment Summary */}
-        <div className="bg-[#222222] p-8 flex flex-col gap-4">
-          <h2 className="font-bold text-2xl">Rincian</h2>
-          <div className="flex flex-col gap-1">
-            <div className="flex flex-row justify-between">
-              <p>Subtotal</p>
-              <p className="font-bold">
-                Rp {subtotal.toLocaleString("id-ID")}
-              </p>
-            </div>
-            <div className="flex flex-row justify-between">
-              <p>Biaya Transfer</p>
-              <p className="font-bold">
-                Rp {Math.round(adminFee).toLocaleString("id-ID")}
-              </p>
-            </div>
-            <div className="flex flex-row justify-between border-b border-white pb-2">
-              <p>Biaya Layanan</p>
-              <p className="font-bold">
-                Rp {Math.round(serviceFee).toLocaleString("id-ID")}
-              </p>
-            </div>
-            <div className="flex flex-row justify-between text-xl">
-              <p>Total</p>
-              <p className="font-bold">
-                Rp {Math.round(total).toLocaleString("id-ID")}
-              </p>
-            </div>
-          </div>
+        <PaymentSummary
+          price={subtotal}
+          selectedTip={0}
+          totalDiscount={0}
+          selectedPaymentMethod={selectedPaymentMethod}
+          title="Rincian"
+        />
 
-          <div className="flex gap-2 mt-4">
+          <div className="flex gap-2 py-4 px-2">
             <button
               onClick={handleClose}
               disabled={isLoading}
@@ -141,18 +91,16 @@ export default function TipPaymentModal({
             <button
               onClick={handleConfirm}
               disabled={!selectedPaymentMethod || isLoading}
-              className={`flex-1 rounded-lg py-3 font-semibold ${
-                selectedPaymentMethod && !isLoading
+              className={`flex-1 rounded-lg py-3 font-semibold ${selectedPaymentMethod && !isLoading
                   ? "bg-[#0076E9CC] hover:bg-[#005bb5] hover:cursor-pointer"
                   : "bg-[#686868] hover:cursor-not-allowed opacity-50"
-              }`}
+                }`}
             >
               {isLoading ? "Processing..." : "Kirim Reward"}
             </button>
           </div>
         </div>
       </div>
-    </div>
   );
 }
 
