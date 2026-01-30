@@ -1,6 +1,5 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { fee } from "@/lib/constants/fee";
 import PaymentMethodSelector from "@/components/Payment/PaymentMethodSelector";
 import PaymentSummary from "@/components/Payment/PaymentSummary";
 

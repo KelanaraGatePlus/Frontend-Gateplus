@@ -14,7 +14,7 @@ export default function PaymentMethodSelector({
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
         {Object.entries(paymentMethods)
-          .filter(([_, method]) => method.isActive)
+          .filter(([method]) => method.isActive)
           .map(([key, method]) => {
             const isSelected = selectedPaymentMethod === key;
             return (
