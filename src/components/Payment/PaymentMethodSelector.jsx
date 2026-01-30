@@ -14,7 +14,7 @@ export default function PaymentMethodSelector({
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
         {Object.entries(paymentMethods)
-          .filter(([method]) => method.isActive)
+          .filter(([, method]) => method.isActive)
           .map(([key, method]) => {
             const isSelected = selectedPaymentMethod === key;
             return (
@@ -23,11 +23,10 @@ export default function PaymentMethodSelector({
                 onClick={() =>
                   onMethodChange(prev => (prev === key ? null : key))
                 }
-                className={`md:py-4 px-2 py-2 flex flex-row items-center gap-2 md:px-4 drop-shadow-md drop-shadow-[#00000040] rounded-md font-semibold transition hover:cursor-pointer ${
-                  isSelected
+                className={`md:py-4 px-2 py-2 flex flex-row items-center gap-2 md:px-4 drop-shadow-md drop-shadow-[#00000040] rounded-md font-semibold transition hover:cursor-pointer ${isSelected
                     ? "bg-[#0075e9]"
                     : "bg-[#686868] hover:bg-[#686868]"
-                }`}
+                  }`}
               >
                 <div className="w-10 h-8 md:w-12 md:h-12 flex items-center justify-center flex-shrink-0">
                   <img
