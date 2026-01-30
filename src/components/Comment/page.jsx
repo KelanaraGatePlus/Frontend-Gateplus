@@ -24,6 +24,7 @@ export default function CommentComponent({
     contentType,
     episodeId,
     isDark = true,
+    withReward = true,
 }) {
     const [isCommentFieldHide, setIsCommentFieldHide] = useState(false);
     const [isReplyFieldHide, setIsReplyFieldHide] = useState(true);
@@ -94,6 +95,7 @@ export default function CommentComponent({
                             movieId={contentType === "MOVIE" ? episodeId : null}
                             episodePodcastId={contentType === "EPISODE_PODCAST" ? episodeId : null}
                             educationId={contentType === "EDUCATION" ? episodeId : null}
+                            withReward={withReward}
                         />
                     }
 
@@ -105,6 +107,7 @@ export default function CommentComponent({
                             imageUrl={replyToCommentData.user.imageUrl ? replyToCommentData.user.imageUrl : profilePictureDefault}
                             profileName={replyToCommentData.user.profileName ? replyToCommentData.user.profileName : replyToCommentData.user.username}
                             isAuthor={replyToCommentData.user?.creator}
+                            withReward={withReward}
                         />
                     )}
                 </div>
@@ -210,4 +213,5 @@ CommentComponent.propTypes = {
     contentType: PropTypes.string.isRequired,
     episodeId: PropTypes.string.isRequired,
     isDark: PropTypes.bool,
+    withReward: PropTypes.bool,
 };

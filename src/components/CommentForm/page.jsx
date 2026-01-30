@@ -24,7 +24,8 @@ export default function CommentForm({
   episodeSeriesId = null,
   episodePodcastId = null,
   movieId = null,
-  educationId = null
+  educationId = null,
+  withReward = true,
 }) {
   const [createComment, { isLoading }] = useCreateCommentMutation();
   const { display } = useDisplayPayment();
@@ -211,14 +212,16 @@ export default function CommentForm({
             >
               {isLoading ? "Loading..." : "Kirim Komentar"}
             </button>
-            <div
-              onClick={() => setWithTip(!withTip)}
-              disabled={isLoading}
-              className={`${isLoading ? "cursor-not-allowed opacity-60 bg-gray-600" : "bg-[#0E5BA8]"} flex ${withTip ? "w-max p-2" : "col-span-2"} gap-1 cursor-pointer items-center justify-center rounded-md border-2 border-[#F5F5F559] py-2 text-sm font-bold text-white`}
-            >
-              <Icon icon={"solar:crown-bold-duotone"} className="text-[#F07F26] w-6 h-6" />
-              {!withTip ? (isLoading ? "Loading..." : "Reward") : null}
-            </div>
+            {withReward && (
+              <div
+                onClick={() => setWithTip(!withTip)}
+                disabled={isLoading}
+                className={`${isLoading ? "cursor-not-allowed opacity-60 bg-gray-600" : "bg-[#0E5BA8]"} flex ${withTip ? "w-max p-2" : "col-span-2"} gap-1 cursor-pointer items-center justify-center rounded-md border-2 border-[#F5F5F559] py-2 text-sm font-bold text-white`}
+              >
+                <Icon icon={"solar:crown-bold-duotone"} className="text-[#F07F26] w-6 h-6" />
+                {!withTip ? (isLoading ? "Loading..." : "Reward") : null}
+              </div>
+            )}
           </div>
           {errors.message?.message && (
             <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>
@@ -249,4 +252,5 @@ CommentForm.propTypes = {
   movieId: propTypes.string,
   episodePodcastId: propTypes.string,
   educationId: propTypes.string,
+  withReward: propTypes.bool,
 };

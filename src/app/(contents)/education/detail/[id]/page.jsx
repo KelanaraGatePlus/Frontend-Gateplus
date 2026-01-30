@@ -316,7 +316,7 @@ function StatsCards({ stats, course, progress }) {
                             </div>
                         </div>
                         <button onClick={handleGenerateCertificate} disabled={isLoading || isGeneratingCert} className="bg-orange-500 border-2 border-orange-400 self-center hover:bg-orange-400 text-white px-4 py-2 rounded-lg font-semibold transition-all text-sm md:text-base shadow-lg flex items-center gap-2">
-                            {isLoading || isGeneratingCert ? "Generating..." : "Generate Certificate"}
+                            {isLoading || isGeneratingCert ? "Generating..." : course?.userHasCertificate ? "View Certificate" : "Generate Certificate"}
                         </button>
                     </div>
                 </div>
@@ -957,6 +957,7 @@ export default function EducationPage({ params }) {
                         episodeId={data?.data?.id}
                         isDark={true}
                         isLoadingGetComment={commentLoading}
+                        withReward={false}
                     />
                 </div>
             </div>
@@ -967,5 +968,5 @@ export default function EducationPage({ params }) {
 EducationPage.propTypes = {
     params: PropTypes.shape({
         id: PropTypes.string.isRequired
-    }).isRequired
+    }).isRequired,
 };

@@ -33,6 +33,9 @@ export async function middleware(req) {
         "/register",
         '/session-expired',
     ];
+    const PUBLIC_PATH_PREFIXES = [
+        "/education/certificate/",
+    ];
 
     /* =========================
        🧩 3. Ambil token
@@ -42,9 +45,12 @@ export async function middleware(req) {
     const token = cookieToken || urlToken;
 
     /* =========================
-       🧩 4. Public Path tanpa token
+       🧩 4. Public Path tanpa auth
     ========================== */
-    if (PUBLIC_PATHS.includes(pathname) && !token) {
+    const isPublicPath = PUBLIC_PATHS.includes(pathname)
+        || PUBLIC_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+
+    if (isPublicPath) {
         return NextResponse.next();
     }
 
