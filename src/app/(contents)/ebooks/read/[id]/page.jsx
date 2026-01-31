@@ -364,34 +364,24 @@ export default function ReadEbookPage({ params }) {
           </div>
         </section>
         {/* Isi Ebook */}
-        <div
-          className={`relative flex w-screen flex-col py-5 ${isDark ? "text-white" : "text-[#222222]"}`}
-        >
+        <div className={`relative flex w-screen flex-col py-5 isolate ${isDark ? "text-white" : "text-[#222222]"}`}>
           {/* Judul Chapter */}
-          <h1 className="w-full text-center text-2xl font-bold lg:text-3xl">
+          <h1 className="w-full text-center text-2xl font-bold lg:text-3xl z-10 relative">
             {title}
           </h1>
 
-          {/* Cerita */}
           <div className="flex flex-col justify-center">
-            {/* Update Message */}
-            <p
-              className={`mt-1 w-full text-center text-sm ${isDark ? "text-white/70" : "text-[#222222]/70"} italic`}
-            >
+            <p className={`mt-1 w-full text-center text-sm ${isDark ? "text-white/70" : "text-[#222222]/70"} italic z-10 relative`}>
               Terakhir Diperbarui: {updatedAt}
             </p>
 
-            {/* Container Pembungkus */}
-            <div className="relative mt-8 mb-10 flex h-fit flex-col">
-
-              {/* DIV Pelindung (Overlay) */}
-              <div
-                className="absolute inset-0 z-50 bg-transparent"
-                onContextMenu={(e) => e.preventDefault()} // Blokir Klik Kanan
-                style={{ touchAction: 'none' }} // Opsional: Blokir interaksi sentuh tertentu di mobile
-              />
-
-              {/* Isi Buku yang Dilindungi */}
+            {/* Pembungkus EpubReader yang diperbaiki */}
+            <div
+              className={`mt-8 mb-10 flex h-fit flex-col select-none touch-pan-y relative z-20 ${isDark ? "text-white" : "text-[#222222]"}`}
+              style={{ isolation: 'isolate' }} // Tambahan proteksi render
+              onContextMenu={(e) => e.preventDefault()}
+              onDragStart={(e) => e.preventDefault()}
+            >
               {ebookUrl && (
                 <EpubReader
                   ref={epubReaderRef}
@@ -404,19 +394,19 @@ export default function ReadEbookPage({ params }) {
             </div>
           </div>
         </div>
-        {/* Banner 2 */}
-        <div className="relative h-64 w-full overflow-hidden">
+
+        {/* Banner 2 - Pastikan Z-Index lebih rendah dari konten di atasnya */}
+        <div className="relative h-64 w-full overflow-hidden z-10">
           {bannerEndEpisodeUrl && (
             <Image
               src={bannerEndEpisodeUrl}
               fill
-              alt="poster-ebook-laut-bercerita"
+              alt="banner-end"
               className="h-full w-full object-cover object-center"
+              priority={false} // Jangan priority agar tidak rebutan resource dengan reader
             />
           )}
-          <div
-            className={`absolute top-0 left-0 z-0 h-full w-full bg-gradient-to-b from-[#222222] to-[#22222200]`}
-          ></div>
+          <div className={`absolute top-0 left-0 z-0 h-full w-full bg-gradient-to-b from-[#222222] to-[#22222200]`}></div>
         </div>
         {/* Catatan Kreator */}
         <section
