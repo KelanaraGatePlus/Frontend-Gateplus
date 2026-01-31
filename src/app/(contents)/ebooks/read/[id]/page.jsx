@@ -381,10 +381,17 @@ export default function ReadEbookPage({ params }) {
               Terakhir Diperbarui: {updatedAt}
             </p>
 
-            {/* Isi Buku */}
-            <div
-              className={`mt-8 mb-10 flex h-fit flex-col ${isDark ? "text-white" : "text-[#222222]"}`}
-            >
+            {/* Container Pembungkus */}
+            <div className="relative mt-8 mb-10 flex h-fit flex-col">
+
+              {/* DIV Pelindung (Overlay) */}
+              <div
+                className="absolute inset-0 z-50 bg-transparent"
+                onContextMenu={(e) => e.preventDefault()} // Blokir Klik Kanan
+                style={{ touchAction: 'none' }} // Opsional: Blokir interaksi sentuh tertentu di mobile
+              />
+
+              {/* Isi Buku yang Dilindungi */}
               {ebookUrl && (
                 <EpubReader
                   ref={epubReaderRef}

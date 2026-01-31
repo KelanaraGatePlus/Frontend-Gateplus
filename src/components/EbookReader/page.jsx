@@ -87,6 +87,33 @@ const EpubReader = forwardRef(
 
         if (preventCopy) {
           doc.body.style.userSelect = "none";
+          doc.body.style.webkitUserSelect = "none";
+          doc.body.style.webkitTouchCallout = "none";
+
+          if (!doc.getElementById("epub-copy-guard")) {
+            const style = doc.createElement("style");
+            style.id = "epub-copy-guard";
+            style.textContent = `
+              * {
+                -webkit-user-select: none !important;
+                user-select: none !important;
+                -webkit-touch-callout: none !important;
+              }
+              ::selection { background: transparent !important; }
+            `;
+            doc.head?.appendChild(style);
+          }
+
+          if (!doc.body.dataset.copyGuard) {
+            const block = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            };
+            ["copy", "cut", "paste", "contextmenu", "selectstart"].forEach(
+              (evt) => doc.addEventListener(evt, block, { capture: true })
+            );
+            doc.body.dataset.copyGuard = "true";
+          }
         }
       });
 
