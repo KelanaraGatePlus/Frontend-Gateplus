@@ -3,6 +3,7 @@ import IconsSeries from "@@/IconsContent/icons-series.svg";
 import IconsPodcast from "@@/IconsContent/icons-podcast.svg";
 import IconsEbook from "@@/IconsContent/icons-ebook.svg";
 import IconsComic from "@@/IconsContent/icons-comic.svg";
+import IconEducation from "@@/IconsContent/icons-comic.svg";
 
 export const contentType = {
     movie: {
@@ -39,6 +40,13 @@ export const contentType = {
         icon: IconsComic,
         haveEpisodes: true,
         capitalizedLabel: 'Comic'
+    },
+    education: {
+        singleName: 'education',
+        pluralName: 'education',
+        icon: IconEducation,
+        haveEpisodes: true,
+        capitalizedLabel: 'Education'
     }
 }
 
@@ -77,6 +85,13 @@ export const contentTypeSingle = {
         icon: IconsComic,
         haveEpisodes: true,
         capitalizedLabel: 'Comic'
+    },
+    education: {
+        singleName: 'education',
+        pluralName: 'education',
+        icon: IconEducation,
+        haveEpisodes: true,
+        capitalizedLabel: 'Education'
     }
 }
 

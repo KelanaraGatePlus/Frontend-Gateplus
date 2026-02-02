@@ -1,9 +1,12 @@
 "use client";
-import React from "react";
+import React, { Suspense } from "react";
 import UploadPodcastSeriesForm from '@/components/Form/UploadPodcast/UploadPodcastSeriesForm';
+import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 export default function UploadPodcastPage() {
     return (
-        <UploadPodcastSeriesForm />
+        <Suspense fallback={<LoadingOverlay />}>
+            <UploadPodcastSeriesForm />
+        </Suspense>
     );
 }

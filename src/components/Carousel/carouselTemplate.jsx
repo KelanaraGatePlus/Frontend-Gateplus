@@ -17,6 +17,7 @@ import MovieCard from "../Card/MovieCard";
 import SeriesCard from "../Card/SeriesCard";
 import PodcastCard from "../Card/PodcastCard";
 import PodcastUniqueCard from "../Card/PodcastUniqueCard";
+import EducationCard from "../Card/EducationCard";
 
 export default function CarouselTemplate({ label, type, contents, isLoading, isTopTen = false, isOnCreatorProfile = false, withGradient = true, withTopTag = true, withNewestTag = false }) {
     return (
@@ -63,6 +64,10 @@ export default function CarouselTemplate({ label, type, contents, isLoading, isT
 
                                                         {fixedType == 'podcast' && type && !isTopTen && (
                                                             <PodcastUniqueCard title={item.title} id={item.id} coverUrl={item.coverPodcastImage} creatorName={item.Creator.profileName} releaseDate={item.createdAt} hasNewEpisode={item.hasNewEpisodes} />
+                                                        )}
+
+                                                        {fixedType == 'education' && !isTopTen && (
+                                                            <EducationCard title={item.title} id={item.id} coverUrl={item.bannerUrl} creatorName={item.creator.profileName} releaseDate={item.createdAt} />
                                                         )}
 
                                                         <div className={`${isTopTen ? "grid grid-cols-17" : ""}`}>

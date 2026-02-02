@@ -1,6 +1,6 @@
 "use client";
 import React, { useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 /*[--- THIRD PARTY LIBRARIES ---]*/
 import { useForm, Controller } from "react-hook-form";
@@ -37,6 +37,8 @@ import TermsCheckbox from "@/components/UploadForm/TermsCheckbox";
 
 export default function UploadMovieForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const fromEducation = searchParams.get("education") || null;
     const posterBannerInputRef = useRef(null);
     const coverBookInputRef = useRef(null);
     const {
@@ -101,7 +103,11 @@ export default function UploadMovieForm() {
             try {
                 const result = await createMovie(formData).unwrap();
                 if (result) {
-                    router.push(`/`);
+                    if (fromEducation) {
+                        router.push(`/education/detail/${fromEducation}`);
+                        return;
+                    }
+                    router.push(`/movies/detail/${result.data.data.id}`);
                 }
             } catch (err) {
                 console.error("Error creating movie:", err);

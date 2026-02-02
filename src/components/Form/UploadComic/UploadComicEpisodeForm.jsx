@@ -30,6 +30,7 @@ export default function UploadComicEpisodeForm() {
     const seriesFromUrl = searchParams.get("series") || "";
     const creatorId = useGetCreatorId();
     const userId = useGetUserId();
+    const fromEducation = searchParams.get("education") || null;
 
     const {
         register,
@@ -71,6 +72,10 @@ export default function UploadComicEpisodeForm() {
 
         try {
             await createEpisode(formData).unwrap();
+            if(fromEducation) {
+                router.push(`/education/detail/${fromEducation}`);
+                return;
+            }
             router.push(`/comics/detail/${data.comicId}`);
         } catch (err) {
             console.error("Error creating episode of comic:", err);

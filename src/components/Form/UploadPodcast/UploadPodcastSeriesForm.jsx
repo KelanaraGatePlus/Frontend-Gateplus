@@ -1,6 +1,6 @@
 "use client";
 import React, { useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 /*[--- THIRD PARTY LIBRARIES ---]*/
 import { useForm, Controller } from "react-hook-form";
@@ -33,6 +33,8 @@ import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
 export default function UploadPodcastSeriesForm() {
     const router = useRouter();
     const coverPodcastInputRef = useRef(null);
+    const searchParams = useSearchParams();
+    const fromEducation = searchParams.get("education") || null;
     const {
         register,
         handleSubmit,
@@ -67,6 +69,10 @@ export default function UploadPodcastSeriesForm() {
 
         try {
             const result = await createPodcast(formData).unwrap();
+            if (fromEducation) {
+                router.push(`/podcasts/upload/episode?fromEducation=${fromEducation}&series=${result.data.id}`);
+                return;
+            }
             router.push(`/podcasts/upload/episode?series=${result.data.id}`);
         } catch (err) {
             console.error("Error creating podcast:", err);

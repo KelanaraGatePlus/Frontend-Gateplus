@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Controller } from "react-hook-form";
 import Checkbox from "@mui/material/Checkbox";
 
-export default function TermsCheckbox({ name, control, label, linkHref, linkText }) {
+export default function TermsCheckbox({ name, control, label, linkHref = "#", linkText = "" }) {
     return (
         <Controller
             name={name}

@@ -38,6 +38,7 @@ export default function UploadPodcastEpisodeForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const seriesFromUrl = searchParams.get("series") || "";
+    const fromEducation = searchParams.get("education") || null;
     const creatorId = useGetCreatorId();
     const userId = useGetUserId();
     const [query, setQuery] = useState("");
@@ -86,6 +87,10 @@ export default function UploadPodcastEpisodeForm() {
 
         try {
             await createEpisode(formData).unwrap();
+            if(fromEducation) {
+                router.push(`/education/detail/${fromEducation}`);
+                return;
+            }
             router.push(`/podcasts/detail/${data.podcastId}`);
         } catch (err) {
             console.error("Error creating episode of ebook:", err);

@@ -84,7 +84,7 @@ export const usePayment = (paymentType = "ORDER") => {
     }, []);
 
     const pay = async (
-        { episodeId, contentId, contentType = "PODCAST", tip = null, voucherCode = null },
+        { episodeId, contentId, contentType = "PODCAST", tip = null, voucherCode = null, paymentMethod = null },
         callbacks = {}
     ) => {
         if (isPaying) return;
@@ -92,8 +92,8 @@ export const usePayment = (paymentType = "ORDER") => {
 
         const body =
             paymentType === "ORDER"
-                ? JSON.stringify({ episodeId, contentType, tip, voucherCode })
-                : JSON.stringify({ contentId, contentType, tip, voucherCode });
+                ? JSON.stringify({ episodeId, contentType, tip, voucherCode, paymentMethod })
+                : JSON.stringify({ contentId, contentType, tip, voucherCode, paymentMethod });
 
         try {
             const res = await fetch(paymentURL, {

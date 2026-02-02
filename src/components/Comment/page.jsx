@@ -24,6 +24,7 @@ export default function CommentComponent({
     contentType,
     episodeId,
     isDark = true,
+    withReward = true,
 }) {
     const [isCommentFieldHide, setIsCommentFieldHide] = useState(false);
     const [isReplyFieldHide, setIsReplyFieldHide] = useState(true);
@@ -93,6 +94,8 @@ export default function CommentComponent({
                             episodeSeriesId={contentType === "SERIES" ? episodeId : null}
                             movieId={contentType === "MOVIE" ? episodeId : null}
                             episodePodcastId={contentType === "EPISODE_PODCAST" ? episodeId : null}
+                            educationId={contentType === "EDUCATION" ? episodeId : null}
+                            withReward={withReward}
                         />
                     }
 
@@ -104,6 +107,7 @@ export default function CommentComponent({
                             imageUrl={replyToCommentData.user.imageUrl ? replyToCommentData.user.imageUrl : profilePictureDefault}
                             profileName={replyToCommentData.user.profileName ? replyToCommentData.user.profileName : replyToCommentData.user.username}
                             isAuthor={replyToCommentData.user?.creator}
+                            withReward={withReward}
                         />
                     )}
                 </div>
@@ -125,7 +129,9 @@ export default function CommentComponent({
                                             (contentType === "PODCAST" &&
                                                 comment.Episode_podcast?.podcasts?.Creator?.id === comment.user.creator.id) ||
                                             (contentType === "COMIC" &&
-                                                comment.comics_episode?.comics?.creators?.id === comment.user.creator.id)
+                                                comment.comics_episode?.comics?.creators?.id === comment.user.creator.id) ||
+                                            (contentType === "EDUCATION" &&
+                                                comment.Education?.creator?.id === comment.user.creator.id)
                                         );
 
                                     return (
@@ -207,4 +213,5 @@ CommentComponent.propTypes = {
     contentType: PropTypes.string.isRequired,
     episodeId: PropTypes.string.isRequired,
     isDark: PropTypes.bool,
+    withReward: PropTypes.bool,
 };

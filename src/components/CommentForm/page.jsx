@@ -14,6 +14,7 @@ import { useDisplayPayment } from "@/hooks/api/paymentAPI";
 import { Icon } from "@iconify/react";
 import CommentDonationForm from "./CommentDonationForm";
 import DonationLabel from "./DonationLabel";
+import TipPaymentModal from "./TipPaymentModal";
 
 export default function CommentForm({
   contentType,
@@ -22,12 +23,15 @@ export default function CommentForm({
   podcastId = null,
   episodeSeriesId = null,
   episodePodcastId = null,
-  movieId = null
+  movieId = null,
+  educationId = null,
+  withReward = true,
 }) {
   const [createComment, { isLoading }] = useCreateCommentMutation();
   const { display } = useDisplayPayment();
   const [tipValue, setTipValue] = React.useState(null);
   const [withTip, setWithTip] = React.useState(false);
+  const [showTipPaymentModal, setShowTipPaymentModal] = React.useState(false);
 
   const {
     register,
@@ -41,10 +45,19 @@ export default function CommentForm({
       message: "",
       contentType: contentType || "",
       tipAmount: tipValue || null,
+      paymentMethod: "bri_va",
     },
   });
 
-  const onSubmit = async (data) => {
+  const submitComment = async (data, options = {}) => {
+    const { paymentMethod, skipTipModal = false } = options;
+
+    // If there's a tip, always show modal first unless skipped
+    if (withTip && Number(tipValue) > 0 && !skipTipModal) {
+      setShowTipPaymentModal(true);
+      return;
+    }
+
     // Determine which id to send based on contentType or available ids
     const typeKeyMap = {
       ebook: { key: "episodeEbookId", value: episodeEbookId },
@@ -53,6 +66,7 @@ export default function CommentForm({
       series: { key: "episodeSeriesId", value: episodeSeriesId },
       movie: { key: "movieId", value: movieId },
       episodePodcast: { key: "episode_podcastId", value: episodePodcastId },
+      education: { key: "educationId", value: educationId },
     };
 
     // Fallback detection when contentType not provided
@@ -68,6 +82,7 @@ export default function CommentForm({
         { key: "episodeSeriesId", value: episodeSeriesId },
         { key: "movieId", value: movieId },
         { key: "episode_podcastId", value: episodePodcastId },
+        { key: "educationId", value: educationId },
       ];
       chosen = candidates.find((c) => c.value != null) || null;
     }
@@ -76,6 +91,7 @@ export default function CommentForm({
       message: data.message,
       contentType,
       ...(withTip && Number(tipValue) > 0 ? { tipAmount: Number(tipValue) } : {}),
+      ...(paymentMethod ? { paymentMethod } : {}),
       ...(chosen ? { [chosen.key]: chosen.value } : {}),
     };
 
@@ -96,6 +112,7 @@ export default function CommentForm({
               reset();
               setTipValue(null);
               setWithTip(false);
+              setShowTipPaymentModal(false);
             },
             onPending: (paymentResult) => {
               console.log("Pembayaran pending:", paymentResult);
@@ -104,6 +121,7 @@ export default function CommentForm({
             onError: (paymentError) => {
               console.error("Pembayaran gagal:", paymentError);
               alert("Pembayaran gagal. Silakan coba lagi.");
+              setShowTipPaymentModal(false);
             },
             onClose: () => {
               console.log("Payment dialog ditutup");
@@ -111,6 +129,7 @@ export default function CommentForm({
               reset();
               setTipValue(null);
               setWithTip(false);
+              setShowTipPaymentModal(false);
             },
           }
         );
@@ -119,11 +138,25 @@ export default function CommentForm({
         reset();
         setTipValue(null);
         setWithTip(false);
+        setShowTipPaymentModal(false);
       }
     } catch (err) {
       console.error("Error creating comment:", err);
       alert("Gagal mengirim komentar. Silakan coba lagi.");
+      setShowTipPaymentModal(false);
     }
+  };
+
+  const onSubmit = (data) => submitComment(data);
+
+  const handleTipPaymentConfirm = (paymentMethod) => {
+    setShowTipPaymentModal(false);
+
+    setTimeout(() => {
+      handleSubmit((data) =>
+        submitComment(data, { paymentMethod, skipTipModal: true })
+      )();
+    }, 0);
   };
 
 
@@ -179,30 +212,45 @@ export default function CommentForm({
             >
               {isLoading ? "Loading..." : "Kirim Komentar"}
             </button>
-            <div
-              onClick={() => setWithTip(!withTip)}
-              disabled={isLoading}
-              className={`${isLoading ? "cursor-not-allowed opacity-60 bg-gray-600" : "bg-[#0E5BA8]"} flex ${withTip ? "w-max p-2" : "col-span-2"} gap-1 cursor-pointer items-center justify-center rounded-md border-2 border-[#F5F5F559] py-2 text-sm font-bold text-white`}
-            >
-              <Icon icon={"solar:crown-bold-duotone"} className="text-[#F07F26] w-6 h-6" />
-              {!withTip ? (isLoading ? "Loading..." : "Reward") : null}
-            </div>
+            {withReward && (
+              <div
+                onClick={() => setWithTip(!withTip)}
+                disabled={isLoading}
+                className={`${isLoading ? "cursor-not-allowed opacity-60 bg-gray-600" : "bg-[#0E5BA8]"} flex ${withTip ? "w-max p-2" : "col-span-2"} gap-1 cursor-pointer items-center justify-center rounded-md border-2 border-[#F5F5F559] py-2 text-sm font-bold text-white`}
+              >
+                <Icon icon={"solar:crown-bold-duotone"} className="text-[#F07F26] w-6 h-6" />
+                {!withTip ? (isLoading ? "Loading..." : "Reward") : null}
+              </div>
+            )}
           </div>
           {errors.message?.message && (
             <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>
           )}
         </form>
       </div>
+
+      {/* Tip Payment Modal */}
+      <TipPaymentModal
+        isOpen={showTipPaymentModal}
+        onClose={() => {
+          setShowTipPaymentModal(false);
+        }}
+        tipAmount={tipValue}
+        onConfirm={handleTipPaymentConfirm}
+        isLoading={isLoading}
+      />
     </section>
   );
 }
 
 CommentForm.propTypes = {
-  contentType: propTypes.oneOf(["EBOOK", "COMIC", "PODCAST", "SERIES", "MOVIE", "EPISODE_PODCAST"]).isRequired,
+  contentType: propTypes.oneOf(["EBOOK", "COMIC", "PODCAST", "SERIES", "MOVIE", "EPISODE_PODCAST", "EDUCATION"]).isRequired,
   episodeEbookId: propTypes.string,
   episodeComicsId: propTypes.string,
   podcastId: propTypes.string,
   episodeSeriesId: propTypes.string,
   movieId: propTypes.string,
   episodePodcastId: propTypes.string,
+  educationId: propTypes.string,
+  withReward: propTypes.bool,
 };

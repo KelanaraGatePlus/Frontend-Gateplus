@@ -10,6 +10,7 @@
       "@@/AvatarIcons/*": ["./public/images/AvatarIcons/*"],
       "@@/IconsEbook/*": ["./public/images/IconsEbook/*"],
       "@@/IconsContent/*": ["./public/images/IconsContent/*"],
+      "@@/PaymentMethodLogo/*": ["./public/images/PaymentMethodLogo/*"],
       "@@/Law/*": ["./public/images/Law/*"],
       "@@/IconsButton/*": ["./public/images/IconsButton/*"],
       "@@/AdditionalImages/*": ["./public/images/Additional/*"],

@@ -1,9 +1,12 @@
 "use client";
-import React from "react";
+import React, { Suspense } from "react";
 import UploadComicSeriesForm from '@/components/Form/UploadComic/UploadComicSeriesForm';
+import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 export default function UploadEbookPage() {
   return (
-    <UploadComicSeriesForm />
+    <Suspense fallback={<LoadingOverlay />}>
+      <UploadComicSeriesForm />
+    </Suspense>
   );
 }

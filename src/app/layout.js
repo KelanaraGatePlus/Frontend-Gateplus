@@ -39,6 +39,8 @@ export default function RootLayout({ children }) {
         return `/ebooks/${url}`;
       case "comics":
         return `/comics/${url}`;
+      case "education":
+        return `/education/${url}`;
       default:
         return "/";
     }
