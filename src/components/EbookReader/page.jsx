@@ -20,7 +20,7 @@ const FONT_FAMILIES = {
 const LINE_HEIGHTS = { compact: 1.2, normal: 1.4, relaxed: 1.6 };
 const TEXT_ALIGNS = { left: "left", justify: "justify" };
 const COLOR_THEMES = {
-  dark: { bg: "#1E1E1E", text: "#EDEDED" },
+  dark: { bg: "#222222", text: "#EDEDED" },
   sepia: { bg: "#E8DFC8", text: "#4A3F2C" },
   light: { bg: "#F5F5F5", text: "#1A1A1A" }
 };
