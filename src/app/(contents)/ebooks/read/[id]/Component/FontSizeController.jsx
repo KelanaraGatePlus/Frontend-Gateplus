@@ -6,6 +6,7 @@ export default function FontSizeController({
   isOpen, 
   fontSizeFactor, 
   onFontSizeChange,
+  baseFontSize = 16,
   containerClassName = '',
   isDarkMode = false,
 }) {
@@ -40,7 +41,7 @@ export default function FontSizeController({
           <Icon icon={'solar:rounded-magnifer-zoom-out-outline'} className="w-10 h-10" />
         </button>
         <div className="bg-[#515151] py-4 px-8 text-white rounded-full text-[16px] montserratFont font-medium">
-          <p>{Math.round(fontSizeFactor * 16)}px</p>
+          <p>{Math.round(baseFontSize * fontSizeFactor)}px</p>
         </div>
         <button
           onClick={() => onFontSizeChange(0.1)}
@@ -58,6 +59,7 @@ FontSizeController.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   fontSizeFactor: PropTypes.number.isRequired,
   onFontSizeChange: PropTypes.func.isRequired,
+  baseFontSize: PropTypes.number,
   containerClassName: PropTypes.string,
   isDarkMode: PropTypes.bool,
 };
