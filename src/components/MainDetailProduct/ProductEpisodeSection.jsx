@@ -19,6 +19,7 @@ import usePodcastController from "@/hooks/usePodcastController";
 import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
 import { DEFAULT_AVATAR } from "@/lib/defaults";
 import ExpandView from "../PodcastPlayer/ExpandView";
+import RichTextDisplay from '@/components/RichTextDisplay/page';
 
 export default function ProductEpisodeSection({
   productType,
@@ -180,7 +181,11 @@ export default function ProductEpisodeSection({
                       <div className="flex w-full justify-between items-center">
                         <div className="flex flex-col justify-between md:justify-center h-full py-2 md:py-0 items-start montserratFont text-[#AFAFAF]">
                           <h1 className="text-white zeinFont font-bold text-[16px] md:text-2xl">{item.title}</h1>
-                          <p className="hidden text-start md:block" title={item.description}>{item.description?.substring(0, 265)}{item.description?.length > 265 ? '...' : ''}</p>
+                          <div className="hidden text-start md:block">
+                            <RichTextDisplay
+                              content={item.description?.substring(0, 265) + (item.description?.length > 265 ? '...' : '')}
+                            />
+                          </div>
                           <p className="text-sm md:text-[16px] block md:hidden">{formatDateTime(item.createdAt, 'short')}</p>
                           <p className="text-sm md:text-[16px] hidden md:block">{formatDateTime(item.createdAt, 'long')}</p>
                         </div>
@@ -299,10 +304,11 @@ export default function ProductEpisodeSection({
                             <h1 className="zeinFont font-bold text-white text-[16px] md:text-2xl text-start">
                               {item.title}
                             </h1>
-                            <p className="hidden md:block text-start">
-                              {item.description?.substring(0, 120)}
-                              {item.description?.length > 120 && "..."}
-                            </p>
+                            <div className="hidden md:block text-start">
+                              <RichTextDisplay
+                                content={item.description?.substring(0, 120) + (item.description?.length > 120 ? '...' : '')}
+                              />
+                            </div>
                           </div>
                           <p className="text-sm md:text-[16px] font-bold">
                             {formatDateTime(item.createdAt, "short")}
@@ -376,7 +382,7 @@ export default function ProductEpisodeSection({
                         />
                         <button onClick={() => {
                           bounceSpeed();
-                        }}> 
+                        }}>
                           <p>{speed}x</p>
                         </button>
                         <button onClick={() => {
@@ -569,7 +575,9 @@ export function PodcastMoreDetail({
             <h1 className="font-bold zeinFont text-2xl">
               {title}
             </h1>
-            <p className="montserratFont text-[#AFAFAF]">{description}</p>
+            <div className="montserratFont text-[#AFAFAF]">
+              <RichTextDisplay content={description} />
+            </div>
           </div>
 
           <p className="montserratFont mb-2 flex w-full items-center justify-center py-1 text-center text-xs text-white/50 italic">

@@ -222,3 +222,93 @@ input[type="date"] {
 button:hover {
   cursor: pointer;
 }
+
+/* ==================== RICH TEXT EDITOR STYLES ==================== */
+
+/* Placeholder styling */
+.rich-text-editor[contenteditable][data-placeholder]:empty:before {
+  content: attr(data-placeholder);
+  color: #6b7280;
+  pointer-events: none;
+  position: absolute;
+  opacity: 0.6;
+}
+
+/* Editor content styling */
+.rich-text-editor[contenteditable] p {
+  margin: 0.75em 0;
+  line-height: 1.6;
+}
+
+.rich-text-editor[contenteditable] p:first-child {
+  margin-top: 0;
+}
+
+.rich-text-editor[contenteditable] p:last-child {
+  margin-bottom: 0;
+}
+
+.rich-text-editor[contenteditable] br {
+  display: block;
+  content: "";
+  margin: 0.25em 0;
+}
+
+.rich-text-editor[contenteditable] strong,
+.rich-text-editor[contenteditable] b {
+  font-weight: 700;
+}
+
+.rich-text-editor[contenteditable] em,
+.rich-text-editor[contenteditable] i {
+  font-style: italic;
+}
+
+/* Scrollbar styling */
+.rich-text-editor[contenteditable]::-webkit-scrollbar {
+  width: 8px;
+}
+
+.rich-text-editor[contenteditable]::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-radius: 4px;
+}
+
+.rich-text-editor[contenteditable]::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 4px;
+}
+
+.rich-text-editor[contenteditable]::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* ==================== RICH TEXT DISPLAY STYLES ==================== */
+.rich-text-display p {
+  margin: 0.75em 0;
+  line-height: 1.6;
+}
+
+.rich-text-display p:first-child {
+  margin-top: 0;
+}
+
+.rich-text-display p:last-child {
+  margin-bottom: 0;
+}
+
+.rich-text-display br {
+  display: block;
+  content: "";
+  margin: 0.25em 0;
+}
+
+.rich-text-display strong,
+.rich-text-display b {
+  font-weight: 700;
+}
+
+.rich-text-display em,
+.rich-text-display i {
+  font-style: italic;
+}

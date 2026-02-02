@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import PropTypes from "prop-types";
+import RichTextDisplay from '@/components/RichTextDisplay/page';
 
 /*[--- UTILITY IMPORT ---]*/
 import { useLikeContent } from "@/lib/features/useLikeContent";
@@ -341,7 +342,7 @@ export default function ProductDetailSection({
 
             {/* description */}
             <div className="flex w-full max-w-full flex-col gap-6 rounded-lg bg-[#393939] p-2 text-base font-normal">
-              <p>{productDescription}</p>
+              <RichTextDisplay content={productDescription} />
               <p>
                 Judul : {productTitle} <br />
                 Penulis Cerita : {creatorDetail?.profileName} <br />

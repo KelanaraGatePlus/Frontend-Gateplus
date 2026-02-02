@@ -21,6 +21,7 @@ import Link from "next/link";
 import PreviewContentHeader from "@/components/Header/PreviewContentHeader";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import { Icon } from "@iconify/react";
+import RichTextDisplay from '@/components/RichTextDisplay/page';
 
 export default function DashboardContentPage() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -309,7 +310,7 @@ export default function DashboardContentPage() {
                             contentData ? contentData.data?.[dataType]?.map(item => ({
                                 title: item.title,
                                 posterImageUrl: item.posterImageUrl || item.coverPodcastImage,
-                                description: item.description,
+                                description: <RichTextDisplay content={item.description} className="line-clamp-2" />,
                                 visibility: item.isPrivate == true ? 'Private' : 'Publik',
                                 restriction: item.ageRestriction,
                                 releaseDate: item.createdAt,

@@ -21,7 +21,7 @@ import ButtonSubmit from '@/components/UploadForm/ButtonSubmit';
 import InputImageBanner from '@/components/UploadForm/InputImageBanner';
 import InputSelect from '@/components/UploadForm/InputSelect';
 import InputText from '@/components/UploadForm/InputText';
-import InputTextArea from '@/components/UploadForm/InputTextArea';
+import RichTextEditor from '@/components/RichTextEditor/page';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 /*[--- ASSETS PUBLIC ---]*/
@@ -100,7 +100,6 @@ export default function EditEbookForm({ id }) {
 
     return (
         <>
-
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 lg:gap-0">
                 <div className="flex flex-col gap-2">
                     {/* Judul */}
@@ -112,13 +111,20 @@ export default function EditEbookForm({ id }) {
                         error={errors.title?.message}
                     />
 
-                    {/* Deskripsi */}
-                    <InputTextArea
-                        label="Deskripsi"
+                    {/* Deskripsi - CHANGED TO RICH TEXT EDITOR */}
+                    <Controller
                         name="description"
-                        placeholder="Deskripsi"
-                        {...register("description")}
-                        error={errors.description?.message}
+                        control={control}
+                        render={({ field, fieldState }) => (
+                            <RichTextEditor
+                                label="Deskripsi"
+                                name="description"
+                                placeholder="Deskripsi"
+                                value={field.value}
+                                onChange={field.onChange}
+                                error={fieldState.error?.message}
+                            />
+                        )}
                     />
 
                     {/* Genre */}
