@@ -6,7 +6,8 @@ const routeWithoutNavbar = [
     /^\/auth\/.*/,
     /^\/reset-password$/,
     /^\/verify-email$/,
-    /^\/register-creators$/
+    /^\/register-creators$/,
+    /^\/education$/
 ];
 
 export default routeWithoutNavbar;
