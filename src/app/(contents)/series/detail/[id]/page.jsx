@@ -290,7 +290,10 @@ function DetailSeriesPage({ params }) {
                     {/* Deskripsi */}
                     <div className="rounded-md bg-[#393939] flex-1">
                         <div className="mx-4 my-4 text-white h-full flex flex-col">
-                            <p>{seriesData?.description}</p>
+                            <div
+                                className="prose prose-invert max-w-none"
+                                dangerouslySetInnerHTML={{ __html: seriesData?.description || "" }}
+                            />
 
                             <div className="mt-10">
                                 <p>Judul: {seriesData.title}</p>

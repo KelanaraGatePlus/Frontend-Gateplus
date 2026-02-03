@@ -23,6 +23,7 @@ import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
+import RichTextEditor from '@/components/RichTextEditor/page';
 
 export default function UploadComicEpisodeForm() {
     const router = useRouter();
@@ -72,7 +73,7 @@ export default function UploadComicEpisodeForm() {
 
         try {
             await createEpisode(formData).unwrap();
-            if(fromEducation) {
+            if (fromEducation) {
                 router.push(`/education/detail/${fromEducation}`);
                 return;
             }
@@ -110,12 +111,19 @@ export default function UploadComicEpisodeForm() {
                     error={errors.title?.message}
                 />
 
-                <InputTextArea
-                    label="Sinopsis & Detail Chapter Lengkap"
+                <Controller
                     name="description"
-                    placeholder="Jelaskan plot spesifik chapter ini, kejadian penting, dan karakter yang terlibat. Jangan gunakan sinopsis umum seri. Mesin pencari membaca teks ini."
-                    {...register("description")}
-                    error={errors.description?.message}
+                    control={control}
+                    render={({ field, fieldState }) => (
+                        <RichTextEditor
+                            label="Sinopsis & Detail Chapter Lengkap"
+                            name="description"
+                            placeholder="Jelaskan plot spesifik chapter ini, kejadian penting, dan karakter yang terlibat. Jangan gunakan sinopsis umum seri. Mesin pencari membaca teks ini."
+                            value={field.value}
+                            onChange={field.onChange}
+                            error={fieldState.error?.message}
+                        />
+                    )}
                 />
 
                 <Controller

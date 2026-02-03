@@ -12,9 +12,14 @@ const RichTextEditor = forwardRef(({
 }, ref) => {
   const editorRef = useRef(null);
   const [isFocused, setIsFocused] = useState(false);
+  const [activeFormats, setActiveFormats] = useState({
+    bold: false,
+    italic: false,
+    underline: false,
+    strikeThrough: false,
+  });
   const isUpdatingRef = useRef(false);
 
-  // Sync value from parent to editor
   useEffect(() => {
     if (editorRef.current && !isUpdatingRef.current) {
       const currentHTML = editorRef.current.innerHTML;
@@ -24,58 +29,49 @@ const RichTextEditor = forwardRef(({
     }
   }, [value]);
 
-  // Handle text formatting
-  const formatText = (command) => {
-    const selection = window.getSelection();
-    const hasSelection = selection && selection.toString().length > 0;
-
-    if (command === 'insertParagraph' || command === 'insertLineBreak') {
-      if (command === 'insertParagraph') {
-        document.execCommand('formatBlock', false, 'p');
-      } else {
-        document.execCommand('insertHTML', false, '<br>');
-      }
-    } else if (hasSelection) {
-      document.execCommand(command, false, null);
-    }
-    
-    editorRef.current?.focus();
-    updateContent();
+  const updateActiveFormats = () => {
+    setActiveFormats({
+      bold: document.queryCommandState('bold'),
+      italic: document.queryCommandState('italic'),
+      underline: document.queryCommandState('underline'),
+      strikeThrough: document.queryCommandState('strikeThrough'),
+    });
   };
 
-  // Update content and notify parent
+  const formatText = (command, value = null) => {
+    document.execCommand(command, false, value);
+    editorRef.current?.focus();
+    updateContent();
+    updateActiveFormats();
+  };
+
   const updateContent = () => {
     if (editorRef.current && onChange) {
       isUpdatingRef.current = true;
-      
       const content = editorRef.current.innerHTML;
-      
       onChange({
         target: {
           name,
           value: content
         }
       });
-
       setTimeout(() => {
         isUpdatingRef.current = false;
       }, 50);
     }
   };
 
-  // Handle input changes
   const handleInput = () => {
     updateContent();
+    updateActiveFormats();
   };
 
-  // Handle paste
   const handlePaste = (e) => {
     e.preventDefault();
     const text = e.clipboardData.getData('text/plain');
     document.execCommand('insertText', false, text);
   };
 
-  // Handle keyboard shortcuts
   const handleKeyDown = (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
       e.preventDefault();
@@ -85,17 +81,53 @@ const RichTextEditor = forwardRef(({
       e.preventDefault();
       formatText('italic');
     }
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
       e.preventDefault();
-      document.execCommand('insertParagraph', false, null);
-      updateContent();
-    }
-    if (e.key === 'Enter' && e.shiftKey) {
-      e.preventDefault();
-      document.execCommand('insertHTML', false, '<br>');
-      updateContent();
+      formatText('underline');
     }
   };
+
+  const handleSelectionChange = () => {
+    if (document.activeElement === editorRef.current) {
+      updateActiveFormats();
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('selectionchange', handleSelectionChange);
+    return () => {
+      document.removeEventListener('selectionchange', handleSelectionChange);
+    };
+  }, []);
+
+  const ToolbarButton = ({ icon, title, onClick, isActive = false, tooltip }) => (
+    <div className="relative group">
+      <button
+        type="button"
+        onClick={onClick}
+        className={`
+          relative flex items-center justify-center w-8 h-8 rounded-md
+          transition-all duration-150 ease-out
+          ${isActive 
+            ? 'bg-blue-500/20 text-blue-400 shadow-inner' 
+            : 'text-gray-400 hover:bg-white/5 hover:text-white active:scale-95'
+          }
+        `}
+        title={title}
+      >
+        {icon}
+      </button>
+      {/* Tooltip */}
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+        {tooltip || title}
+        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+      </div>
+    </div>
+  );
+
+  const Divider = () => (
+    <div className="w-px h-5 bg-white/10" />
+  );
 
   return (
     <div className="flex flex-col gap-2 w-full">
@@ -103,119 +135,172 @@ const RichTextEditor = forwardRef(({
       {label && (
         <label 
           htmlFor={name} 
-          className="text-sm font-medium text-white md:text-base"
+          className="text-sm font-semibold text-white/90 tracking-wide"
         >
           {label}
         </label>
       )}
 
-      {/* Toolbar */}
+      {/* Main Container */}
       <div className={`
-        flex items-center gap-2 p-3 
-        bg-gradient-to-r from-gray-900 to-gray-800 
-        border-2 rounded-t-xl transition-all duration-200
-        ${isFocused ? 'border-blue-500 shadow-lg shadow-blue-500/20' : 'border-gray-700'}
+        group rounded-xl overflow-hidden
+        bg-gradient-to-b from-[#252525] to-[#1a1a1a]
+        border transition-all duration-200
+        ${isFocused 
+          ? 'border-blue-500/50 shadow-[0_0_0_3px_rgba(59,130,246,0.1)]' 
+          : error 
+            ? 'border-red-500/50' 
+            : 'border-white/10 hover:border-white/20'
+        }
       `}>
-        <button
-          type="button"
-          onClick={() => formatText('bold')}
-          className="group relative px-4 py-2 bg-gray-800 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 font-bold text-sm border border-gray-700 hover:border-blue-500 shadow-sm hover:shadow-md"
-          title="Bold (Ctrl+B)"
-        >
-          <span className="relative z-10">B</span>
-          <div className="absolute inset-0 bg-blue-500 opacity-0 group-hover:opacity-10 rounded-lg transition-opacity" />
-        </button>
+        {/* Toolbar - Sticky */}
+        <div className="sticky top-0 z-10 flex items-center gap-0.5 px-3 py-2 bg-[#2a2a2a]/95 backdrop-blur-sm border-b border-white/5">
+          {/* Text Style Group */}
+          <div className="flex items-center gap-0.5">
+            <ToolbarButton
+              icon={<span className="font-bold text-[13px]">B</span>}
+              title="Bold"
+              tooltip="Bold (Ctrl+B)"
+              onClick={() => formatText('bold')}
+              isActive={activeFormats.bold}
+            />
+            <ToolbarButton
+              icon={<span className="italic text-[13px] font-serif">I</span>}
+              title="Italic"
+              tooltip="Italic (Ctrl+I)"
+              onClick={() => formatText('italic')}
+              isActive={activeFormats.italic}
+            />
+            <ToolbarButton
+              icon={<span className="underline text-[13px]">U</span>}
+              title="Underline"
+              tooltip="Underline (Ctrl+U)"
+              onClick={() => formatText('underline')}
+              isActive={activeFormats.underline}
+            />
+            <ToolbarButton
+              icon={<span className="line-through text-[13px]">S</span>}
+              title="Strikethrough"
+              tooltip="Strikethrough"
+              onClick={() => formatText('strikeThrough')}
+              isActive={activeFormats.strikeThrough}
+            />
+          </div>
 
-        <button
-          type="button"
-          onClick={() => formatText('italic')}
-          className="group relative px-4 py-2 bg-gray-800 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 italic text-sm border border-gray-700 hover:border-blue-500 shadow-sm hover:shadow-md"
-          title="Italic (Ctrl+I)"
-        >
-          <span className="relative z-10">I</span>
-          <div className="absolute inset-0 bg-blue-500 opacity-0 group-hover:opacity-10 rounded-lg transition-opacity" />
-        </button>
+          <Divider />
 
-        <div className="w-px h-6 bg-gray-700 mx-1" />
+          {/* Alignment Group */}
+          <div className="flex items-center gap-0.5">
+            <ToolbarButton
+              icon={
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="12" x2="15" y2="12" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              }
+              title="Align Left"
+              onClick={() => formatText('justifyLeft')}
+            />
+            <ToolbarButton
+              icon={
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="6" y1="12" x2="18" y2="12" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              }
+              title="Align Center"
+              onClick={() => formatText('justifyCenter')}
+            />
+            <ToolbarButton
+              icon={
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="9" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              }
+              title="Align Right"
+              onClick={() => formatText('justifyRight')}
+            />
+          </div>
 
-        <button
-          type="button"
-          onClick={() => formatText('insertParagraph')}
-          className="group relative px-4 py-2 bg-gray-800 hover:bg-purple-600 text-white rounded-lg transition-all duration-200 text-sm flex items-center gap-1 border border-gray-700 hover:border-purple-500 shadow-sm hover:shadow-md"
-          title="New Paragraph (Enter)"
-        >
-          <span className="relative z-10 text-lg">¶</span>
-          <span className="relative z-10 text-xs">Para</span>
-          <div className="absolute inset-0 bg-purple-500 opacity-0 group-hover:opacity-10 rounded-lg transition-opacity" />
-        </button>
+          <Divider />
 
-        <button
-          type="button"
-          onClick={() => formatText('insertLineBreak')}
-          className="group relative px-4 py-2 bg-gray-800 hover:bg-green-600 text-white rounded-lg transition-all duration-200 text-sm flex items-center gap-1 border border-gray-700 hover:border-green-500 shadow-sm hover:shadow-md"
-          title="Line Break (Shift+Enter)"
-        >
-          <span className="relative z-10 text-lg">↵</span>
-          <span className="relative z-10 text-xs">Break</span>
-          <div className="absolute inset-0 bg-green-500 opacity-0 group-hover:opacity-10 rounded-lg transition-opacity" />
-        </button>
+          {/* List Group */}
+          <div className="flex items-center gap-0.5">
+            <ToolbarButton
+              icon={
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <line x1="9" y1="6" x2="20" y2="6" />
+                  <line x1="9" y1="12" x2="20" y2="12" />
+                  <line x1="9" y1="18" x2="20" y2="18" />
+                  <circle cx="4" cy="6" r="1" fill="currentColor" stroke="none" />
+                  <circle cx="4" cy="12" r="1" fill="currentColor" stroke="none" />
+                  <circle cx="4" cy="18" r="1" fill="currentColor" stroke="none" />
+                </svg>
+              }
+              title="Bullet List"
+              onClick={() => formatText('insertUnorderedList')}
+            />
+            <ToolbarButton
+              icon={
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <line x1="9" y1="6" x2="20" y2="6" />
+                  <line x1="9" y1="12" x2="20" y2="12" />
+                  <line x1="9" y1="18" x2="20" y2="18" />
+                  <text x="3" y="8" fontSize="8" fill="currentColor" fontWeight="600">1</text>
+                  <text x="3" y="14" fontSize="8" fill="currentColor" fontWeight="600">2</text>
+                  <text x="3" y="20" fontSize="8" fill="currentColor" fontWeight="600">3</text>
+                </svg>
+              }
+              title="Numbered List"
+              onClick={() => formatText('insertOrderedList')}
+            />
+          </div>
+        </div>
+
+        {/* Editor Area */}
+        <div
+          ref={editorRef}
+          contentEditable
+          onInput={handleInput}
+          onPaste={handlePaste}
+          onKeyDown={handleKeyDown}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          className="
+            rich-text-editor
+            min-h-[240px] max-h-[500px] overflow-y-auto
+            px-4 py-4
+            text-white/90 text-[15px] leading-[1.7]
+            focus:outline-none
+            selection:bg-blue-500/30
+          "
+          data-placeholder={placeholder}
+          suppressContentEditableWarning
+          style={{
+            wordWrap: 'break-word',
+            overflowWrap: 'break-word',
+            whiteSpace: 'pre-wrap',
+          }}
+        />
       </div>
 
-      {/* Editor Area */}
-      <div
-        ref={editorRef}
-        contentEditable
-        onInput={handleInput}
-        onPaste={handlePaste}
-        onKeyDown={handleKeyDown}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-className={`
-  rich-text-editor
-  min-h-[200px] max-h-[500px] overflow-y-auto
-  p-4 bg-gray-900
-  border-2 rounded-b-xl
-  text-white text-base leading-relaxed
-  transition-all duration-200
-  ${isFocused ? 'border-blue-500 shadow-lg shadow-blue-500/20' : error ? 'border-red-500' : 'border-gray-700'}
-  focus:outline-none
-  [&_strong]:text-white [&_b]:text-white [&_em]:text-white [&_i]:text-white
-`}
-        data-placeholder={placeholder}
-        suppressContentEditableWarning
-        style={{
-          wordWrap: 'break-word',
-          overflowWrap: 'break-word',
-          whiteSpace: 'pre-wrap',
-        }}
-      />
-
-      {/* Error Message */}
-      {error && (
-        <div className="flex items-center gap-2 text-red-500 text-sm mt-1 animate-pulse">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+      {/* Error or Helper Text */}
+      {error ? (
+        <div className="flex items-center gap-2 text-red-400 text-sm mt-1">
+          <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
           </svg>
           <span>{error}</span>
         </div>
+      ) : (
+        <p className="text-white/40 text-xs">
+          Gunakan toolbar untuk formatting atau shortcut keyboard untuk lebih cepat
+        </p>
       )}
-
-      {/* Helper Text */}
-      <div className="flex items-start gap-2 text-gray-400 text-xs mt-1">
-        <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-        </svg>
-        <div className="flex-1">
-          <p className="font-medium mb-1">Tips penggunaan:</p>
-          <ul className="space-y-0.5 ml-2">
-            <li>• <kbd className="px-1 py-0.5 bg-gray-800 rounded text-xs">Ctrl+B</kbd> untuk <strong>Bold</strong></li>
-            <li>• <kbd className="px-1 py-0.5 bg-gray-800 rounded text-xs">Ctrl+I</kbd> untuk <em>Italic</em></li>
-            <li>• <kbd className="px-1 py-0.5 bg-gray-800 rounded text-xs">Enter</kbd> untuk paragraf baru</li>
-            <li>• <kbd className="px-1 py-0.5 bg-gray-800 rounded text-xs">Shift+Enter</kbd> untuk line break</li>
-            <li>• Pilih teks dulu sebelum klik Bold/Italic</li>
-          </ul>
-        </div>
-      </div>
     </div>
   );
 });
