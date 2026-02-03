@@ -86,6 +86,13 @@ export const educationAPI = createApi({
             }),
             providesTags: ["education"],
         }),
+        getEducationBySearch: builder.query({
+            query: (searchParams) => ({
+                url: `/education/search?query=${searchParams}`,
+                method: "GET",
+            }),
+            providesTags: ["education"],
+        }),
     }),
 });
 
@@ -99,4 +106,5 @@ export const {
     useGetEducationProgressByIdQuery,
     useGenerateEducationCertificateMutation,
     useGetRecomendationEducationQuery,
+    useGetEducationBySearchQuery,
 } = educationAPI;

@@ -24,6 +24,7 @@ import iconChartYellow from "@@/icons/icon-chart-yellow.svg";
 import { useAuth } from "../Context/AuthContext";
 import { contentTypeArray } from "@/lib/constants/contentType";
 import { useGetPopularSearchesQuery, useGetSearchHistoryByUserQuery } from "@/hooks/api/searchAPI";
+import { Icon } from "@iconify/react";
 
 export default function NavbarContent({ openCreateContentModal, openRedeemVoucherModal }) {
   const router = useRouter();
@@ -120,7 +121,7 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
             </div>
           )}
 
-          <div className="flex w-fit items-center justify-end gap-4 text-white md:flex md:w-auto md:gap-2 lg:gap-3">
+          <div className="flex w-fit items-center justify-end gap-1 text-white md:flex md:w-auto md:gap-2 lg:gap-3">
             <button
               className="flex h-7 w-7 cursor-pointer items-center justify-center outline-none md:hidden"
               onClick={() => setIsSearchActive(true)}
@@ -128,16 +129,27 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
             >
               <Image priority height={30} width={27} src={logoSearch} alt="search-icon" className="object-cover object-center" />
             </button>
-            <NotificationMenu key={role} />
+
 
             {isAuthenticated ? (
-              <ProfileMenu creatorId={user.creators_id} userId={user.users_id} isCreator={user.isCreator} imageUrl={imageUrl} role={role} openCreateContentModal={openCreateContentModal} openRedeemVoucherModal={openRedeemVoucherModal} />
+              <div className="flex flex-row gap-2 items-center">
+                <Link href={'/education'} className="zeinFont flex h-max items-center w-fit justify-between gap-1 2xl:gap-3 rounded-full px-6 py-1 2xl:py-2 text-sm 2xl:text-xl leading-tight transition-all duration-300 ease-in-out md:flex bg-[#0881AB] hover:bg-[#066d8f]">
+                  <Icon
+                    icon={'solar:square-academic-cap-bold'}
+                    className="text-white"
+                    width={28}
+                    height={28}
+                  />
+                </Link>
+                <NotificationMenu key={role} />
+                <ProfileMenu creatorId={user.creators_id} userId={user.users_id} isCreator={user.isCreator} imageUrl={imageUrl} role={role} openCreateContentModal={openCreateContentModal} openRedeemVoucherModal={openRedeemVoucherModal} />
+              </div>
             ) : (
               <>
                 {/* FIXED: tampilkan juga di mobile */}
                 <div className="flex md:flex md:flex-col md:py-3">
                   <Link href="/login">
-                    <div className="flex justify-center rounded-full bg-linear-to-t from-[#0E5BA8] to-[#0395BC] py-2 font-semibold sm:px-2 md:px-4 lg:px-6 xl:px-8">
+                    <div className="flex justify-center rounded-full bg-linear-to-t from-[#0E5BA8] to-[#0395BC] py-2 font-semibold px-4 lg:px-6 xl:px-8">
                       <span className="zeinFont mt-0.5 text-center text-lg leading-tight drop-shadow-[0_0_2px_rgba(255,255,255,0.4)]">Log In</span>
                     </div>
                   </Link>
@@ -146,7 +158,7 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
                 {/* FIXED: tampilkan juga di mobile */}
                 <div className="block md:block md:py-3">
                   <Link href="/register">
-                    <div className="flex justify-center rounded-full bg-[#0881AB] py-2 font-semibold sm:px-2 md:px-4 lg:px-6 xl:px-8">
+                    <div className="flex justify-center rounded-full bg-[#0881AB] py-2 font-semibold px-4 lg:px-6 xl:px-8">
                       <span className="zeinFont mt-0.5 text-center text-base leading-tight drop-shadow-[0_0_2px_rgba(255,255,255,0.4)]">Sign Up</span>
                     </div>
                   </Link>
