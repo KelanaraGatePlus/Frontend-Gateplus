@@ -519,7 +519,7 @@ export default function ReadEbookPage({ params }) {
 
         {/* Catatan Kreator */}
         <section
-          className={`relative flex w-screen flex-col px-4 pt-5 ${isDark ? "text-white" : "text-[#222222]"} md:mt-4 md:px-15`}
+          className={`relative flex w-screen flex-col px-4 pb-40 pt-5 ${isDark ? "text-white" : "text-[#222222]"} md:mt-4 md:px-15`}
         >
           <div
             className={`w-full rounded-xl p-4 ${isDark ? "bg-[#2f2f2f] text-white" : "bg-[#DEDEDE] text-[#222222]"}`}
@@ -535,93 +535,70 @@ export default function ReadEbookPage({ params }) {
           </div>
         </section>
 
-        {/* Episode Controller */}
-        <div className="px-10 md:px-15 mt-5">
-          <EpisodeController
-            prevEpisodeUrl={episodeEbookPrevId ? `/ebooks/read/${episodeEbookPrevId}` : null}
-            nextEpisodeUrl={episodeEbookNextId ? `/ebooks/read/${episodeEbookNextId}` : null}
-            isDark={isDark}
-          />
-        </div>
-
-        {/* Comment Baru */}
-        <div className="px-5 md:px-11">
-          <CommentComponent
-            commentData={commentData?.data?.data || []}
-            isLoadingGetComment={isLoadingGetComment}
-            contentType={"EBOOK"}
-            episodeId={id}
-            isDark={isDark}
-          />
-        </div>
-
         {/* Audio Book */}
         {audioEbookUrl && (
           <AudioEbookButton audioUrl={audioEbookUrl} isDark={isDark} />
         )}
 
-        {/* Transparent Overlay for Page Navigation (Hanya muncul di Page Mode) */}
-        {readingMode === "page" && (
-          <>
-            <div className="fixed inset-0 w-screen h-screen flex z-30 pointer-events-none">
-              {/* Left Half - Previous Page */}
-              <div
-                className="w-1/2 h-full pointer-events-auto cursor-pointer"
-                onClick={() => epubReaderRef.current?.goToPreviousPage()}
-              />
-              {/* Right Half - Next Page */}
-              <div
-                className="w-1/2 h-full pointer-events-auto cursor-pointer"
-                onClick={() => epubReaderRef.current?.goToNextPage()}
+        <div>
+          <div className="fixed inset-0 w-screen h-screen flex z-30 pointer-events-none">
+            {/* Left Half - Previous Page */}
+            <div
+              className="w-1/2 h-full pointer-events-auto cursor-pointer"
+              onClick={() => epubReaderRef.current?.goToPreviousPage()}
+            />
+            {/* Right Half - Next Page */}
+            <div
+              className="w-1/2 h-full pointer-events-auto cursor-pointer"
+              onClick={() => epubReaderRef.current?.goToNextPage()}
+            />
+          </div>
+
+          {/* Navigation Bar with Progress */}
+          <div className="fixed bg-[#393939] bottom-0 left-0 right-0 flex flex-col items-center justify-center gap-4 z-40 pointer-events-auto">
+            <div className="w-full">
+              <DefaultProgressBar
+                progress={progress}
+                barColor="#FFFFFF"
               />
             </div>
-
-            {/* Navigation Bar with Progress */}
-            <div className="fixed bg-[#393939] bottom-0 left-0 right-0 flex flex-col items-center justify-center gap-4 z-40 pointer-events-auto">
-              <div className="w-full">
-                <DefaultProgressBar
-                  progress={progress}
-                  barColor="#FFFFFF"
+            <div className="flex flex-col px-4 md:px-16 w-full">
+              <div className="flex justify-between items-center text-white font-medium mb-2">
+                <Icon icon="" className="w-6 h-6 opacity-0" />
+                <p className="text-sm md:text-base">Page {currentPage} of {totalPages}</p>
+                <Icon
+                  icon={'solar:close-circle-bold-duotone'}
+                  className={`h-6 w-6 md:h-8 md:w-8 cursor-pointer hover:opacity-70 transition-opacity`}
+                  onClick={() => handleReadingModeChange('scroll')}
                 />
               </div>
-              <div className="flex flex-col px-4 md:px-16 w-full">
-                <div className="flex justify-between items-center text-white font-medium mb-2">
-                  <Icon icon="" className="w-6 h-6 opacity-0" />
-                  <p className="text-sm md:text-base">Page {currentPage} of {totalPages}</p>
+              <div className="grid grid-cols-2 gap-2 md:gap-4 w-full pb-2">
+                <Link
+                  href={episodeEbookPrevId ? `/ebooks/read/${episodeEbookPrevId}` : '#'}
+                  className={`flex rounded-lg items-center justify-center w-full h-10 md:h-12 bg-black/50 transition-all text-white shadow-xl backdrop-blur-sm ${episodeEbookPrevId ? 'hover:bg-black/80 cursor-pointer' : 'opacity-50 cursor-not-allowed pointer-events-none'
+                    }`}
+                >
                   <Icon
-                    icon={'solar:close-circle-bold-duotone'}
-                    className={`h-6 w-6 md:h-8 md:w-8 cursor-pointer hover:opacity-70 transition-opacity`}
-                    onClick={() => handleReadingModeChange('scroll')}
+                    icon={'solar:alt-arrow-left-linear'}
+                    className="h-5 w-5 md:h-6 md:w-6"
                   />
-                </div>
-                <div className="grid grid-cols-2 gap-2 md:gap-4 w-full pb-2">
-                  <Link
-                    href={episodeEbookPrevId ? `/ebooks/read/${episodeEbookPrevId}` : '#'}
-                    className={`flex rounded-lg items-center justify-center w-full h-10 md:h-12 bg-black/50 transition-all text-white shadow-xl backdrop-blur-sm ${episodeEbookPrevId ? 'hover:bg-black/80 cursor-pointer' : 'opacity-50 cursor-not-allowed pointer-events-none'
-                      }`}
-                  >
-                    <Icon
-                      icon={'solar:alt-arrow-left-linear'}
-                      className="h-5 w-5 md:h-6 md:w-6"
-                    />
-                    <p className="text-sm md:text-base">Previous Chapter</p>
-                  </Link>
-                  <Link
-                    href={episodeEbookNextId ? `/ebooks/read/${episodeEbookNextId}` : '#'}
-                    className={`flex rounded-lg items-center justify-center w-full h-10 md:h-12 bg-black/50 transition-all text-white shadow-xl backdrop-blur-sm ${episodeEbookNextId ? 'hover:bg-black/80 cursor-pointer' : 'opacity-50 cursor-not-allowed pointer-events-none'
-                      }`}
-                  >
-                    <p className="text-sm md:text-base">Next Chapter</p>
-                    <Icon
-                      icon={'solar:alt-arrow-right-linear'}
-                      className="h-5 w-5 md:h-6 md:w-6"
-                    />
-                  </Link>
-                </div>
+                  <p className="text-sm md:text-base">Previous Chapter</p>
+                </Link>
+                <Link
+                  href={episodeEbookNextId ? `/ebooks/read/${episodeEbookNextId}` : '#'}
+                  className={`flex rounded-lg items-center justify-center w-full h-10 md:h-12 bg-black/50 transition-all text-white shadow-xl backdrop-blur-sm ${episodeEbookNextId ? 'hover:bg-black/80 cursor-pointer' : 'opacity-50 cursor-not-allowed pointer-events-none'
+                    }`}
+                >
+                  <p className="text-sm md:text-base">Next Chapter</p>
+                  <Icon
+                    icon={'solar:alt-arrow-right-linear'}
+                    className="h-5 w-5 md:h-6 md:w-6"
+                  />
+                </Link>
               </div>
             </div>
-          </>
-        )}
+          </div>
+        </div>
       </main>
     </div>
   );
