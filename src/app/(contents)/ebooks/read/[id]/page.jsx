@@ -1,12 +1,8 @@
 "use client";
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
-import Image from "next/image";
 import Link from "next/link";
 import PropTypes from "prop-types";
-
-/*[--- UTILS IMPORT ---]*/
-import { formatDateTime } from "@/lib/timeFormatter";
 
 /*[--- HOOKS IMPORT ---]*/
 import { BACKEND_URL } from "@/lib/constants/backendUrl";
@@ -17,7 +13,6 @@ import { useGetCommentByEpisodeEbookQuery } from "@/hooks/api/commentSliceAPI"
 import BackButton from "@/components/BackButton/page";
 import EpubReader from "@/components/EbookReader/page";
 import DetailPageLoadingSkeleton from "@/components/MainDetailProduct/Loading/ProductReadLoading"
-import CommentComponent from "@/components/Comment/page";
 import FontSizeController from "./Component/FontSizeController";
 import DefaultProgressBar from "@/components/ProgressBar/DefaultProgressBar";
 
@@ -25,32 +20,31 @@ import DefaultProgressBar from "@/components/ProgressBar/DefaultProgressBar";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { Icon } from "@iconify/react";
 import AudioEbookButton from "@/components/AudioEbookButton/page";
-import EpisodeController from "@/components/EpisodeController/EpisodeController";
+import EbookModal from "@/components/Modal/EbookModal";
+import CommentModalEbook from "@/components/CommentModalEbook/CommentModalEbook";
 
 export default function ReadEbookPage({ params }) {
-  const { id } = React.use(params);
+  const { id } = params;
   const epubReaderRef = useRef(null);
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [ebookTitle, setEbookTitle] = useState("");
   const [ebookId, setEbookId] = useState("");
-  const [title, setTitle] = useState("");
   const [creatorNotes, setCreatorNotes] = useState("");
-  const [updatedAt, setUpdatedAt] = useState("");
-  const [bannerStartEpisodeUrl, setBannerStartEpisodeUrl] = useState(null);
-  const [bannerEndEpisodeUrl, setBannerEndEpisodeUrl] = useState(null);
   const [ebookUrl, setEbookUrl] = useState(null);
   const [isDark, setIsDark] = useState(false);
   const [colorTheme, setColorTheme] = useState("dark");
   const [lineHeight, setLineHeight] = useState("normal");
   const [textAlign, setTextAlign] = useState("justify");
   const [fontFamily, setFontFamily] = useState("sans-serif");
-  const [readingMode, setReadingMode] = useState("scroll");
+  const [readingMode, setReadingMode] = useState("page");
   const [progress, setProgress] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [cfiString, setCfiString] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
   const [baseFontSize, setBaseFontSize] = useState(14);
-  const { data, isLoading, error } = useGetEpisodeEbookByIdQuery(id);
+  const { data, isLoading, error, refetch } = useGetEpisodeEbookByIdQuery(id);
   const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByEpisodeEbookQuery(id);
+  const [isCommentVisible, setIsCommentVisible] = useState(false);
   const [createLog] = useCreateLogMutation();
   const [fontSizeFactor, setFontSizeFactor] = useState(1.0);
   const [fontSizeModalOpen, setFontSizeModalOpen] = useState(false);
@@ -60,7 +54,8 @@ export default function ReadEbookPage({ params }) {
   const episodeEbookNextId = data?.data?.nextEpisode?.id || null;
   const episodeEbookPrevId = data?.data?.previousEpisode?.id || null;
   const ebookData = episodeEbookData.ebooks || {}
-  let hasUpdatedViews = false;
+  const [isModalTutorialOpen, setIsModalTutorialOpen] = useState(false);
+  const hasUpdatedViewsRef = useRef(false);
 
   // Detect device type based on window width
   const getDeviceType = () => {
@@ -102,24 +97,37 @@ export default function ReadEbookPage({ params }) {
 
   const getData = async () => {
     try {
-      if (!hasUpdatedViews) {
+      if (!hasUpdatedViewsRef.current) {
         await axios.patch(
           `${BACKEND_URL}/episode/${id}/views`,
         );
-        hasUpdatedViews = true;
+        hasUpdatedViewsRef.current = true;
       }
-
-      setTitle(episodeEbookData.title);
       setEbookTitle(ebookData.title);
       setEbookId(ebookData.id);
       setCreatorNotes(episodeEbookData.notedEpisode);
       setEbookUrl(episodeEbookData.ebookUrl);
-      setBannerStartEpisodeUrl(episodeEbookData.bannerStartEpisodeUrl);
-      setBannerEndEpisodeUrl(episodeEbookData.bannerEndEpisodeUrl);
-      setUpdatedAt(formatDateTime(episodeEbookData.updatedAt, "short"));
       setAudioEbookUrl(episodeEbookData.audioUrl);
 
-      const existing = JSON.parse(localStorage.getItem("last_seen_content")) || [];
+      // Buka modal tutorial jika belum ada progress membaca
+      if (episodeEbookData?.readProgress == null) {
+        setIsModalTutorialOpen(true);
+      }
+
+      // Inisialisasi currentPage dari readProgress (zero-based -> 1-based)
+      const rpPage = episodeEbookData?.readProgress?.page;
+      if (typeof rpPage === "number" && rpPage >= 0) {
+        setCurrentPage(rpPage + 1);
+        setCfiString(episodeEbookData.readProgress.cfiString || null);
+      }
+
+      let existing = [];
+      try {
+        const raw = localStorage.getItem("last_seen_content");
+        existing = raw ? JSON.parse(raw) : [];
+      } catch {
+        existing = [];
+      }
       const isAlreadyExist = existing.find(item => item.id === ebookData.id);
       let updated = existing;
       if (!isAlreadyExist) {
@@ -133,12 +141,6 @@ export default function ReadEbookPage({ params }) {
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  };
-
-  const toggleTheme = () => {
-    const newTheme = !isDark;
-    setIsDark(newTheme);
-    localStorage.setItem("theme", newTheme ? "dark" : "light");
   };
 
   // Fungsi untuk mengubah ukuran font
@@ -173,11 +175,18 @@ export default function ReadEbookPage({ params }) {
     setReadingMode(mode);
   }, []);
 
-  // Handler untuk menerima progress data dari EpubReader (Memoized)
+  // Tambahkan ref di bagian atas ReadEbookPage
+  const lastCfiRef = useRef(null);
+
   const handleProgressChange = useCallback((progressData) => {
     setProgress(progressData.progress);
     setCurrentPage(progressData.currentPage);
     setTotalPages(progressData.totalPages);
+
+    // SIMPAN CFI TERBARU DI PARENT
+    if (progressData.cfi) {
+      lastCfiRef.current = progressData.cfi;
+    }
   }, []);
 
   // Fungsi helper untuk mendapatkan kelas button aktif
@@ -193,7 +202,15 @@ export default function ReadEbookPage({ params }) {
     if (error && error.status === 403) {
       window.location.href = "/checkout/purchase/ebooks/x/" + id;
     }
-  }, [ebookData, data, isLoading]);
+  }, [data, isLoading, error, id]);
+
+  // Refetch episode data when reading mode changes to refresh progress/CFI
+  useEffect(() => {
+    if (!id) return;
+    try {
+      refetch?.();
+    } catch {}
+  }, [readingMode, id, refetch]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -511,6 +528,9 @@ export default function ReadEbookPage({ params }) {
                   onBaseFontSizeChange={setBaseFontSize}
                   readingMode={readingMode}
                   onProgressChange={handleProgressChange}
+                  episodeEbookId={id}
+                  currentPage={currentPage}
+                  cfiPosition={cfiString}
                 />
               )}
             </div>
@@ -541,18 +561,20 @@ export default function ReadEbookPage({ params }) {
         )}
 
         <div>
-          <div className="fixed inset-0 w-screen h-screen flex z-30 pointer-events-none">
-            {/* Left Half - Previous Page */}
-            <div
-              className="w-1/2 h-full pointer-events-auto cursor-pointer"
-              onClick={() => epubReaderRef.current?.goToPreviousPage()}
-            />
-            {/* Right Half - Next Page */}
-            <div
-              className="w-1/2 h-full pointer-events-auto cursor-pointer"
-              onClick={() => epubReaderRef.current?.goToNextPage()}
-            />
-          </div>
+          {readingMode === 'page' && (
+            <div className="fixed inset-0 w-screen h-screen flex z-30 pointer-events-none">
+              {/* Left Half - Previous Page */}
+              <div
+                className="w-1/2 h-full pointer-events-auto cursor-pointer"
+                onClick={() => epubReaderRef.current?.goToPreviousPage()}
+              />
+              {/* Right Half - Next Page */}
+              <div
+                className="w-1/2 h-full pointer-events-auto cursor-pointer"
+                onClick={() => epubReaderRef.current?.goToNextPage()}
+              />
+            </div>
+          )}
 
           {/* Navigation Bar with Progress */}
           <div className="fixed bg-[#393939] bottom-0 left-0 right-0 flex flex-col items-center justify-center gap-4 z-40 pointer-events-auto">
@@ -564,12 +586,12 @@ export default function ReadEbookPage({ params }) {
             </div>
             <div className="flex flex-col px-4 md:px-16 w-full">
               <div className="flex justify-between items-center text-white font-medium mb-2">
-                <Icon icon="" className="w-6 h-6 opacity-0" />
+                <div className="w-6 h-6 opacity-0" aria-hidden="true" />
                 <p className="text-sm md:text-base">Page {currentPage} of {totalPages}</p>
                 <Icon
                   icon={'solar:close-circle-bold-duotone'}
                   className={`h-6 w-6 md:h-8 md:w-8 cursor-pointer hover:opacity-70 transition-opacity`}
-                  onClick={() => handleReadingModeChange('scroll')}
+                  onClick={() => setIsCommentVisible(true)}
                 />
               </div>
               <div className="grid grid-cols-2 gap-2 md:gap-4 w-full pb-2">
@@ -577,6 +599,8 @@ export default function ReadEbookPage({ params }) {
                   href={episodeEbookPrevId ? `/ebooks/read/${episodeEbookPrevId}` : '#'}
                   className={`flex rounded-lg items-center justify-center w-full h-10 md:h-12 bg-black/50 transition-all text-white shadow-xl backdrop-blur-sm ${episodeEbookPrevId ? 'hover:bg-black/80 cursor-pointer' : 'opacity-50 cursor-not-allowed pointer-events-none'
                     }`}
+                  aria-disabled={!episodeEbookPrevId}
+                  tabIndex={episodeEbookPrevId ? 0 : -1}
                 >
                   <Icon
                     icon={'solar:alt-arrow-left-linear'}
@@ -588,6 +612,8 @@ export default function ReadEbookPage({ params }) {
                   href={episodeEbookNextId ? `/ebooks/read/${episodeEbookNextId}` : '#'}
                   className={`flex rounded-lg items-center justify-center w-full h-10 md:h-12 bg-black/50 transition-all text-white shadow-xl backdrop-blur-sm ${episodeEbookNextId ? 'hover:bg-black/80 cursor-pointer' : 'opacity-50 cursor-not-allowed pointer-events-none'
                     }`}
+                  aria-disabled={!episodeEbookNextId}
+                  tabIndex={episodeEbookNextId ? 0 : -1}
                 >
                   <p className="text-sm md:text-base">Next Chapter</p>
                   <Icon
@@ -599,11 +625,69 @@ export default function ReadEbookPage({ params }) {
             </div>
           </div>
         </div>
+
+        <EbookModal isOpen={isModalTutorialOpen} onClose={() => setIsModalTutorialOpen(false)}>
+          <div className="flex flex-col px-4 md:px-8 gap-4 w-[290px] md:w-[500px]">
+            <h2 className="text-white zeinFont font-bold text-xl md:text-3xl">Welcome to Your Reader</h2>
+            <div className="flex flex-row gap-3">
+              <div className="bg-[#515151] p-2 rounded-lg w-max h-max">
+                <Icon
+                  icon={'solar:cursor-outline'}
+                  className="w-5 h-5 text-white"
+                />
+              </div>
+              <div className="flex flex-col gap-1 text-white montserratFont">
+                <p className="text-lg md:text-2xl">Navigation</p>
+                <p className="text-xs text-[#979797]">Tap left or right edges to navigate pages.</p>
+              </div>
+            </div>
+            <div className="flex flex-row gap-3">
+              <div className="bg-[#515151] p-2 rounded-lg w-max h-max">
+                <Icon
+                  icon={'solar:menu-dots-bold'}
+                  className="w-5 h-5 text-white"
+                />
+              </div>
+              <div className="flex flex-col gap-1 text-white montserratFont">
+                <p className="text-lg md:text-2xl">Change Style</p>
+                <p className="text-xs text-[#979797]">Tap three dot on the top right corner to change style.</p>
+              </div>
+            </div>
+            <div className="flex flex-row gap-3">
+              <div className="bg-[#515151] p-2 rounded-lg w-max h-max">
+                <Icon
+                  icon={'solar:arrow-to-down-left-outline'}
+                  className="w-5 h-5 text-white"
+                />
+              </div>
+              <div className="flex flex-col gap-1 text-white montserratFont">
+                <p className="text-lg md:text-2xl">Scroll</p>
+                <p className="text-xs text-[#979797]">Swipe up or down to scroll through the content.</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center justify-center gap-1">
+              <button onClick={() => setIsModalTutorialOpen(false)} className="bg-[#1297DC] rounded-xl w-full px-4 py-2 text-white montserratFont font-bold">
+                Start Reading
+              </button>
+              <p className="text-[#979797] text-xs md:text-base">This hint won't show again</p>
+            </div>
+          </div>
+        </EbookModal>
+        <CommentModalEbook
+          episodeId={id}
+          isCommentVisible={isCommentVisible}
+          setIsCommentVisible={setIsCommentVisible}
+          commentData={commentData?.data?.data || []}
+          isLoadingGetComment={isLoadingGetComment}
+        />
       </main>
     </div>
   );
 }
 
 ReadEbookPage.propTypes = {
-  params: PropTypes.string,
+  params: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+  }).isRequired,
 }
