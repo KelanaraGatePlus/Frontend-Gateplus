@@ -29,7 +29,7 @@ export default function PodcastPlayback({
   const [duration, setDuration] = useState(0);
   const [blobUrl, setBlobUrl] = useState("");
   const [volume, setVolume] = useState(1);
-  const { audioRef, isPlaying, togglePlay, play, seek, seekBy, setPlayerVolume, setCurrentlyPlaying, playNextEpisode, playPrevEpisode, isExpand, setIsExpand, handleExpand } = usePodcastPlayer();
+  const { audioRef, isPlaying, togglePlay, play, seek, seekBy, setPlayerVolume, setCurrentlyPlaying, playNextEpisode, playPrevEpisode, isExpand, setIsExpand, handleExpand, stopPlayback } = usePodcastPlayer();
   const [episodePodcastData, setEpisodePodcastData] = useState({});
   const [createLog] = useCreateLogMutation();
   const [createProgressWatch] = useCreateProgressWatchMutation();
@@ -247,7 +247,10 @@ export default function PodcastPlayback({
     const updatedParams = new URLSearchParams(searchParams);
     updatedParams.delete("podcast_detail");
     window.history.replaceState({}, "", `?${updatedParams.toString()}`);
-    setIsOpen(false);
+    // Fully stop playback and close UI
+    try {
+      stopPlayback();
+    } catch {}
     if (isExpand) {
       handleExpand();
     }

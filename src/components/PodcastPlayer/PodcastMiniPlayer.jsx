@@ -10,7 +10,7 @@ import Link from "next/link";
 import ExpandView from "./ExpandView";
 
 export default function PodcastMiniPlayer({ currentlyPlaying, podcastMeta, coverImage, subtitle }) {
-  const { isPlaying, togglePlay, playEpisode, episodeList, playNextEpisode, isExpand, handleExpand } = usePodcastPlayer();
+  const { isPlaying, togglePlay, playEpisode, episodeList, playNextEpisode, isExpand, handleExpand, stopPlayback } = usePodcastPlayer();
   const { currentTime, duration } = usePodcastController();
   const [isCommentVisible, setIsCommentVisible] = useState(false);
   const handleViewComments = () => setIsCommentVisible((s) => !s);
@@ -79,10 +79,23 @@ export default function PodcastMiniPlayer({ currentlyPlaying, podcastMeta, cover
                   className="w-6 h-6 text-white hover:text-gray-300"
                 />
               </button>
+              {/* Close mini player and stop audio */}
               <button onClick={() => { handleExpand() }} href={'/podcasts/detail/' + podcastMeta.id}>
                 <Icon
                   icon={"solar:maximize-square-2-broken"}
                   className="w-8 h-8 text-white hover:text-gray-300"
+                />
+              </button>
+              <button
+                onClick={() => {
+                  stopPlayback();
+                }}
+                aria-label="Close mini player"
+                title="Close"
+              >
+                <Icon
+                  icon={"solar:close-circle-bold-duotone"}
+                  className="w-7 h-7 text-white hover:text-gray-300"
                 />
               </button>
             </div>
