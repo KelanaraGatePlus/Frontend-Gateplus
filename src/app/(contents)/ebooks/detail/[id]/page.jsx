@@ -15,7 +15,6 @@ import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 // eslint-disable-next-line react/prop-types
 export default function DetailEbookPage({ params }) {
   const { id } = React.use(params);
-  const userId = useGetUserId();
   const [loading, setLoading] = useState(false);
   // const [selectedEpisode, setSelectedEpisode] = useState(null);
   // const [selectedContentId, setSelectedContentId] = useState(null);
@@ -48,8 +47,8 @@ export default function DetailEbookPage({ params }) {
     setLoading(false);
   };
 
-  const skip = !id || !userId;
-  const { data, isLoading } = useGetEbookByIdQuery({ id, userId }, { skip });
+  const skip = !id;
+  const { data, isLoading } = useGetEbookByIdQuery({ id }, { skip });
   const ebookData = data?.data || {};
   const episode_ebooks = (ebookData?.episode_ebooks?.episodes || []).slice().sort((a, b) => {
     return new Date(a.createdAt) - new Date(b.createdAt);

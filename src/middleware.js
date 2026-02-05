@@ -32,9 +32,21 @@ export async function middleware(req) {
         "/login",
         "/register",
         '/session-expired',
+        '/ebooks',
+        '/comics',
+        '/movies',
+        '/series',
+        '/podcasts',
+        '/search'
     ];
     const PUBLIC_PATH_PREFIXES = [
         "/education/certificate/",
+        "/ebooks/",
+        "/comics/",
+        "/podcasts/",
+        "/movies/",
+        "/series/",
+        "/search/"
     ];
 
     /* =========================
