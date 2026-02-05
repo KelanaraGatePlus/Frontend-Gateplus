@@ -13,7 +13,6 @@ import { useGetCommentByEpisodeEbookQuery } from "@/hooks/api/commentSliceAPI"
 import BackButton from "@/components/BackButton/page";
 import EpubReader from "@/components/EbookReader/page";
 import DetailPageLoadingSkeleton from "@/components/MainDetailProduct/Loading/ProductReadLoading"
-import FontSizeController from "./Component/FontSizeController";
 import DefaultProgressBar from "@/components/ProgressBar/DefaultProgressBar";
 
 /*[--- ASSETS IMPORT ---]*/
@@ -47,7 +46,6 @@ export default function ReadEbookPage({ params }) {
   const [isCommentVisible, setIsCommentVisible] = useState(false);
   const [createLog] = useCreateLogMutation();
   const [fontSizeFactor, setFontSizeFactor] = useState(1.0);
-  const [fontSizeModalOpen, setFontSizeModalOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [audioEbookUrl, setAudioEbookUrl] = useState(null);
   const episodeEbookData = data?.data?.data || {};
@@ -209,7 +207,9 @@ export default function ReadEbookPage({ params }) {
     if (!id) return;
     try {
       refetch?.();
-    } catch {}
+    } catch {
+      console.error("Gagal memuat ulang data episode ebook.");
+    }
   }, [readingMode, id, refetch]);
 
   useEffect(() => {
@@ -242,16 +242,8 @@ export default function ReadEbookPage({ params }) {
       className={`flex flex-col overflow-hidden ${colorTheme === "dark" ? "bg-[#121212]" : colorTheme == 'sepia' ? "bg-[#F4ECD8]" : "bg-[#FFFFFF]"}`}
     >
       <main className="flex flex-col">
-        <FontSizeController
-          isOpen={fontSizeModalOpen}
-          fontSizeFactor={fontSizeFactor}
-          onFontSizeChange={handleFontSizeChange}
-          baseFontSize={baseFontSize}
-          containerClassName="fixed right-20 top-12"
-          isDarkMode={isDark}
-        />
         <div
-          className={`${isDark ? "text-white" : "text-[#222222]"} fixed z-40 mt-0 w-full flex-row items-center justify-start gap-2 px-4 md:px-20 py-2 text-2xl font-semibold backdrop-blur flex`}
+          className={`${colorTheme == 'dark' ? "text-white" : "text-[#222222]"} fixed z-40 mt-0 w-full flex-row items-center justify-start gap-2 px-4 md:px-20 py-2 text-2xl font-semibold backdrop-blur flex`}
         >
           <BackButton isDark={isDark} />
           <h4
@@ -670,7 +662,7 @@ export default function ReadEbookPage({ params }) {
               <button onClick={() => setIsModalTutorialOpen(false)} className="bg-[#1297DC] rounded-xl w-full px-4 py-2 text-white montserratFont font-bold">
                 Start Reading
               </button>
-              <p className="text-[#979797] text-xs md:text-base">This hint won't show again</p>
+              <p className="text-[#979797] text-xs md:text-base">This hint won&apos;t show again</p>
             </div>
           </div>
         </EbookModal>

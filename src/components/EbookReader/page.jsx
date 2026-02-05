@@ -1,5 +1,4 @@
 /* eslint-disable react/prop-types */
-/* eslint-disable react/react-in-jsx-types */
 "use client";
 
 import ePub from "epubjs";
@@ -13,6 +12,7 @@ import {
 } from "react";
 import { Scrollama, Step } from "react-scrollama";
 import { useApplyReadProgressMutation } from "@/hooks/api/readProgressAPI";
+import React from "react";
 
 const FONT_FAMILIES = {
   sans_serif: { class: "montserratFont", value: '"Montserrat", sans-serif' },
@@ -31,7 +31,6 @@ const EpubReader = forwardRef(
   (
     {
       epubUrl,
-      preventCopy = true,
       initialFontSizeFactor = 1.0,
       onFontSizeChange = null,
       fontFamily = "sans-serif",
@@ -104,7 +103,7 @@ const EpubReader = forwardRef(
           // Trigger RTK Query mutation; ignore result for fire-and-forget
           applyReadProgress(body);
         } catch (e) {
-          // Silent fail; optionally hook to a toast/log if needed
+          console.error("Gagal mengirim progress baca:", e);
         }
       }, 400);
 
@@ -338,7 +337,10 @@ const EpubReader = forwardRef(
                 if (locs && typeof locs.cfiFromPercentage === "function") {
                   try {
                     targetCfi = locs.cfiFromPercentage(targetPct);
-                  } catch { }
+                  } catch {
+                    // Silent fail; fallback to stepping
+                    console.warn("Gagal mendapatkan CFI dari persentase, menggunakan fallback stepping.");
+                  }
                 }
                 if (targetCfi) {
                   renditionRef.current?.display(targetCfi);
@@ -467,14 +469,8 @@ const EpubReader = forwardRef(
       goToNextPage: () => renditionRef.current?.next(),
     }));
 
-    // Handler untuk Scrollama
-    const handleStepEnter = ({ data }) => {
-      // Data berisi nilai pageStats.current yang dikirim lewat Step
-      // Ini memastikan Scrollama mengenali posisi scroll
-    };
-
     return (
-      <Scrollama offset={0.2} onStepEnter={handleStepEnter}>
+      <Scrollama offset={0.2}>
         <Step data={pageStats.current}>
           <div className="relative w-full flex flex-col items-center bg-transparent min-h-screen">
             <div
