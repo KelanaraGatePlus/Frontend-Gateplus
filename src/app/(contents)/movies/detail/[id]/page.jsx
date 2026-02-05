@@ -23,6 +23,7 @@ import CarouselTemplate from "@/components/Carousel/carouselTemplate";
 import Link from "next/link";
 import { DEFAULT_AVATAR } from "@/lib/defaults";
 import { useGetUserId } from "@/lib/features/useGetUserId";
+import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 /* ===========================
    Halaman: PlayingMoviePage (JSX)
@@ -30,7 +31,7 @@ import { useGetUserId } from "@/lib/features/useGetUserId";
 function PlayingMoviePage({ params }) {
     const { id } = params;
     const userId = useGetUserId();
-    const { data } = useGetMovieByIdQuery(id);
+    const { data, isLoading } = useGetMovieByIdQuery(id);
     const movieData = data?.data?.data || {}; // Pindahkan ke atas agar bisa dipakai di useEffect
 
     // const [isModalOpen, setIsModalOpen] = useState(false);
@@ -147,6 +148,12 @@ function PlayingMoviePage({ params }) {
             contentId: id,
         });
     }, [id, createLog]);
+
+    if (isLoading) {
+        return (
+            <LoadingOverlay />
+        )
+    }
 
     return (
         <div>

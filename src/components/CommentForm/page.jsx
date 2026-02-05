@@ -15,6 +15,8 @@ import { Icon } from "@iconify/react";
 import CommentDonationForm from "./CommentDonationForm";
 import DonationLabel from "./DonationLabel";
 import TipPaymentModal from "./TipPaymentModal";
+import { useGetUserId } from "@/lib/features/useGetUserId";
+import Link from "next/link";
 
 export default function CommentForm({
   contentType,
@@ -27,6 +29,7 @@ export default function CommentForm({
   educationId = null,
   withReward = true,
 }) {
+  const userId = useGetUserId();
   const [createComment, { isLoading }] = useCreateCommentMutation();
   const { display } = useDisplayPayment();
   const [tipValue, setTipValue] = React.useState(null);
@@ -204,7 +207,7 @@ export default function CommentForm({
               name="comment-donation"
             />
           )}
-          <div className={` ${withTip ? "flex" : "grid"} grid-cols-5 gap-2 montserratFont`}>
+          {userId && <div className={` ${withTip ? "flex" : "grid"} grid-cols-5 gap-2 montserratFont`}>
             <button
               type="submit"
               disabled={isLoading}
@@ -222,7 +225,18 @@ export default function CommentForm({
                 {!withTip ? (isLoading ? "Loading..." : "Reward") : null}
               </div>
             )}
-          </div>
+          </div>}
+          {!userId && (
+            <div className={` ${withTip ? "flex" : "grid"} grid-cols-1 gap-2 montserratFont`}>
+              <Link
+                href={'/login'}
+                disabled={isLoading}
+                className={`${isLoading ? "cursor-not-allowed opacity-60 bg-gray-600" : "bg-[#0E5BA8]"} flex w-full ${withTip ? "w-full" : "col-span-3"} cursor-pointer items-center justify-center rounded-md border-2 border-[#F5F5F559] py-2 text-sm font-bold text-white`}
+              >
+                Silahkan mendaftar untuk mulai mengirim komentar
+              </Link>
+            </div>
+          )}
           {errors.message?.message && (
             <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>
           )}

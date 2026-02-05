@@ -9,13 +9,14 @@ import { useGetEpisodeSeriesByIdQuery } from "@/hooks/api/contentSliceAPI";
 import CommentComponent from "@/components/Comment/page";
 import { useGetCommentByEpisodeSeriesQuery } from "@/hooks/api/commentSliceAPI";
 import EpisodeController from "@/components/EpisodeController/EpisodeController";
+import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 /* ===========================
    Halaman: DetailSeriesPage (JSX)
    =========================== */
 export default function DetailSeriesPage({ params }) {
     const { id } = params;
-    const { data, error } = useGetEpisodeSeriesByIdQuery(id);
+    const { data, error, isLoading } = useGetEpisodeSeriesByIdQuery(id);
 
     const episodeData = data?.data?.data || {};
     const seriesData = data?.data?.data?.series || {};
@@ -28,6 +29,12 @@ export default function DetailSeriesPage({ params }) {
             window.location.href = "/checkout/purchase/series/x/" + id;
         }
     }, [error]);
+
+    if (isLoading) {
+        return (
+            <LoadingOverlay />
+        )
+    }
 
     return (
         <div>

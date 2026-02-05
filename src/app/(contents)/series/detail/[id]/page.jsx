@@ -24,11 +24,12 @@ import CarouselTemplate from '@/components/Carousel/carouselTemplate';
 import Link from 'next/link';
 import { DEFAULT_AVATAR } from '@/lib/defaults';
 import { useGetUserId } from '@/lib/features/useGetUserId';
+import LoadingOverlay from '@/components/LoadingOverlay/page';
 
 function DetailSeriesPage({ params }) {
     const { id } = params;
     const userId = useGetUserId();
-    const { data } = useGetSeriesByIdQuery({ id, withEpisodes: false });
+    const { data, isLoading } = useGetSeriesByIdQuery({ id, withEpisodes: false });
     const [loading, setLoading] = useState(false);
     // // const [selectedContentId, setSelectedContentId] = useState(null);
     // const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
@@ -163,6 +164,12 @@ function DetailSeriesPage({ params }) {
             setIdSaved,
         });
     };
+
+    if (isLoading) {
+        return (
+            <LoadingOverlay />
+        )
+    }
 
     return (
         <div>
