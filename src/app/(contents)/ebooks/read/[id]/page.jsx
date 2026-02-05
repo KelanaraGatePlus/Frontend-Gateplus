@@ -579,7 +579,7 @@ export default function ReadEbookPage({ params }) {
             <div className="flex flex-col px-4 md:px-16 w-full">
               <div className="flex justify-between items-center text-white font-medium mb-2">
                 <div className="w-6 h-6 opacity-0" aria-hidden="true" />
-                <p className="text-sm md:text-base">Page {currentPage} of {totalPages}</p>
+                <p className="text-sm md:text-base">Halaman {currentPage} dari {totalPages}</p>
                 <Icon
                   icon={'solar:close-circle-bold-duotone'}
                   className={`h-6 w-6 md:h-8 md:w-8 cursor-pointer hover:opacity-70 transition-opacity`}
@@ -598,7 +598,7 @@ export default function ReadEbookPage({ params }) {
                     icon={'solar:alt-arrow-left-linear'}
                     className="h-5 w-5 md:h-6 md:w-6"
                   />
-                  <p className="text-sm md:text-base">Previous Chapter</p>
+                  <p className="text-sm md:text-base">Bagian Sebelumnya</p>
                 </Link>
                 <Link
                   href={episodeEbookNextId ? `/ebooks/read/${episodeEbookNextId}` : '#'}
@@ -607,7 +607,7 @@ export default function ReadEbookPage({ params }) {
                   aria-disabled={!episodeEbookNextId}
                   tabIndex={episodeEbookNextId ? 0 : -1}
                 >
-                  <p className="text-sm md:text-base">Next Chapter</p>
+                  <p className="text-sm md:text-base">Bagian Selanjutnya</p>
                   <Icon
                     icon={'solar:alt-arrow-right-linear'}
                     className="h-5 w-5 md:h-6 md:w-6"

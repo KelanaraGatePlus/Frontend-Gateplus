@@ -153,12 +153,10 @@ const EpubReader = forwardRef(
       <span style="
         color: ${COLOR_THEMES[colorTheme].text}66;
         font-size: 12px;
-        font-family: sans-serif;
-        letter-spacing: 2px;
-        text-transform: uppercase;
+        font-family: Montserrat, sans-serif;
         font-weight: 500;
       ">
-        Halaman ${i} dari ${totalPages}
+        Halaman ${i}/${totalPages}
       </span>
     `;
 
