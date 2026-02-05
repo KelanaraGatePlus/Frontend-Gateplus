@@ -22,12 +22,14 @@ import formatDuration from "@/lib/helper/formatDurationHelper";
 import CarouselTemplate from "@/components/Carousel/carouselTemplate";
 import Link from "next/link";
 import { DEFAULT_AVATAR } from "@/lib/defaults";
+import { useGetUserId } from "@/lib/features/useGetUserId";
 
 /* ===========================
    Halaman: PlayingMoviePage (JSX)
    =========================== */
 function PlayingMoviePage({ params }) {
     const { id } = params;
+    const userId = useGetUserId();
     const { data } = useGetMovieByIdQuery(id);
     const movieData = data?.data?.data || {}; // Pindahkan ke atas agar bisa dipakai di useEffect
 
@@ -180,70 +182,72 @@ function PlayingMoviePage({ params }) {
                         </div>
                         <div className="flex flex-row gap-6">
                             <div className="flex items-center justify-center w-48">
-                                <button onClick={movieData?.isOwner || movieData?.isSubscribed || movieData?.price == 'Free' ? null : () => { handleSubscribe()}} className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
+                                <button onClick={movieData?.isOwner || movieData?.isSubscribed || movieData?.price == 'Free' ? null : () => { handleSubscribe() }} className="rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
                                     {movieData?.isOwner || movieData?.isSubscribed || movieData?.price == 'Free' ? "Watch" : "Buy"}
                                 </button>
                             </div>
-                            <div onClick={handleToggleLike} className="flex items-center justify-center transition delay-150 duration-400 ease-linear hover:-translate-y-1 hover:scale-x-110 hover:scale-y-110 cursor-pointer">
-                                {isLiked ? (
-                                    <Image
-                                        priority
-                                        className="focus-within:bg-purple-300"
-                                        width={35}
-                                        alt="icon-like-solid"
-                                        src={iconLikeSolid}
-                                    />
-                                ) : (
-                                    <Image
-                                        priority
-                                        className="focus-within:bg-purple-300"
-                                        width={35}
-                                        alt="icon-like-outline"
-                                        src={logoLike}
-                                    />
-                                )}
-                                <p className="montserratFont mt-1 text-base font-bold pl-2">
-                                    {totalLike}
-                                </p>
+                            <div className="flex items-center justify-center gap-2">
+                                {userId && <div onClick={handleToggleLike} className="flex items-center justify-center transition delay-150 duration-400 ease-linear hover:-translate-y-1 hover:scale-x-110 hover:scale-y-110 cursor-pointer">
+                                    {isLiked ? (
+                                        <Image
+                                            priority
+                                            className="focus-within:bg-purple-300"
+                                            width={35}
+                                            alt="icon-like-solid"
+                                            src={iconLikeSolid}
+                                        />
+                                    ) : (
+                                        <Image
+                                            priority
+                                            className="focus-within:bg-purple-300"
+                                            width={35}
+                                            alt="icon-like-outline"
+                                            src={logoLike}
+                                        />
+                                    )}
+                                    <p className="montserratFont mt-1 text-base font-bold pl-2">
+                                        {totalLike}
+                                    </p>
+                                </div>}
+                                {/* Tombol Dislike */}
+                                {userId && <div onClick={handleToggleDislike} className="flex items-center justify-center cursor-pointer">
+                                    {isDisliked ? (
+                                        <Image
+                                            priority
+                                            className="focus-within:bg-purple-300"
+                                            width={35}
+                                            alt="icon-like-solid"
+                                            src={iconDislikeSolid}
+                                        />
+                                    ) : (
+                                        <Image
+                                            priority
+                                            className="focus-within:bg-purple-300"
+                                            width={35}
+                                            alt="icon-like-outline"
+                                            src={logoDislike}
+                                        />
+                                    )}
+                                </div>}
+                                {userId && <div onClick={handleToggleSave} className="flex items-center justify-center cursor-pointer">
+                                    {isSaved ? (
+                                        <Image
+                                            priority
+                                            width={35}
+                                            alt="icon-saved-solid"
+                                            src={iconSaveSolid}
+                                        />
+                                    ) : (
+                                        <Image
+                                            priority
+                                            width={35}
+                                            alt="logo-save"
+                                            src={logoSave}
+                                        />
+                                    )}
+                                </div>}
+                                <DefaultShareButton contentType={'MOVIE'} />
                             </div>
-                            {/* Tombol Dislike */}
-                            <div onClick={handleToggleDislike} className="flex items-center justify-center cursor-pointer">
-                                {isDisliked ? (
-                                    <Image
-                                        priority
-                                        className="focus-within:bg-purple-300"
-                                        width={35}
-                                        alt="icon-like-solid"
-                                        src={iconDislikeSolid}
-                                    />
-                                ) : (
-                                    <Image
-                                        priority
-                                        className="focus-within:bg-purple-300"
-                                        width={35}
-                                        alt="icon-like-outline"
-                                        src={logoDislike}
-                                    />
-                                )}
-                            </div>
-                            <div onClick={handleToggleSave} className="flex items-center justify-center cursor-pointer">
-                                {isSaved ? (
-                                    <Image
-                                        priority
-                                        width={35}
-                                        alt="icon-saved-solid"
-                                        src={iconSaveSolid}
-                                    />
-                                ) : (
-                                    <Image
-                                        priority
-                                        width={35}
-                                        alt="logo-save"
-                                        src={logoSave}
-                                    />
-                                )}
-                            </div>
-                            <DefaultShareButton contentType={'MOVIE'} />
                         </div>
                     </div>
                     <div className="flex flex-row items-center md:justify-end w-full md:w-1/2 gap-3">
