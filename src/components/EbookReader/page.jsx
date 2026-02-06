@@ -63,6 +63,7 @@ const EpubReader = forwardRef(
     const skippedInitialLogRef = useRef(false);
     const lastScrollPositionRef = useRef(0);
     const pageStatsRef = useRef({ current: 1, total: 1 });
+    const hasRestoredScrollRef = useRef(false);
 
     // State untuk informasi halaman (Virtual Paging)
     const [pageStats, setPageStats] = useState({ current: 1, total: 1 });
@@ -195,7 +196,7 @@ const EpubReader = forwardRef(
 
       const current = Math.max(1, currentVirtualPage);
       const total = Math.max(1, totalVirtualPages);
-      
+
       // Only update state if page number actually changed (prevent unnecessary re-renders)
       if (pageStatsRef.current.current !== current || pageStatsRef.current.total !== total) {
         pageStatsRef.current = { current, total };
@@ -205,7 +206,7 @@ const EpubReader = forwardRef(
       const progressRatio = scrollHeight > 0 ? Math.min(1, (scrollTop + clientHeight) / scrollHeight) : 0;
       const progressPercent = Math.round(progressRatio * 100);
       onProgressChange?.({ progress: progressPercent, currentPage: current, totalPages: total });
-      
+
       // Store scroll position to prevent reset
       lastScrollPositionRef.current = scrollTop;
     }, [readingMode, onProgressChange]);
@@ -366,6 +367,9 @@ const EpubReader = forwardRef(
 
     useEffect(() => {
       if (!epubUrl || !viewerRef.current) return;
+
+      // RESET scroll restoration flag setiap kali epubUrl berubah
+      hasRestoredScrollRef.current = false;
 
       // Notify parent that rendering is starting
       try { onLoadingChange?.(true); } catch {
@@ -533,11 +537,16 @@ const EpubReader = forwardRef(
       if (readingMode === "scroll") {
         window.addEventListener("scroll", updateScrollProgress);
         setTimeout(updateScrollProgress, 1000);
-        // Restore scroll position if component re-renders
-        if (lastScrollPositionRef.current > 0) {
+
+        // Restore scroll position only once per render cycle
+        // Protected by hasRestoredScrollRef to prevent multiple jumps
+        if (lastScrollPositionRef.current > 0 && !hasRestoredScrollRef.current) {
+          // Use longer delay for mobile to ensure DOM is fully settled
+          const restoreDelay = typeof navigator !== "undefined" && /mobile|android|iphone/i.test(navigator.userAgent) ? 800 : 500;
           setTimeout(() => {
             window.scrollTo({ top: lastScrollPositionRef.current, behavior: "auto" });
-          }, 500);
+            hasRestoredScrollRef.current = true;
+          }, restoreDelay);
         }
       }
 
@@ -612,10 +621,31 @@ const EpubReader = forwardRef(
         } catch (e) {
           console.warn("rendition.resize gagal dipanggil:", e);
         }
+      } else {
+        const container = viewerRef.current;
+        if (container) {
+          container.style.height = "auto";
+          container.style.width = "100%";
+        }
       }
       // NOTE: Removed injectPageNumbers from here to prevent scroll reset on bottomBar toggle
       // Page numbers should only be injected on initial load and readingMode change
     }, [bottomBarHeight, readingMode]);
+
+    const handleUserScroll = () => {
+      // Jika user sudah scroll manual, tandai navigasi awal selesai agar tidak ditimpa autoscroll
+      if (!initialNavDoneRef.current) {
+        initialNavDoneRef.current = true;
+        readyToLogRef.current = true;
+      }
+    };
+
+    useEffect(() => {
+      if (readingMode === "scroll") {
+        window.addEventListener("touchstart", handleUserScroll); // Tangkap interaksi pertama di mobile
+        return () => window.removeEventListener("touchstart", handleUserScroll);
+      }
+    }, [readingMode]);
 
     useEffect(() => {
       if (!renditionRef.current) return;
