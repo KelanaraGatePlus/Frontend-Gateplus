@@ -63,7 +63,6 @@ const EpubReader = forwardRef(
     const skippedInitialLogRef = useRef(false);
     const lastScrollPositionRef = useRef(0);
     const pageStatsRef = useRef({ current: 1, total: 1 });
-    const hasRestoredScrollRef = useRef(false);
 
     // State untuk informasi halaman (Virtual Paging)
     const [pageStats, setPageStats] = useState({ current: 1, total: 1 });
@@ -119,68 +118,6 @@ const EpubReader = forwardRef(
       return fam ? fam.value : FONT_FAMILIES.inter.value;
     }, [fontFamily]);
 
-    const injectPageNumbers = useCallback(() => {
-      if (readingMode !== "scroll" || !renditionRef.current) return;
-
-      const doc = viewerRef.current?.querySelector("iframe")?.contentDocument;
-      if (!doc) return;
-
-      doc.querySelectorAll(".virtual-page-marker").forEach(el => el.remove());
-
-      const body = doc.body;
-      const viewerWidth = viewerRef.current.offsetWidth;
-
-      const pageHeight = viewerWidth * (297 / 210);
-      const totalHeight = body.scrollHeight;
-      const totalPages = Math.ceil(totalHeight / pageHeight);
-
-      for (let i = 1; i <= totalPages; i++) {
-        const marker = doc.createElement("div");
-        marker.className = "virtual-page-marker";
-
-        Object.assign(marker.style, {
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          width: "100%",
-          padding: "10px 0",
-          margin: "20px 0",
-          pointerEvents: "none",
-          boxSizing: "border-box",
-          borderBottom: `1px solid ${COLOR_THEMES[colorTheme].text}20`,
-        });
-
-        marker.innerHTML = `
-      <span style="
-        color: ${COLOR_THEMES[colorTheme].text}66;
-        font-size: 12px;
-        font-family: OpenDyslexic, sans-serif;
-        font-weight: 500;
-      ">
-        Halaman ${i}/${totalPages}
-      </span>
-    `;
-
-        const targetY = i * pageHeight;
-        const elements = Array.from(body.querySelectorAll("p, div, h1, h2, h3, img, section"));
-
-        const closestElement = elements.find(el => {
-          const rect = el.getBoundingClientRect();
-          const top = rect.top + doc.defaultView.pageYOffset;
-          return top > targetY;
-        });
-
-        if (closestElement) {
-          closestElement.parentNode.insertBefore(marker, closestElement);
-        } else {
-          body.appendChild(marker);
-        }
-      }
-
-      body.style.position = "relative";
-    }, [readingMode, colorTheme]);
-
     const updateScrollProgress = useCallback(() => {
       if (readingMode !== "scroll" || !viewerRef.current) return;
 
@@ -196,7 +133,7 @@ const EpubReader = forwardRef(
 
       const current = Math.max(1, currentVirtualPage);
       const total = Math.max(1, totalVirtualPages);
-
+      
       // Only update state if page number actually changed (prevent unnecessary re-renders)
       if (pageStatsRef.current.current !== current || pageStatsRef.current.total !== total) {
         pageStatsRef.current = { current, total };
@@ -206,7 +143,7 @@ const EpubReader = forwardRef(
       const progressRatio = scrollHeight > 0 ? Math.min(1, (scrollTop + clientHeight) / scrollHeight) : 0;
       const progressPercent = Math.round(progressRatio * 100);
       onProgressChange?.({ progress: progressPercent, currentPage: current, totalPages: total });
-
+      
       // Store scroll position to prevent reset
       lastScrollPositionRef.current = scrollTop;
     }, [readingMode, onProgressChange]);
@@ -245,7 +182,6 @@ const EpubReader = forwardRef(
       });
 
       renditionRef.current.themes.select("custom-theme");
-      injectPageNumbers();
     }, [colorTheme, lineHeight, textAlign, readingMode, getFontFamily]);
 
     // Protect iframe document: block copy, right-click, and devtools keys
@@ -368,9 +304,6 @@ const EpubReader = forwardRef(
     useEffect(() => {
       if (!epubUrl || !viewerRef.current) return;
 
-      // RESET scroll restoration flag setiap kali epubUrl berubah
-      hasRestoredScrollRef.current = false;
-
       // Notify parent that rendering is starting
       try { onLoadingChange?.(true); } catch {
         console.warn("onLoadingChange gagal dipanggil.");
@@ -406,8 +339,6 @@ const EpubReader = forwardRef(
         rendition.themes.fontSize(`${initialFontSizeFactor}rem`);
 
         rendition.on("rendered", () => {
-          setTimeout(injectPageNumbers, 1000);
-          // Attach protection inside the iframe document
           const doc = viewerRef.current?.querySelector("iframe")?.contentDocument;
           protectIframeDocument(doc);
           injectGoogleFonts(doc);
@@ -537,16 +468,11 @@ const EpubReader = forwardRef(
       if (readingMode === "scroll") {
         window.addEventListener("scroll", updateScrollProgress);
         setTimeout(updateScrollProgress, 1000);
-
-        // Restore scroll position only once per render cycle
-        // Protected by hasRestoredScrollRef to prevent multiple jumps
-        if (lastScrollPositionRef.current > 0 && !hasRestoredScrollRef.current) {
-          // Use longer delay for mobile to ensure DOM is fully settled
-          const restoreDelay = typeof navigator !== "undefined" && /mobile|android|iphone/i.test(navigator.userAgent) ? 800 : 500;
+        // Restore scroll position if component re-renders
+        if (lastScrollPositionRef.current > 0) {
           setTimeout(() => {
             window.scrollTo({ top: lastScrollPositionRef.current, behavior: "auto" });
-            hasRestoredScrollRef.current = true;
-          }, restoreDelay);
+          }, 500);
         }
       }
 
@@ -621,31 +547,8 @@ const EpubReader = forwardRef(
         } catch (e) {
           console.warn("rendition.resize gagal dipanggil:", e);
         }
-      } else {
-        const container = viewerRef.current;
-        if (container) {
-          container.style.height = "auto";
-          container.style.width = "100%";
-        }
       }
-      // NOTE: Removed injectPageNumbers from here to prevent scroll reset on bottomBar toggle
-      // Page numbers should only be injected on initial load and readingMode change
     }, [bottomBarHeight, readingMode]);
-
-    const handleUserScroll = () => {
-      // Jika user sudah scroll manual, tandai navigasi awal selesai agar tidak ditimpa autoscroll
-      if (!initialNavDoneRef.current) {
-        initialNavDoneRef.current = true;
-        readyToLogRef.current = true;
-      }
-    };
-
-    useEffect(() => {
-      if (readingMode === "scroll") {
-        window.addEventListener("touchstart", handleUserScroll); // Tangkap interaksi pertama di mobile
-        return () => window.removeEventListener("touchstart", handleUserScroll);
-      }
-    }, [readingMode]);
 
     useEffect(() => {
       if (!renditionRef.current) return;
@@ -657,7 +560,6 @@ const EpubReader = forwardRef(
       setFontSizeFactor(next);
       renditionRef.current?.themes.fontSize(`${next}rem`);
       onFontSizeChange?.(next);
-      setTimeout(injectPageNumbers, 600);
     };
 
     useImperativeHandle(ref, () => ({

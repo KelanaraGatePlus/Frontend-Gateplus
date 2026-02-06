@@ -264,22 +264,8 @@ export default function ReadEbookPage({ params }) {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-
-    // Simpan lebar terakhir di dalam ref agar tidak memicu render
-    const lastWidth = { current: window.innerWidth };
-
-    const updateBaseFontSize = () => {
-      const currentWidth = window.innerWidth;
-
-      // HANYA update jika lebar berubah lebih dari 50px 
-      // (untuk membedakan antara 'address bar muncul' vs 'rotasi layar')
-      if (Math.abs(currentWidth - lastWidth.current) > 50) {
-        setBaseFontSize(getBaseFontSize());
-        lastWidth.current = currentWidth;
-        console.log("Resize besar terdeteksi, update font size");
-      }
-    };
-
+    const updateBaseFontSize = () => setBaseFontSize(getBaseFontSize());
+    updateBaseFontSize();
     window.addEventListener("resize", updateBaseFontSize);
     return () => window.removeEventListener("resize", updateBaseFontSize);
   }, []);
@@ -611,12 +597,12 @@ export default function ReadEbookPage({ params }) {
         )}
 
         {/* Pembungkus Utama EpubReader */}
-        <div className={`relative mt-16 shadow-md shadow-black flex ${readingMode === "scroll" ? "w-full" : "w-max"} max-w-full lg:max-w-[210mm] mx-auto flex-col ${colorTheme === "dark" ? "text-white" : "text-[#222222]"}`}>
+        <div className={`relative mt-16 shadow-md shadow-black flex ${readingMode === "scroll" ? "w-full" : "w-max"} max-w-[210mm] mx-auto flex-col ${colorTheme === "dark" ? "text-white" : "text-[#222222]"}`}>
           <div className="flex flex-col justify-center">
             {/* Pembungkus EpubReader */}
             <div
-              className={`flex min-h-screen w-full overflow-scroll flex-col select-none touch-pan-y relative z-20 ${colorTheme === "dark" ? "text-white" : "text-[#222222]"}`}
-              style={{ isolation: 'isolate', overflowAnchor: 'none' }}
+              className={`flex h-fit w-full flex-col select-none touch-pan-y relative z-20 ${colorTheme === "dark" ? "text-white" : "text-[#222222]"}`}
+              style={{ isolation: 'isolate' }}
               onContextMenu={(e) => e.preventDefault()}
               onDragStart={(e) => e.preventDefault()}
             >
@@ -637,7 +623,7 @@ export default function ReadEbookPage({ params }) {
                   episodeEbookId={id}
                   currentPage={currentPage}
                   cfiPosition={cfiString}
-                  bottomBarHeight={56}
+                  bottomBarHeight={isBottomBarOpen ? 176 : 56}
                   onLoadingChange={setIsReaderLoading}
                 />
               )}
