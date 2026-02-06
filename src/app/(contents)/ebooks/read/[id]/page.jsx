@@ -602,7 +602,7 @@ export default function ReadEbookPage({ params }) {
             {/* Pembungkus EpubReader */}
             <div
               className={`flex h-fit w-full flex-col select-none touch-pan-y relative z-20 ${colorTheme === "dark" ? "text-white" : "text-[#222222]"}`}
-              style={{ isolation: 'isolate' }}
+              style={{ isolation: 'isolate', overflowAnchor: 'none' }}
               onContextMenu={(e) => e.preventDefault()}
               onDragStart={(e) => e.preventDefault()}
             >
@@ -623,7 +623,7 @@ export default function ReadEbookPage({ params }) {
                   episodeEbookId={id}
                   currentPage={currentPage}
                   cfiPosition={cfiString}
-                  bottomBarHeight={isBottomBarOpen ? 176 : 56}
+                  bottomBarHeight={56}
                   onLoadingChange={setIsReaderLoading}
                 />
               )}
