@@ -63,12 +63,79 @@ const EpubReader = forwardRef(
     const skippedInitialLogRef = useRef(false);
     const lastScrollPositionRef = useRef(0);
     const pageStatsRef = useRef({ current: 1, total: 1 });
+    const pageNumbersInjectedRef = useRef(false);
+    const injectPageNumbersTimeoutRef = useRef(null);
+
+    const injectPageNumbers = useCallback(() => {
+      // Hanya jalankan di mode scroll dan pastikan rendition sudah siap
+      if (readingMode !== "scroll" || !renditionRef.current || !viewerRef.current) return;
+
+      // Guard: Cegah multiple injections
+      if (pageNumbersInjectedRef.current) return;
+
+      const doc = viewerRef.current?.querySelector("iframe")?.contentDocument;
+      if (!doc) return;
+
+      // 1. Bersihkan marker lama agar tidak terjadi penumpukan elemen
+      doc.querySelectorAll(".virtual-page-marker").forEach(el => el.remove());
+
+      const body = doc.body;
+      const viewerWidth = viewerRef.current.offsetWidth;
+
+      // Hitung dimensi berdasarkan rasio A4 (297/210)
+      const pageHeight = viewerWidth * (297 / 210);
+      const totalHeight = body.scrollHeight;
+      const totalPages = Math.ceil(totalHeight / pageHeight);
+      const textColor = COLOR_THEMES[colorTheme]?.text || "#000000";
+
+      // Ambil semua elemen paragraf/div sebagai target penempatan
+      const elements = Array.from(body.querySelectorAll("p, div, h1, h2, h3, img, section"));
+      const docOffset = doc.defaultView?.pageYOffset || 0;
+
+      for (let i = 1; i <= totalPages; i++) {
+        const marker = doc.createElement("div");
+        marker.className = "virtual-page-marker";
+
+        Object.assign(marker.style, {
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "100%",
+          padding: "30px 0",
+          marginTop: "50px",
+          marginBottom: "50px",
+          pointerEvents: "none",
+          borderBottom: `1px solid ${textColor}15`,
+        });
+
+        marker.innerHTML = `
+      <span style="color: ${textColor}44; font-size: 11px; font-family: sans-serif; letter-spacing: 2px; font-weight: bold;">
+        --- HALAMAN ${i} / ${totalPages} ---
+      </span>
+    `;
+
+        const targetY = i * pageHeight;
+
+        // Cari elemen yang tepat untuk disisipkan marker di bawahnya
+        const closestElement = elements.find(el => {
+          const rect = el.getBoundingClientRect();
+          return (rect.top + docOffset) > targetY;
+        });
+
+        if (closestElement) {
+          closestElement.parentNode.insertBefore(marker, closestElement);
+        } else {
+          body.appendChild(marker);
+        }
+      }
+
+      // Mark as injected
+      pageNumbersInjectedRef.current = true;
+    }, [readingMode, colorTheme]);
 
     // State untuk informasi halaman (Virtual Paging)
     const [pageStats, setPageStats] = useState({ current: 1, total: 1 });
-
-    // Sync ref dan state untuk page stats
-
 
     // Kirim progress baca ke backend tiap kali halaman berubah (debounce)
     useEffect(() => {
@@ -133,7 +200,7 @@ const EpubReader = forwardRef(
 
       const current = Math.max(1, currentVirtualPage);
       const total = Math.max(1, totalVirtualPages);
-      
+
       // Only update state if page number actually changed (prevent unnecessary re-renders)
       if (pageStatsRef.current.current !== current || pageStatsRef.current.total !== total) {
         pageStatsRef.current = { current, total };
@@ -143,7 +210,7 @@ const EpubReader = forwardRef(
       const progressRatio = scrollHeight > 0 ? Math.min(1, (scrollTop + clientHeight) / scrollHeight) : 0;
       const progressPercent = Math.round(progressRatio * 100);
       onProgressChange?.({ progress: progressPercent, currentPage: current, totalPages: total });
-      
+
       // Store scroll position to prevent reset
       lastScrollPositionRef.current = scrollTop;
     }, [readingMode, onProgressChange]);
@@ -340,6 +407,19 @@ const EpubReader = forwardRef(
 
         rendition.on("rendered", () => {
           const doc = viewerRef.current?.querySelector("iframe")?.contentDocument;
+
+          onLoadingChange?.(false);
+
+          // Berikan jeda 2 detik agar posisi scroll awal (restoration) stabil dulu
+          if (injectPageNumbersTimeoutRef.current) {
+            clearTimeout(injectPageNumbersTimeoutRef.current);
+          }
+          injectPageNumbersTimeoutRef.current = setTimeout(() => {
+            if (readingMode === "scroll") {
+              injectPageNumbers();
+            }
+          }, 2000);
+
           protectIframeDocument(doc);
           injectGoogleFonts(doc);
           injectOpenDyslexicFace(doc);
@@ -521,6 +601,9 @@ const EpubReader = forwardRef(
       return () => {
         book.destroy();
         window.removeEventListener("scroll", updateScrollProgress);
+        if (injectPageNumbersTimeoutRef.current) {
+          clearTimeout(injectPageNumbersTimeoutRef.current);
+        }
         try { onLoadingChange?.(false); } catch {
           console.warn("onLoadingChange gagal dipanggil.");
         }
@@ -553,13 +636,34 @@ const EpubReader = forwardRef(
     useEffect(() => {
       if (!renditionRef.current) return;
       applyTheme();
-    }, [colorTheme, lineHeight, textAlign, fontFamily, readingMode, applyTheme]);
+      
+      // Reset dan inject ulang page numbers jika theme berubah di scroll mode
+      if (readingMode === "scroll" && pageNumbersInjectedRef.current) {
+        pageNumbersInjectedRef.current = false;
+        if (injectPageNumbersTimeoutRef.current) clearTimeout(injectPageNumbersTimeoutRef.current);
+        injectPageNumbersTimeoutRef.current = setTimeout(() => {
+          injectPageNumbers();
+        }, 1000);
+      }
+    }, [colorTheme, lineHeight, textAlign, fontFamily, readingMode, applyTheme, injectPageNumbers]);
 
     const changeFontSize = (delta) => {
       const next = Math.max(0.8, Math.min(1.5, fontSizeFactor + delta));
       setFontSizeFactor(next);
       renditionRef.current?.themes.fontSize(`${next}rem`);
       onFontSizeChange?.(next);
+
+      // PENTING: Berikan jeda cukup lama (1.5 detik) 
+      // agar rendition.resize internal epubjs selesai menghitung ulang layout
+      if (readingMode === "scroll") {
+        // Reset flag agar bisa inject ulang dengan layout baru
+        pageNumbersInjectedRef.current = false;
+        
+        if (injectPageNumbersTimeoutRef.current) clearTimeout(injectPageNumbersTimeoutRef.current);
+        injectPageNumbersTimeoutRef.current = setTimeout(() => {
+          injectPageNumbers();
+        }, 1500);
+      }
     };
 
     useImperativeHandle(ref, () => ({
