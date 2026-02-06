@@ -5,7 +5,7 @@ import React, { Suspense } from "react";
 import UploadEducationForm from "@/components/Form/UploadEducation/UploadEducationForm";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 
-export default function UploadSeriesPage() {
+export default function UploadEducationPage() {
   return (
     <Suspense fallback={<LoadingOverlay />}>
       <UploadEducationForm />

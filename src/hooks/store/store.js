@@ -32,6 +32,7 @@ import { educationCategoryAPI } from "../api/educationCategorySliceAPI";
 import { educationEpisodeAPI } from "../api/educationEpisodeSliceAPI";
 import { quizAPI } from "../api/quizSliceAPI";
 import { certificateEducation } from "../api/certificateEducationAPI";
+import { readProgressAPI } from "../api/readProgressAPI";
 
 const rootReducer = combineReducers({
   [ebookApi.reducerPath]: ebookApi.reducer,
@@ -64,6 +65,7 @@ const rootReducer = combineReducers({
   [educationEpisodeAPI.reducerPath]: educationEpisodeAPI.reducer,
   [quizAPI.reducerPath]: quizAPI.reducer,
   [certificateEducation.reducerPath]: certificateEducation.reducer,
+  [readProgressAPI.reducerPath]: readProgressAPI.reducer,
 });
 
 export const store = configureStore({
@@ -99,7 +101,8 @@ export const store = configureStore({
       educationCategoryAPI.middleware,
       educationEpisodeAPI.middleware,
       quizAPI.middleware,
-      certificateEducation.middleware
+      certificateEducation.middleware,
+      readProgressAPI.middleware
     ),
 });
 

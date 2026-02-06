@@ -1,12 +1,8 @@
 "use client";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
-import Image from "next/image";
 import Link from "next/link";
 import PropTypes from "prop-types";
-
-/*[--- UTILS IMPORT ---]*/
-import { formatDateTime } from "@/lib/timeFormatter";
 
 /*[--- HOOKS IMPORT ---]*/
 import { BACKEND_URL } from "@/lib/constants/backendUrl";
@@ -17,40 +13,48 @@ import { useGetCommentByEpisodeEbookQuery } from "@/hooks/api/commentSliceAPI"
 import BackButton from "@/components/BackButton/page";
 import EpubReader from "@/components/EbookReader/page";
 import DetailPageLoadingSkeleton from "@/components/MainDetailProduct/Loading/ProductReadLoading"
-import CommentComponent from "@/components/Comment/page";
-import FontSizeController from "./Component/FontSizeController";
+import DefaultProgressBar from "@/components/ProgressBar/DefaultProgressBar";
 
 /*[--- ASSETS IMPORT ---]*/
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { Icon } from "@iconify/react";
 import AudioEbookButton from "@/components/AudioEbookButton/page";
-import EpisodeController from "@/components/EpisodeController/EpisodeController";
+import EbookModal from "@/components/Modal/EbookModal";
+import CommentModalEbook from "@/components/CommentModalEbook/CommentModalEbook";
+import iconCommentComic from "@@/icons/icon-comment-comic.svg";
 
 export default function ReadEbookPage({ params }) {
-  const { id } = React.use(params);
+  const { id } = params;
   const epubReaderRef = useRef(null);
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [ebookTitle, setEbookTitle] = useState("");
   const [ebookId, setEbookId] = useState("");
-  const [title, setTitle] = useState("");
   const [creatorNotes, setCreatorNotes] = useState("");
-  const [updatedAt, setUpdatedAt] = useState("");
-  const [bannerStartEpisodeUrl, setBannerStartEpisodeUrl] = useState(null);
-  const [bannerEndEpisodeUrl, setBannerEndEpisodeUrl] = useState(null);
   const [ebookUrl, setEbookUrl] = useState(null);
   const [isDark, setIsDark] = useState(false);
-  const { data, isLoading, error } = useGetEpisodeEbookByIdQuery(id);
+  const [colorTheme, setColorTheme] = useState("dark");
+  const [lineHeight, setLineHeight] = useState("normal");
+  const [textAlign, setTextAlign] = useState("justify");
+  const [fontFamily, setFontFamily] = useState("inter");
+  const [readingMode, setReadingMode] = useState("page");
+  const [progress, setProgress] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [cfiString, setCfiString] = useState(null);
+  const [totalPages, setTotalPages] = useState(1);
+  const [baseFontSize, setBaseFontSize] = useState(14);
+  const { data, isLoading, error, refetch } = useGetEpisodeEbookByIdQuery(id);
   const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByEpisodeEbookQuery(id);
+  const [isCommentVisible, setIsCommentVisible] = useState(false);
   const [createLog] = useCreateLogMutation();
   const [fontSizeFactor, setFontSizeFactor] = useState(1.0);
-  const [fontSizeModalOpen, setFontSizeModalOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [audioEbookUrl, setAudioEbookUrl] = useState(null);
   const episodeEbookData = data?.data?.data || {};
   const episodeEbookNextId = data?.data?.nextEpisode?.id || null;
   const episodeEbookPrevId = data?.data?.previousEpisode?.id || null;
   const ebookData = episodeEbookData.ebooks || {}
-  let hasUpdatedViews = false;
+  const [isModalTutorialOpen, setIsModalTutorialOpen] = useState(false);
+  const hasUpdatedViewsRef = useRef(false);
 
   // Detect device type based on window width
   const getDeviceType = () => {
@@ -59,6 +63,14 @@ export default function ReadEbookPage({ params }) {
     if (width < 768) return 'MOBILE';
     if (width < 1024) return 'TABLET';
     return 'DESKTOP';
+  };
+
+  const getBaseFontSize = () => {
+    if (typeof window === "undefined") return 14;
+    const width = window.innerWidth;
+    if (width < 768) return 12; // mobile
+    if (width < 1024) return 13; // tablet
+    return 14; // laptop
   };
 
   useEffect(() => {
@@ -84,24 +96,37 @@ export default function ReadEbookPage({ params }) {
 
   const getData = async () => {
     try {
-      if (!hasUpdatedViews) {
+      if (!hasUpdatedViewsRef.current) {
         await axios.patch(
           `${BACKEND_URL}/episode/${id}/views`,
         );
-        hasUpdatedViews = true;
+        hasUpdatedViewsRef.current = true;
       }
-
-      setTitle(episodeEbookData.title);
       setEbookTitle(ebookData.title);
       setEbookId(ebookData.id);
       setCreatorNotes(episodeEbookData.notedEpisode);
       setEbookUrl(episodeEbookData.ebookUrl);
-      setBannerStartEpisodeUrl(episodeEbookData.bannerStartEpisodeUrl);
-      setBannerEndEpisodeUrl(episodeEbookData.bannerEndEpisodeUrl);
-      setUpdatedAt(formatDateTime(episodeEbookData.updatedAt, "short"));
       setAudioEbookUrl(episodeEbookData.audioUrl);
 
-      const existing = JSON.parse(localStorage.getItem("last_seen_content")) || [];
+      // Buka modal tutorial jika belum ada progress membaca
+      if (episodeEbookData?.readProgress == null) {
+        setIsModalTutorialOpen(true);
+      }
+
+      // Inisialisasi currentPage dari readProgress (zero-based -> 1-based)
+      const rpPage = episodeEbookData?.readProgress?.page;
+      if (typeof rpPage === "number" && rpPage >= 0) {
+        setCurrentPage(rpPage + 1);
+        setCfiString(episodeEbookData.readProgress.cfiString || null);
+      }
+
+      let existing = [];
+      try {
+        const raw = localStorage.getItem("last_seen_content");
+        existing = raw ? JSON.parse(raw) : [];
+      } catch {
+        existing = [];
+      }
       const isAlreadyExist = existing.find(item => item.id === ebookData.id);
       let updated = existing;
       if (!isAlreadyExist) {
@@ -117,17 +142,55 @@ export default function ReadEbookPage({ params }) {
     }
   };
 
-  const toggleTheme = () => {
-    const newTheme = !isDark;
-    setIsDark(newTheme);
-    localStorage.setItem("theme", newTheme ? "dark" : "light");
-  };
-
   // Fungsi untuk mengubah ukuran font
   const handleFontSizeChange = (delta) => {
     if (epubReaderRef.current) {
       epubReaderRef.current.changeFontSize(delta);
     }
+  };
+
+  // Handler untuk mengubah tema (Memoized - tidak re-create setiap render)
+  const handleThemeChange = useCallback((theme) => {
+    setColorTheme(theme);
+  }, []);
+
+  // Handler untuk mengubah line height (Memoized - tidak re-create setiap render)
+  const handleLineHeightChange = useCallback((height) => {
+    setLineHeight(height);
+  }, []);
+
+  // Handler untuk mengubah alignment (Memoized - tidak re-create setiap render)
+  const handleAlignmentChange = useCallback((align) => {
+    setTextAlign(align);
+  }, []);
+
+  // Handler untuk mengubah font family (Memoized - tidak re-create setiap render)
+  const handleFontFamilyChange = useCallback((family) => {
+    setFontFamily(family);
+  }, []);
+
+  // Handler untuk mengubah reading mode (Memoized - tidak re-create setiap render)
+  const handleReadingModeChange = useCallback((mode) => {
+    setReadingMode(mode);
+  }, []);
+
+  // Tambahkan ref di bagian atas ReadEbookPage
+  const lastCfiRef = useRef(null);
+
+  const handleProgressChange = useCallback((progressData) => {
+    setProgress(progressData.progress);
+    setCurrentPage(progressData.currentPage);
+    setTotalPages(progressData.totalPages);
+
+    // SIMPAN CFI TERBARU DI PARENT
+    if (progressData.cfi) {
+      lastCfiRef.current = progressData.cfi;
+    }
+  }, []);
+
+  // Fungsi helper untuk mendapatkan kelas button aktif
+  const getActiveButtonClass = (isActive) => {
+    return isActive ? "bg-[#515151]" : "bg-[#333333]";
   };
 
   useEffect(() => {
@@ -138,7 +201,17 @@ export default function ReadEbookPage({ params }) {
     if (error && error.status === 403) {
       window.location.href = "/checkout/purchase/ebooks/x/" + id;
     }
-  }, [ebookData, data, isLoading]);
+  }, [data, isLoading, error, id]);
+
+  // Refetch episode data when reading mode changes to refresh progress/CFI
+  useEffect(() => {
+    if (!id) return;
+    try {
+      refetch?.();
+    } catch {
+      console.error("Gagal memuat ulang data episode ebook.");
+    }
+  }, [readingMode, id, refetch]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -148,8 +221,54 @@ export default function ReadEbookPage({ params }) {
   }, []);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const updateBaseFontSize = () => setBaseFontSize(getBaseFontSize());
+    updateBaseFontSize();
+    window.addEventListener("resize", updateBaseFontSize);
+    return () => window.removeEventListener("resize", updateBaseFontSize);
+  }, []);
+
+  useEffect(() => {
     setShowSkeleton(isLoading);
   }, [isLoading]);
+
+  // Global protection: block copy, right-click, and common inspect shortcuts
+  useEffect(() => {
+    const preventDefault = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const blockKeys = (e) => {
+      const key = (e.key || "").toUpperCase();
+      const ctrl = e.ctrlKey || e.metaKey; // meta for mac
+      const shift = e.shiftKey;
+
+      const blockedCombos = (
+        key === "F12" ||
+        (ctrl && shift && ["I", "J", "C"].includes(key)) || // DevTools shortcuts
+        (ctrl && ["U", "S", "P", "C", "A"].includes(key)) // View source/Save/Print/Copy/Select All
+      );
+
+      if (blockedCombos) {
+        preventDefault(e);
+      }
+    };
+
+    document.addEventListener("contextmenu", preventDefault, true);
+    document.addEventListener("copy", preventDefault, true);
+    document.addEventListener("cut", preventDefault, true);
+    document.addEventListener("paste", preventDefault, true);
+    document.addEventListener("keydown", blockKeys, true);
+
+    return () => {
+      document.removeEventListener("contextmenu", preventDefault, true);
+      document.removeEventListener("copy", preventDefault, true);
+      document.removeEventListener("cut", preventDefault, true);
+      document.removeEventListener("paste", preventDefault, true);
+      document.removeEventListener("keydown", blockKeys, true);
+    };
+  }, []);
 
   if (showSkeleton) {
     return (
@@ -159,18 +278,16 @@ export default function ReadEbookPage({ params }) {
 
   return (
     <div
-      className={`flex flex-col overflow-x-hidden ${isDark ? "bg-[#1A1A1A]" : "bg-[#fff]"}`}
+      className={`flex flex-col overflow-hidden select-none ${colorTheme === "dark" ? "bg-[#121212]" : colorTheme == 'sepia' ? "bg-[#F4ECD8]" : "bg-[#FFFFFF]"}`}
+      onCopy={(e) => { e.preventDefault(); e.stopPropagation(); }}
+      onCut={(e) => { e.preventDefault(); e.stopPropagation(); }}
+      onPaste={(e) => { e.preventDefault(); e.stopPropagation(); }}
+      onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
+      style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
     >
       <main className="flex flex-col">
-        <FontSizeController
-          isOpen={fontSizeModalOpen}
-          fontSizeFactor={fontSizeFactor}
-          onFontSizeChange={handleFontSizeChange}
-          containerClassName="fixed right-20 top-12"
-          isDarkMode={isDark}
-        />
         <div
-          className={`${isDark ? "text-white" : "text-[#222222]"} fixed z-10 mt-0 w-full flex-row items-center justify-start gap-2 px-4 md:px-20 py-2 text-2xl font-semibold backdrop-blur flex`}
+          className={`${colorTheme == 'dark' ? "text-white" : "text-[#222222]"} fixed z-40 mt-0 w-full flex-row items-center justify-start gap-2 px-4 md:px-20 py-2 text-2xl font-semibold backdrop-blur flex`}
         >
           <BackButton isDark={isDark} />
           <h4
@@ -183,146 +300,237 @@ export default function ReadEbookPage({ params }) {
               {ebookTitle || "Loading..."}
             </Link>
           </h4>
-          <div className="hidden md:flex flex-row items-center justify-end gap-2 relative">
-            <button className="w-8 h-8" onClick={() => setFontSizeModalOpen(!fontSizeModalOpen)}>
-              <Icon icon="material-symbols:text-fields-rounded" className="text-2xl w-full h-full" />
-            </button>
-            <Link href={'/report/episode_ebook/' + id}>
-              <Icon icon="solar:flag-2-linear" className="w-8 h-8" />
-            </Link>
-            {/* toggle dark and light */}
-            <label className="inline-flex cursor-pointer items-center">
-              <input
-                type="checkbox"
-                checked={isDark}
-                onChange={toggleTheme}
-                className="peer sr-only"
-              />
-              <div
-                className={`relative h-7 w-14 rounded-full transition-colors duration-300 ${isDark
-                  ? "bg-indigo-900 peer-focus:ring-2 peer-focus:ring-violet-800"
-                  : "bg-amber-200 peer-focus:ring-2 peer-focus:ring-amber-400"
-                  } `}
-              >
-                <div
-                  className={`absolute top-1/2 left-[2px] flex h-5 w-5 -translate-y-1/2 transform items-center justify-center rounded-full bg-white shadow-md transition-transform duration-300 ${isDark ? "translate-x-7" : "translate-x-1"}`}
-                >
-                  {isDark ? (
-                    <svg
-                      className="h-4 w-4 text-violet-700"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-                    </svg>
-                  ) : (
-                    <svg
-                      className="h-4 w-4 text-yellow-400"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-                      />
-                    </svg>
-                  )}
-                </div>
-              </div>
-            </label>
-          </div>
           <Icon
             icon={'solar:menu-dots-bold-duotone'}
-            className={`w-10 h-10 z-10 text-3xl md:hidden ${isDark ? "text-white" : "text-black"}`}
+            className={`w-10 h-10 z-10 text-3xl ${isDark ? "text-white" : "text-black"}`}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           />
         </div>
 
         {/* Mobile Dropdown Menu */}
         {mobileMenuOpen && (
-          <div className="fixed top-2 right-4 z-20 md:hidden">
+          <div className="fixed top-2 right-4 z-50">
             <div
-              className={`flex flex-col gap-3 rounded-2xl backdrop-blur-sm p-4 shadow-2xl border-1 min-w-[200px] ${isDark ? 'bg-black/20 text-white border-gray-600' : 'bg-white/20 text-black border-gray-400'} `}
+              className={`flex flex-col gap-1 md:gap-3 rounded-2xl backdrop-blur-sm p-6 shadow-2xl border-1 min-w-[200px] ${isDark ? 'bg-[#222222] text-white border-gray-600' : 'bg-white/20 text-black border-gray-400'} `}
             >
               {/* Dot */}
               <Icon
                 icon={'solar:close-circle-bold-duotone'}
-                className={`h-8 w-8 text-3xl self-end md:hidden ${isDark ? "text-white" : "text-black"}`}
+                className={`h-8 w-8 text-3xl self-end ${isDark ? "text-white" : "text-black"}`}
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               />
+
               {/* Font Size Controller */}
-              <div className="flex flex-col gap-2 pb-3 border-b border-white/10">
-                <p className="text-xs font-semibold">Ukuran Font</p>
+              <div className="flex flex-col gap-4 ">
+                <div className="flex flex-row gap-2">
+                  <Icon
+                    icon={'solar:text-bold'}
+                    className="w-5 h-5"
+                  />
+                  <p className="text-sm montserratFont font-semibold">Ukuran Font</p>
+                </div>
                 <div className="flex flex-row items-center justify-between gap-2">
                   <button
                     onClick={() => handleFontSizeChange(-0.1)}
-                    className="hover:opacity-70 transition-opacity p-2"
+                    className="bg-[#333333] rounded-lg hover:opacity-70 transition-opacity p-3"
                     aria-label="Decrease font size"
                   >
-                    <Icon icon={'solar:rounded-magnifer-zoom-out-outline'} className="w-6 h-6" />
+                    <Icon icon={'mynaui:minus'} className="w-6 h-6" />
                   </button>
-                  <div className="bg-[#515151] px-4 py-2 rounded-full text-sm font-medium text-white">
-                    <p>{Math.round(fontSizeFactor * 16)}px</p>
+                  <div className="bg-[#333333] flex flex-row gap-2 items-center montserratFont px-8 py-3 rounded-lg font-medium text-white">
+                    <Icon
+                      icon={'solar:text-bold'}
+                      className="w-5 h-5"
+                    />
+                    <p>{Math.round(baseFontSize * fontSizeFactor)}px</p>
                   </div>
                   <button
                     onClick={() => handleFontSizeChange(0.1)}
-                    className="hover:opacity-70 transition-opacity p-2"
+                    className="bg-[#333333] rounded-lg hover:opacity-70 transition-opacity p-3"
                     aria-label="Increase font size"
                   >
-                    <Icon icon={'solar:rounded-magnifer-zoom-in-outline'} className="w-6 h-6" />
+                    <Icon icon={'mynaui:plus'} className="w-6 h-6" />
                   </button>
                 </div>
               </div>
 
-              {/* Dark Mode Toggle */}
-              <div className="flex flex-row items-center justify-between pb-3 border-b border-white/10">
-                <p className="text-xs font-semibold">Mode {isDark ? "Gelap" : "Terang"}</p>
-                <label className="inline-flex cursor-pointer items-center">
-                  <input
-                    type="checkbox"
-                    checked={isDark}
-                    onChange={toggleTheme}
-                    className="peer sr-only"
+              {/* Theme Toggle */}
+              <div className="flex flex-col gap-4 ">
+                <div className="flex flex-row gap-2">
+                  <Icon
+                    icon={'solar:sun-bold'}
+                    className="w-5 h-5"
                   />
-                  <div
-                    className={`relative h-7 w-14 rounded-full transition-colors duration-300 ${isDark
-                      ? "bg-indigo-900 peer-focus:ring-2 peer-focus:ring-violet-800"
-                      : "bg-amber-200 peer-focus:ring-2 peer-focus:ring-amber-400"
-                      }`}
+                  <p className="text-sm montserratFont font-semibold">Tema</p>
+                </div>
+                <div className="grid grid-cols-3 items-center justify-between gap-2 montserratFont text-sm">
+                  <button
+                    onClick={() => handleThemeChange('dark')}
+                    className={`${getActiveButtonClass(colorTheme === 'dark')} rounded-lg hover:opacity-70 transition-opacity py-2`}
+                    aria-label="Dark theme"
                   >
-                    <div
-                      className={`absolute top-1/2 left-[2px] flex h-5 w-5 -translate-y-1/2 transform items-center justify-center rounded-full bg-white shadow-md transition-transform duration-300 ${isDark ? "translate-x-7" : "translate-x-1"
-                        }`}
-                    >
-                      {isDark ? (
-                        <svg
-                          className="h-4 w-4 text-violet-700"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-                        </svg>
-                      ) : (
-                        <svg
-                          className="h-4 w-4 text-yellow-400"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-                          />
-                        </svg>
-                      )}
-                    </div>
-                  </div>
-                </label>
+                    Dark
+                  </button>
+                  <button
+                    onClick={() => handleThemeChange('sepia')}
+                    className={`${getActiveButtonClass(colorTheme === 'sepia')} rounded-lg hover:opacity-70 transition-opacity py-2`}
+                    aria-label="Sepia theme"
+                  >
+                    Sepia
+                  </button>
+                  <button
+                    onClick={() => handleThemeChange('light')}
+                    className={`${getActiveButtonClass(colorTheme === 'light')} rounded-lg hover:opacity-70 transition-opacity py-2`}
+                    aria-label="Light theme"
+                  >
+                    Light
+                  </button>
+                </div>
+              </div>
+
+              {/* Line Height Toggle */}
+              <div className="flex flex-col gap-4 ">
+                <div className="flex flex-row gap-2">
+                  <Icon
+                    icon={'solar:list-outline'}
+                    className="w-5 h-5"
+                  />
+                  <p className="text-sm montserratFont font-semibold">Line Height</p>
+                </div>
+                <div className="grid grid-cols-3 items-center justify-between gap-2 montserratFont text-sm">
+                  <button
+                    onClick={() => handleLineHeightChange('compact')}
+                    className={`${getActiveButtonClass(lineHeight === 'compact')} rounded-lg hover:opacity-70 transition-opacity py-2`}
+                    aria-label="Compact line height"
+                  >
+                    Compact
+                  </button>
+                  <button
+                    onClick={() => handleLineHeightChange('normal')}
+                    className={`${getActiveButtonClass(lineHeight === 'normal')} rounded-lg hover:opacity-70 transition-opacity py-2`}
+                    aria-label="Normal line height"
+                  >
+                    Normal
+                  </button>
+                  <button
+                    onClick={() => handleLineHeightChange('relaxed')}
+                    className={`${getActiveButtonClass(lineHeight === 'relaxed')} rounded-lg hover:opacity-70 transition-opacity py-2`}
+                    aria-label="Relaxed line height"
+                  >
+                    Relaxed
+                  </button>
+                </div>
+              </div>
+
+              {/* Alignment Toggle */}
+              <div className="flex flex-col gap-4 ">
+                <div className="flex flex-row gap-2">
+                  <Icon
+                    icon={'solar:hamburger-menu-outline'}
+                    className="w-5 h-5"
+                  />
+                  <p className="text-sm montserratFont font-semibold">Alignment</p>
+                </div>
+                <div className="grid grid-cols-2 items-center justify-between gap-2 montserratFont text-sm">
+                  <button
+                    onClick={() => handleAlignmentChange('left')}
+                    className={`${getActiveButtonClass(textAlign === 'left')} rounded-lg hover:opacity-70 transition-opacity py-2 flex items-center justify-center gap-2`}
+                    aria-label="Left alignment"
+                  >
+                    <Icon
+                      icon={'solar:list-outline'}
+                      className="w-5 h-5"
+                    />
+                    Left
+                  </button>
+                  <button
+                    onClick={() => handleAlignmentChange('justify')}
+                    className={`${getActiveButtonClass(textAlign === 'justify')} rounded-lg hover:opacity-70 transition-opacity py-2 flex items-center justify-center gap-2`}
+                    aria-label="Justified alignment"
+                  >
+                    <Icon
+                      icon={'solar:hamburger-menu-outline'}
+                      className="w-5 h-5"
+                    />
+                    Justified
+                  </button>
+                </div>
+              </div>
+
+              {/* Tipe Font */}
+              <div className="flex flex-col gap-4 ">
+                <div className="flex flex-row gap-2">
+                  <Icon
+                    icon={'solar:text-bold'}
+                    className="w-5 h-5"
+                  />
+                  <p className="text-sm montserratFont font-semibold">Tipe Font</p>
+                </div>
+                <div className="grid grid-cols-2 items-center justify-between gap-2 montserratFont text-sm">
+                  <button
+                    onClick={() => handleFontFamilyChange('inter')}
+                    className={`${getActiveButtonClass(fontFamily === 'inter')} rounded-lg interFont hover:opacity-70 transition-opacity py-2`}
+                    aria-label="Inter font"
+                  >
+                    Tes Awikwok
+                  </button>
+                  <button
+                    onClick={() => handleFontFamilyChange('merriweather')}
+                    className={`${getActiveButtonClass(fontFamily === 'merriweather')} rounded-lg merriweatherFont hover:opacity-70 transition-opacity py-2`}
+                    aria-label="Merriweather font"
+                  >
+                    Tes Awikwok
+                  </button>
+                  <button
+                    onClick={() => handleFontFamilyChange('montserrat')}
+                    className={`${getActiveButtonClass(fontFamily === 'montserrat')} rounded-lg montserratFont hover:opacity-70 transition-opacity py-2`}
+                    aria-label="Montserrat font"
+                  >
+                    Tes Awikwok
+                  </button>
+                  <button
+                    onClick={() => handleFontFamilyChange('openDyslexic')}
+                    className={`${getActiveButtonClass(fontFamily === 'openDyslexic')} openDyslexicFont rounded-lg hover:opacity-70 transition-opacity py-2 openDyslexicFont`}
+                    aria-label="Open Dyslexic font"
+                  >
+                    Tes Awikwok
+                  </button>
+                </div>
+              </div>
+
+              {/* Mode Baca */}
+              <div className="flex flex-col gap-4 ">
+                <div className="flex flex-row gap-2">
+                  <Icon
+                    icon={'solar:notebook-minimalistic-linear'}
+                    className="w-5 h-5"
+                  />
+                  <p className="text-sm montserratFont font-semibold">Mode Baca</p>
+                </div>
+                <div className="grid grid-cols-2 items-center justify-between gap-2 montserratFont text-sm">
+                  <button
+                    onClick={() => handleReadingModeChange('scroll')}
+                    className={`${getActiveButtonClass(readingMode === 'scroll')} rounded-lg hover:opacity-70 transition-opacity py-2 flex items-center justify-center gap-2`}
+                    aria-label="Scroll reading mode"
+                  >
+                    <Icon
+                      icon={'lucide:scroll'}
+                      className="w-5 h-5"
+                    />
+                    Scroll
+                  </button>
+                  <button
+                    onClick={() => handleReadingModeChange('page')}
+                    className={`${getActiveButtonClass(readingMode === 'page')} rounded-lg hover:opacity-70 transition-opacity py-2 flex items-center justify-center gap-2`}
+                    aria-label="Page reading mode"
+                  >
+                    <Icon
+                      icon={'solar:notebook-minimalistic-linear'}
+                      className="w-5 h-5"
+                    />
+                    Page
+                  </button>
+                </div>
               </div>
 
               {/* Report Button */}
@@ -345,40 +553,14 @@ export default function ReadEbookPage({ params }) {
             onClick={() => setMobileMenuOpen(false)}
           />
         )}
-        {/* Bagian Header */}
-        <section className="relative mt-16 w-full">
-          {/* banner */}
-          <div className="h-64 w-full overflow-hidden">
-            {bannerStartEpisodeUrl && (
-              <Image
-                priority
-                src={bannerStartEpisodeUrl}
-                fill
-                alt="poster-ebook-laut-bercerita"
-                className="h-full w-full object-cover object-center"
-              />
-            )}
-            <div
-              className={`absolute top-0 left-0 z-0 h-full w-full bg-gradient-to-t from-[#222222] to-[#22222200]`}
-            ></div>
-          </div>
-        </section>
-        {/* Isi Ebook */}
-        <div className={`relative flex w-screen flex-col py-5 isolate ${isDark ? "text-white" : "text-[#222222]"}`}>
-          {/* Judul Chapter */}
-          <h1 className="w-full text-center text-2xl font-bold lg:text-3xl z-10 relative">
-            {title}
-          </h1>
 
+        {/* Pembungkus Utama EpubReader */}
+        <div className={`relative mt-16 shadow-md shadow-black flex w-full max-w-[210mm] mx-auto flex-col ${isDark ? "text-white" : "text-[#222222]"}`}>
           <div className="flex flex-col justify-center">
-            <p className={`mt-1 w-full text-center text-sm ${isDark ? "text-white/70" : "text-[#222222]/70"} italic z-10 relative`}>
-              Terakhir Diperbarui: {updatedAt}
-            </p>
-
-            {/* Pembungkus EpubReader yang diperbaiki */}
+            {/* Pembungkus EpubReader */}
             <div
-              className={`mt-8 mb-10 flex h-fit flex-col select-none touch-pan-y relative z-20 ${isDark ? "text-white" : "text-[#222222]"}`}
-              style={{ isolation: 'isolate' }} // Tambahan proteksi render
+              className={`flex h-fit w-full flex-col select-none touch-pan-y relative z-20 ${isDark ? "text-white" : "text-[#222222]"}`}
+              style={{ isolation: 'isolate' }}
               onContextMenu={(e) => e.preventDefault()}
               onDragStart={(e) => e.preventDefault()}
             >
@@ -387,30 +569,27 @@ export default function ReadEbookPage({ params }) {
                   ref={epubReaderRef}
                   epubUrl={ebookUrl}
                   isDark={isDark}
+                  colorTheme={colorTheme}
+                  lineHeight={lineHeight}
+                  textAlign={textAlign}
+                  fontFamily={fontFamily}
                   initialFontSizeFactor={fontSizeFactor}
                   onFontSizeChange={setFontSizeFactor}
+                  onBaseFontSizeChange={setBaseFontSize}
+                  readingMode={readingMode}
+                  onProgressChange={handleProgressChange}
+                  episodeEbookId={id}
+                  currentPage={currentPage}
+                  cfiPosition={cfiString}
                 />
               )}
             </div>
           </div>
         </div>
 
-        {/* Banner 2 - Pastikan Z-Index lebih rendah dari konten di atasnya */}
-        <div className="relative h-64 w-full overflow-hidden z-10">
-          {bannerEndEpisodeUrl && (
-            <Image
-              src={bannerEndEpisodeUrl}
-              fill
-              alt="banner-end"
-              className="h-full w-full object-cover object-center"
-              priority={false} // Jangan priority agar tidak rebutan resource dengan reader
-            />
-          )}
-          <div className={`absolute top-0 left-0 z-0 h-full w-full bg-gradient-to-b from-[#222222] to-[#22222200]`}></div>
-        </div>
         {/* Catatan Kreator */}
         <section
-          className={`relative flex w-screen flex-col px-4 pt-5 ${isDark ? "text-white" : "text-[#222222]"} md:mt-4 md:px-15`}
+          className={`relative flex w-screen flex-col px-4 pb-40 pt-5 ${isDark ? "text-white" : "text-[#222222]"} md:mt-4 md:px-15`}
         >
           <div
             className={`w-full rounded-xl p-4 ${isDark ? "bg-[#2f2f2f] text-white" : "bg-[#DEDEDE] text-[#222222]"}`}
@@ -426,35 +605,139 @@ export default function ReadEbookPage({ params }) {
           </div>
         </section>
 
-        {/* Episode Controller */}
-        <div className="px-10 md:px-15 mt-5">
-          <EpisodeController
-            prevEpisodeUrl={episodeEbookPrevId ? `/ebooks/read/${episodeEbookPrevId}` : null}
-            nextEpisodeUrl={episodeEbookNextId ? `/ebooks/read/${episodeEbookNextId}` : null}
-            isDark={isDark}
-          />
-        </div>
-
-        {/* Comment Baru */}
-        <div className="px-5 md:px-11">
-          <CommentComponent
-            commentData={commentData?.data?.data || []}
-            isLoadingGetComment={isLoadingGetComment}
-            contentType={"EBOOK"}
-            episodeId={id}
-            isDark={isDark}
-          />
-        </div>
-
         {/* Audio Book */}
         {audioEbookUrl && (
           <AudioEbookButton audioUrl={audioEbookUrl} isDark={isDark} />
         )}
+
+        <div>
+          {readingMode === 'page' && (
+            <div className="fixed inset-0 w-screen h-screen flex z-30 pointer-events-none">
+              {/* Left Half - Previous Page */}
+              <div
+                className="w-1/2 h-full pointer-events-auto cursor-pointer"
+                onClick={() => epubReaderRef.current?.goToPreviousPage()}
+              />
+              {/* Right Half - Next Page */}
+              <div
+                className="w-1/2 h-full pointer-events-auto cursor-pointer"
+                onClick={() => epubReaderRef.current?.goToNextPage()}
+              />
+            </div>
+          )}
+
+          {/* Navigation Bar with Progress */}
+          <div className="fixed bg-[#393939] bottom-0 left-0 right-0 flex flex-col items-center justify-center gap-4 z-40 pointer-events-auto">
+            <div className="w-full">
+              <DefaultProgressBar
+                progress={progress}
+                barColor="#FFFFFF"
+              />
+            </div>
+            <div className="flex flex-col px-2 md:px-16 w-full gap-1">
+              <div className="flex justify-between items-center text-white font-medium mb-2">
+                <div className="w-6 h-6 opacity-0" aria-hidden="true" />
+                <p className="text-sm md:text-base">Halaman {currentPage} dari {totalPages}</p>
+                <img
+                  src={iconCommentComic.src}
+                  className={`h-6 w-6 md:h-8 md:w-8 cursor-pointer hover:opacity-70 transition-opacity`}
+                  onClick={() => setIsCommentVisible(true)}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2 md:gap-4 w-full pb-2">
+                <Link
+                  href={episodeEbookPrevId ? `/ebooks/read/${episodeEbookPrevId}` : '#'}
+                  className={`flex rounded-lg items-center justify-center w-full h-10 md:h-12 bg-black/50 transition-all text-white shadow-xl backdrop-blur-sm ${episodeEbookPrevId ? 'hover:bg-black/80 cursor-pointer' : 'opacity-50 cursor-not-allowed pointer-events-none'
+                    }`}
+                  aria-disabled={!episodeEbookPrevId}
+                  tabIndex={episodeEbookPrevId ? 0 : -1}
+                >
+                  <Icon
+                    icon={'solar:alt-arrow-left-linear'}
+                    className="h-5 w-5 md:h-6 md:w-6"
+                  />
+                  <p className="text-sm md:text-base">Bagian Sebelumnya</p>
+                </Link>
+                <Link
+                  href={episodeEbookNextId ? `/ebooks/read/${episodeEbookNextId}` : '#'}
+                  className={`flex rounded-lg items-center justify-center w-full h-10 md:h-12 bg-black/50 transition-all text-white shadow-xl backdrop-blur-sm ${episodeEbookNextId ? 'hover:bg-black/80 cursor-pointer' : 'opacity-50 cursor-not-allowed pointer-events-none'
+                    }`}
+                  aria-disabled={!episodeEbookNextId}
+                  tabIndex={episodeEbookNextId ? 0 : -1}
+                >
+                  <p className="text-sm md:text-base">Bagian Selanjutnya</p>
+                  <Icon
+                    icon={'solar:alt-arrow-right-linear'}
+                    className="h-5 w-5 md:h-6 md:w-6"
+                  />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <EbookModal isOpen={isModalTutorialOpen} onClose={() => setIsModalTutorialOpen(false)}>
+          <div className="flex flex-col px-4 md:px-8 gap-4 w-[290px] md:w-[500px]">
+            <h2 className="text-white zeinFont font-bold text-xl md:text-3xl">Welcome to Your Reader</h2>
+            <div className="flex flex-row gap-3">
+              <div className="bg-[#515151] p-2 rounded-lg w-max h-max">
+                <Icon
+                  icon={'solar:cursor-outline'}
+                  className="w-5 h-5 text-white"
+                />
+              </div>
+              <div className="flex flex-col gap-1 text-white montserratFont">
+                <p className="text-lg md:text-2xl">Navigation</p>
+                <p className="text-xs text-[#979797]">Tap left or right edges to navigate pages.</p>
+              </div>
+            </div>
+            <div className="flex flex-row gap-3">
+              <div className="bg-[#515151] p-2 rounded-lg w-max h-max">
+                <Icon
+                  icon={'solar:menu-dots-bold'}
+                  className="w-5 h-5 text-white"
+                />
+              </div>
+              <div className="flex flex-col gap-1 text-white montserratFont">
+                <p className="text-lg md:text-2xl">Change Style</p>
+                <p className="text-xs text-[#979797]">Tap three dot on the top right corner to change style.</p>
+              </div>
+            </div>
+            <div className="flex flex-row gap-3">
+              <div className="bg-[#515151] p-2 rounded-lg w-max h-max">
+                <Icon
+                  icon={'solar:arrow-to-down-left-outline'}
+                  className="w-5 h-5 text-white"
+                />
+              </div>
+              <div className="flex flex-col gap-1 text-white montserratFont">
+                <p className="text-lg md:text-2xl">Scroll</p>
+                <p className="text-xs text-[#979797]">Swipe up or down to scroll through the content.</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center justify-center gap-1">
+              <button onClick={() => setIsModalTutorialOpen(false)} className="bg-[#1297DC] rounded-xl w-full px-4 py-2 text-white montserratFont font-bold">
+                Start Reading
+              </button>
+              <p className="text-[#979797] text-xs md:text-base">This hint won&apos;t show again</p>
+            </div>
+          </div>
+        </EbookModal>
+        <CommentModalEbook
+          episodeId={id}
+          isCommentVisible={isCommentVisible}
+          setIsCommentVisible={setIsCommentVisible}
+          commentData={commentData?.data?.data || []}
+          isLoadingGetComment={isLoadingGetComment}
+        />
       </main>
     </div>
   );
 }
 
 ReadEbookPage.propTypes = {
-  params: PropTypes.string,
+  params: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+  }).isRequired,
 }
