@@ -601,7 +601,7 @@ export default function ReadEbookPage({ params }) {
           <div className="flex flex-col justify-center">
             {/* Pembungkus EpubReader */}
             <div
-              className={`flex h-fit w-full flex-col select-none touch-pan-y relative z-20 ${colorTheme === "dark" ? "text-white" : "text-[#222222]"}`}
+              className={`flex h-auto w-full overflow-scroll flex-col select-none touch-pan-y relative z-20 ${colorTheme === "dark" ? "text-white" : "text-[#222222]"}`}
               style={{ isolation: 'isolate', overflowAnchor: 'none' }}
               onContextMenu={(e) => e.preventDefault()}
               onDragStart={(e) => e.preventDefault()}
