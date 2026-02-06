@@ -16,7 +16,6 @@ import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
 
 export default function DetailPodcastPage({ params }) {
   const { id } = use(params);
-  const [userId, setUserId] = useState(null);
   const [selectedContentId, setSelectedContentId] = useState(null);
   const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,14 +29,8 @@ export default function DetailPodcastPage({ params }) {
     return () => setIsDetailPage(false);
   }, [setIsDetailPage]);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setUserId(localStorage.getItem("users_id"));
-    }
-  }, []);
-
-  const skip = !id || !userId;
-  const { data, isLoading } = useGetPodcastByIdQuery({ id, userId }, { skip });
+  const skip = !id;
+  const { data, isLoading } = useGetPodcastByIdQuery({ id }, { skip });
   const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByPodcastQuery(id, { skip });
   const podcastData = data?.data || {};
   const episode_podcasts = (podcastData?.episode_podcasts?.episodes || []).slice().sort((a, b) => {

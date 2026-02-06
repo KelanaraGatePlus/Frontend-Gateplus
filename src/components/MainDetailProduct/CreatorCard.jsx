@@ -9,6 +9,7 @@ import { DEFAULT_AVATAR } from "@/lib/defaults";
 import { subscribeCreator } from "./utils";
 
 export default function CreatorCard({
+  isLogin,
   productType,
   creatorDetail,
   initialIsSubscribed = false,
@@ -82,7 +83,7 @@ export default function CreatorCard({
           </div>
         </Link>
 
-        {!isOwnChannel && (
+        {!isOwnChannel && isLogin && (
           <button
             className={`zeinFont mt-1 flex cursor-pointer items-center justify-center rounded-full ${!isSubscribed ? "bg-blue-800 hover:bg-blue-900" : "bg-gray-600 hover:bg-gray-700"} px-4 md:px-6 pt-1.5 pb-1 text-sm md:text-lg`}
             onClick={handleToggleSubscribe}
