@@ -46,12 +46,6 @@ export default function DetailComicPage({ params }) {
   };
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedUserId = localStorage.getItem("users_id");
-    }
-  }, []);
-
-  useEffect(() => {
     createLog({
       contentType: "COMIC",
       logType: "CLICK",        // atau WATCH_TRAILER / WATCH_CONTENT sesuai kebutuhan

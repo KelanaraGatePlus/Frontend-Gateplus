@@ -199,7 +199,7 @@ export default function ProductDetailSection({
             {/* judul dan durasi */}
             <div>
               <h1
-                className={`zeinFont text-center text-3xl font-extrabold md:text-4xl lg:text-left`}
+                className={`openDyslexicFont text-center text-3xl font-extrabold md:text-4xl lg:text-left`}
               >
                 {productTitle}
               </h1>

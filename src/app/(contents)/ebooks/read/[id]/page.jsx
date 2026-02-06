@@ -31,7 +31,6 @@ export default function ReadEbookPage({ params }) {
   const [ebookId, setEbookId] = useState("");
   const [creatorNotes, setCreatorNotes] = useState("");
   const [ebookUrl, setEbookUrl] = useState(null);
-  const [isDark, setIsDark] = useState(false);
   const [colorTheme, setColorTheme] = useState("dark");
   const [lineHeight, setLineHeight] = useState("normal");
   const [textAlign, setTextAlign] = useState("justify");
@@ -190,7 +189,7 @@ export default function ReadEbookPage({ params }) {
 
   // Fungsi helper untuk mendapatkan kelas button aktif
   const getActiveButtonClass = (isActive) => {
-    return isActive ? "bg-[#515151]" : "bg-[#333333]";
+    return isActive ? (colorTheme == 'dark' ? "bg-[#515151]" : "bg-[#333333] text-white") : "bg-[#626262]/50";
   };
 
   useEffect(() => {
@@ -212,13 +211,6 @@ export default function ReadEbookPage({ params }) {
       console.error("Gagal memuat ulang data episode ebook.");
     }
   }, [readingMode, id, refetch]);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const darkMode = localStorage.getItem("theme") === "dark";
-      setIsDark(darkMode);
-    }
-  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -289,7 +281,7 @@ export default function ReadEbookPage({ params }) {
         <div
           className={`${colorTheme == 'dark' ? "text-white" : "text-[#222222]"} fixed z-40 mt-0 w-full flex-row items-center justify-start gap-2 px-4 md:px-20 py-2 text-2xl font-semibold backdrop-blur flex`}
         >
-          <BackButton isDark={isDark} />
+          <BackButton isDark={colorTheme === "dark"} />
           <h4
             className={`zeinFont [display:-webkit-box] w-full overflow-hidden text-center text-xl font-extrabold text-ellipsis [-webkit-box-orient:vertical] [-webkit-line-clamp:1] md:text-2xl`}
           >
@@ -302,7 +294,7 @@ export default function ReadEbookPage({ params }) {
           </h4>
           <Icon
             icon={'solar:menu-dots-bold-duotone'}
-            className={`w-10 h-10 z-10 text-3xl ${isDark ? "text-white" : "text-black"}`}
+            className={`w-10 h-10 z-10 text-3xl ${colorTheme === "dark" ? "text-white" : "text-black"}`}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           />
         </div>
@@ -311,17 +303,17 @@ export default function ReadEbookPage({ params }) {
         {mobileMenuOpen && (
           <div className="fixed top-2 right-4 z-50">
             <div
-              className={`flex flex-col gap-1 md:gap-3 rounded-2xl backdrop-blur-sm p-6 shadow-2xl border-1 min-w-[200px] ${isDark ? 'bg-[#222222] text-white border-gray-600' : 'bg-white/20 text-black border-gray-400'} `}
+              className={`flex flex-col gap-1 md:gap-3 rounded-2xl backdrop-blur-sm p-6 shadow-2xl border-1 min-w-[200px] ${colorTheme === "dark" ? 'bg-[#222222] text-white border-gray-600' : 'bg-white/20 text-black border-gray-400'} `}
             >
               {/* Dot */}
               <Icon
                 icon={'solar:close-circle-bold-duotone'}
-                className={`h-8 w-8 text-3xl self-end ${isDark ? "text-white" : "text-black"}`}
+                className={`h-8 w-8 text-3xl self-end ${colorTheme === "dark" ? "text-white" : "text-black"}`}
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               />
 
               {/* Font Size Controller */}
-              <div className="flex flex-col gap-4 ">
+              <div className="flex flex-col gap-4">
                 <div className="flex flex-row gap-2">
                   <Icon
                     icon={'solar:text-bold'}
@@ -332,12 +324,12 @@ export default function ReadEbookPage({ params }) {
                 <div className="flex flex-row items-center justify-between gap-2">
                   <button
                     onClick={() => handleFontSizeChange(-0.1)}
-                    className="bg-[#333333] rounded-lg hover:opacity-70 transition-opacity p-3"
+                    className={`${colorTheme == 'dark' ? "bg-[#333333]" : "bg-[#878787]"} rounded-lg hover:opacity-70 transition-opacity p-3`}
                     aria-label="Decrease font size"
                   >
                     <Icon icon={'mynaui:minus'} className="w-6 h-6" />
                   </button>
-                  <div className="bg-[#333333] flex flex-row gap-2 items-center montserratFont px-8 py-3 rounded-lg font-medium text-white">
+                  <div className={`${colorTheme == 'dark' ? "bg-[#333333]" : "bg-[#878787]"} flex flex-row gap-2 items-center montserratFont px-8 py-3 rounded-lg font-medium `}>
                     <Icon
                       icon={'solar:text-bold'}
                       className="w-5 h-5"
@@ -346,7 +338,7 @@ export default function ReadEbookPage({ params }) {
                   </div>
                   <button
                     onClick={() => handleFontSizeChange(0.1)}
-                    className="bg-[#333333] rounded-lg hover:opacity-70 transition-opacity p-3"
+                    className={`${colorTheme == 'dark' ? "bg-[#333333]" : "bg-[#878787]"} rounded-lg hover:opacity-70 transition-opacity p-3`}
                     aria-label="Increase font size"
                   >
                     <Icon icon={'mynaui:plus'} className="w-6 h-6" />
@@ -536,7 +528,7 @@ export default function ReadEbookPage({ params }) {
               {/* Report Button */}
               <Link
                 href={`/report/episode_ebook/${id}`}
-                className={`flex flex-row items-center gap-2 hover:opacity-70 transition-opacity ${isDark ? "text-white" : "text-black"}`}
+                className={`flex flex-row items-center gap-2 hover:opacity-70 transition-opacity ${colorTheme === "dark" ? "text-white" : "text-black"}`}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <Icon icon={'solar:flag-2-linear'} className="w-6 h-6" />
@@ -555,11 +547,11 @@ export default function ReadEbookPage({ params }) {
         )}
 
         {/* Pembungkus Utama EpubReader */}
-        <div className={`relative mt-16 shadow-md shadow-black flex w-full max-w-[210mm] mx-auto flex-col ${isDark ? "text-white" : "text-[#222222]"}`}>
+        <div className={`relative mt-16 shadow-md shadow-black flex w-full max-w-[210mm] mx-auto flex-col ${colorTheme === "dark" ? "text-white" : "text-[#222222]"}`}>
           <div className="flex flex-col justify-center">
             {/* Pembungkus EpubReader */}
             <div
-              className={`flex h-fit w-full flex-col select-none touch-pan-y relative z-20 ${isDark ? "text-white" : "text-[#222222]"}`}
+              className={`flex h-fit w-full flex-col select-none touch-pan-y relative z-20 ${colorTheme === "dark" ? "text-white" : "text-[#222222]"}`}
               style={{ isolation: 'isolate' }}
               onContextMenu={(e) => e.preventDefault()}
               onDragStart={(e) => e.preventDefault()}
@@ -568,7 +560,7 @@ export default function ReadEbookPage({ params }) {
                 <EpubReader
                   ref={epubReaderRef}
                   epubUrl={ebookUrl}
-                  isDark={isDark}
+                  isDark={colorTheme === "dark"}
                   colorTheme={colorTheme}
                   lineHeight={lineHeight}
                   textAlign={textAlign}
@@ -589,17 +581,17 @@ export default function ReadEbookPage({ params }) {
 
         {/* Catatan Kreator */}
         <section
-          className={`relative flex w-screen flex-col px-4 pb-40 pt-5 ${isDark ? "text-white" : "text-[#222222]"} md:mt-4 md:px-15`}
+          className={`relative flex w-screen flex-col px-4 pb-40 pt-5 ${colorTheme === "dark" ? "text-white" : "text-[#222222]"} md:mt-4 md:px-15`}
         >
           <div
-            className={`w-full rounded-xl p-4 ${isDark ? "bg-[#2f2f2f] text-white" : "bg-[#DEDEDE] text-[#222222]"}`}
+            className={`w-full rounded-xl p-4 ${colorTheme === "dark" ? "bg-[#2f2f2f] text-white" : "bg-[#DEDEDE] text-[#222222]"}`}
           >
             <h4
-              className={`${isDark ? "text-white/70" : "text-black/60"} font-bold`}
+              className={`${colorTheme === "dark" ? "text-white/70" : "text-black/60"} font-bold`}
             >
               Catatan Kreator
             </h4>
-            <p className={`${isDark ? "text-white" : "text-[#222222]"}`}>
+            <p className={`${colorTheme === "dark" ? "text-white" : "text-[#222222]"}`}>
               {creatorNotes}
             </p>
           </div>
@@ -607,7 +599,7 @@ export default function ReadEbookPage({ params }) {
 
         {/* Audio Book */}
         {audioEbookUrl && (
-          <AudioEbookButton audioUrl={audioEbookUrl} isDark={isDark} />
+          <AudioEbookButton audioUrl={audioEbookUrl} isDark={colorTheme === "dark"} />
         )}
 
         <div>

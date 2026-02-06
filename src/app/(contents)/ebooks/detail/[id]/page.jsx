@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 
 /*[--- COMPONENT IMPORT ---]*/
 import MainTemplateLayout from "@/components/MainDetailProduct/page";
-import { useGetUserId } from "@/lib/features/useGetUserId";
 
 /*[--- API HOOKS ---]*/
 import { useGetEbookByIdQuery } from "@/hooks/api/ebookSliceAPI";

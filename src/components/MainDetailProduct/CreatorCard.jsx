@@ -126,4 +126,5 @@ CreatorCard.propTypes = {
   initialIsSubscribed: PropTypes.bool,
   initialTotalSubs: PropTypes.number,
   onSubscriptionChange: PropTypes.func,
+  isLogin: PropTypes.bool.isRequired,
 };

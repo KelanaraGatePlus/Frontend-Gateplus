@@ -273,7 +273,9 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
         if (disablePlayerOnRoute) {
             try {
                 pause();
-            } catch {}
+            } catch {
+                console.error("Failed to pause playback properly");
+            }
             setIsOpen(false);
         }
     }, [disablePlayerOnRoute]);

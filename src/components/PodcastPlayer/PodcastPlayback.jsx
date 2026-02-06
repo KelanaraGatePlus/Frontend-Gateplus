@@ -250,7 +250,9 @@ export default function PodcastPlayback({
     // Fully stop playback and close UI
     try {
       stopPlayback();
-    } catch {}
+    } catch {
+      console.error("Failed to stop playback properly");
+    }
     if (isExpand) {
       handleExpand();
     }
