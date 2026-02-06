@@ -21,6 +21,7 @@ import { Icon } from "@iconify/react";
 import AudioEbookButton from "@/components/AudioEbookButton/page";
 import EbookModal from "@/components/Modal/EbookModal";
 import CommentModalEbook from "@/components/CommentModalEbook/CommentModalEbook";
+import iconCommentComic from "@@/icons/icon-comment-comic.svg";
 
 export default function ReadEbookPage({ params }) {
   const { id } = params;
@@ -34,7 +35,7 @@ export default function ReadEbookPage({ params }) {
   const [colorTheme, setColorTheme] = useState("dark");
   const [lineHeight, setLineHeight] = useState("normal");
   const [textAlign, setTextAlign] = useState("justify");
-  const [fontFamily, setFontFamily] = useState("sans-serif");
+  const [fontFamily, setFontFamily] = useState("inter");
   const [readingMode, setReadingMode] = useState("page");
   const [progress, setProgress] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -231,6 +232,44 @@ export default function ReadEbookPage({ params }) {
     setShowSkeleton(isLoading);
   }, [isLoading]);
 
+  // Global protection: block copy, right-click, and common inspect shortcuts
+  useEffect(() => {
+    const preventDefault = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const blockKeys = (e) => {
+      const key = (e.key || "").toUpperCase();
+      const ctrl = e.ctrlKey || e.metaKey; // meta for mac
+      const shift = e.shiftKey;
+
+      const blockedCombos = (
+        key === "F12" ||
+        (ctrl && shift && ["I", "J", "C"].includes(key)) || // DevTools shortcuts
+        (ctrl && ["U", "S", "P", "C", "A"].includes(key)) // View source/Save/Print/Copy/Select All
+      );
+
+      if (blockedCombos) {
+        preventDefault(e);
+      }
+    };
+
+    document.addEventListener("contextmenu", preventDefault, true);
+    document.addEventListener("copy", preventDefault, true);
+    document.addEventListener("cut", preventDefault, true);
+    document.addEventListener("paste", preventDefault, true);
+    document.addEventListener("keydown", blockKeys, true);
+
+    return () => {
+      document.removeEventListener("contextmenu", preventDefault, true);
+      document.removeEventListener("copy", preventDefault, true);
+      document.removeEventListener("cut", preventDefault, true);
+      document.removeEventListener("paste", preventDefault, true);
+      document.removeEventListener("keydown", blockKeys, true);
+    };
+  }, []);
+
   if (showSkeleton) {
     return (
       <DetailPageLoadingSkeleton />
@@ -239,7 +278,12 @@ export default function ReadEbookPage({ params }) {
 
   return (
     <div
-      className={`flex flex-col overflow-hidden ${colorTheme === "dark" ? "bg-[#121212]" : colorTheme == 'sepia' ? "bg-[#F4ECD8]" : "bg-[#FFFFFF]"}`}
+      className={`flex flex-col overflow-hidden select-none ${colorTheme === "dark" ? "bg-[#121212]" : colorTheme == 'sepia' ? "bg-[#F4ECD8]" : "bg-[#FFFFFF]"}`}
+      onCopy={(e) => { e.preventDefault(); e.stopPropagation(); }}
+      onCut={(e) => { e.preventDefault(); e.stopPropagation(); }}
+      onPaste={(e) => { e.preventDefault(); e.stopPropagation(); }}
+      onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
+      style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
     >
       <main className="flex flex-col">
         <div
@@ -267,7 +311,7 @@ export default function ReadEbookPage({ params }) {
         {mobileMenuOpen && (
           <div className="fixed top-2 right-4 z-50">
             <div
-              className={`flex flex-col gap-3 rounded-2xl backdrop-blur-sm p-6 shadow-2xl border-1 min-w-[200px] ${isDark ? 'bg-[#222222] text-white border-gray-600' : 'bg-white/20 text-black border-gray-400'} `}
+              className={`flex flex-col gap-1 md:gap-3 rounded-2xl backdrop-blur-sm p-6 shadow-2xl border-1 min-w-[200px] ${isDark ? 'bg-[#222222] text-white border-gray-600' : 'bg-white/20 text-black border-gray-400'} `}
             >
               {/* Dot */}
               <Icon
@@ -277,7 +321,7 @@ export default function ReadEbookPage({ params }) {
               />
 
               {/* Font Size Controller */}
-              <div className="flex flex-col gap-4 pb-3">
+              <div className="flex flex-col gap-4 ">
                 <div className="flex flex-row gap-2">
                   <Icon
                     icon={'solar:text-bold'}
@@ -311,7 +355,7 @@ export default function ReadEbookPage({ params }) {
               </div>
 
               {/* Theme Toggle */}
-              <div className="flex flex-col gap-4 pb-3">
+              <div className="flex flex-col gap-4 ">
                 <div className="flex flex-row gap-2">
                   <Icon
                     icon={'solar:sun-bold'}
@@ -345,7 +389,7 @@ export default function ReadEbookPage({ params }) {
               </div>
 
               {/* Line Height Toggle */}
-              <div className="flex flex-col gap-4 pb-3">
+              <div className="flex flex-col gap-4 ">
                 <div className="flex flex-row gap-2">
                   <Icon
                     icon={'solar:list-outline'}
@@ -379,7 +423,7 @@ export default function ReadEbookPage({ params }) {
               </div>
 
               {/* Alignment Toggle */}
-              <div className="flex flex-col gap-4 pb-3">
+              <div className="flex flex-col gap-4 ">
                 <div className="flex flex-row gap-2">
                   <Icon
                     icon={'solar:hamburger-menu-outline'}
@@ -414,7 +458,7 @@ export default function ReadEbookPage({ params }) {
               </div>
 
               {/* Tipe Font */}
-              <div className="flex flex-col gap-4 pb-3">
+              <div className="flex flex-col gap-4 ">
                 <div className="flex flex-row gap-2">
                   <Icon
                     icon={'solar:text-bold'}
@@ -424,24 +468,38 @@ export default function ReadEbookPage({ params }) {
                 </div>
                 <div className="grid grid-cols-2 items-center justify-between gap-2 montserratFont text-sm">
                   <button
-                    onClick={() => handleFontFamilyChange('serif')}
-                    className={`${getActiveButtonClass(fontFamily === 'serif')} rounded-lg hover:opacity-70 transition-opacity py-2 sourceSerifFont`}
-                    aria-label="Serif font"
+                    onClick={() => handleFontFamilyChange('inter')}
+                    className={`${getActiveButtonClass(fontFamily === 'inter')} rounded-lg interFont hover:opacity-70 transition-opacity py-2`}
+                    aria-label="Inter font"
                   >
-                    Serif
+                    Tes Awikwok
                   </button>
                   <button
-                    onClick={() => handleFontFamilyChange('sans-serif')}
-                    className={`${getActiveButtonClass(fontFamily === 'sans-serif')} rounded-lg hover:opacity-70 transition-opacity py-2`}
-                    aria-label="Sans serif font"
+                    onClick={() => handleFontFamilyChange('merriweather')}
+                    className={`${getActiveButtonClass(fontFamily === 'merriweather')} rounded-lg merriweatherFont hover:opacity-70 transition-opacity py-2`}
+                    aria-label="Merriweather font"
                   >
-                    Sans Serif
+                    Tes Awikwok
+                  </button>
+                  <button
+                    onClick={() => handleFontFamilyChange('montserrat')}
+                    className={`${getActiveButtonClass(fontFamily === 'montserrat')} rounded-lg montserratFont hover:opacity-70 transition-opacity py-2`}
+                    aria-label="Montserrat font"
+                  >
+                    Tes Awikwok
+                  </button>
+                  <button
+                    onClick={() => handleFontFamilyChange('openDyslexic')}
+                    className={`${getActiveButtonClass(fontFamily === 'openDyslexic')} openDyslexicFont rounded-lg hover:opacity-70 transition-opacity py-2 openDyslexicFont`}
+                    aria-label="Open Dyslexic font"
+                  >
+                    Tes Awikwok
                   </button>
                 </div>
               </div>
 
               {/* Mode Baca */}
-              <div className="flex flex-col gap-4 pb-3">
+              <div className="flex flex-col gap-4 ">
                 <div className="flex flex-row gap-2">
                   <Icon
                     icon={'solar:notebook-minimalistic-linear'}
@@ -576,12 +634,12 @@ export default function ReadEbookPage({ params }) {
                 barColor="#FFFFFF"
               />
             </div>
-            <div className="flex flex-col px-4 md:px-16 w-full">
+            <div className="flex flex-col px-2 md:px-16 w-full gap-1">
               <div className="flex justify-between items-center text-white font-medium mb-2">
                 <div className="w-6 h-6 opacity-0" aria-hidden="true" />
                 <p className="text-sm md:text-base">Halaman {currentPage} dari {totalPages}</p>
-                <Icon
-                  icon={'solar:close-circle-bold-duotone'}
+                <img
+                  src={iconCommentComic.src}
                   className={`h-6 w-6 md:h-8 md:w-8 cursor-pointer hover:opacity-70 transition-opacity`}
                   onClick={() => setIsCommentVisible(true)}
                 />

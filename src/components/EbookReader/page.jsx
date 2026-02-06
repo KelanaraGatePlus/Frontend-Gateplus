@@ -15,8 +15,10 @@ import { useApplyReadProgressMutation } from "@/hooks/api/readProgressAPI";
 import React from "react";
 
 const FONT_FAMILIES = {
-  sans_serif: { class: "montserratFont", value: '"Montserrat", sans-serif' },
-  serif: { class: "sourceSerifFont", value: '"Source Serif 4", serif' }
+  montserrat: { class: "montserratFont", value: '"Montserrat", sans-serif' },
+  openDyslexic: { class: "openDyslexicFont", value: '"OpenDyslexic", sans-serif' },
+  merriweather: { class: "merriweatherFont", value: '"Merriweather", serif' },
+  inter: { class: "interFont", value: '"Inter", sans-serif' },
 };
 
 const LINE_HEIGHTS = { compact: 1.2, normal: 1.4, relaxed: 1.6 };
@@ -33,7 +35,7 @@ const EpubReader = forwardRef(
       epubUrl,
       initialFontSizeFactor = 1.0,
       onFontSizeChange = null,
-      fontFamily = "sans-serif",
+      fontFamily = "inter",
       lineHeight = "normal",
       textAlign = "justify",
       colorTheme = "dark",
@@ -112,10 +114,10 @@ const EpubReader = forwardRef(
       };
     }, [pageStats.current, pageStats.total, episodeEbookId, episodeComicId, applyReadProgress, readingMode]);
 
-    const getFontFamily = useCallback(() =>
-      fontFamily === "serif" ? FONT_FAMILIES.serif.value : FONT_FAMILIES.sans_serif.value,
-      [fontFamily]
-    );
+    const getFontFamily = useCallback(() => {
+      const fam = FONT_FAMILIES[fontFamily];
+      return fam ? fam.value : FONT_FAMILIES.inter.value;
+    }, [fontFamily]);
 
     const injectPageNumbers = useCallback(() => {
       if (readingMode !== "scroll" || !renditionRef.current) return;
@@ -153,7 +155,7 @@ const EpubReader = forwardRef(
       <span style="
         color: ${COLOR_THEMES[colorTheme].text}66;
         font-size: 12px;
-        font-family: Montserrat, sans-serif;
+        font-family: OpenDyslexic, sans-serif;
         font-weight: 500;
       ">
         Halaman ${i}/${totalPages}
@@ -213,17 +215,88 @@ const EpubReader = forwardRef(
           "font-family": `${getFontFamily()} !important`,
           "line-height": `${LINE_HEIGHTS[lh] || LINE_HEIGHTS.normal} !important`,
           "text-align": `${TEXT_ALIGNS[align] || TEXT_ALIGNS.justify} !important`,
-          padding: "40px 60px !important",
+          "-webkit-user-select": "none !important",
+          "user-select": "none !important",
+          padding: "40px 30px !important",
           height: readingMode === "page" ? "auto" : "auto !important",
         },
         html: {
           height: readingMode === "page" ? "100%" : "auto !important",
+          "-webkit-user-select": "none !important",
+          "user-select": "none !important",
         }
       });
 
       renditionRef.current.themes.select("custom-theme");
       injectPageNumbers();
     }, [colorTheme, lineHeight, textAlign, readingMode, getFontFamily, injectPageNumbers]);
+
+    // Protect iframe document: block copy, right-click, and devtools keys
+    const protectIframeDocument = useCallback((doc) => {
+      if (!doc) return;
+      // Avoid duplicate style injection
+      if (!doc.getElementById("no-select-style")) {
+        const style = doc.createElement("style");
+        style.id = "no-select-style";
+        style.textContent = `html, body { -webkit-user-select: none !important; user-select: none !important; }`;
+        doc.head.appendChild(style);
+      }
+      const prevent = (e) => { e.preventDefault(); e.stopPropagation(); };
+      const blockKeys = (e) => {
+        const key = (e.key || "").toUpperCase();
+        const ctrl = e.ctrlKey || e.metaKey;
+        const shift = e.shiftKey;
+        if (
+          key === "F12" ||
+          (ctrl && shift && ["I", "J", "C"].includes(key)) ||
+          (ctrl && ["U", "S", "P", "C", "A"].includes(key))
+        ) {
+          prevent(e);
+        }
+      };
+      doc.addEventListener("contextmenu", prevent, true);
+      doc.addEventListener("copy", prevent, true);
+      doc.addEventListener("cut", prevent, true);
+      doc.addEventListener("paste", prevent, true);
+      doc.addEventListener("selectstart", prevent, true);
+      doc.addEventListener("keydown", blockKeys, true);
+    }, []);
+
+    // Inject Google Fonts into iframe so Montserrat/Inter/Merriweather are available
+    const injectGoogleFonts = useCallback((doc) => {
+      if (!doc) return;
+      const ensureLink = (id, href) => {
+        if (doc.getElementById(id)) return;
+        const link = doc.createElement("link");
+        link.id = id;
+        link.rel = "stylesheet";
+        link.href = href;
+        doc.head.appendChild(link);
+      };
+      ensureLink(
+        "gf-montserrat",
+        "https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+      );
+      ensureLink(
+        "gf-inter-merri",
+        "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&display=swap"
+      );
+    }, []);
+
+    // Ensure OpenDyslexic font-face is available in the iframe document
+    const injectOpenDyslexicFace = useCallback((doc) => {
+      if (!doc || fontFamily !== "openDyslexic") return;
+      if (doc.getElementById("open-dyslexic-face")) return;
+      const style = doc.createElement("style");
+      style.id = "open-dyslexic-face";
+      style.textContent = `
+        @font-face { font-family: 'OpenDyslexic'; src: url('/fonts/OpenDyslexic-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+        @font-face { font-family: 'OpenDyslexic'; src: url('/fonts/OpenDyslexic-Italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+        @font-face { font-family: 'OpenDyslexic'; src: url('/fonts/OpenDyslexic-Bold.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+        @font-face { font-family: 'OpenDyslexic'; src: url('/fonts/OpenDyslexic-BoldItalic.woff2') format('woff2'); font-weight: 700; font-style: italic; font-display: swap; }
+      `;
+      doc.head.appendChild(style);
+    }, [fontFamily]);
 
     useEffect(() => {
       if (!epubUrl || !viewerRef.current) return;
@@ -257,6 +330,11 @@ const EpubReader = forwardRef(
 
         rendition.on("rendered", () => {
           setTimeout(injectPageNumbers, 1000);
+          // Attach protection inside the iframe document
+          const doc = viewerRef.current?.querySelector("iframe")?.contentDocument;
+          protectIframeDocument(doc);
+          injectGoogleFonts(doc);
+          injectOpenDyslexicFace(doc);
           // Initial navigation for scroll mode: jump to provided currentPage
           if (readingMode === "scroll") {
             const target = Math.max(1, Number(currentPage) || 1);
@@ -291,6 +369,10 @@ const EpubReader = forwardRef(
 
               rendition.on("rendered", () => {
                 setTimeout(injectPageNumbers, 1000);
+                const innerDoc = viewerRef.current?.querySelector("iframe")?.contentDocument;
+                protectIframeDocument(innerDoc);
+                injectGoogleFonts(innerDoc);
+                injectOpenDyslexicFace(innerDoc);
 
                 // Jika kita menggunakan cfiPosition, tandai navigasi awal sudah selesai
                 if (cfiPosition) {
