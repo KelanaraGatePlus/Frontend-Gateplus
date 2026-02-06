@@ -245,7 +245,7 @@ const EpubReader = forwardRef(
 
       renditionRef.current.themes.select("custom-theme");
       injectPageNumbers();
-    }, [colorTheme, lineHeight, textAlign, readingMode, getFontFamily, injectPageNumbers]);
+    }, [colorTheme, lineHeight, textAlign, readingMode, getFontFamily]);
 
     // Protect iframe document: block copy, right-click, and devtools keys
     const protectIframeDocument = useCallback((doc) => {
@@ -613,10 +613,9 @@ const EpubReader = forwardRef(
           console.warn("rendition.resize gagal dipanggil:", e);
         }
       }
-
-      // Update page number markers only in scroll mode
-      if (readingMode === "scroll") setTimeout(injectPageNumbers, 500);
-    }, [bottomBarHeight, readingMode, injectPageNumbers]);
+      // NOTE: Removed injectPageNumbers from here to prevent scroll reset on bottomBar toggle
+      // Page numbers should only be injected on initial load and readingMode change
+    }, [bottomBarHeight, readingMode]);
 
     useEffect(() => {
       if (!renditionRef.current) return;

@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import axios from "axios";
 import Link from "next/link";
 import PropTypes from "prop-types";
@@ -42,7 +42,7 @@ export default function ReadEbookPage({ params }) {
   const [cfiString, setCfiString] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
   const [baseFontSize, setBaseFontSize] = useState(14);
-  const { data, isLoading, error, refetch } = useGetEpisodeEbookByIdQuery(id);
+  const { data, isLoading, error } = useGetEpisodeEbookByIdQuery(id);
   const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByEpisodeEbookQuery(id);
   const [isCommentVisible, setIsCommentVisible] = useState(false);
   const [createLog] = useCreateLogMutation();
@@ -51,12 +51,17 @@ export default function ReadEbookPage({ params }) {
   const [audioEbookUrl, setAudioEbookUrl] = useState(null);
   const [isBottomBarOpen, setIsBottomBarOpen] = useState(true);
   const [isReaderLoading, setIsReaderLoading] = useState(false);
-  const episodeEbookData = data?.data?.data || {};
-  const episodeEbookNextId = data?.data?.nextEpisode?.id || null;
-  const episodeEbookPrevId = data?.data?.previousEpisode?.id || null;
-  const ebookData = episodeEbookData.ebooks || {}
   const [isModalTutorialOpen, setIsModalTutorialOpen] = useState(false);
   const hasUpdatedViewsRef = useRef(false);
+  const readingModeBeforeChangeRef = useRef("page");
+  const scrollPositionRef = useRef(0);
+  const isReadingModeChangeRef = useRef(false);
+
+  // Memoize computed values to prevent stale closure issues
+  const episodeEbookData = useMemo(() => data?.data?.data || {}, [data]);
+  const episodeEbookNextId = useMemo(() => data?.data?.nextEpisode?.id || null, [data]);
+  const episodeEbookPrevId = useMemo(() => data?.data?.previousEpisode?.id || null, [data]);
+  const ebookData = useMemo(() => episodeEbookData.ebooks || {}, [episodeEbookData]);
 
   // Detect device type based on window width
   const getDeviceType = () => {
@@ -96,14 +101,26 @@ export default function ReadEbookPage({ params }) {
     return () => clearTimeout(timer); // clear kalau user keluar sebelum 1 menit
   }, [id, createLog]);
 
-  const getData = async () => {
+  const getData = useCallback(async () => {
     try {
-      if (!hasUpdatedViewsRef.current) {
-        await axios.patch(
-          `${BACKEND_URL}/episode/${id}/views`,
-        );
-        hasUpdatedViewsRef.current = true;
+      // Update views only once, regardless of reading mode changes
+      if (!hasUpdatedViewsRef.current && id) {
+        try {
+          await axios.patch(
+            `${BACKEND_URL}/episode/${id}/views`,
+          );
+          hasUpdatedViewsRef.current = true;
+        } catch (viewErr) {
+          console.warn("Warning: View count update failed", viewErr);
+        }
       }
+
+      // Preserve current page/CFI if switching reading mode
+      if (isReadingModeChangeRef.current) {
+        isReadingModeChangeRef.current = false;
+        return; // Don't reinit data when just changing mode
+      }
+
       setEbookTitle(ebookData.title);
       setEbookId(ebookData.id);
       setCreatorNotes(episodeEbookData.notedEpisode);
@@ -142,7 +159,7 @@ export default function ReadEbookPage({ params }) {
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  };
+  }, [id, ebookData, episodeEbookData]);
 
   // Fungsi untuk mengubah ukuran font
   const handleFontSizeChange = (delta) => {
@@ -184,11 +201,18 @@ export default function ReadEbookPage({ params }) {
     setCurrentPage(progressData.currentPage);
     setTotalPages(progressData.totalPages);
 
-    // SIMPAN CFI TERBARU DI PARENT
-    if (progressData.cfi) {
+    // CFI is only valid in page mode, clear it for scroll mode
+    if (progressData.cfi && readingMode === "page") {
       lastCfiRef.current = progressData.cfi;
+    } else if (readingMode === "scroll") {
+      lastCfiRef.current = null; // CFI not valid in scroll mode
     }
-  }, []);
+
+    // Track scroll position in scroll mode for restoration
+    if (readingMode === "scroll" && typeof window !== "undefined") {
+      scrollPositionRef.current = window.scrollY;
+    }
+  }, [readingMode]);
 
   // Fungsi helper untuk mendapatkan kelas button aktif
   const getActiveButtonClass = (isActive) => {
@@ -203,17 +227,40 @@ export default function ReadEbookPage({ params }) {
     if (error && error.status === 403) {
       window.location.href = "/checkout/purchase/ebooks/x/" + id;
     }
-  }, [data, isLoading, error, id]);
+  }, [data, isLoading, error, id, getData]);
 
-  // Refetch episode data when reading mode changes to refresh progress/CFI
+  // Handle reading mode change - preserve reading position
   useEffect(() => {
-    if (!id) return;
-    try {
-      refetch?.();
-    } catch {
-      console.error("Gagal memuat ulang data episode ebook.");
+    if (!id || readingMode === readingModeBeforeChangeRef.current) return;
+
+    // Save scroll position before switching modes
+    if (typeof window !== "undefined") {
+      scrollPositionRef.current = window.scrollY;
+      try {
+        sessionStorage.setItem(
+          `ebook_scroll_${id}_${readingModeBeforeChangeRef.current}`,
+          scrollPositionRef.current.toString()
+        );
+      } catch {
+        // Silent fail for sessionStorage
+      }
     }
-  }, [readingMode, id, refetch]);
+
+    readingModeBeforeChangeRef.current = readingMode;
+    isReadingModeChangeRef.current = true;
+
+    // Restore scroll position after mode change
+    setTimeout(() => {
+      try {
+        const savedScroll = sessionStorage.getItem(`ebook_scroll_${id}_${readingMode}`);
+        if (savedScroll && readingMode === "scroll") {
+          window.scrollTo({ top: parseInt(savedScroll), behavior: "auto" });
+        }
+      } catch {
+        // Silent fail
+      }
+    }, 300);
+  }, [readingMode, id]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
