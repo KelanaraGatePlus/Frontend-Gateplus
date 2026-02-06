@@ -283,6 +283,56 @@ const EpubReader = forwardRef(
       );
     }, []);
 
+    // Strip default Table of Contents and common "Contents" labels from rendered document
+    const stripTOCAndContentLabels = useCallback((doc) => {
+      if (!doc) return;
+
+      // Remove typical TOC containers
+      const tocSelectors = [
+        '#toc',
+        '.toc',
+        'nav[role="doc-toc"]',
+        'nav[epub\\:type="toc"]',
+        'nav.toc',
+        'section.toc',
+        'div.toc',
+      ];
+      tocSelectors.forEach((sel) => {
+        doc.querySelectorAll(sel).forEach((el) => el.remove());
+      });
+
+      // Remove headings or paragraphs that are exactly these labels (case-insensitive)
+      const labels = new Set([
+        'table of contents',
+        'contents',
+        'daftar isi', // Indonesian common label
+        'content',
+      ]);
+      const textNodesSelectors = ['h1', 'h2', 'h3', 'h4', 'p'];
+      doc.querySelectorAll(textNodesSelectors.join(',')).forEach((el) => {
+        const text = (el.textContent || '').trim().toLowerCase();
+        if (labels.has(text)) {
+          el.remove();
+        }
+      });
+
+      // Some EPUBs place TOC lists without explicit toc classes; try heuristic
+      // If a list immediately follows a removed heading, it will be left orphaned; prune large nav-like lists near top
+      const body = doc.body;
+      const topLists = Array.from(body.querySelectorAll('ol, ul')).filter((lst) => {
+        const rect = lst.getBoundingClientRect();
+        return rect.top < (doc.defaultView?.innerHeight || 800) * 0.3 && lst.querySelector('a');
+      });
+      topLists.forEach((lst) => {
+        // If list has many anchors and short text items, likely a TOC
+        const items = Array.from(lst.querySelectorAll('li'));
+        const anchorCount = Array.from(lst.querySelectorAll('a')).length;
+        if (items.length >= 5 && anchorCount >= Math.max(5, Math.floor(items.length * 0.6))) {
+          lst.remove();
+        }
+      });
+    }, []);
+
     // Ensure OpenDyslexic font-face is available in the iframe document
     const injectOpenDyslexicFace = useCallback((doc) => {
       if (!doc || fontFamily !== "openDyslexic") return;
@@ -335,6 +385,8 @@ const EpubReader = forwardRef(
           protectIframeDocument(doc);
           injectGoogleFonts(doc);
           injectOpenDyslexicFace(doc);
+          // Remove default TOC and common content labels
+          stripTOCAndContentLabels(doc);
           // Initial navigation for scroll mode: jump to provided currentPage
           if (readingMode === "scroll") {
             const target = Math.max(1, Number(currentPage) || 1);
@@ -373,6 +425,7 @@ const EpubReader = forwardRef(
                 protectIframeDocument(innerDoc);
                 injectGoogleFonts(innerDoc);
                 injectOpenDyslexicFace(innerDoc);
+                stripTOCAndContentLabels(innerDoc);
 
                 // Jika kita menggunakan cfiPosition, tandai navigasi awal sudah selesai
                 if (cfiPosition) {

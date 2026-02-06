@@ -464,28 +464,28 @@ export default function ReadEbookPage({ params }) {
                     className={`${getActiveButtonClass(fontFamily === 'inter')} rounded-lg interFont hover:opacity-70 transition-opacity py-2`}
                     aria-label="Inter font"
                   >
-                    Tes Awikwok
+                    Teks 1
                   </button>
                   <button
                     onClick={() => handleFontFamilyChange('merriweather')}
                     className={`${getActiveButtonClass(fontFamily === 'merriweather')} rounded-lg merriweatherFont hover:opacity-70 transition-opacity py-2`}
                     aria-label="Merriweather font"
                   >
-                    Tes Awikwok
+                    Teks 2
                   </button>
                   <button
                     onClick={() => handleFontFamilyChange('montserrat')}
                     className={`${getActiveButtonClass(fontFamily === 'montserrat')} rounded-lg montserratFont hover:opacity-70 transition-opacity py-2`}
                     aria-label="Montserrat font"
                   >
-                    Tes Awikwok
+                    Teks 3
                   </button>
                   <button
                     onClick={() => handleFontFamilyChange('openDyslexic')}
                     className={`${getActiveButtonClass(fontFamily === 'openDyslexic')} openDyslexicFont rounded-lg hover:opacity-70 transition-opacity py-2 openDyslexicFont`}
                     aria-label="Open Dyslexic font"
                   >
-                    Tes Awikwok
+                    Teks 4
                   </button>
                 </div>
               </div>
