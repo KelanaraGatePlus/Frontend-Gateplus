@@ -14,6 +14,7 @@ import BackButton from "@/components/BackButton/page";
 import EpubReader from "@/components/EbookReader/page";
 import DetailPageLoadingSkeleton from "@/components/MainDetailProduct/Loading/ProductReadLoading"
 import DefaultProgressBar from "@/components/ProgressBar/DefaultProgressBar";
+import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 /*[--- ASSETS IMPORT ---]*/
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
@@ -48,6 +49,8 @@ export default function ReadEbookPage({ params }) {
   const [fontSizeFactor, setFontSizeFactor] = useState(1.0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [audioEbookUrl, setAudioEbookUrl] = useState(null);
+  const [isBottomBarOpen, setIsBottomBarOpen] = useState(true);
+  const [isReaderLoading, setIsReaderLoading] = useState(false);
   const episodeEbookData = data?.data?.data || {};
   const episodeEbookNextId = data?.data?.nextEpisode?.id || null;
   const episodeEbookPrevId = data?.data?.previousEpisode?.id || null;
@@ -547,7 +550,7 @@ export default function ReadEbookPage({ params }) {
         )}
 
         {/* Pembungkus Utama EpubReader */}
-        <div className={`relative mt-16 shadow-md shadow-black flex w-full max-w-[210mm] mx-auto flex-col ${colorTheme === "dark" ? "text-white" : "text-[#222222]"}`}>
+        <div className={`relative mt-16 shadow-md shadow-black flex ${readingMode === "scroll" ? "w-full" : "w-max"} max-w-[210mm] mx-auto flex-col ${colorTheme === "dark" ? "text-white" : "text-[#222222]"}`}>
           <div className="flex flex-col justify-center">
             {/* Pembungkus EpubReader */}
             <div
@@ -573,11 +576,17 @@ export default function ReadEbookPage({ params }) {
                   episodeEbookId={id}
                   currentPage={currentPage}
                   cfiPosition={cfiString}
+                  bottomBarHeight={isBottomBarOpen ? 176 : 56}
+                  onLoadingChange={setIsReaderLoading}
                 />
               )}
             </div>
           </div>
         </div>
+
+        {isReaderLoading && (
+          <LoadingOverlay message="Rendering reader…" />
+        )}
 
         {/* Catatan Kreator */}
         <section
@@ -618,17 +627,77 @@ export default function ReadEbookPage({ params }) {
             </div>
           )}
 
-          {/* Navigation Bar with Progress */}
-          <div className="fixed bg-[#393939] bottom-0 left-0 right-0 flex flex-col items-center justify-center gap-4 z-40 pointer-events-auto">
-            <div className="w-full">
-              <DefaultProgressBar
-                progress={progress}
-                barColor="#FFFFFF"
-              />
-            </div>
-            <div className="flex flex-col px-2 md:px-16 w-full gap-1">
-              <div className="flex justify-between items-center text-white font-medium mb-2">
-                <div className="w-6 h-6 opacity-0" aria-hidden="true" />
+          {/* Navigation Bar with Progress (collapsible) */}
+          <div className="fixed bg-[#393939] bottom-0 left-0 right-0 flex flex-col gap-2 items-center justify-center z-40 pointer-events-auto transition-all">
+            {isBottomBarOpen ? (
+              <>
+                <div className="w-full">
+                  <DefaultProgressBar
+                    progress={progress}
+                    barColor="#FFFFFF"
+                  />
+                </div>
+                <div className="flex flex-col px-2 md:px-16 w-full gap-1">
+                  <div className="flex justify-between items-center text-white font-medium mb-2">
+                    <button
+                      className="w-6 h-6 hover:opacity-80"
+                      onClick={() => setIsBottomBarOpen(false)}
+                      aria-label="Tutup panel navigasi"
+                      aria-expanded={isBottomBarOpen}
+                    >
+                      <Icon
+                        icon={'solar:alt-arrow-down-line-duotone'}
+                        className="h-6 w-6 md:h-8 md:w-8"
+                      />
+                    </button>
+                    <p className="text-sm md:text-base">Halaman {currentPage} dari {totalPages}</p>
+                    <img
+                      src={iconCommentComic.src}
+                      className={`h-6 w-6 md:h-8 md:w-8 cursor-pointer hover:opacity-70 transition-opacity`}
+                      onClick={() => setIsCommentVisible(true)}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 md:gap-4 w-full pb-2">
+                    <Link
+                      href={episodeEbookPrevId ? `/ebooks/read/${episodeEbookPrevId}` : '#'}
+                      className={`flex rounded-lg items-center justify-center w-full h-10 md:h-12 bg-black/50 transition-all text-white shadow-xl backdrop-blur-sm ${episodeEbookPrevId ? 'hover:bg-black/80 cursor-pointer' : 'opacity-50 cursor-not-allowed pointer-events-none'}`}
+                      aria-disabled={!episodeEbookPrevId}
+                      tabIndex={episodeEbookPrevId ? 0 : -1}
+                    >
+                      <Icon
+                        icon={'solar:alt-arrow-left-linear'}
+                        className="h-5 w-5 md:h-6 md:w-6"
+                      />
+                      <p className="text-sm md:text-base">Bagian Sebelumnya</p>
+                    </Link>
+                    <Link
+                      href={episodeEbookNextId ? `/ebooks/read/${episodeEbookNextId}` : '#'}
+                      className={`flex rounded-lg items-center justify-center w-full h-10 md:h-12 bg-black/50 transition-all text-white shadow-xl backdrop-blur-sm ${episodeEbookNextId ? 'hover:bg-black/80 cursor-pointer' : 'opacity-50 cursor-not-allowed pointer-events-none'}`}
+                      aria-disabled={!episodeEbookNextId}
+                      tabIndex={episodeEbookNextId ? 0 : -1}
+                    >
+                      <p className="text-sm md:text-base">Bagian Selanjutnya</p>
+                      <Icon
+                        icon={'solar:alt-arrow-right-linear'}
+                        className="h-5 w-5 md:h-6 md:w-6"
+                      />
+                    </Link>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-row items-center justify-between w-full px-4 py-2 text-white">
+                <button
+                  className="w-6 h-6 hover:opacity-80"
+                  onClick={() => setIsBottomBarOpen(true)}
+                  aria-label="Buka panel navigasi"
+                  aria-expanded={isBottomBarOpen}
+                >
+                  <Icon
+                    icon={'solar:alt-arrow-up-line-duotone'}
+                    className="h-6 w-6 md:h-8 md:w-8"
+                  />
+                </button>
                 <p className="text-sm md:text-base">Halaman {currentPage} dari {totalPages}</p>
                 <img
                   src={iconCommentComic.src}
@@ -636,35 +705,7 @@ export default function ReadEbookPage({ params }) {
                   onClick={() => setIsCommentVisible(true)}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-2 md:gap-4 w-full pb-2">
-                <Link
-                  href={episodeEbookPrevId ? `/ebooks/read/${episodeEbookPrevId}` : '#'}
-                  className={`flex rounded-lg items-center justify-center w-full h-10 md:h-12 bg-black/50 transition-all text-white shadow-xl backdrop-blur-sm ${episodeEbookPrevId ? 'hover:bg-black/80 cursor-pointer' : 'opacity-50 cursor-not-allowed pointer-events-none'
-                    }`}
-                  aria-disabled={!episodeEbookPrevId}
-                  tabIndex={episodeEbookPrevId ? 0 : -1}
-                >
-                  <Icon
-                    icon={'solar:alt-arrow-left-linear'}
-                    className="h-5 w-5 md:h-6 md:w-6"
-                  />
-                  <p className="text-sm md:text-base">Bagian Sebelumnya</p>
-                </Link>
-                <Link
-                  href={episodeEbookNextId ? `/ebooks/read/${episodeEbookNextId}` : '#'}
-                  className={`flex rounded-lg items-center justify-center w-full h-10 md:h-12 bg-black/50 transition-all text-white shadow-xl backdrop-blur-sm ${episodeEbookNextId ? 'hover:bg-black/80 cursor-pointer' : 'opacity-50 cursor-not-allowed pointer-events-none'
-                    }`}
-                  aria-disabled={!episodeEbookNextId}
-                  tabIndex={episodeEbookNextId ? 0 : -1}
-                >
-                  <p className="text-sm md:text-base">Bagian Selanjutnya</p>
-                  <Icon
-                    icon={'solar:alt-arrow-right-linear'}
-                    className="h-5 w-5 md:h-6 md:w-6"
-                  />
-                </Link>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 

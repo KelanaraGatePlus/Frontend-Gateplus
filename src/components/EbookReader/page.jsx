@@ -35,6 +35,7 @@ const EpubReader = forwardRef(
       epubUrl,
       initialFontSizeFactor = 1.0,
       onFontSizeChange = null,
+      onLoadingChange = null,
       fontFamily = "inter",
       lineHeight = "normal",
       textAlign = "justify",
@@ -45,6 +46,7 @@ const EpubReader = forwardRef(
       episodeComicId = undefined,
       currentPage = 1,
       cfiPosition = null,
+      bottomBarHeight = 176,
     },
     ref
   ) => {
@@ -59,16 +61,13 @@ const EpubReader = forwardRef(
     const initialNavDoneRef = useRef(false);
     const readyToLogRef = useRef(false);
     const skippedInitialLogRef = useRef(false);
+    const lastScrollPositionRef = useRef(0);
+    const pageStatsRef = useRef({ current: 1, total: 1 });
 
     // State untuk informasi halaman (Virtual Paging)
     const [pageStats, setPageStats] = useState({ current: 1, total: 1 });
 
-    // FITUR: Console log saat halaman (state) berubah
-    useEffect(() => {
-      if (pageStats.current > 0) {
-        console.log("Halaman sekarang:", pageStats.current);
-      }
-    }, [pageStats.current]);
+    // Sync ref dan state untuk page stats
 
 
     // Kirim progress baca ke backend tiap kali halaman berubah (debounce)
@@ -87,8 +86,8 @@ const EpubReader = forwardRef(
       // Harus pilih salah satu id agar lolos schema refine
       if (hasEbook === hasComic) return;
 
-      const pageZeroBased = Math.max(0, (pageStats.current || 1) - 1);
-      const isFinish = pageStats.total ? pageStats.current >= pageStats.total : false;
+      const pageZeroBased = Math.max(0, (pageStatsRef.current.current || 1) - 1);
+      const isFinish = pageStatsRef.current.total ? pageStatsRef.current.current >= pageStatsRef.current.total : false;
 
       // Debounce agar tidak spam request saat user scroll cepat
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
@@ -196,11 +195,19 @@ const EpubReader = forwardRef(
 
       const current = Math.max(1, currentVirtualPage);
       const total = Math.max(1, totalVirtualPages);
-      setPageStats({ current, total });
+      
+      // Only update state if page number actually changed (prevent unnecessary re-renders)
+      if (pageStatsRef.current.current !== current || pageStatsRef.current.total !== total) {
+        pageStatsRef.current = { current, total };
+        setPageStats({ current, total });
+      }
 
       const progressRatio = scrollHeight > 0 ? Math.min(1, (scrollTop + clientHeight) / scrollHeight) : 0;
       const progressPercent = Math.round(progressRatio * 100);
       onProgressChange?.({ progress: progressPercent, currentPage: current, totalPages: total });
+      
+      // Store scroll position to prevent reset
+      lastScrollPositionRef.current = scrollTop;
     }, [readingMode, onProgressChange]);
 
     const applyTheme = useCallback((theme = colorTheme, lh = lineHeight, align = textAlign) => {
@@ -218,12 +225,21 @@ const EpubReader = forwardRef(
           "-webkit-user-select": "none !important",
           "user-select": "none !important",
           padding: "40px 30px !important",
+          "box-sizing": "border-box !important",
+          "max-width": "100% !important",
+          "word-break": "break-word !important",
+          "overflow-wrap": "anywhere !important",
           height: readingMode === "page" ? "auto" : "auto !important",
         },
         html: {
           height: readingMode === "page" ? "100%" : "auto !important",
           "-webkit-user-select": "none !important",
           "user-select": "none !important",
+        },
+        img: {
+          width: "auto !important",
+          maxWidth: "100% !important",
+          height: "auto !important",
         }
       });
 
@@ -351,17 +367,24 @@ const EpubReader = forwardRef(
     useEffect(() => {
       if (!epubUrl || !viewerRef.current) return;
 
+      // Notify parent that rendering is starting
+      try { onLoadingChange?.(true); } catch {
+        console.warn("onLoadingChange gagal dipanggil.");
+      }
+
       viewerRef.current.innerHTML = "";
       const book = ePub(epubUrl);
       bookRef.current = book;
 
       const isPageMode = readingMode === "page";
-      const pageHeight = "calc(100vh - 176px)";
-      const singlePageWidth = "((100vh - 176px) * 210 / 297)";
+      const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+      const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
+      const usableHeightInit = Math.max(0, vh - (bottomBarHeight || 176));
+      const widthPxInit = Math.min(Math.round(usableHeightInit * 210 / 297), vw);
 
       const rendition = book.renderTo(viewerRef.current, {
-        width: isPageMode ? `calc(${singlePageWidth})` : "100%",
-        height: isPageMode ? pageHeight : "100%",
+        width: isPageMode ? widthPxInit : "100%",
+        height: isPageMode ? usableHeightInit : "100%",
         flow: isPageMode ? "paginated" : "scrolled",
         manager: isPageMode ? "default" : "continuous",
         spread: "none",
@@ -387,6 +410,11 @@ const EpubReader = forwardRef(
           injectOpenDyslexicFace(doc);
           // Remove default TOC and common content labels
           stripTOCAndContentLabels(doc);
+
+          // Notify parent that initial render is complete
+          try { onLoadingChange?.(false); } catch {
+            console.warn("onLoadingChange gagal dipanggil.");
+          }
           // Initial navigation for scroll mode: jump to provided currentPage
           if (readingMode === "scroll") {
             const target = Math.max(1, Number(currentPage) || 1);
@@ -401,40 +429,9 @@ const EpubReader = forwardRef(
                 readyToLogRef.current = true;
               }, 400);
             } else {
-              // 1. Tentukan target awal
-              // Prioritas: cfiPosition > currentPage
-              let initialLocation = cfiPosition;
-
-              if (!initialLocation && currentPage > 1) {
-                // Jika tidak ada CFI tapi ada currentPage, kita biarkan logika lama berjalan
-                // atau biarkan default (halaman 1)
-              }
-
-              // 2. Tampilkan buku
-              // Jika cfiPosition ada, tampilkan langsung ke titik tersebut
-              const firstRealContent = book.spine.items.find(
-                (item) => !/toc|nav|cover|contents/i.test(item.href)
-              );
-
-              // Tampilkan cfiPosition jika tersedia, jika tidak tampilkan konten pertama
-              rendition.display(initialLocation || firstRealContent?.href);
-
-              rendition.on("rendered", () => {
-                setTimeout(injectPageNumbers, 1000);
-                const innerDoc = viewerRef.current?.querySelector("iframe")?.contentDocument;
-                protectIframeDocument(innerDoc);
-                injectGoogleFonts(innerDoc);
-                injectOpenDyslexicFace(innerDoc);
-                stripTOCAndContentLabels(innerDoc);
-
-                // Jika kita menggunakan cfiPosition, tandai navigasi awal sudah selesai
-                if (cfiPosition) {
-                  initialNavDoneRef.current = true;
-                  readyToLogRef.current = true;
-                }
-
-                // ... sisa logika scroll mode ...
-              });
+              // Scroll mode without page jump - mark as ready immediately
+              initialNavDoneRef.current = true;
+              readyToLogRef.current = true;
             }
           }
         });
@@ -448,12 +445,13 @@ const EpubReader = forwardRef(
             if (displayed) {
               const current = displayed.page;
               const total = displayed.total;
+              pageStatsRef.current = { current, total };
               setPageStats({ current, total });
             }
             const cfi = loc.start?.cfi;
             const pct = cfi ? book.locations.percentageFromCfi(cfi) : undefined;
-            const currentLocal = displayed?.page ?? pageStats.current;
-            const totalLocal = displayed?.total ?? pageStats.total;
+            const currentLocal = displayed?.page ?? pageStatsRef.current.current;
+            const totalLocal = displayed?.total ?? pageStatsRef.current.total;
             const progressPercent = typeof pct === "number"
               ? Math.round(pct * 100)
               : (totalLocal > 0 ? Math.round((currentLocal / totalLocal) * 100) : 0);
@@ -462,7 +460,7 @@ const EpubReader = forwardRef(
             // Initial navigation for paginated mode using percentage -> CFI when available
             const target = Math.max(1, Number(currentPage) || 1);
             if (isPageMode && !initialNavDoneRef.current && target > 1) {
-              const totalPagesLocal = totalLocal || pageStats.total || 0;
+              const totalPagesLocal = totalLocal || pageStatsRef.current.total || 0;
               if (totalPagesLocal > 0) {
                 const targetPct = Math.min(1, Math.max(0, (target - 1) / totalPagesLocal));
                 const locs = book.locations;
@@ -506,6 +504,7 @@ const EpubReader = forwardRef(
           if (isPageMode && displayed) {
             const current = displayed.page;
             const total = displayed.total;
+            pageStatsRef.current = { current, total };
             setPageStats({ current, total });
             const progressPercent = total > 0 ? Math.round((current / total) * 100) : 0;
             onProgressChange?.({ progress: progressPercent, currentPage: current, totalPages: total });
@@ -534,16 +533,23 @@ const EpubReader = forwardRef(
       if (readingMode === "scroll") {
         window.addEventListener("scroll", updateScrollProgress);
         setTimeout(updateScrollProgress, 1000);
+        // Restore scroll position if component re-renders
+        if (lastScrollPositionRef.current > 0) {
+          setTimeout(() => {
+            window.scrollTo({ top: lastScrollPositionRef.current, behavior: "auto" });
+          }, 500);
+        }
       }
 
       rendition.on("relocated", (location) => {
         if (isPageMode) {
           const displayed = location.start?.displayed;
-          let currentLocal = pageStats.current;
-          let totalLocal = pageStats.total;
+          let currentLocal = pageStatsRef.current.current;
+          let totalLocal = pageStatsRef.current.total;
           if (displayed) {
             currentLocal = displayed.page;
             totalLocal = displayed.total;
+            pageStatsRef.current = { current: currentLocal, total: totalLocal };
             setPageStats({ current: currentLocal, total: totalLocal });
           }
 
@@ -570,7 +576,7 @@ const EpubReader = forwardRef(
           }
         } else {
           // In scroll mode, relocated may fire on internal anchors; re-emit last stats as payload
-          onProgressChange?.({ progress: undefined, currentPage: pageStats.current, totalPages: pageStats.total });
+          onProgressChange?.({ progress: undefined, currentPage: pageStatsRef.current.current, totalPages: pageStatsRef.current.total });
           if (!readyToLogRef.current) {
             readyToLogRef.current = true;
           }
@@ -580,8 +586,37 @@ const EpubReader = forwardRef(
       return () => {
         book.destroy();
         window.removeEventListener("scroll", updateScrollProgress);
+        try { onLoadingChange?.(false); } catch {
+          console.warn("onLoadingChange gagal dipanggil.");
+        }
       };
     }, [epubUrl, readingMode, updateScrollProgress, onProgressChange]);
+
+    // Resize rendition when bottom bar visibility/height changes
+    useEffect(() => {
+      if (typeof window === "undefined") return;
+      const rendition = renditionRef.current;
+      const container = viewerRef.current;
+      if (!rendition || !container) return;
+
+      if (readingMode === "page") {
+        const usableHeight = Math.max(0, window.innerHeight - (bottomBarHeight || 176));
+        const widthPx = Math.min(Math.round(usableHeight * 210 / 297), window.innerWidth);
+        // Sync container style to avoid width mismatch
+        container.style.height = `${usableHeight}px`;
+        container.style.minHeight = `${usableHeight}px`;
+        container.style.width = `${widthPx}px`;
+        // Resize the rendition to match new viewport (reflow pages without re-display)
+        try {
+          rendition.resize(widthPx, usableHeight);
+        } catch (e) {
+          console.warn("rendition.resize gagal dipanggil:", e);
+        }
+      }
+
+      // Update page number markers only in scroll mode
+      if (readingMode === "scroll") setTimeout(injectPageNumbers, 500);
+    }, [bottomBarHeight, readingMode, injectPageNumbers]);
 
     useEffect(() => {
       if (!renditionRef.current) return;
@@ -604,34 +639,21 @@ const EpubReader = forwardRef(
 
     return (
       <Scrollama offset={0.2}>
-        <Step data={pageStats.current}>
+        <Step data={1}>
           <div className="relative w-full flex flex-col items-center bg-transparent min-h-screen">
             <div
               ref={viewerRef}
               className="mx-auto epub-viewport shadow-2xl"
               style={{
-                height: readingMode === "page" ? "calc(100vh - 176px)" : "auto",
-                minHeight: readingMode === "page" ? "calc(100vh - 176px)" : "100vh",
+                height: readingMode === "page" ? `calc(100vh - ${bottomBarHeight}px)` : "auto",
+                minHeight: readingMode === "page" ? `calc(100vh - ${bottomBarHeight}px)` : "100vh",
                 width: readingMode === "page"
-                  ? `calc((100vh - 176px) * 210 / 297)`
+                  ? `min(calc((100vh - ${bottomBarHeight}px) * 210 / 297), 100vw)`
                   : "100%",
                 maxWidth: readingMode === "page" ? "100vw" : "800px",
                 backgroundColor: COLOR_THEMES[colorTheme]?.bg,
               }}
             />
-            {/* Floating Page Indicator */}
-            <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50">
-              <div
-                className="px-4 py-2 rounded-full backdrop-blur-md border shadow-lg text-sm font-medium"
-                style={{
-                  backgroundColor: `${COLOR_THEMES[colorTheme]?.bg}CC`,
-                  color: COLOR_THEMES[colorTheme]?.text,
-                  borderColor: `${COLOR_THEMES[colorTheme]?.text}33`
-                }}
-              >
-                Halaman {pageStats.current} dari {pageStats.total}
-              </div>
-            </div>
           </div>
         </Step>
       </Scrollama>
