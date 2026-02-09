@@ -1,12 +1,17 @@
 "use client";
 import React from "react";
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 /*[--- COMPONENT IMPORT ---]*/
 import MainTemplateLayout from "@/components/MainDetailProduct/page";
 import { useGetUserId } from "@/lib/features/useGetUserId";
 
 /*[--- API HOOKS ---]*/
+import CompleteProfileModal from "@/components/Modal/CompleteProfileModal";
+import UnderAgeModal from "@/components/Modal/UnderAgeModal";
+import useSyncUserData from "@/hooks/api/useSyncUserData";
+import getMinAge from "@/lib/helper/minAge";
+
 import { useGetEbookByIdQuery } from "@/hooks/api/ebookSliceAPI";
 // import SimpleModal from "@/components/Modal/SimpleModal";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
@@ -51,14 +56,23 @@ export default function DetailEbookPage({ params }) {
   const skip = !id || !userId;
   const { data, isLoading } = useGetEbookByIdQuery({ id, userId }, { skip });
   const ebookData = data?.data || {};
-  const episode_ebooks = (ebookData?.episode_ebooks?.episodes || []).slice().sort((a, b) => {
-    return new Date(a.createdAt) - new Date(b.createdAt);
-  });
+  const {
+    showCompleteProfileModal,
+    showUnderAgeModal,
+    goToProfile,
+    continueDespiteUnderAge,
+  } = useSyncUserData(ebookData?.ageRestriction);
+
+  const episode_ebooks = (ebookData?.episode_ebooks?.episodes || [])
+    .slice()
+    .sort((a, b) => {
+      return new Date(a.createdAt) - new Date(b.createdAt);
+    });
 
   useEffect(() => {
     createLog({
       contentType: "EBOOK",
-      logType: "CLICK",        // atau WATCH_TRAILER / WATCH_CONTENT sesuai kebutuhan
+      logType: "CLICK", // atau WATCH_TRAILER / WATCH_CONTENT sesuai kebutuhan
       contentId: id,
     });
   }, [id, createLog]);
@@ -88,6 +102,22 @@ export default function DetailEbookPage({ params }) {
         onConfirm={handleSubscribe}
       /> */}
       {loading && <LoadingOverlay />}
+      {showCompleteProfileModal && (
+        <CompleteProfileModal
+          onConfirm={goToProfile}
+          title={ebookData?.title}
+          minAge={getMinAge(ebookData?.ageRestriction)}
+        />
+      )}
+
+      {showUnderAgeModal && (
+        <UnderAgeModal
+          open={showUnderAgeModal}
+          ageRestriction={ebookData?.ageRestriction}
+          title={ebookData?.title}
+          onContinue={continueDespiteUnderAge}
+        />
+      )}
     </div>
   );
 }

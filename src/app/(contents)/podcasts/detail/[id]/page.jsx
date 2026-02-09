@@ -3,7 +3,11 @@ import React, { useState, useEffect, use } from "react";
 import PropTypes from "prop-types";
 
 /*[--- API HOOKS ---]*/
+import CompleteProfileModal from "@/components/Modal/CompleteProfileModal";
+import UnderAgeModal from "@/components/Modal/UnderAgeModal";
+import useSyncUserData from "@/hooks/api/useSyncUserData";
 import { useGetPodcastByIdQuery } from "@/hooks/api/podcastSliceAPI";
+import getMinAge from "@/lib/helper/minAge";
 
 /*[--- UI COMPONENTS ---]*/
 import MainTemplateLayout from "@/components/MainDetailProduct/page";
@@ -38,11 +42,20 @@ export default function DetailPodcastPage({ params }) {
 
   const skip = !id || !userId;
   const { data, isLoading } = useGetPodcastByIdQuery({ id, userId }, { skip });
-  const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByPodcastQuery(id, { skip });
+  const { data: commentData, isLoading: isLoadingGetComment } =
+    useGetCommentByPodcastQuery(id, { skip });
   const podcastData = data?.data || {};
-  const episode_podcasts = (podcastData?.episode_podcasts?.episodes || []).slice().sort((a, b) => {
-    return new Date(a.createdAt) - new Date(b.createdAt);
-  });
+  const {
+    showCompleteProfileModal,
+    showUnderAgeModal,
+    goToProfile,
+    continueDespiteUnderAge,
+  } = useSyncUserData(podcastData?.ageRestriction);
+  const episode_podcasts = (podcastData?.episode_podcasts?.episodes || [])
+    .slice()
+    .sort((a, b) => {
+      return new Date(a.createdAt) - new Date(b.createdAt);
+    });
 
   const handlePlayPodcast = (episodeData) => {
     playEpisode(episodeData, podcastData, episode_podcasts);
@@ -66,7 +79,7 @@ export default function DetailPodcastPage({ params }) {
   useEffect(() => {
     createLog({
       contentType: "PODCAST",
-      logType: "CLICK",        // atau WATCH_TRAILER / WATCH_CONTENT sesuai kebutuhan
+      logType: "CLICK", // atau WATCH_TRAILER / WATCH_CONTENT sesuai kebutuhan
       contentId: id,
     });
   }, [id, createLog]);
@@ -107,20 +120,49 @@ export default function DetailPodcastPage({ params }) {
         {/* Playback is handled globally by PodcastPlayerProvider */}
 
         <SimpleModal
-          title={"Konten ini masih terkunci, apakah kamu bersedia membeli nya dengan harga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
+          title={
+            "Konten ini masih terkunci, apakah kamu bersedia membeli nya dengan harga Rp. " +
+            (selectedPrice?.toLocaleString() ?? 0) +
+            ",- ?"
+          }
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onConfirm={handleBuy}
         />
 
         <SimpleModal
-          title={"Konten ini masih terkunci, apakah kamu bersedia membeli nya dengan harga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
+          title={
+            "Konten ini masih terkunci, apakah kamu bersedia membeli nya dengan harga Rp. " +
+            (selectedPrice?.toLocaleString() ?? 0) +
+            ",- ?"
+          }
           isOpen={isModalSubscribeOpen}
           onClose={() => setIsModalSubscribeOpen(false)}
           onConfirm={handleSubscribe}
         />
 
         {loading && <LoadingOverlay />}
+        {showCompleteProfileModal && (
+          <CompleteProfileModal
+            onConfirm={goToProfile}
+            title={podcastData?.title}
+          />
+        )}
+        {showCompleteProfileModal && (
+          <CompleteProfileModal
+            onConfirm={goToProfile}
+            title={podcastData?.title}
+            minAge={getMinAge(podcastData?.ageRestriction)}
+          />
+        )}
+        {showUnderAgeModal && (
+          <UnderAgeModal
+            open={showUnderAgeModal}
+            ageRestriction={podcastData?.ageRestriction}
+            title={podcastData?.title}
+            onContinue={continueDespiteUnderAge}
+          />
+        )}
       </div>
     )
   );
@@ -128,4 +170,4 @@ export default function DetailPodcastPage({ params }) {
 
 DetailPodcastPage.propTypes = {
   params: PropTypes.string,
-}
+};
