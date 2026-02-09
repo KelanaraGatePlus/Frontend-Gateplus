@@ -134,7 +134,6 @@ export default function UploadMovieForm() {
                         {...register("title")}
                         error={errors.title?.message}
                     />
-
                     <Controller
                         name="description"
                         control={control}
@@ -149,7 +148,6 @@ export default function UploadMovieForm() {
                             />
                         )}
                     />
-
                     {/* Genre */}
                     <Controller
                         name="genre"

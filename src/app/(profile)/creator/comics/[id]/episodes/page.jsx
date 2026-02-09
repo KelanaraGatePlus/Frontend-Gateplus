@@ -15,26 +15,25 @@ import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import DOMPurify from "dompurify";
 
-
 // Components
 import FlexModal from "@/components/Modal/FlexModal";
 import HeaderUploadForm from "@/components/UploadForm/HeaderUploadForm";
 
 // API Hooks
 import {
-  useGetEpisodesBySeriesIdQuery,
-  useDeleteEpisodeSeriesMutation
-} from "@/hooks/api/episodeSeriesSliceAPI";
-import { useGetSeriesByIdQuery } from "@/hooks/api/seriesSliceAPI";
+  useGetEpisodesByComicIdQuery,
+  useDeleteEpisodeComicMutation
+} from "@/hooks/api/episodeComicSliceAPI";
+import { useGetComicByIdQuery } from "@/hooks/api/comicSliceAPI";
 
 // Assets
 import iconMore from "@@/icons/icon_more.svg";
 import DatabaseDelete from "@@/AdditionalImages/database-delete.png";
 
-export default function SeriesEpisodesPage() {
+export default function ComicEpisodesPage() {
   const router = useRouter();
   const params = useParams();
-  const seriesId = params?.id;
+  const comicId = params?.id;
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -44,21 +43,21 @@ export default function SeriesEpisodesPage() {
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   // Fetch data using RTK Query
-  const { data: episodesData, isLoading: isLoadingEpisodes, refetch } = useGetEpisodesBySeriesIdQuery(
-    { seriesId, page: currentPage, limit: itemsPerPage, paginate: true },
-    { skip: !seriesId }
+  const { data: episodesData, isLoading: isLoadingEpisodes } = useGetEpisodesByComicIdQuery(
+    { comicId, page: currentPage, limit: itemsPerPage, paginate: true },
+    { skip: !comicId }
   );
 
-  const { data: seriesData } = useGetSeriesByIdQuery(
-    { id: seriesId, withEpisodes: false },
-    { skip: !seriesId }
+  const { data: comicData } = useGetComicByIdQuery(
+    { id: comicId },
+    { skip: !comicId }
   );
 
-  const [deleteEpisode, { isLoading: isDeleting }] = useDeleteEpisodeSeriesMutation();
+  const [deleteEpisode, { isLoading: isDeleting }] = useDeleteEpisodeComicMutation();
 
   const episodes = episodesData?.data?.episodes || [];
   const totalPages = episodesData?.data?.pagination?.pageCount || 1;
-  const seriesInfo = seriesData?.data?.data;
+  const comicInfo = comicData?.data?.data;
 
   // Delete Episode Handler
   const handleDeleteEpisode = async () => {
@@ -68,8 +67,6 @@ export default function SeriesEpisodesPage() {
       await deleteEpisode(deleteTarget).unwrap();
       setIsDeleteModalOpen(false);
       setDeleteTarget(null);
-      // Refresh the current page data
-      await refetch();
     } catch (error) {
       console.error("Failed to delete episode:", error);
       alert(error?.data?.message || "Gagal menghapus episode");
@@ -85,15 +82,16 @@ export default function SeriesEpisodesPage() {
     });
   };
 
+  // Handle back button - kembali ke halaman dashboard content
   const handleBackClick = () => {
-    router.replace(`/creator/series/${seriesId}/episodes`);
+    router.push("/creator/dashboard/content");
   };
 
   return (
     <main className="relative mx-2 flex flex-col lg:mx-6 min-h-screen">
       <div className="mt-4 mb-6">
         <HeaderUploadForm
-          title={seriesInfo ? `Episode - ${seriesInfo.title}` : "Episode Series"}
+          title={comicInfo ? `Episode - ${comicInfo.title}` : "Episode Comic"}
           titlePosition="start"
           onBackClick={handleBackClick}
         />
@@ -105,11 +103,11 @@ export default function SeriesEpisodesPage() {
           <table className="w-full text-white">
             <thead className="bg-[#393939]">
               <tr>
-                <th className="px-6 py-4 text-left">Thumbnail</th>
+                <th className="px-6 py-4 text-left">Cover</th>
                 <th className="px-6 py-4 text-left">Judul</th>
                 <th className="px-6 py-4 text-left">Deskripsi</th>
                 <th className="px-6 py-4 text-left">Tanggal</th>
-                <th className="px-6 py-4 text-left">Views</th>
+                <th className="px-6 py-4 text-left">Total Halaman</th>
                 <th className="px-6 py-4 text-left">Harga</th>
                 <th className="px-6 py-4 text-center">Aksi</th>
               </tr>
@@ -145,7 +143,7 @@ export default function SeriesEpisodesPage() {
               ) : episodes.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="text-center py-10 text-gray-400">
-                    Belum ada episode untuk series ini
+                    Belum ada episode untuk comic ini
                   </td>
                 </tr>
               ) : (
@@ -153,9 +151,9 @@ export default function SeriesEpisodesPage() {
                   <tr key={episode.id} className="hover:bg-[#2a2a2a] border-b border-[#393939]">
                     <td className="px-6 py-4">
                       <div className="relative w-20 h-14 bg-[#393939] rounded overflow-hidden">
-                        {episode.thumbnailUrl && (
+                        {episode.coverImageUrl && (
                           <Image
-                            src={episode.thumbnailUrl}
+                            src={episode.coverImageUrl}
                             alt={episode.title}
                             fill
                             className="object-cover"
@@ -173,9 +171,11 @@ export default function SeriesEpisodesPage() {
                       />
                     </td>
                     <td className="px-6 py-4 text-sm">
-                      {formatDate(episode.releaseDate || episode.createdAt)}
+                      {formatDate(episode.createdAt)}
                     </td>
-                    <td className="px-6 py-4">{episode.views || 0}</td>
+                    <td className="px-6 py-4">
+                      {episode.fileImageComics?.length || 0} halaman
+                    </td>
                     <td className="px-6 py-4">
                       {episode.price > 0
                         ? `Rp ${Number(episode.price).toLocaleString("id-ID")}`
@@ -208,7 +208,7 @@ export default function SeriesEpisodesPage() {
                         >
                           <DropdownItem
                             key="preview"
-                            onClick={() => router.push(`/series/watch/${episode.id}`)}
+                            onClick={() => router.push(`/comics/detail/${comicId}?episode=${episode.id}`)}
                             className="hover:bg-[#4a4a4a] rounded-sm px-2 flex items-center w-full"
                           >
                             <EyeIcon size={16} className="inline-block mr-2" />
@@ -216,7 +216,7 @@ export default function SeriesEpisodesPage() {
                           </DropdownItem>
                           <DropdownItem
                             key="edit"
-                            onClick={() => router.push(`/creator/series/${seriesId}/episodes/edit/${episode.id}`)}
+                            onClick={() => router.push(`/creator/comics/${comicId}/episodes/edit/${episode.id}`)}
                             className="hover:bg-[#4a4a4a] rounded-sm px-2 flex items-center w-full"
                           >
                             <PencilIcon size={16} className="inline-block mr-2" />

@@ -32,6 +32,10 @@ import { educationCategoryAPI } from "../api/educationCategorySliceAPI";
 import { educationEpisodeAPI } from "../api/educationEpisodeSliceAPI";
 import { quizAPI } from "../api/quizSliceAPI";
 import { certificateEducation } from "../api/certificateEducationAPI";
+import { episodeSeriesSliceAPI } from "../api/episodeSeriesSliceAPI";
+import { episodePodcastSliceAPI } from "../api/episodePodcastSliceAPI";
+import { episodeEbookSliceAPI } from "../api/episodeEbookSliceAPI";
+import { episodeComicSliceAPI } from "../api/episodeComicSliceAPI";
 
 const rootReducer = combineReducers({
   [ebookApi.reducerPath]: ebookApi.reducer,
@@ -64,12 +68,26 @@ const rootReducer = combineReducers({
   [educationEpisodeAPI.reducerPath]: educationEpisodeAPI.reducer,
   [quizAPI.reducerPath]: quizAPI.reducer,
   [certificateEducation.reducerPath]: certificateEducation.reducer,
+  [episodeSeriesSliceAPI.reducerPath]: episodeSeriesSliceAPI.reducer,
+  [episodePodcastSliceAPI.reducerPath]: episodePodcastSliceAPI.reducer,
+  [episodeEbookSliceAPI.reducerPath]: episodeEbookSliceAPI.reducer,
+  [episodeComicSliceAPI.reducerPath]: episodeComicSliceAPI.reducer,
 });
 
 export const store = configureStore({
   reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(
+    getDefaultMiddleware({
+      // ✅ TAMBAHKAN INI - Prevent unnecessary re-renders
+      serializableCheck: {
+        // Ignore these action types
+        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+      },
+      immutableCheck: {
+        // Reduce checks for better performance
+        warnAfter: 128,
+      },
+    }).concat(
       ebookApi.middleware,
       comicApi.middleware,
       podcastApi.middleware,
@@ -99,7 +117,11 @@ export const store = configureStore({
       educationCategoryAPI.middleware,
       educationEpisodeAPI.middleware,
       quizAPI.middleware,
-      certificateEducation.middleware
+      certificateEducation.middleware,
+      episodeSeriesSliceAPI.middleware,
+      episodePodcastSliceAPI.middleware,
+      episodeEbookSliceAPI.middleware,
+      episodeComicSliceAPI.middleware,
     ),
 });
 

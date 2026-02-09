@@ -229,5 +229,5 @@ export default function EditEbookForm({ id }) {
 }
 
 EditEbookForm.propTypes = {
-  id: PropTypes.string.isRequired,
+    id: PropTypes.string.isRequired,
 }

@@ -22,6 +22,7 @@ import formatDuration from "@/lib/helper/formatDurationHelper";
 import CarouselTemplate from "@/components/Carousel/carouselTemplate";
 import Link from "next/link";
 import { DEFAULT_AVATAR } from "@/lib/defaults";
+import DOMPurify from "dompurify";
 
 /* ===========================
    Halaman: PlayingMoviePage (JSX)
@@ -278,7 +279,13 @@ function PlayingMoviePage({ params }) {
                     {/* Deskripsi */}
                     <div className="rounded-md bg-[#393939] flex-1">
                         <div className="mx-4 my-4 text-white h-full flex flex-col">
-                            <p>{movieData?.description}</p>
+                            <div
+  className="prose prose-invert max-w-none"
+  dangerouslySetInnerHTML={{
+    __html: DOMPurify.sanitize(movieData?.description || ""),
+  }}
+/>
+
 
                             <div className="mt-10">
                                 <p>Judul: {movieData.title}</p>

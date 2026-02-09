@@ -66,11 +66,37 @@ const RichTextEditor = forwardRef(({
     updateActiveFormats();
   };
 
-  const handlePaste = (e) => {
-    e.preventDefault();
-    const text = e.clipboardData.getData('text/plain');
-    document.execCommand('insertText', false, text);
-  };
+const handlePaste = (e) => {
+  e.preventDefault();
+  
+  // Ambil HTML dari clipboard
+  let html = e.clipboardData.getData('text/html');
+  const text = e.clipboardData.getData('text/plain');
+  
+  if (html) {
+    // ✅ Bersihkan hanya yang berbahaya, PERTAHANKAN formatting & struktur
+    html = html
+      .replace(/<script[^>]*>.*?<\/script>/gi, '')
+      .replace(/<style[^>]*>.*?<\/style>/gi, '')
+      .replace(/style="[^"]*"/gi, '') // Hapus inline styles (opsional)
+      .replace(/class="[^"]*"/gi, '')
+      .replace(/id="[^"]*"/gi, '')
+      .replace(/on\w+="[^"]*"/gi, ''); // Hapus event handlers
+    
+    // Insert HTML yang sudah dibersihkan
+    document.execCommand('insertHTML', false, html);
+  } else {
+    // Plain text - pertahankan line breaks
+    const htmlText = text.replace(/\n/g, '<br>');
+    document.execCommand('insertHTML', false, htmlText);
+  }
+  
+  // Update state
+  setTimeout(() => {
+    updateContent();
+    updateActiveFormats();
+  }, 0);
+};
 
   const handleKeyDown = (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
@@ -130,177 +156,169 @@ const RichTextEditor = forwardRef(({
   );
 
   return (
-    <div className="flex flex-col gap-2 w-full">
-      {/* Label */}
-      {label && (
-        <label 
-          htmlFor={name} 
-          className="text-sm font-semibold text-white/90 tracking-wide"
-        >
-          {label}
-        </label>
-      )}
+    <div className="flex items-start gap-2">
+      {/* Label - Sama persis dengan InputText */}
+      <h3 className="montserratFont flex-2 text-base font-semibold text-white md:text-base lg:text-xl">
+        {label}
+      </h3>
 
-      {/* Main Container */}
-      <div className={`
-        group rounded-xl overflow-hidden
-        bg-gradient-to-b from-[#252525] to-[#1a1a1a]
-        border transition-all duration-200
-        ${isFocused 
-          ? 'border-blue-500/50 shadow-[0_0_0_3px_rgba(59,130,246,0.1)]' 
-          : error 
-            ? 'border-red-500/50' 
-            : 'border-white/10 hover:border-white/20'
-        }
-      `}>
-        {/* Toolbar - Sticky */}
-        <div className="sticky top-0 z-10 flex items-center gap-0.5 px-3 py-2 bg-[#2a2a2a]/95 backdrop-blur-sm border-b border-white/5">
-          {/* Text Style Group */}
-          <div className="flex items-center gap-0.5">
-            <ToolbarButton
-              icon={<span className="font-bold text-[13px]">B</span>}
-              title="Bold"
-              tooltip="Bold (Ctrl+B)"
-              onClick={() => formatText('bold')}
-              isActive={activeFormats.bold}
-            />
-            <ToolbarButton
-              icon={<span className="italic text-[13px] font-serif">I</span>}
-              title="Italic"
-              tooltip="Italic (Ctrl+I)"
-              onClick={() => formatText('italic')}
-              isActive={activeFormats.italic}
-            />
-            <ToolbarButton
-              icon={<span className="underline text-[13px]">U</span>}
-              title="Underline"
-              tooltip="Underline (Ctrl+U)"
-              onClick={() => formatText('underline')}
-              isActive={activeFormats.underline}
-            />
-            <ToolbarButton
-              icon={<span className="line-through text-[13px]">S</span>}
-              title="Strikethrough"
-              tooltip="Strikethrough"
-              onClick={() => formatText('strikeThrough')}
-              isActive={activeFormats.strikeThrough}
-            />
+      {/* Main Container - Sama persis dengan InputText */}
+      <div className="flex w-full flex-4 text-white md:flex-10 flex-col">
+        <div className={`
+          group rounded-xl overflow-hidden w-full
+          bg-gradient-to-b from-[#252525] to-[#1a1a1a]
+          border transition-all duration-200
+          ${isFocused 
+            ? 'border-blue-500 shadow-[0_0_0_3px_rgba(59,130,246,0.1)]' 
+            : error 
+              ? 'border-red-500' 
+              : 'border-[#F5F5F540]'
+          }
+        `}>
+          {/* Toolbar - Sticky */}
+          <div className="sticky top-0 z-10 flex items-center gap-0.5 px-3 py-2 bg-[#2a2a2a]/95 backdrop-blur-sm border-b border-white/5">
+            {/* Text Style Group */}
+            <div className="flex items-center gap-0.5">
+              <ToolbarButton
+                icon={<span className="font-bold text-[13px]">B</span>}
+                title="Bold"
+                tooltip="Bold (Ctrl+B)"
+                onClick={() => formatText('bold')}
+                isActive={activeFormats.bold}
+              />
+              <ToolbarButton
+                icon={<span className="italic text-[13px] font-serif">I</span>}
+                title="Italic"
+                tooltip="Italic (Ctrl+I)"
+                onClick={() => formatText('italic')}
+                isActive={activeFormats.italic}
+              />
+              <ToolbarButton
+                icon={<span className="underline text-[13px]">U</span>}
+                title="Underline"
+                tooltip="Underline (Ctrl+U)"
+                onClick={() => formatText('underline')}
+                isActive={activeFormats.underline}
+              />
+              <ToolbarButton
+                icon={<span className="line-through text-[13px]">S</span>}
+                title="Strikethrough"
+                tooltip="Strikethrough"
+                onClick={() => formatText('strikeThrough')}
+                isActive={activeFormats.strikeThrough}
+              />
+            </div>
+
+            <Divider />
+
+            {/* Alignment Group */}
+            <div className="flex items-center gap-0.5">
+              <ToolbarButton
+                icon={
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="3" y1="12" x2="15" y2="12" />
+                    <line x1="3" y1="18" x2="21" y2="18" />
+                  </svg>
+                }
+                title="Align Left"
+                onClick={() => formatText('justifyLeft')}
+              />
+              <ToolbarButton
+                icon={
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="6" y1="12" x2="18" y2="12" />
+                    <line x1="3" y1="18" x2="21" y2="18" />
+                  </svg>
+                }
+                title="Align Center"
+                onClick={() => formatText('justifyCenter')}
+              />
+              <ToolbarButton
+                icon={
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="9" y1="12" x2="21" y2="12" />
+                    <line x1="3" y1="18" x2="21" y2="18" />
+                  </svg>
+                }
+                title="Align Right"
+                onClick={() => formatText('justifyRight')}
+              />
+            </div>
+
+            <Divider />
+
+            {/* List Group */}
+            <div className="flex items-center gap-0.5">
+              <ToolbarButton
+                icon={
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <line x1="9" y1="6" x2="20" y2="6" />
+                    <line x1="9" y1="12" x2="20" y2="12" />
+                    <line x1="9" y1="18" x2="20" y2="18" />
+                    <circle cx="4" cy="6" r="1" fill="currentColor" stroke="none" />
+                    <circle cx="4" cy="12" r="1" fill="currentColor" stroke="none" />
+                    <circle cx="4" cy="18" r="1" fill="currentColor" stroke="none" />
+                  </svg>
+                }
+                title="Bullet List"
+                onClick={() => formatText('insertUnorderedList')}
+              />
+              <ToolbarButton
+                icon={
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <line x1="9" y1="6" x2="20" y2="6" />
+                    <line x1="9" y1="12" x2="20" y2="12" />
+                    <line x1="9" y1="18" x2="20" y2="18" />
+                    <text x="3" y="8" fontSize="8" fill="currentColor" fontWeight="600">1</text>
+                    <text x="3" y="14" fontSize="8" fill="currentColor" fontWeight="600">2</text>
+                    <text x="3" y="20" fontSize="8" fill="currentColor" fontWeight="600">3</text>
+                  </svg>
+                }
+                title="Numbered List"
+                onClick={() => formatText('insertOrderedList')}
+              />
+            </div>
           </div>
 
-          <Divider />
-
-          {/* Alignment Group */}
-          <div className="flex items-center gap-0.5">
-            <ToolbarButton
-              icon={
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <line x1="3" y1="6" x2="21" y2="6" />
-                  <line x1="3" y1="12" x2="15" y2="12" />
-                  <line x1="3" y1="18" x2="21" y2="18" />
-                </svg>
-              }
-              title="Align Left"
-              onClick={() => formatText('justifyLeft')}
-            />
-            <ToolbarButton
-              icon={
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <line x1="3" y1="6" x2="21" y2="6" />
-                  <line x1="6" y1="12" x2="18" y2="12" />
-                  <line x1="3" y1="18" x2="21" y2="18" />
-                </svg>
-              }
-              title="Align Center"
-              onClick={() => formatText('justifyCenter')}
-            />
-            <ToolbarButton
-              icon={
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <line x1="3" y1="6" x2="21" y2="6" />
-                  <line x1="9" y1="12" x2="21" y2="12" />
-                  <line x1="3" y1="18" x2="21" y2="18" />
-                </svg>
-              }
-              title="Align Right"
-              onClick={() => formatText('justifyRight')}
-            />
-          </div>
-
-          <Divider />
-
-          {/* List Group */}
-          <div className="flex items-center gap-0.5">
-            <ToolbarButton
-              icon={
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <line x1="9" y1="6" x2="20" y2="6" />
-                  <line x1="9" y1="12" x2="20" y2="12" />
-                  <line x1="9" y1="18" x2="20" y2="18" />
-                  <circle cx="4" cy="6" r="1" fill="currentColor" stroke="none" />
-                  <circle cx="4" cy="12" r="1" fill="currentColor" stroke="none" />
-                  <circle cx="4" cy="18" r="1" fill="currentColor" stroke="none" />
-                </svg>
-              }
-              title="Bullet List"
-              onClick={() => formatText('insertUnorderedList')}
-            />
-            <ToolbarButton
-              icon={
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <line x1="9" y1="6" x2="20" y2="6" />
-                  <line x1="9" y1="12" x2="20" y2="12" />
-                  <line x1="9" y1="18" x2="20" y2="18" />
-                  <text x="3" y="8" fontSize="8" fill="currentColor" fontWeight="600">1</text>
-                  <text x="3" y="14" fontSize="8" fill="currentColor" fontWeight="600">2</text>
-                  <text x="3" y="20" fontSize="8" fill="currentColor" fontWeight="600">3</text>
-                </svg>
-              }
-              title="Numbered List"
-              onClick={() => formatText('insertOrderedList')}
-            />
-          </div>
+          {/* Editor Area */}
+          <div
+            ref={editorRef}
+            contentEditable
+            onInput={handleInput}
+            onPaste={handlePaste}
+            onKeyDown={handleKeyDown}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            className="
+              rich-text-editor
+              min-h-[240px] max-h-[500px] overflow-y-auto
+              px-4 py-4
+              text-white/90 text-[15px] leading-[1.7]
+              focus:outline-none
+              selection:bg-blue-500/30
+            "
+            data-placeholder={placeholder}
+            suppressContentEditableWarning
+            style={{
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+              whiteSpace: 'pre-wrap',
+            }}
+          />
         </div>
 
-        {/* Editor Area */}
-        <div
-          ref={editorRef}
-          contentEditable
-          onInput={handleInput}
-          onPaste={handlePaste}
-          onKeyDown={handleKeyDown}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          className="
-            rich-text-editor
-            min-h-[240px] max-h-[500px] overflow-y-auto
-            px-4 py-4
-            text-white/90 text-[15px] leading-[1.7]
-            focus:outline-none
-            selection:bg-blue-500/30
-          "
-          data-placeholder={placeholder}
-          suppressContentEditableWarning
-          style={{
-            wordWrap: 'break-word',
-            overflowWrap: 'break-word',
-            whiteSpace: 'pre-wrap',
-          }}
-        />
+        {/* Error or Helper Text */}
+        {error ? (
+          <p className="text-red-500 text-sm mt-1">{error}</p>
+        ) : (
+          <p className="text-white/40 text-xs mt-1">
+            {placeholder}
+          </p>
+        )}
       </div>
-
-      {/* Error or Helper Text */}
-      {error ? (
-        <div className="flex items-center gap-2 text-red-400 text-sm mt-1">
-          <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-          </svg>
-          <span>{error}</span>
-        </div>
-      ) : (
-        <p className="text-white/40 text-xs">
-          Gunakan toolbar untuk formatting atau shortcut keyboard untuk lebih cepat
-        </p>
-      )}
     </div>
   );
 });
