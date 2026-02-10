@@ -92,9 +92,9 @@ export default function EditEbookEpisodePage() {
                 description: episode.description || "",
                 price: String(episode.price) || "0",
                 notedEpisode: episode.notedEpisode || "",
-                episodeCover: [],
-                bannerStart: [],
-                bannerEnd: [],
+                episodeCover: episode.coverEpisodeUrl ? [episode.coverEpisodeUrl] : [],
+                bannerStart: episode.bannerStartEpisodeUrl ? [episode.bannerStartEpisodeUrl] : [],
+                bannerEnd: episode.bannerEndEpisodeUrl ? [episode.bannerEndEpisodeUrl] : [],
                 inputFile: [],
                 audioUrl: [],
             });
@@ -102,42 +102,57 @@ export default function EditEbookEpisodePage() {
     }, [episodeData, reset]);
 
     const onSubmit = async (data) => {
-        // Hanya submit jika flag canSubmit true (user klik tombol Update Episode)
         if (!canSubmit) {
             console.log("🚫 Submit blocked - not from Update Episode button");
             return;
         }
 
-        console.log("📤 Submitting data:", data);
+        console.log("📤 FORM SUBMITTED - Button clicked");
         
         const formData = new FormData();
         formData.append("title", data.title);
         formData.append("description", data.description);
         formData.append("price", String(data.price || "0"));
+        formData.append("explicitUpdate", "true");
         
         if (data.notedEpisode) {
             formData.append("notedEpisode", data.notedEpisode);
         }
 
-        // Only append files if selected
-        if (data.episodeCover && data.episodeCover.length > 0) {
+        // Only append files if new files selected
+        if (data.episodeCover && data.episodeCover[0] instanceof File) {
             formData.append("coverEpisodeUrl", data.episodeCover[0]);
+            console.log("📎 Cover baru akan diupload:", data.episodeCover[0].name);
+        } else {
+            console.log("ℹ️ Tidak ada cover baru, menggunakan cover lama");
         }
 
-        if (data.bannerStart && data.bannerStart.length > 0) {
+        if (data.bannerStart && data.bannerStart[0] instanceof File) {
             formData.append("bannerStartEpisodeUrl", data.bannerStart[0]);
+            console.log("📎 Banner Start baru akan diupload:", data.bannerStart[0].name);
+        } else {
+            console.log("ℹ️ Tidak ada banner start baru");
         }
 
-        if (data.bannerEnd && data.bannerEnd.length > 0) {
+        if (data.bannerEnd && data.bannerEnd[0] instanceof File) {
             formData.append("bannerEndEpisodeUrl", data.bannerEnd[0]);
+            console.log("📎 Banner End baru akan diupload:", data.bannerEnd[0].name);
+        } else {
+            console.log("ℹ️ Tidak ada banner end baru");
         }
 
-        if (data.inputFile && data.inputFile.length > 0) {
+        if (data.inputFile && data.inputFile[0] instanceof File) {
             formData.append("ebookUrl", data.inputFile[0]);
+            console.log("📎 File Ebook baru akan diupload:", data.inputFile[0].name);
+        } else {
+            console.log("ℹ️ Tidak ada file ebook baru");
         }
 
-        if (data.audioUrl && data.audioUrl.length > 0) {
+        if (data.audioUrl && data.audioUrl[0] instanceof File) {
             formData.append("audioUrl", data.audioUrl[0]);
+            console.log("📎 File Audio baru akan diupload:", data.audioUrl[0].name);
+        } else {
+            console.log("ℹ️ Tidak ada file audio baru");
         }
 
         try {
@@ -152,16 +167,13 @@ export default function EditEbookEpisodePage() {
 
     const handleSuccessClose = () => {
         setIsSuccessModalOpen(false);
-        // Replace current history entry to prevent back button returning to form
         router.replace(`/creator/ebooks/${ebookId}/episodes`);
     };
 
-    // Handle back button click
     const handleBackClick = () => {
-        router.back();
+        router.push(`/creator/ebooks/${ebookId}/episodes`);
     };
 
-    // Handle form submit dengan flag control
     const handleFormSubmit = (e) => {
         e.preventDefault();
         
@@ -172,10 +184,8 @@ export default function EditEbookEpisodePage() {
         }
     };
 
-    // Handle Update Episode button click
     const handleUpdateClick = () => {
         setCanSubmit(true);
-        // Trigger form submit programmatically
         if (formRef.current) {
             formRef.current.dispatchEvent(
                 new Event('submit', { cancelable: true, bubbles: true })
@@ -187,7 +197,6 @@ export default function EditEbookEpisodePage() {
         return <LoadingOverlay message="Loading episode data..." />;
     }
 
-    // Get episode data dengan fallback
     const episode = episodeData?.data?.data || episodeData?.data || episodeData;
 
     return (
@@ -235,94 +244,20 @@ export default function EditEbookEpisodePage() {
                     name="episodeCover"
                     control={control}
                     render={({ field, fieldState }) => (
-                        <div className="flex flex-col gap-2">
-                            <label className="text-white font-semibold">Cover Episode</label>
-                            <p className="text-sm text-gray-400">
-                                Gunakan rasio 1:1 (square), format JPG/PNG, maks 500KB
-                            </p>
-                            
-                            <div className="bg-[#2A2A2A] rounded-lg p-4 border border-[#4A4A4A]">
-                                <p className="text-white font-medium mb-2">Upload Gambar</p>
-                                
-                                {/* Jika ada gambar existing dan belum upload baru */}
-                                {episode?.coverEpisodeUrl && field.value.length === 0 ? (
-                                    <div className="flex items-start gap-3">
-                                        {/* Button Upload */}
-                                        <label className="cursor-pointer flex-shrink-0">
-                                            <div className="w-24 h-24 bg-[#3A3A3A] rounded flex flex-col items-center justify-center hover:bg-[#4A4A4A] transition">
-                                                <img src={IconsGalery} alt="upload" className="w-8 h-8 mb-1" />
-                                                <span className="text-white text-xs">Upload</span>
-                                            </div>
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                className="hidden"
-                                                onChange={(e) => {
-                                                    if (e.target.files && e.target.files.length > 0) {
-                                                        field.onChange([...e.target.files]);
-                                                    }
-                                                }}
-                                            />
-                                        </label>
-
-                                        {/* Preview gambar existing */}
-                                        <div className="relative">
-                                            <img
-                                                src={episode.coverEpisodeUrl}
-                                                alt="cover"
-                                                className="w-20 h-20 object-cover rounded"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    // Trigger input untuk replace
-                                                    const input = e.currentTarget.closest('.bg-\\[\\#2A2A2A\\]').querySelector('input[type="file"]');
-                                                    if (input) input.click();
-                                                }}
-                                                className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white text-xs transition"
-                                            >
-                                                ✕
-                                            </button>
-                                            <p className="text-xs text-gray-400 mt-1 max-w-[80px] truncate">
-                                                {episode.coverEpisodeUrl.split('/').pop()}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    /* Jika belum ada gambar atau sudah pilih gambar baru */
-                                    <InputImageBanner
-                                        type="thumbnail"
-                                        name="episodeCover"
-                                        icon={IconsGalery}
-                                        files={field.value}
-                                        onUpload={(e) => {
-                                            if (e?.preventDefault) e.preventDefault();
-                                            if (e?.stopPropagation) e.stopPropagation();
-                                            
-                                            const files = e.target?.files || e;
-                                            field.onChange([...files]);
-                                        }}
-                                        onRemove={(e) => {
-                                            if (e?.preventDefault) e.preventDefault();
-                                            if (e?.stopPropagation) e.stopPropagation();
-                                            
-                                            field.onChange([]);
-                                        }}
-                                        error={fieldState.error?.message}
-                                    />
-                                )}
-
-                                {!episode?.coverEpisodeUrl && field.value.length === 0 && (
-                                    <p className="text-sm text-gray-400 mt-2 italic">No file chosen</p>
-                                )}
-                            </div>
-                            
-                            {fieldState.error?.message && (
-                                <p className="text-red-500 text-sm">{fieldState.error.message}</p>
-                            )}
-                        </div>
+                        <InputImageBanner
+                            type="thumbnail"
+                            label="Cover Episode"
+                            description="Rasio: 1:1, Format: JPG/PNG, Ukuran Maksimal: 500 KB. Unggah sampul khusus untuk bab ini."
+                            name="episodeCover"
+                            icon={IconsGalery}
+                            files={field.value}
+                            onUpload={(e) => {
+                                const files = e.target?.files || e;
+                                field.onChange([...files]);
+                            }}
+                            onRemove={() => field.onChange([])}
+                            error={fieldState.error?.message}
+                        />
                     )}
                 />
 
@@ -331,200 +266,62 @@ export default function EditEbookEpisodePage() {
                     name="bannerStart"
                     control={control}
                     render={({ field, fieldState }) => (
-                        <div className="flex flex-col gap-2">
-                            <label className="text-white font-semibold">Banner Start (Opsional)</label>
-                            <p className="text-sm text-gray-400">
-                                Gunakan rasio 16:9, format JPG/PNG, maks 1MB
-                            </p>
-                            
-                            <div className="bg-[#2A2A2A] rounded-lg p-4 border border-[#4A4A4A]">
-                                <p className="text-white font-medium mb-2">Upload Gambar</p>
-                                
-                                {episode?.bannerStartEpisodeUrl && field.value.length === 0 ? (
-                                    <div className="flex items-start gap-3">
-                                        <label className="cursor-pointer flex-shrink-0">
-                                            <div className="w-24 h-24 bg-[#3A3A3A] rounded flex flex-col items-center justify-center hover:bg-[#4A4A4A] transition">
-                                                <img src={IconsGalery} alt="upload" className="w-8 h-8 mb-1" />
-                                                <span className="text-white text-xs">Upload</span>
-                                            </div>
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                className="hidden"
-                                                onChange={(e) => {
-                                                    if (e.target.files && e.target.files.length > 0) {
-                                                        field.onChange([...e.target.files]);
-                                                    }
-                                                }}
-                                            />
-                                        </label>
-
-                                        <div className="relative">
-                                            <img
-                                                src={episode.bannerStartEpisodeUrl}
-                                                alt="banner"
-                                                className="w-32 h-20 object-cover rounded"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    const input = e.currentTarget.closest('.bg-\\[\\#2A2A2A\\]').querySelector('input[type="file"]');
-                                                    if (input) input.click();
-                                                }}
-                                                className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white text-xs transition"
-                                            >
-                                                ✕
-                                            </button>
-                                            <p className="text-xs text-gray-400 mt-1 max-w-[128px] truncate">
-                                                {episode.bannerStartEpisodeUrl.split('/').pop()}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <InputImageBanner
-                                        type="banner"
-                                        name="bannerStart"
-                                        icon={IconsGalery}
-                                        files={field.value}
-                                        onUpload={(e) => {
-                                            if (e?.preventDefault) e.preventDefault();
-                                            if (e?.stopPropagation) e.stopPropagation();
-                                            
-                                            const files = e.target?.files || e;
-                                            field.onChange([...files]);
-                                        }}
-                                        onRemove={(e) => {
-                                            if (e?.preventDefault) e.preventDefault();
-                                            if (e?.stopPropagation) e.stopPropagation();
-                                            
-                                            field.onChange([]);
-                                        }}
-                                        error={fieldState.error?.message}
-                                    />
-                                )}
-
-                                {!episode?.bannerStartEpisodeUrl && field.value.length === 0 && (
-                                    <p className="text-sm text-gray-400 mt-2 italic">No file chosen</p>
-                                )}
-                            </div>
-                            
-                            {fieldState.error?.message && (
-                                <p className="text-red-500 text-sm">{fieldState.error.message}</p>
-                            )}
-                        </div>
+                        <InputImageBanner
+                            type="banner"
+                            label="Banner Cover Episode Start"
+                            description="maks upload per content 5mb, please make part while uploading and naming ascending number"
+                            name="bannerStart"
+                            icon={IconsGalery}
+                            files={field.value}
+                            onUpload={(e) => {
+                                const files = e.target?.files || e;
+                                field.onChange([...files]);
+                            }}
+                            onRemove={() => field.onChange([])}
+                            error={fieldState.error?.message}
+                        />
                     )}
                 />
 
-                {/* Input File Ebook */}
+                {/* Input File */}
                 <Controller
                     name="inputFile"
                     control={control}
                     render={({ field, fieldState }) => (
-                        <div className="flex flex-col gap-2">
-                            <label className="text-white font-semibold">File Ebook (.docx) - Opsional</label>
-                            <p className="text-sm text-gray-400">
-                                Format .doc/.docx, maks 10MB
-                            </p>
-                            
-                            {episode?.ebookUrl && field.value.length === 0 && (
-                                <div className="p-3 bg-[#2D2D2D] rounded-lg border border-[#4A4A4A] flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <p className="text-sm text-gray-300">File ebook sudah terupload</p>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            const input = document.querySelector('input[name="inputFile"]');
-                                            if (input) input.click();
-                                        }}
-                                        className="text-red-500 hover:text-red-400 text-sm font-semibold transition"
-                                    >
-                                        Hapus
-                                    </button>
-                                </div>
-                            )}
-
-                            {(!episode?.ebookUrl || field.value.length > 0) && (
-                                <InputFileDoc
-                                    name="inputFile"
-                                    accept=".doc,.docx"
-                                    files={field.value}
-                                    onUpload={(e) => {
-                                        if (e?.preventDefault) e.preventDefault();
-                                        if (e?.stopPropagation) e.stopPropagation();
-                                        
-                                        const files = e.target?.files || e;
-                                        field.onChange([...files]);
-                                    }}
-                                    onRemove={(e) => {
-                                        if (e?.preventDefault) e.preventDefault();
-                                        if (e?.stopPropagation) e.stopPropagation();
-                                        
-                                        field.onChange([]);
-                                    }}
-                                    error={fieldState.error?.message}
-                                />
-                            )}
-                        </div>
+                        <InputFileDoc
+                            name="inputFile"
+                            label="Unggah File Naskah (.docx)"
+                            description="Pastikan file Anda berformat Microsoft Word (.docx). Klik untuk unggah."
+                            accept=".doc,.docx"
+                            files={field.value}
+                            onUpload={(e) => {
+                                const files = e.target?.files || e;
+                                field.onChange([...files]);
+                            }}
+                            onRemove={() => field.onChange([])}
+                            error={fieldState.error?.message}
+                        />
                     )}
                 />
 
-                {/* Audio URL */}
+                {/* Input audio opsional */}
                 <Controller
                     name="audioUrl"
                     control={control}
                     render={({ field, fieldState }) => (
-                        <div className="flex flex-col gap-2">
-                            <label className="text-white font-semibold">File Audio (Opsional)</label>
-                            <p className="text-sm text-gray-400">
-                                Format MP3/WAV, maks 100MB
-                            </p>
-                            
-                            <div className="flex flex-col gap-2">
-                                <div className="relative">
-                                    <input
-                                        type="file"
-                                        accept=".mp3,.wav"
-                                        onChange={(e) => {
-                                            if (e.target.files && e.target.files[0]) {
-                                                field.onChange([e.target.files[0]]);
-                                            }
-                                        }}
-                                        className="hidden"
-                                        id="audioUpload"
-                                    />
-                                    <label
-                                        htmlFor="audioUpload"
-                                        className="inline-flex items-center justify-center px-4 py-2 bg-[#4A5568] hover:bg-[#5A6578] text-white rounded cursor-pointer transition"
-                                    >
-                                        Upload Files
-                                    </label>
-                                    <p className="text-sm text-gray-400 mt-1 italic">
-                                        {field.value && field.value.length > 0 
-                                            ? field.value[0].name 
-                                            : "No file chosen"
-                                        }
-                                    </p>
-                                </div>
-                            </div>
-
-                            {episode?.audioUrl && field.value.length === 0 && (
-                                <div className="text-sm text-gray-400 italic">
-                                    File audio saat ini sudah terupload
-                                </div>
-                            )}
-                            
-                            {fieldState.error?.message && (
-                                <p className="text-red-500 text-sm">{fieldState.error.message}</p>
-                            )}
-                        </div>
+                        <InputFileDoc
+                            name="audioUrl"
+                            label="File Audio (Opsional)"
+                            description="Pilih file audio (MP3/WAV, maks. 3MB) untuk backsound atau audio Transkrip episode ini."
+                            accept=".mp3,.wav"
+                            files={field.value}
+                            onUpload={(e) => {
+                                const files = e.target?.files || e;
+                                field.onChange([...files]);
+                            }}
+                            onRemove={() => field.onChange([])}
+                            error={fieldState.error?.message}
+                        />
                     )}
                 />
 
@@ -533,89 +330,20 @@ export default function EditEbookEpisodePage() {
                     name="bannerEnd"
                     control={control}
                     render={({ field, fieldState }) => (
-                        <div className="flex flex-col gap-2">
-                            <label className="text-white font-semibold">Banner End (Opsional)</label>
-                            <p className="text-sm text-gray-400">
-                                Gunakan rasio 16:9, format JPG/PNG, maks 1MB
-                            </p>
-                            
-                            <div className="bg-[#2A2A2A] rounded-lg p-4 border border-[#4A4A4A]">
-                                <p className="text-white font-medium mb-2">Upload Gambar</p>
-                                
-                                {episode?.bannerEndEpisodeUrl && field.value.length === 0 ? (
-                                    <div className="flex items-start gap-3">
-                                        <label className="cursor-pointer flex-shrink-0">
-                                            <div className="w-24 h-24 bg-[#3A3A3A] rounded flex flex-col items-center justify-center hover:bg-[#4A4A4A] transition">
-                                                <img src={IconsGalery} alt="upload" className="w-8 h-8 mb-1" />
-                                                <span className="text-white text-xs">Upload</span>
-                                            </div>
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                className="hidden"
-                                                onChange={(e) => {
-                                                    if (e.target.files && e.target.files.length > 0) {
-                                                        field.onChange([...e.target.files]);
-                                                    }
-                                                }}
-                                            />
-                                        </label>
-
-                                        <div className="relative">
-                                            <img
-                                                src={episode.bannerEndEpisodeUrl}
-                                                alt="banner"
-                                                className="w-32 h-20 object-cover rounded"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    const input = e.currentTarget.closest('.bg-\\[\\#2A2A2A\\]').querySelector('input[type="file"]');
-                                                    if (input) input.click();
-                                                }}
-                                                className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white text-xs transition"
-                                            >
-                                                ✕
-                                            </button>
-                                            <p className="text-xs text-gray-400 mt-1 max-w-[128px] truncate">
-                                                {episode.bannerEndEpisodeUrl.split('/').pop()}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <InputImageBanner
-                                        type="banner"
-                                        name="bannerEnd"
-                                        icon={IconsGalery}
-                                        files={field.value}
-                                        onUpload={(e) => {
-                                            if (e?.preventDefault) e.preventDefault();
-                                            if (e?.stopPropagation) e.stopPropagation();
-                                            
-                                            const files = e.target?.files || e;
-                                            field.onChange([...files]);
-                                        }}
-                                        onRemove={(e) => {
-                                            if (e?.preventDefault) e.preventDefault();
-                                            if (e?.stopPropagation) e.stopPropagation();
-                                            
-                                            field.onChange([]);
-                                        }}
-                                        error={fieldState.error?.message}
-                                    />
-                                )}
-
-                                {!episode?.bannerEndEpisodeUrl && field.value.length === 0 && (
-                                    <p className="text-sm text-gray-400 mt-2 italic">No file chosen</p>
-                                )}
-                            </div>
-                            
-                            {fieldState.error?.message && (
-                                <p className="text-red-500 text-sm">{fieldState.error.message}</p>
-                            )}
-                        </div>
+                        <InputImageBanner
+                            type="banner"
+                            label="Banner Cover Episode End"
+                            description="maks upload per content 5gb, please make part while uploading and naming ascending number"
+                            name="bannerEnd"
+                            icon={IconsGalery}
+                            files={field.value}
+                            onUpload={(e) => {
+                                const files = e.target?.files || e;
+                                field.onChange([...files]);
+                            }}
+                            onRemove={() => field.onChange([])}
+                            error={fieldState.error?.message}
+                        />
                     )}
                 />
 
@@ -625,7 +353,7 @@ export default function EditEbookEpisodePage() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <RichTextEditor
-                            label="Catatan Kreator (Opsional)"
+                            label="Catatan Kreator"
                             name="notedEpisode"
                             placeholder="Tulis catatan kreator"
                             value={field.value}
