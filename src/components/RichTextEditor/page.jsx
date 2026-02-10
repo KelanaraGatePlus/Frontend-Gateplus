@@ -9,7 +9,7 @@ const RichTextEditor = forwardRef(({
   value = "", 
   onChange, 
   error 
-}, ref) => {
+}) => {
   const editorRef = useRef(null);
   const [isFocused, setIsFocused] = useState(false);
   const [activeFormats, setActiveFormats] = useState({
@@ -150,6 +150,14 @@ const handlePaste = (e) => {
       </div>
     </div>
   );
+
+  ToolbarButton.propTypes = {
+    icon: PropTypes.node.isRequired,
+    title: PropTypes.string.isRequired,
+    onClick: PropTypes.func.isRequired,
+    isActive: PropTypes.bool,
+    tooltip: PropTypes.string,
+  };
 
   const Divider = () => (
     <div className="w-px h-5 bg-white/10" />

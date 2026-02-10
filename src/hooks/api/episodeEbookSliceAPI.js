@@ -1,9 +1,10 @@
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const episodeEbookSliceAPI = createApi({
     reducerPath: "episodeEbookSliceAPI",
     baseQuery: fetchBaseQuery({
-        baseUrl: process.env.NEXT_PUBLIC_BACKEND_URL,
+        baseUrl: BACKEND_URL,
         prepareHeaders: (headers) => {
             const token = localStorage.getItem("token");
             if (token) {
@@ -16,7 +17,7 @@ export const episodeEbookSliceAPI = createApi({
     endpoints: (builder) => ({
         // Get episodes by ebook ID
         getEpisodesByEbookId: builder.query({
-            query: ({ ebookId, page = 1, limit = 10, paginate = true }) => 
+            query: ({ ebookId, page = 1, limit = 10, paginate = true }) =>
                 `/episode/ebook/${ebookId}?page=${page}&limit=${limit}&paginate=${paginate}`,
             providesTags: (result, error, { ebookId }) => [
                 { type: "EpisodeEbook", id: ebookId },

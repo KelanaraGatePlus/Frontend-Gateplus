@@ -10,7 +10,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import InputImageBanner from '@/components/UploadForm/InputImageBanner';
 import InputSelect from '@/components/UploadForm/InputSelect';
 import InputText from '@/components/UploadForm/InputText';
-import InputTextArea from '@/components/UploadForm/InputTextArea';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import RichTextEditor from '@/components/RichTextEditor/page';
 

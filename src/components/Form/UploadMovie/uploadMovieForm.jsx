@@ -23,7 +23,6 @@ import InputImageBanner from '@/components/UploadForm/InputImageBanner';
 import GenreMultiSelect from '@/components/UploadForm/GenreMultiSelect';
 import InputSelect from '@/components/UploadForm/InputSelect';
 import InputText from '@/components/UploadForm/InputText';
-import InputTextArea from '@/components/UploadForm/InputTextArea';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 /*[--- ASSETS PUBLIC ---]*/
