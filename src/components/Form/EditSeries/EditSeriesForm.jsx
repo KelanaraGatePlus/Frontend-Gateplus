@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import RichTextEditor from '@/components/RichTextEditor/page';
 
 /*[--- THIRD PARTY LIBRARIES ---]*/
 import { useForm, Controller } from "react-hook-form";
@@ -129,13 +130,20 @@ export default function EditSeriesForm({ id }) {
                         error={errors.title?.message}
                     />
 
-                    <InputTextArea
-                        label="Deskripsi"
-                        name="description"
-                        placeholder="Deskripsi"
-                        {...register("description")}
-                        error={errors.description?.message}
-                    />
+<Controller
+    name="description"
+    control={control}
+    render={({ field, fieldState }) => (
+        <RichTextEditor
+            label="Sinopsis Lengkap Seri"
+            name="description"
+            placeholder="Jelaskan premis utama dunia cerita, konflik sentral, karakter utama, dan tema yang diangkat. Mesin pencari menggunakan teks ini untuk mempertemukan karyamu dengan pembaca yang tepat."
+            value={field.value}
+            onChange={field.onChange}
+            error={fieldState.error?.message}
+        />
+    )}
+/>
 
                     <Controller
                         name="genre"

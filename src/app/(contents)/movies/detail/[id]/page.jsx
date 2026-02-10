@@ -24,6 +24,7 @@ import Link from "next/link";
 import { DEFAULT_AVATAR } from "@/lib/defaults";
 import { useGetUserId } from "@/lib/features/useGetUserId";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+import DOMPurify from "dompurify";
 
 /* ===========================
    Halaman: PlayingMoviePage (JSX)
@@ -289,7 +290,13 @@ function PlayingMoviePage({ params }) {
                     {/* Deskripsi */}
                     <div className="rounded-md bg-[#393939] flex-1">
                         <div className="mx-4 my-4 text-white h-full flex flex-col">
-                            <p>{movieData?.description}</p>
+                            <div
+  className="prose prose-invert max-w-none"
+  dangerouslySetInnerHTML={{
+    __html: DOMPurify.sanitize(movieData?.description || ""),
+  }}
+/>
+
 
                             <div className="mt-10">
                                 <p>Judul: {movieData.title}</p>

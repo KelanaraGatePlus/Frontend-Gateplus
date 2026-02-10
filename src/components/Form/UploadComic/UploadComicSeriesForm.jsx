@@ -30,6 +30,7 @@ import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
 import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
 import PriceSelector from "@/components/UploadForm/PriceSelector";
+import RichTextEditor from '@/components/RichTextEditor/page';
 
 export default function UploadComicSeriesForm() {
     const router = useRouter();
@@ -104,13 +105,21 @@ export default function UploadComicSeriesForm() {
                     />
 
                     {/* Deskripsi */}
-                    <InputTextArea
-                        label="Sinopsis Lengkap Seri Komik"
+                    <Controller
                         name="description"
-                        placeholder="Jelaskan premis utama dunia cerita, konflik sentral, karakter utama, dan tema yang diangkat. Mesin pencari menggunakan teks ini untuk mempertemukan karyamu dengan pembaca yang tepat."
-                        {...register("description")}
-                        error={errors.description?.message}
+                        control={control}
+                        render={({ field, fieldState }) => (
+                            <RichTextEditor
+                                label="Sinopsis Lengkap Seri Komik"
+                                name="description"
+                                placeholder="Jelaskan premis utama dunia cerita, konflik sentral, karakter utama, dan tema yang diangkat. Mesin pencari menggunakan teks ini untuk mempertemukan karyamu dengan pembaca yang tepat."
+                                value={field.value}
+                                onChange={field.onChange}
+                                error={fieldState.error?.message}
+                            />
+                        )}
                     />
+
 
                     {/* Genre */}
                     <Controller

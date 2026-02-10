@@ -11,6 +11,7 @@ import InputSelect from '@/components/UploadForm/InputSelect';
 import InputText from '@/components/UploadForm/InputText';
 import InputTextArea from '@/components/UploadForm/InputTextArea';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+import RichTextEditor from '@/components/RichTextEditor/page';
 
 /*[--- ASSETS PUBLIC ---]*/
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
@@ -182,13 +183,21 @@ export default function UploadEducationForm() {
                                 error={errors.title?.message}
                             />
                             {/* Deskripsi */}
-                            <InputTextArea
-                                label="Sinopsis Lengkap Seri"
+                            <Controller
                                 name="description"
-                                placeholder="Jelaskan premis utama dunia cerita, konflik sentral, karakter utama, dan tema yang diangkat. Mesin pencari menggunakan teks ini untuk mempertemukan karyamu dengan pembaca yang tepat."
-                                {...register("description")}
-                                error={errors.description?.message}
+                                control={control}
+                                render={({ field, fieldState }) => (
+                                    <RichTextEditor
+                                        label="Sinopsis Lengkap Seri"
+                                        name="description"
+                                        placeholder="Jelaskan premis utama dunia cerita, konflik sentral, karakter utama, dan tema yang diangkat. Mesin pencari menggunakan teks ini untuk mempertemukan karyamu dengan pembaca yang tepat."
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        error={fieldState.error?.message}
+                                    />
+                                )}
                             />
+
                             {/* Genre */}
                             <Controller
                                 name="categoriesId"

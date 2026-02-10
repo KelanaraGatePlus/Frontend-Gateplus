@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import RichTextEditor from '@/components/RichTextEditor/page';
 
 /*[--- THIRD PARTY LIBRARIES ---]*/
 import { useForm, Controller } from "react-hook-form";
@@ -99,12 +100,19 @@ export default function EditPodcastForm({ id }) {
                         error={errors.title?.message}
                     />
 
-                    <InputTextArea
-                        label="Deskripsi"
+                    <Controller
                         name="description"
-                        placeholder="Deskripsi"
-                        {...register("description")}
-                        error={errors.description?.message}
+                        control={control}
+                        render={({ field, fieldState }) => (
+                            <RichTextEditor
+                                label="Deskripsi"
+                                name="description"
+                                placeholder="Deskripsi"
+                                value={field.value}
+                                onChange={field.onChange}
+                                error={fieldState.error?.message}
+                            />
+                        )}
                     />
 
                     <Controller
@@ -180,5 +188,5 @@ export default function EditPodcastForm({ id }) {
 }
 
 EditPodcastForm.propTypes = {
-  id: PropTypes.string.isRequired,
+    id: PropTypes.string.isRequired,
 }

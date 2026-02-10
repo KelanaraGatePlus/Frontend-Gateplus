@@ -22,7 +22,7 @@ import InputAgeResctriction from '@/components/UploadForm/InputAgeResctriction';
 import InputImageBanner from '@/components/UploadForm/InputImageBanner';
 import InputSelect from '@/components/UploadForm/InputSelect';
 import InputText from '@/components/UploadForm/InputText';
-import InputTextArea from '@/components/UploadForm/InputTextArea';
+import RichTextEditor from '@/components/RichTextEditor/page';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 /*[--- ASSETS PUBLIC ---]*/
@@ -55,7 +55,7 @@ export default function UploadEbookSeriesForm() {
             posterBanner: null,
             coverBook: null,
             canSubscribe: false,
-            subscriptionPrice: 5000, // Optional field, can be undefined
+            subscriptionPrice: 5000,
         },
     });
 
@@ -96,7 +96,6 @@ export default function UploadEbookSeriesForm() {
 
     return (
         <>
-
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 lg:gap-0">
                 <div className="flex flex-col gap-2">
                     {/* Judul */}
@@ -108,13 +107,20 @@ export default function UploadEbookSeriesForm() {
                         error={errors.title?.message}
                     />
 
-                    {/* Deskripsi */}
-                    <InputTextArea
-                        label="Sinopsis Lengkap Seri"
+                    {/* Deskripsi - CHANGED TO RICH TEXT EDITOR */}
+                    <Controller
                         name="description"
-                        placeholder="Tuliskan ringkasan cerita Anda yang paling menarik, meliputi genre, latar belakang, dan karakter utama (minimal 200 kata)."
-                        {...register("description")}
-                        error={errors.description?.message}
+                        control={control}
+                        render={({ field, fieldState }) => (
+                            <RichTextEditor
+                                label="Sinopsis Lengkap Seri"
+                                name="description"
+                                placeholder="Tuliskan ringkasan cerita Anda yang paling menarik, meliputi genre, latar belakang, dan karakter utama (minimal 50 karakter)."
+                                value={field.value}
+                                onChange={field.onChange}
+                                error={fieldState.error?.message}
+                            />
+                        )}
                     />
 
                     {/* Genre */}
@@ -248,7 +254,7 @@ export default function UploadEbookSeriesForm() {
                             <InputImageBanner
                                 type="banner"
                                 label="Poster Banner"
-                                description="Gunakan rasio 16:9 (1920x1080 px), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten. Poster ini akan digunakan pada tampilan desktop dan landscape (web view). Pastikan detail visual utama terlihat jelas."
+                                description="Gunakan rasio 16:9 (1920x1080 px), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten. Poster ini akan digunakan pada tampilan desktop dan landscape (web view). Pastikan detail visual utama terlihat jelas."
                                 name="coverBook"
                                 icon={IconsGalery}
                                 inputRef={coverBookInputRef}
@@ -264,8 +270,6 @@ export default function UploadEbookSeriesForm() {
                             />
                         )}
                     />
-                    {/* Cover Book */}
-
                 </div>
 
                 <ButtonSubmit type="submit" icon={IconsButtonSubmit} label="Buat Series" isLoading={isLoading} />
