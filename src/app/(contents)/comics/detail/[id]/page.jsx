@@ -13,7 +13,6 @@ import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 
 export default function DetailComicPage({ params }) {
   const { id } = use(params);
-  const [userId, setUserId] = useState(null);
   // const [selectedEpisode, setSelectedEpisode] = useState(null);
   // const [isModalOpen, setIsModalOpen] = useState(false);
   // const [selectedPrice, setSelectedPrice] = useState(null);
@@ -47,13 +46,6 @@ export default function DetailComicPage({ params }) {
   };
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedUserId = localStorage.getItem("users_id");
-      setUserId(storedUserId);
-    }
-  }, []);
-
-  useEffect(() => {
     createLog({
       contentType: "COMIC",
       logType: "CLICK",        // atau WATCH_TRAILER / WATCH_CONTENT sesuai kebutuhan
@@ -61,8 +53,8 @@ export default function DetailComicPage({ params }) {
     });
   }, [id, createLog]);
 
-  const skip = !id || !userId;
-  const { data, isLoading } = useGetComicByIdQuery({ id, userId }, { skip });
+  const skip = !id;
+  const { data, isLoading } = useGetComicByIdQuery({ id }, { skip });
   const comicData = data?.data || {};
   const episode_comics = (comicData?.episode_comics?.episodes || []).slice().sort((a, b) => {
     return new Date(a.createdAt) - new Date(b.createdAt);

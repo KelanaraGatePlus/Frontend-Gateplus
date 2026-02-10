@@ -1,7 +1,42 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Zain:ital,wght@0,200;0,300;0,400;0,700;0,800;0,900;1,300;1,400&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&display=swap');
 @import "tailwindcss";
 @plugin "flowbite-react/plugin/tailwindcss";
 @source "../../.flowbite-react/class-list.json";
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('/fonts/OpenDyslexic-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('/fonts/OpenDyslexic-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Add bold faces so weight changes don't fallback */
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('/fonts/OpenDyslexic-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('/fonts/OpenDyslexic-BoldItalic.woff2') format('woff2');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
 
 :root {
   --foreground: #222222;
@@ -34,6 +69,22 @@ body {
   font-family: "Montserrat", sans-serif;
 }
 
+.sourceSerifFont {
+  font-family: "Source Serif 4", serif;
+}
+
+.merriweatherFont {
+  font-family: "Merriweather", serif;
+}
+
+.interFont {
+  font-family: "Inter", sans-serif;
+}
+
+.openDyslexicFont {
+  font-family: "OpenDyslexic", sans-serif;
+}
+
 @keyframes likePop {
   0% {
     transform: scale(1);
@@ -44,6 +95,15 @@ body {
   100% {
     transform: scale(1);
   }
+}
+
+/* Menghilangkan scrollbar pada kontainer yang dibuat oleh epub.js */
+.epub-container {
+    overflow: hidden !important;
+}
+
+.epub-container iframe {
+    height: 100% !important;
 }
 
 /* Mencegah seleksi teks */
@@ -221,4 +281,207 @@ input[type="date"] {
 
 button:hover {
   cursor: pointer;
+}
+
+/* ==================== RICH TEXT EDITOR STYLES ==================== */
+
+/* Placeholder styling */
+.rich-text-editor[contenteditable][data-placeholder]:empty:before {
+  content: attr(data-placeholder);
+  color: #6b7280;
+  pointer-events: none;
+  position: absolute;
+  opacity: 0.6;
+}
+
+/* Editor content styling */
+.rich-text-editor[contenteditable] p {
+  margin: 0.75em 0;
+  line-height: 1.6;
+}
+
+.rich-text-editor[contenteditable] p:first-child {
+  margin-top: 0;
+}
+
+.rich-text-editor[contenteditable] p:last-child {
+  margin-bottom: 0;
+}
+
+.rich-text-editor[contenteditable] br {
+  display: block;
+  content: "";
+  margin: 0.25em 0;
+}
+
+.rich-text-editor[contenteditable] strong,
+.rich-text-editor[contenteditable] b {
+  font-weight: 700;
+}
+
+.rich-text-editor[contenteditable] em,
+.rich-text-editor[contenteditable] i {
+  font-style: italic;
+}
+
+.rich-text-editor[contenteditable] u {
+  text-decoration: underline;
+}
+
+.rich-text-editor[contenteditable] s,
+.rich-text-editor[contenteditable] strike {
+  text-decoration: line-through;
+}
+
+/* Text alignment */
+.rich-text-editor[contenteditable] .text-left {
+  text-align: left;
+}
+
+.rich-text-editor[contenteditable] .text-center {
+  text-align: center;
+}
+
+.rich-text-editor[contenteditable] .text-right {
+  text-align: right;
+}
+
+/* Lists */
+.rich-text-editor[contenteditable] ul {
+  list-style-type: disc;
+  margin-left: 1.5em;
+  margin: 0.75em 0;
+  padding-left: 1.5em;
+}
+
+.rich-text-editor[contenteditable] ol {
+  list-style-type: decimal;
+  margin-left: 1.5em;
+  margin: 0.75em 0;
+  padding-left: 1.5em;
+}
+
+.rich-text-editor[contenteditable] li {
+  margin: 0.25em 0;
+  line-height: 1.6;
+}
+
+/* Scrollbar styling */
+.rich-text-editor[contenteditable]::-webkit-scrollbar {
+  width: 8px;
+}
+
+.rich-text-editor[contenteditable]::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-radius: 4px;
+}
+
+.rich-text-editor[contenteditable]::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 4px;
+}
+
+.rich-text-editor[contenteditable]::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* ==================== RICH TEXT DISPLAY STYLES (PROFESSIONAL) ==================== */
+.rich-text-display {
+  color: white !important;
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.rich-text-display p {
+  margin: 1em 0;
+  line-height: 1.8;
+  color: white !important;
+}
+
+.rich-text-display p:first-child {
+  margin-top: 0;
+}
+
+.rich-text-display p:last-child {
+  margin-bottom: 0;
+}
+
+.rich-text-display br {
+  display: block;
+  content: "";
+  margin: 0.5em 0;
+}
+
+.rich-text-display strong,
+.rich-text-display b {
+  font-weight: 700;
+  color: white !important;
+  letter-spacing: 0.01em;
+}
+
+.rich-text-display em,
+.rich-text-display i {
+  font-style: italic;
+  color: white !important;
+}
+
+.rich-text-display u {
+  text-decoration: underline;
+  color: white !important;
+}
+
+.rich-text-display s,
+.rich-text-display strike {
+  text-decoration: line-through;
+  color: white !important;
+}
+
+/* Text alignment */
+.rich-text-display .text-left {
+  text-align: left;
+}
+
+.rich-text-display .text-center {
+  text-align: center;
+}
+
+.rich-text-display .text-right {
+  text-align: right;
+}
+
+/* Lists */
+.rich-text-display ul {
+  list-style-type: disc;
+  margin: 1em 0;
+  padding-left: 2em;
+}
+
+.rich-text-display ol {
+  list-style-type: decimal;
+  margin: 1em 0;
+  padding-left: 2em;
+}
+
+.rich-text-display li {
+  margin: 0.5em 0;
+  line-height: 1.8;
+  color: white !important;
+}
+
+/* Spacing between paragraphs */
+.rich-text-display p + p {
+  margin-top: 1.25em;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .rich-text-display {
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+  
+  .rich-text-display ul,
+  .rich-text-display ol {
+    padding-left: 1.5em;
+  }
 }

@@ -18,7 +18,7 @@ import { useGetUserId } from "@/lib/features/useGetUserId";
 /* Constants & Components */
 import { priceOption } from "@/lib/constants/priceOptions";
 import InputText from "@/components/UploadForm/InputText";
-import InputTextArea from "@/components/UploadForm/InputTextArea";
+import RichTextEditor from '@/components/RichTextEditor/page';
 import InputSelect from "@/components/UploadForm/InputSelect";
 import InputFileDoc from "@/components/UploadForm/InputFileDoc"
 import InputImageBanner from "@/components/UploadForm/InputImageBanner";
@@ -122,13 +122,20 @@ export default function UploadEbookEpisodeForm() {
                     error={errors.title?.message}
                 />
 
-                {/* Deskripsi */}
-                <InputTextArea
-                    label="Deskripsi"
+                {/* Deskripsi - CHANGED TO RICH TEXT EDITOR */}
+                <Controller
                     name="description"
-                    placeholder="Deskripsi"
-                    {...register("description")}
-                    error={errors.description?.message}
+                    control={control}
+                    render={({ field, fieldState }) => (
+                        <RichTextEditor
+                            label="Deskripsi"
+                            name="description"
+                            placeholder="Deskripsi episode"
+                            value={field.value}
+                            onChange={field.onChange}
+                            error={fieldState.error?.message}
+                        />
+                    )}
                 />
 
                 {/* Cover Episode */}
@@ -139,7 +146,7 @@ export default function UploadEbookEpisodeForm() {
                         <InputImageBanner
                             type="thumbnail"
                             label="Cover Episode"
-                            description="Rasio: 1:1, Format: JPG/PNG, Ukuran Maksimal: 500 KB. Unggah sampul khusus untuk bab ini."
+                            description="Rasio: 1:1, Format: JPG/PNG, Ukuran Maksimal: 500 KB. Unggah sampul khusus untuk bab ini."
                             name="episodeCover"
                             icon={IconsGalery}
                             files={field.value}
@@ -224,12 +231,19 @@ export default function UploadEbookEpisodeForm() {
                 />
 
                 {/* Catatan Episode */}
-                <InputTextArea
-                    label="Catatan Kreator"
+                <Controller
                     name="notedEpisode"
-                    placeholder="Tulis catatan kreator"
-                    {...register("notedEpisode")}
-                    error={errors.notedEpisode?.message}
+                    control={control}
+                    render={({ field, fieldState }) => (
+                        <RichTextEditor
+                            label="Catatan Kreator"
+                            name="notedEpisode"
+                            placeholder="Tulis catatan kreator"
+                            value={field.value}
+                            onChange={field.onChange}
+                            error={fieldState.error?.message}
+                        />
+                    )}
                 />
 
                 {/* Harga */}

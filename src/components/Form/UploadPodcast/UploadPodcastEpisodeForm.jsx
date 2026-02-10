@@ -29,6 +29,7 @@ import ButtonSubmit from '@/components/UploadForm/ButtonSubmit';
 import TermsCheckbox from '@/components/UploadForm/TermsCheckbox';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import InputCreatorCollab from '@/components/UploadForm/InputCreatorCollab';
+import RichTextEditor from '@/components/RichTextEditor/page';
 
 /* Assets */
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
@@ -87,7 +88,7 @@ export default function UploadPodcastEpisodeForm() {
 
         try {
             await createEpisode(formData).unwrap();
-            if(fromEducation) {
+            if (fromEducation) {
                 router.push(`/education/detail/${fromEducation}`);
                 return;
             }
@@ -128,12 +129,19 @@ export default function UploadPodcastEpisodeForm() {
                 />
 
                 {/* Deskripsi */}
-                <InputTextArea
-                    label="Show Notes (Deskripsi Lengkap Episode)"
+                <Controller
                     name="description"
-                    placeholder="Tulis ringkasan padat, poin-poin pembahasan (timestamps), nama narasumber/tamu, dan tautan relevan."
-                    {...register("description")}
-                    error={errors.description?.message}
+                    control={control}
+                    render={({ field, fieldState }) => (
+                        <RichTextEditor
+                            label="Show Notes (Deskripsi Lengkap Episode)"
+                            name="description"
+                            placeholder="Tulis ringkasan padat, poin-poin pembahasan (timestamps), nama narasumber/tamu, dan tautan relevan."
+                            value={field.value}
+                            onChange={field.onChange}
+                            error={fieldState.error?.message}
+                        />
+                    )}
                 />
 
                 {/* Cover Episode */}

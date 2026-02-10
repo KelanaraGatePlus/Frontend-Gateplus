@@ -23,10 +23,13 @@ import { useSaveContent } from '@/lib/features/useSaveContent';
 import CarouselTemplate from '@/components/Carousel/carouselTemplate';
 import Link from 'next/link';
 import { DEFAULT_AVATAR } from '@/lib/defaults';
+import { useGetUserId } from '@/lib/features/useGetUserId';
+import LoadingOverlay from '@/components/LoadingOverlay/page';
 
 function DetailSeriesPage({ params }) {
     const { id } = params;
-    const { data } = useGetSeriesByIdQuery({ id, withEpisodes: false });
+    const userId = useGetUserId();
+    const { data, isLoading } = useGetSeriesByIdQuery({ id, withEpisodes: false });
     const [loading, setLoading] = useState(false);
     // // const [selectedContentId, setSelectedContentId] = useState(null);
     // const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
@@ -162,6 +165,12 @@ function DetailSeriesPage({ params }) {
         });
     };
 
+    if (isLoading) {
+        return (
+            <LoadingOverlay />
+        )
+    }
+
     return (
         <div>
             <section className="flex justify-center rounded-md relative">
@@ -189,7 +198,7 @@ function DetailSeriesPage({ params }) {
                                 {seriesData?.title || "Judul Series Tidak Tersedia"}
                             </h1>
                             <p className=" text-sm/normal">
-                                {seriesData?.ageRestriction} | {seriesData?.categories?.tittle}
+                                {seriesData?.ageRestriction} | {seriesData?.categories?.map(cat => cat.category.tittle || cat.category.title).join(', ') || seriesData?.categories?.tittle || seriesData?.categories?.title}
                             </p>
                         </div>
                         <div className="flex flex-row gap-6">
@@ -198,66 +207,68 @@ function DetailSeriesPage({ params }) {
                                     {seriesData?.isOwner ? "Series ini adalah karya mu" : !seriesData?.canSubscribe ? 'Buy Episode To Watch' : seriesData?.isSubscribed ? "Watch" : "Subscribe"}
                                 </button>
                             </div>
-                            <div onClick={handleToggleLike} className="flex items-center justify-center transition delay-150 duration-400 ease-linear hover:-translate-y-1 hover:scale-x-110 hover:scale-y-110 cursor-pointer">
-                                {isLiked ? (
-                                    <Image
-                                        priority
-                                        className="focus-within:bg-purple-300"
-                                        width={35}
-                                        alt="icon-like-solid"
-                                        src={iconLikeSolid}
-                                    />
-                                ) : (
-                                    <Image
-                                        priority
-                                        className="focus-within:bg-purple-300"
-                                        width={35}
-                                        alt="icon-like-outline"
-                                        src={logoLike}
-                                    />
-                                )}
-                                <p className="montserratFont mt-1 text-base font-bold pl-2">
-                                    {totalLike}
-                                </p>
+                            <div className="flex items-center justify-center w-max gap-2">
+                                {userId && <div onClick={handleToggleLike} className="flex items-center justify-center transition delay-150 duration-400 ease-linear hover:-translate-y-1 hover:scale-x-110 hover:scale-y-110 cursor-pointer">
+                                    {isLiked ? (
+                                        <Image
+                                            priority
+                                            className="focus-within:bg-purple-300"
+                                            width={35}
+                                            alt="icon-like-solid"
+                                            src={iconLikeSolid}
+                                        />
+                                    ) : (
+                                        <Image
+                                            priority
+                                            className="focus-within:bg-purple-300"
+                                            width={35}
+                                            alt="icon-like-outline"
+                                            src={logoLike}
+                                        />
+                                    )}
+                                    <p className="montserratFont mt-1 text-base font-bold pl-2">
+                                        {totalLike}
+                                    </p>
+                                </div>}
+                                {/* Tombol Dislike */}
+                                {userId && <div onClick={handleToggleDislike} className="flex items-center justify-center cursor-pointer">
+                                    {isDisliked ? (
+                                        <Image
+                                            priority
+                                            className="focus-within:bg-purple-300"
+                                            width={35}
+                                            alt="icon-like-solid"
+                                            src={iconDislikeSolid}
+                                        />
+                                    ) : (
+                                        <Image
+                                            priority
+                                            className="focus-within:bg-purple-300"
+                                            width={35}
+                                            alt="icon-like-outline"
+                                            src={logoDislike}
+                                        />
+                                    )}
+                                </div>}
+                                {userId && <div onClick={handleToggleSave} className="flex items-center justify-center cursor-pointer">
+                                    {isSaved ? (
+                                        <Image
+                                            priority
+                                            width={35}
+                                            alt="icon-saved-solid"
+                                            src={iconSaveSolid}
+                                        />
+                                    ) : (
+                                        <Image
+                                            priority
+                                            width={35}
+                                            alt="logo-save"
+                                            src={logoSave}
+                                        />
+                                    )}
+                                </div>}
+                                <DefaultShareButton contentType={'SERIES'} />
                             </div>
-                            {/* Tombol Dislike */}
-                            <div onClick={handleToggleDislike} className="flex items-center justify-center cursor-pointer">
-                                {isDisliked ? (
-                                    <Image
-                                        priority
-                                        className="focus-within:bg-purple-300"
-                                        width={35}
-                                        alt="icon-like-solid"
-                                        src={iconDislikeSolid}
-                                    />
-                                ) : (
-                                    <Image
-                                        priority
-                                        className="focus-within:bg-purple-300"
-                                        width={35}
-                                        alt="icon-like-outline"
-                                        src={logoDislike}
-                                    />
-                                )}
-                            </div>
-                            <div onClick={handleToggleSave} className="flex items-center justify-center cursor-pointer">
-                                {isSaved ? (
-                                    <Image
-                                        priority
-                                        width={35}
-                                        alt="icon-saved-solid"
-                                        src={iconSaveSolid}
-                                    />
-                                ) : (
-                                    <Image
-                                        priority
-                                        width={35}
-                                        alt="logo-save"
-                                        src={logoSave}
-                                    />
-                                )}
-                            </div>
-                            <DefaultShareButton contentType={'SERIES'} />
                         </div>
                     </div>
                     <div className="flex flex-row items-center md:justify-end w-full md:w-1/2 gap-3">
@@ -290,7 +301,10 @@ function DetailSeriesPage({ params }) {
                     {/* Deskripsi */}
                     <div className="rounded-md bg-[#393939] flex-1">
                         <div className="mx-4 my-4 text-white h-full flex flex-col">
-                            <p>{seriesData?.description}</p>
+                            <div
+                                className="prose prose-invert max-w-none"
+                                dangerouslySetInnerHTML={{ __html: seriesData?.description || "" }}
+                            />
 
                             <div className="mt-10">
                                 <p>Judul: {seriesData.title}</p>

@@ -8,8 +8,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 /*[--- UI COMPONENTS ---]*/
 import InputText from '@/components/UploadForm/InputText';
-import InputTextArea from '@/components/UploadForm/InputTextArea';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+import RichTextEditor from '@/components/RichTextEditor/page';
 
 /*[--- ASSETS PUBLIC ---]*/
 import UploadLargeFile from "@/components/UploadForm/UploadLargeFile";
@@ -27,7 +27,7 @@ const getFileName = (url) => {
 };
 
 export default function EditEducationEpisodeForm({ episodeId, onClose }) {
-    const {data: episodeData} = useGetEducationEpisodeByIdQuery(episodeId);
+    const { data: episodeData } = useGetEducationEpisodeByIdQuery(episodeId);
     const {
         register,
         handleSubmit,
@@ -56,14 +56,14 @@ export default function EditEducationEpisodeForm({ episodeId, onClose }) {
     useEffect(() => {
         if (episodeData?.data) {
             const episode = episodeData.data;
-            
+
             setValue("title", episode.title || "");
             setValue("description", episode.description || "");
             setValue("episodeFileUrl", episode.episodeFileUrl || "");
             setValue("moduleUrl", null);
             setValue("homeWorkUrl", null);
             setValue("duration", episode.duration || 0);
-            
+
             // Store existing URLs separately
             setExistingModuleUrl(episode.moduleUrl || null);
             setExistingHomeWorkUrl(episode.homeWorkUrl || null);
@@ -130,13 +130,21 @@ export default function EditEducationEpisodeForm({ episodeId, onClose }) {
                     />
 
                     {/* Deskripsi */}
-                    <InputTextArea
-                        label="Deskripsi Episode"
+                    <Controller
                         name="description"
-                        placeholder="Jelaskan konten episode ini"
-                        {...register("description")}
-                        error={errors.description?.message}
+                        control={control}
+                        render={({ field, fieldState }) => (
+                            <RichTextEditor
+                                label="Deskripsi Episode"
+                                name="description"
+                                placeholder="Jelaskan konten episode ini"
+                                value={field.value}
+                                onChange={field.onChange}
+                                error={fieldState.error?.message}
+                            />
+                        )}
                     />
+
 
                     {/* Episode Video File */}
                     <Controller

@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import RichTextEditor from '@/components/RichTextEditor/page';
 
 /* Third-Party */
 import { useForm, Controller } from "react-hook-form";
@@ -18,7 +19,6 @@ import { useCreateEpisodeSeriesMutation } from "@/hooks/api/seriesSliceAPI";
 /* Constants & Components */
 import { priceOption } from "@/lib/constants/priceOptions";
 import InputText from "@/components/UploadForm/InputText";
-import InputTextArea from "@/components/UploadForm/InputTextArea";
 import InputSelect from "@/components/UploadForm/InputSelect";
 import InputImageBanner from "@/components/UploadForm/InputImageBanner";
 import PriceSelector from "@/components/UploadForm/PriceSelector";
@@ -117,14 +117,21 @@ export default function UploadSeriesEpisodeForm() {
                     error={errors.title?.message}
                 />
 
-                {/* Deskripsi */}
-                <InputTextArea
-                    label="Sinopsis & Detail Episode Lengkap"
-                    name="description"
-                    placeholder="Jelaskan plot spesifik episode ini, konflik yang terjadi, dan karakter yang terlibat. Jangan gunakan sinopsis umum seri. Mesin pencari membaca teks ini."
-                    {...register("description")}
-                    error={errors.description?.message}
-                />
+{/* Deskripsi */}
+<Controller
+    name="description"
+    control={control}
+    render={({ field, fieldState }) => (
+        <RichTextEditor
+            label="Sinopsis & Detail Episode Lengkap"
+            name="description"
+            placeholder="Jelaskan plot spesifik episode ini, konflik yang terjadi, dan karakter yang terlibat. Jangan gunakan sinopsis umum seri. Mesin pencari membaca teks ini."
+            value={field.value}
+            onChange={field.onChange}
+            error={fieldState.error?.message}
+        />
+    )}
+/>
 
                 {/* Cover Episode */}
                 <Controller

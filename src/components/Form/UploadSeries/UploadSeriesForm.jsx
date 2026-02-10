@@ -1,6 +1,7 @@
 "use client";
 import React, { useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import RichTextEditor from '@/components/RichTextEditor/page';
 
 /*[--- THIRD PARTY LIBRARIES ---]*/
 import { useForm, Controller } from "react-hook-form";
@@ -21,7 +22,6 @@ import InputAgeResctriction from '@/components/UploadForm/InputAgeResctriction';
 import InputImageBanner from '@/components/UploadForm/InputImageBanner';
 import InputSelect from '@/components/UploadForm/InputSelect';
 import InputText from '@/components/UploadForm/InputText';
-import InputTextArea from '@/components/UploadForm/InputTextArea';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 /*[--- ASSETS PUBLIC ---]*/
@@ -129,13 +129,19 @@ export default function UploadSeriesForm() {
                         error={errors.title?.message}
                     />
 
-                    {/* Deskripsi */}
-                    <InputTextArea
-                        label="Sinopsis Lengkap Seri"
+                    <Controller
                         name="description"
-                        placeholder="Jelaskan premis utama dunia cerita, konflik sentral, karakter utama, dan tema yang diangkat. Mesin pencari menggunakan teks ini untuk mempertemukan karyamu dengan pembaca yang tepat."
-                        {...register("description")}
-                        error={errors.description?.message}
+                        control={control}
+                        render={({ field, fieldState }) => (
+                            <RichTextEditor
+                                label="Sinopsis Lengkap Seri"
+                                name="description"
+                                placeholder="Jelaskan premis utama dunia cerita, konflik sentral, karakter utama, dan tema yang diangkat. Mesin pencari menggunakan teks ini untuk mempertemukan karyamu dengan pembaca yang tepat."
+                                value={field.value}
+                                onChange={field.onChange}
+                                error={fieldState.error?.message}
+                            />
+                        )}
                     />
 
                     {/* Genre */}

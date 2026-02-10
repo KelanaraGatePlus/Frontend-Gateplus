@@ -21,6 +21,9 @@ import Link from "next/link";
 import PreviewContentHeader from "@/components/Header/PreviewContentHeader";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import { Icon } from "@iconify/react";
+import RichTextDisplay from '@/components/RichTextDisplay/page';
+import { ListVideo } from "lucide-react";
+
 
 export default function DashboardContentPage() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -32,18 +35,27 @@ export default function DashboardContentPage() {
     const [isWarningModalOpen, setIsWarningModalOpen] = useState(false);
     const [warningMessage, setWarningMessage] = useState('');
     const [warningContentType, setWarningContentType] = useState(null);
-    
+
     const [deleteEbook, { isLoading: isDeletingEbook }] = useDeleteEbookMutation();
     const [deleteComic, { isLoading: isDeletingComic }] = useDeleteComicMutation();
     const [deletePodcast, { isLoading: isDeletingPodcast }] = useDeletePodcastMutation();
     const [deleteSeries, { isLoading: isDeletingSeries }] = useDeleteSeriesMutation();
     const [deleteMovie, { isLoading: isDeletingMovie }] = useDeleteMovieMutation();
-    
+
     const [changeEbookVisibility, { isLoading: isChangingEbookVisibility }] = useChangeEbookVisibility();
     const [changeComicVisibility, { isLoading: isChangingComicVisibility }] = useChangeComicVisibility();
     const [changePodcastVisibility, { isLoading: isChangingPodcastVisibility }] = useChangePodcastVisibility();
     const [changeSeriesVisibility, { isLoading: isChangingSeriesVisibility }] = useChangeSeriesVisibility();
     const [changeMovieVisibility, { isLoading: isChangingMovieVisibility }] = useChangeMovieVisibility();
+    const episodeRouteMap = {
+        series: "series",
+        podcast: "podcast",
+        podcasts: "podcast",
+        ebook: "ebooks",
+        ebooks: "ebooks",
+        comic: "comics",
+        comics: "comics",
+    };
 
     // Analytics hooks - conditionally enabled based on detailTarget
     const { data: ebookAnalytics, isLoading: isLoadingEbookAnalytics } = useGetEbookPerContentAnalyticsQuery(
@@ -309,7 +321,7 @@ export default function DashboardContentPage() {
                             contentData ? contentData.data?.[dataType]?.map(item => ({
                                 title: item.title,
                                 posterImageUrl: item.posterImageUrl || item.coverPodcastImage,
-                                description: item.description,
+                                description: <RichTextDisplay content={item.description} className="line-clamp-2" />,
                                 visibility: item.isPrivate == true ? 'Private' : 'Publik',
                                 restriction: item.ageRestriction,
                                 releaseDate: item.createdAt,
@@ -344,6 +356,23 @@ export default function DashboardContentPage() {
                                                     text-sm
                                                 "
                                             >
+                                                {(item.contentType !== 'movie' && item.contentType !== 'movies' && item.type !== 'movie' && item.type !== 'movies') && (
+                                                    <DropdownItem
+                                                        key="episodes"
+                                                        onClick={() => {
+                                                            const type = item.contentType || item.type;
+                                                            const baseRoute = episodeRouteMap[type];
+
+                                                            if (!baseRoute) return;
+
+                                                            window.location.href = `/creator/${baseRoute}/${item._id || item.id}/episodes`;
+                                                        }}
+                                                        className="hover:bg-[#4a4a4a] rounded-sm px-2 flex items-center"
+                                                    >
+                                                        <ListVideo size={16} className="inline-block mr-2" />
+                                                        Lihat Episode
+                                                    </DropdownItem>
+                                                )}
                                                 <DropdownItem
                                                     onClick={() => {
                                                         window.location.href = `/${contentTypeSingle[item.contentType || item.type]?.pluralName}/edit/${item._id || item.id}`;

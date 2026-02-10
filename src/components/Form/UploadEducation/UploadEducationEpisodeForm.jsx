@@ -12,6 +12,7 @@ import ButtonSubmit from '@/components/UploadForm/ButtonSubmit';
 import InputText from '@/components/UploadForm/InputText';
 import InputTextArea from '@/components/UploadForm/InputTextArea';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+import RichTextEditor from '@/components/RichTextEditor/page';
 
 /*[--- ASSETS PUBLIC ---]*/
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
@@ -120,12 +121,19 @@ export default function UploadEducationEpisodeForm({ educationId }) {
                     />
 
                     {/* Deskripsi */}
-                    <InputTextArea
-                        label="Deskripsi Episode"
+                    <Controller
                         name="description"
-                        placeholder="Jelaskan premis utama dunia cerita, konflik sentral, karakter utama, dan tema yang diangkat. Mesin pencari menggunakan teks ini untuk mempertemukan karyamu dengan pembaca yang tepat."
-                        {...register("description")}
-                        error={errors.description?.message}
+                        control={control}
+                        render={({ field, fieldState }) => (
+                            <RichTextEditor
+                                label="Deskripsi Episode"
+                                name="description"
+                                placeholder="Jelaskan premis utama dunia cerita, konflik sentral, karakter utama, dan tema yang diangkat. Mesin pencari menggunakan teks ini untuk mempertemukan karyamu dengan pembaca yang tepat."
+                                value={field.value}
+                                onChange={field.onChange}
+                                error={fieldState.error?.message}
+                            />
+                        )}
                     />
 
                     {/* Trailer URL (muncul setelah movie ada) */}

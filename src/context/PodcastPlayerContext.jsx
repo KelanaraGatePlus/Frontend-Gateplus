@@ -1,5 +1,7 @@
 "use client";
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState, Suspense } from "react";
+import { usePathname } from "next/navigation";
+import routeWithoutPodcastMiniPlayer from "@/lib/constants/routeWithoutPodcastMiniPlayer";
 import PropTypes from "prop-types";
 import PodcastPlayback from "@/components/PodcastPlayer/PodcastPlayback";
 import PodcastMiniPlayer from "@/components/PodcastPlayer/PodcastMiniPlayer";
@@ -32,6 +34,7 @@ function saveState(state) {
 }
 
 export function PodcastPlayerProvider({ children, disablePlayer = false }) {
+    const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
     const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
     const [podcastMeta, setPodcastMeta] = useState(null);
@@ -108,7 +111,7 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
         setIsOpen(true);
 
         // attempt to auto-play after switching episode (skip if player disabled)
-        if (!disablePlayer) {
+        if (!disablePlayer && !disablePlayerOnRoute) {
             setTimeout(() => {
                 try {
                     play();
@@ -167,6 +170,24 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
         } catch (err) {
             console.warn("Failed to pause audio", err);
         }
+    };
+
+    const stopPlayback = () => {
+        try {
+            const audio = audioRef.current?.audio?.current;
+            if (audio) {
+                audio.pause();
+                // Clear the audio source to prevent background playback
+                audio.src = "";
+                // Reset playback position
+                audio.currentTime = 0;
+            }
+        } catch (err) {
+            console.warn("Failed to stop audio", err);
+        }
+        setIsPlaying(false);
+        setIsOpen(false);
+        setCurrentlyPlaying(null);
     };
 
     const togglePlay = () => {
@@ -239,6 +260,26 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
         if (audio) audio.playbackRate = speed;
     }, [speed]);
 
+    // Decide whether mini player should be hidden on current route
+    const hideMiniPlayerOnRoute = useMemo(() => {
+        const patterns = routeWithoutPodcastMiniPlayer || [];
+        return Array.isArray(patterns) && patterns.some((re) => re.test(pathname || ""));
+    }, [pathname]);
+
+    // Fully disable player (and pause audio) on the same routes
+    const disablePlayerOnRoute = hideMiniPlayerOnRoute;
+
+    useEffect(() => {
+        if (disablePlayerOnRoute) {
+            try {
+                pause();
+            } catch {
+                console.error("Failed to pause playback properly");
+            }
+            setIsOpen(false);
+        }
+    }, [disablePlayerOnRoute]);
+
     const value = useMemo(
         () => ({
             isOpen,
@@ -269,6 +310,7 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
             speed,
             bounceSpeed,
             setPlaybackSpeed,
+            stopPlayback,
             speedOptions: SPEED_OPTIONS,
         }),
         [
@@ -293,7 +335,7 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
         <PodcastPlayerContext.Provider value={value}>
             {children}
             {/* Mount playback UI only when player is not disabled */}
-            {!disablePlayer && (
+            {!disablePlayer && !disablePlayerOnRoute && (
                 <>
                     <div className={`${isDetailPage || isExpand ? "" : "hidden"}`}>
                         <Suspense fallback={null}>
@@ -309,7 +351,7 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
                     </div>
 
                     {/* Render mini player on non-detail pages */}
-                    {!isDetailPage && !isExpand && (
+                    {!isDetailPage && !isExpand && !hideMiniPlayerOnRoute && (
                         <PodcastMiniPlayer
                             currentlyPlaying={currentlyPlaying}
                             podcastMeta={podcastMeta}

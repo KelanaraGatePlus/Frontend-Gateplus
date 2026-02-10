@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import PropTypes from "prop-types";
+import RichTextDisplay from '@/components/RichTextDisplay/page';
 
 /*[--- UTILITY IMPORT ---]*/
 import { useLikeContent } from "@/lib/features/useLikeContent";
@@ -25,6 +26,7 @@ import iconSaveOutline from "@@/logo/logoDetailFilm/save-icons.svg";
 import iconSaveSolid from "@@/logo/logoDetailFilm/saved-icons.svg";
 import DefaultShareButton from "../ShareButton/DefaultShareButton";
 import CreatorCard from "./CreatorCard";
+import { useGetUserId } from "@/lib/features/useGetUserId";
 
 export default function ProductDetailSection({
   productType,
@@ -55,6 +57,7 @@ export default function ProductDetailSection({
   isSubscribe = false,
   isOwner = false,
 }) {
+  const userId = useGetUserId();
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [isLiked, setIsLiked] = useState(productIsLiked);
   const [isDisliked, setIsDisliked] = useState(productIsDisliked);
@@ -258,7 +261,7 @@ export default function ProductDetailSection({
                     </Link>
                   ) : null}
                 </div>
-                <div
+                {userId && <div
                   className={`flex cursor-pointer items-center justify-center gap-1 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 ${isLiked ? "animate-like" : ""}`}
                   onClick={handleToggleLike}
                 >
@@ -282,8 +285,8 @@ export default function ProductDetailSection({
                   <p className="montserratFont mt-1 text-base font-bold">
                     {totalLike}
                   </p>
-                </div>
-                <div
+                </div>}
+                {userId && <div
                   className={`flex cursor-pointer items-center justify-center gap-1 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 ${isDisliked ? "animate-like" : ""}`}
                   onClick={handleToggleDislike}
                 >{isDisliked ? (
@@ -303,8 +306,8 @@ export default function ProductDetailSection({
                     src={iconDislike}
                   />
                 )}
-                </div>
-                <div
+                </div>}
+                {userId && <div
                   className={`flex cursor-pointer items-center justify-center transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 ${isSaved ? "animate-like" : ""}`}
                   onClick={handleToggleSave}
                 >
@@ -323,12 +326,13 @@ export default function ProductDetailSection({
                       src={iconSaveOutline}
                     />
                   )}
-                </div>
+                </div>}
                 <DefaultShareButton contentType={productType.toUpperCase()} />
               </div>
 
               {/* uploader */}
               <CreatorCard
+                isLogin={userId ? true : false}
                 productType={productType}
                 creatorDetail={creatorDetail}
                 initialIsSubscribed={creatorIsSubscribed}
@@ -341,7 +345,7 @@ export default function ProductDetailSection({
 
             {/* description */}
             <div className="flex w-full max-w-full flex-col gap-6 rounded-lg bg-[#393939] p-2 text-base font-normal">
-              <p>{productDescription}</p>
+              <RichTextDisplay content={productDescription} />
               <p>
                 Judul : {productTitle} <br />
                 Penulis Cerita : {creatorDetail?.profileName} <br />

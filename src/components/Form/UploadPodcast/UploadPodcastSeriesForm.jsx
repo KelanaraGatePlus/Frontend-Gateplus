@@ -22,8 +22,8 @@ import InputAgeResctriction from '@/components/UploadForm/InputAgeResctriction';
 import InputImageBanner from '@/components/UploadForm/InputImageBanner';
 import InputSelect from '@/components/UploadForm/InputSelect';
 import InputText from '@/components/UploadForm/InputText';
-import InputTextArea from '@/components/UploadForm/InputTextArea';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+import RichTextEditor from '@/components/RichTextEditor/page';
 
 /*[--- ASSETS PUBLIC ---]*/
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
@@ -94,12 +94,19 @@ export default function UploadPodcastSeriesForm() {
                     />
 
                     {/* Deskripsi */}
-                    <InputTextArea
-                        label="Sinopsis Lengkap Podcast"
+                    <Controller
                         name="description"
-                        placeholder="Jelaskan topik utama, format acara, dan siapa target pendengar Anda agar mudah ditemukan."
-                        {...register("description")}
-                        error={errors.description?.message}
+                        control={control}
+                        render={({ field, fieldState }) => (
+                            <RichTextEditor
+                                label="Sinopsis Lengkap Podcast"
+                                name="description"
+                                placeholder="Jelaskan topik utama, format acara, dan siapa target pendengar Anda agar mudah ditemukan."
+                                value={field.value}
+                                onChange={field.onChange}
+                                error={fieldState.error?.message}
+                            />
+                        )}
                     />
 
                     {/* Genre */}

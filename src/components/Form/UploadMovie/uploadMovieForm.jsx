@@ -1,6 +1,7 @@
 "use client";
 import React, { useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import RichTextEditor from '@/components/RichTextEditor/page';
 
 /*[--- THIRD PARTY LIBRARIES ---]*/
 import { useForm, Controller } from "react-hook-form";
@@ -22,7 +23,6 @@ import InputImageBanner from '@/components/UploadForm/InputImageBanner';
 import GenreMultiSelect from '@/components/UploadForm/GenreMultiSelect';
 import InputSelect from '@/components/UploadForm/InputSelect';
 import InputText from '@/components/UploadForm/InputText';
-import InputTextArea from '@/components/UploadForm/InputTextArea';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 /*[--- ASSETS PUBLIC ---]*/
@@ -133,16 +133,20 @@ export default function UploadMovieForm() {
                         {...register("title")}
                         error={errors.title?.message}
                     />
-
-                    {/* Deskripsi */}
-                    <InputTextArea
-                        label="Deskripsi"
+                    <Controller
                         name="description"
-                        placeholder="Sinopsis & Detail Video Lengkap"
-                        {...register("description")}
-                        error={errors.description?.message}
+                        control={control}
+                        render={({ field, fieldState }) => (
+                            <RichTextEditor
+                                label="Deskripsi"
+                                name="description"
+                                placeholder="Jelaskan premis utama film, konflik sentral, karakter utama, dan tema yang diangkat. Mesin pencari menggunakan teks ini untuk mempertemukan karyamu dengan penonton yang tepat."
+                                value={field.value}
+                                onChange={field.onChange}
+                                error={fieldState.error?.message}
+                            />
+                        )}
                     />
-
                     {/* Genre */}
                     <Controller
                         name="genre"
