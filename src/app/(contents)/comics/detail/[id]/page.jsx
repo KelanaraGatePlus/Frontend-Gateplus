@@ -5,6 +5,10 @@ import PropTypes from "prop-types";
 
 /*[--- API HOOKS ---]*/
 import { useGetComicByIdQuery } from "@/hooks/api/comicSliceAPI";
+import CompleteProfileModal from "@/components/Modal/CompleteProfileModal";
+import UnderAgeModal from "@/components/Modal/UnderAgeModal";
+import useSyncUserData from "@/hooks/api/useSyncUserData";
+import getMinAge from "@/lib/helper/minAge";
 
 /*[--- UI COMPONENTS ---]*/
 import MainTemplateLayout from "@/components/MainDetailProduct/page";
@@ -48,7 +52,7 @@ export default function DetailComicPage({ params }) {
   useEffect(() => {
     createLog({
       contentType: "COMIC",
-      logType: "CLICK",        // atau WATCH_TRAILER / WATCH_CONTENT sesuai kebutuhan
+      logType: "CLICK", // atau WATCH_TRAILER / WATCH_CONTENT sesuai kebutuhan
       contentId: id,
     });
   }, [id, createLog]);
@@ -56,9 +60,18 @@ export default function DetailComicPage({ params }) {
   const skip = !id;
   const { data, isLoading } = useGetComicByIdQuery({ id }, { skip });
   const comicData = data?.data || {};
-  const episode_comics = (comicData?.episode_comics?.episodes || []).slice().sort((a, b) => {
-    return new Date(a.createdAt) - new Date(b.createdAt);
-  });
+  const {
+    showCompleteProfileModal,
+    showUnderAgeModal,
+    goToProfile,
+    continueDespiteUnderAge,
+  } = useSyncUserData(comicData?.ageRestriction);
+
+  const episode_comics = (comicData?.episode_comics?.episodes || [])
+    .slice()
+    .sort((a, b) => {
+      return new Date(a.createdAt) - new Date(b.createdAt);
+    });
   const topContent = data?.topContent || [];
   const recommendedContent = data?.recommendation || [];
 
@@ -75,6 +88,7 @@ export default function DetailComicPage({ params }) {
           topContentData={topContent}
           recomendationData={recommendedContent}
         />
+
         {/* <SimpleModal
           title={"Konten ini masih terkunci, apakah kamu bersedia membeli nya dengan harga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
           isOpen={isModalOpen}
@@ -88,6 +102,22 @@ export default function DetailComicPage({ params }) {
           onConfirm={handleSubscribe}
         /> */}
         {loading && <LoadingOverlay />}
+        {showCompleteProfileModal && (
+          <CompleteProfileModal
+            onConfirm={goToProfile}
+            title={comicData?.title}
+            minAge={getMinAge(comicData?.ageRestriction)}
+          />
+        )}
+
+        {showUnderAgeModal && (
+          <UnderAgeModal
+            open={showUnderAgeModal}
+            ageRestriction={comicData?.ageRestriction}
+            title={comicData?.title}
+            onContinue={continueDespiteUnderAge}
+          />
+        )}
       </div>
     )
   );
@@ -95,4 +125,4 @@ export default function DetailComicPage({ params }) {
 
 DetailComicPage.propTypes = {
   params: PropTypes.string,
-}
+};

@@ -8,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 /*[--- UI COMPONENTS ---]*/
 import InputText from '@/components/UploadForm/InputText';
-import InputTextArea from '@/components/UploadForm/InputTextArea';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import RichTextEditor from '@/components/RichTextEditor/page';
 

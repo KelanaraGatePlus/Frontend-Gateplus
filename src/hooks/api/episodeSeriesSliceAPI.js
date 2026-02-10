@@ -1,9 +1,10 @@
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const episodeSeriesSliceAPI = createApi({
     reducerPath: "episodeSeriesSliceAPI",
     baseQuery: fetchBaseQuery({
-        baseUrl: process.env.NEXT_PUBLIC_BACKEND_URL,
+        baseUrl: BACKEND_URL,
         prepareHeaders: (headers) => {
             const token = localStorage.getItem("token");
             if (token) {
@@ -17,11 +18,11 @@ export const episodeSeriesSliceAPI = createApi({
     refetchOnMountOrArgChange: 30, // Hanya refetch jika data > 30 detik
     refetchOnFocus: false, // JANGAN refetch saat focus window
     refetchOnReconnect: false, // JANGAN refetch saat reconnect
-    
+
     tagTypes: ["EpisodeSeries"],
     endpoints: (builder) => ({
         getEpisodesBySeriesId: builder.query({
-            query: ({ seriesId, page = 1, limit = 10, paginate = true }) => 
+            query: ({ seriesId, page = 1, limit = 10, paginate = true }) =>
                 `/episodeSeries/series/${seriesId}?page=${page}&limit=${limit}&paginate=${paginate}`,
             providesTags: (result, error, { seriesId }) => [
                 { type: "EpisodeSeries", id: seriesId },

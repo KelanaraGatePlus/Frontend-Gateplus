@@ -22,7 +22,6 @@ import ButtonSubmit from "@/components/UploadForm/ButtonSubmit";
 import InputImageBanner from "@/components/UploadForm/InputImageBanner";
 import InputSelect from "@/components/UploadForm/InputSelect";
 import InputText from "@/components/UploadForm/InputText";
-import InputTextArea from "@/components/UploadForm/InputTextArea";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 /*[--- ASSETS PUBLIC ---]*/

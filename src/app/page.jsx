@@ -1,6 +1,7 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
-import { useEffect, useRef, useState } from "react";
+
+import { useEffect, useRef, useState, useCallback } from "react"; // Tambah useCallback
 import dynamic from "next/dynamic";
 import SliderBannerPage from "@/components/BannerPromoSlider/page";
 import CategoryMenu from "@/components/CategoryMenu/page";
@@ -9,32 +10,40 @@ import CarouselHighlight from "@/components/Carousel/CarouselHome/carouselHighli
 import CarouselTopTen from "@/components/Carousel/CarouselHome/carouselTopTen";
 import "@splidejs/react-splide/css";
 import CarouselLoading from "@/components/Carousel/CarouselLoading";
+import getMinAge from "@/lib/helper/minAge";
+import useSyncUserData from "@/hooks/api/useSyncUserData";
 
-// Dynamic imports
-const CarouselLastSeen = dynamic(() => import("@/components/Carousel/CarouselHome/carouselLastSeen"), {
-  ssr: false,
-});
-const CarouselRecommendations = dynamic(() => import("@/components/Carousel/CarouselHome/carouselRecommendation"), {
-  ssr: false,
-});
-const CarouselPopularEbooks = dynamic(() => import("@/components/Carousel/CarouselHome/carouselPopularEbooks"), {
-  ssr: false,
-});
-const CarouselPopularComics = dynamic(() => import("@/components/Carousel/CarouselHome/carouselPopularComics"), {
-  ssr: false,
-});
-const CarouselPopularPodcasts = dynamic(() => import("@/components/Carousel/CarouselHome/carouselPopularPodcasts"), {
-  ssr: false,
-});
-const CarouselPopularMovies = dynamic(() => import("@/components/Carousel/CarouselHome/carouselPopularMovie"), {
-  ssr: false,
-});
-const CarouselPopularSeries = dynamic(() => import("@/components/Carousel/CarouselHome/carouselPopularSeries"), {
-  ssr: false,
-});
+// Dynamic imports tetap sama...
+const CarouselLastSeen = dynamic(
+  () => import("@/components/Carousel/CarouselHome/carouselLastSeen"),
+  { ssr: false },
+);
+const CarouselRecommendations = dynamic(
+  () => import("@/components/Carousel/CarouselHome/carouselRecommendation"),
+  { ssr: false },
+);
+const CarouselPopularEbooks = dynamic(
+  () => import("@/components/Carousel/CarouselHome/carouselPopularEbooks"),
+  { ssr: false },
+);
+const CarouselPopularComics = dynamic(
+  () => import("@/components/Carousel/CarouselHome/carouselPopularComics"),
+  { ssr: false },
+);
+const CarouselPopularPodcasts = dynamic(
+  () => import("@/components/Carousel/CarouselHome/carouselPopularPodcasts"),
+  { ssr: false },
+);
+const CarouselPopularMovies = dynamic(
+  () => import("@/components/Carousel/CarouselHome/carouselPopularMovie"),
+  { ssr: false },
+);
+const CarouselPopularSeries = dynamic(
+  () => import("@/components/Carousel/CarouselHome/carouselPopularSeries"),
+  { ssr: false },
+);
 
 export default function HomePage() {
-  // Group the remaining carousels into pairs (or single last group)
   const groups = [
     [CarouselLastSeen, CarouselRecommendations],
     [CarouselPopularEbooks, CarouselPopularComics],
@@ -43,12 +52,16 @@ export default function HomePage() {
   ];
 
   const groupCount = groups.length;
-  const [loadedGroups, setLoadedGroups] = useState(() => Array(groupCount).fill(false));
+  const [loadedGroups, setLoadedGroups] = useState(() =>
+    Array(groupCount).fill(false),
+  );
   const refs = useRef([]);
+  const [banners, setBanners] = useState([]);
+  const { userAge, isReady } = useSyncUserData();
 
+  // Intersection observer tetap sama...
   useEffect(() => {
     if (typeof window === "undefined") return;
-
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -64,50 +77,65 @@ export default function HomePage() {
           }
         });
       },
-      {
-        root: null,
-        rootMargin: "0px 0px -40% 0px", // Trigger lebih awal dari bawah layar
-        threshold: 0.1, // 10% elemen harus terlihat
-      }
+      { root: null, rootMargin: "0px 0px -40% 0px", threshold: 0.1 },
     );
-
-    refs.current.forEach((el) => {
-      if (el) observer.observe(el);
-    });
-
+    refs.current.forEach((el) => el && observer.observe(el));
     return () => observer.disconnect();
   }, [groupCount]);
 
-  // {useEffect(() => {
-  //   // blok klik kanan
-  //   document.addEventListener("contextmenu", (e) => e.preventDefault());
+  const isBlurred = useCallback(
+    (content) => {
+      if (!isReady) return true;
 
-  //   // blok CTRL+C, CTRL+U, CTRL+S
-  //   document.addEventListener("keydown", (e) => {
-  //     if (e.ctrlKey && ["c", "u", "s",].includes(e.key.toLowerCase())) {
-  //       e.preventDefault();
-  //     }
-  //   });
-  // }, []);}
+      const minAge = getMinAge(content?.ageRestriction);
+
+      // SU / R13 → tidak diblur
+      if (minAge === null) return false;
+
+      // belum login / belum isi DOB
+      if (userAge == null) return true;
+
+      return userAge < minAge;
+    },
+    [userAge, isReady],
+  );
+
+  // Fetch Banners
+  useEffect(() => {
+    async function fetchBanners() {
+      try {
+        const res = await fetch("http://localhost:3000/api/banners/home", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+        const responseData = await res.json();
+
+        setBanners(responseData.data || responseData);
+      } catch (err) {
+        console.error("Gagal ambil banner:", err);
+      }
+    }
+
+    fetchBanners();
+  }, []);
 
   return (
     <div className="flex flex-col overflow-x-hidden">
-      <head>
-        <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" />
-      </head>
-
       <div className="flex flex-col">
-        <SliderBannerPage />
+        <SliderBannerPage banners={banners} isBlurred={isBlurred} />
 
         <main className="flex flex-col px-3 md:mx-5 md:px-0">
           <CategoryMenu />
 
-          {/* Load immediately */}
-          <CarouselNewest />
-          <CarouselHighlight />
-          <CarouselTopTen />
+          <CarouselNewest isBlurred={isBlurred} />
+          <CarouselHighlight isBlurred={isBlurred} />
+          <CarouselTopTen isBlurred={isBlurred} />
 
-          {/* Lazy load groups */}
           {groups.map((group, idx) => {
             const CompA = group[0];
             const CompB = group[1];
@@ -116,12 +144,20 @@ export default function HomePage() {
                 key={idx}
                 data-group-index={idx}
                 ref={(el) => (refs.current[idx] = el)}
-                className="my-6 min-h-[14rem] md:min-h-[16rem]"
+                className="relative my-6 min-h-[14rem] md:min-h-[16rem]"
               >
                 {loadedGroups[idx] ? (
                   <>
-                    {CompA ? <CompA /> : null}
-                    {CompB ? <CompB /> : null}
+                    {CompA && (
+                      <div className="relative">
+                        <CompA isBlurred={isBlurred} />
+                      </div>
+                    )}
+                    {CompB && (
+                      <div className="relative">
+                        <CompB isBlurred={isBlurred} />
+                      </div>
+                    )}
                   </>
                 ) : (
                   <CarouselLoading />

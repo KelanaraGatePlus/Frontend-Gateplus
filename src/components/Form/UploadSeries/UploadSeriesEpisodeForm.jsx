@@ -19,7 +19,6 @@ import { useCreateEpisodeSeriesMutation } from "@/hooks/api/seriesSliceAPI";
 /* Constants & Components */
 import { priceOption } from "@/lib/constants/priceOptions";
 import InputText from "@/components/UploadForm/InputText";
-import InputTextArea from "@/components/UploadForm/InputTextArea";
 import InputSelect from "@/components/UploadForm/InputSelect";
 import InputImageBanner from "@/components/UploadForm/InputImageBanner";
 import PriceSelector from "@/components/UploadForm/PriceSelector";

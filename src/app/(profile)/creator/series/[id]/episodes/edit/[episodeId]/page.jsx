@@ -19,7 +19,6 @@ import {
 /* Constants & Components */
 import { priceOption } from "@/lib/constants/priceOptions";
 import InputText from "@/components/UploadForm/InputText";
-import InputTextArea from "@/components/UploadForm/InputTextArea";
 import InputImageBanner from "@/components/UploadForm/InputImageBanner";
 import PriceSelector from "@/components/UploadForm/PriceSelector";
 import ButtonSubmit from "@/components/UploadForm/ButtonSubmit";
