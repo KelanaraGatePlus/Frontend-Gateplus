@@ -6,12 +6,12 @@ import Image from "next/legacy/image";
 import { useRouter } from "next/navigation";
 
 // eslint-disable-next-line react/prop-types
-export default function BackButton({ isDark = true }) {
+export default function BackButton({ isDark = true, onClick = null }) {
   const router = useRouter();
 
   return (
     <button
-      onClick={() => router.back()}
+      onClick={onClick ? onClick : () => router.back()}
       className={`mt-1.5 w-fit cursor-pointer rounded-full p-1 ${isDark ? "hover:bg-white/30" : "hover:bg-black/10"}`}
     >
       <p

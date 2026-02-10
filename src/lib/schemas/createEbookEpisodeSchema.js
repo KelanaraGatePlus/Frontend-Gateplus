@@ -5,17 +5,39 @@ const validTypesEbook = [
     "application/msword",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ];
+const validTypesAudio = ["audio/mpeg", "audio/mp3"];
 const maxSize = 1000 * 1024;
 
 export const createEbookEpisodeSchema = z.object({
     ebookId: z.string().min(1, "Judul series wajib dipilih"),
-    title: z.string().min(1, "Judul wajib diisi").max(50, "Maksimal 50 karakter"),
-    description: z.string().min(1, "Deskripsi wajib diisi").max(300, "Maksimal 300 karakter"),
-    price: z.string().min(1, "Harga wajib diisi"),
+    title: z.string().min(1, "Judul wajib diisi").max(100, "Maksimal 100 karakter"),
+    description: z
+        .string()
+        .refine((val) => {
+            const words = val ? val.trim().split(/\s+/).filter(Boolean) : [];
+            return words.length >= 15;
+        }, "Deskripsi minimal 15 kata")
+        .refine((val) => {
+            const words = val ? val.trim().split(/\s+/).filter(Boolean) : [];
+            return words.length <= 500;
+        }, "Maksimal 500 kata"),
+    price: z
+        .string()
+        .trim()
+        .min(1, "price is required")
+        .refine((val) => {
+            const normalized = val.toLowerCase();
+            if (normalized === "free") return true;
+            const numeric = Number(val);
+            return !Number.isNaN(numeric) && numeric >= 2000;
+        }, {
+            message: "Harga harus berupa 'free' atau minimal 2000",
+        }),
     notedEpisode: z
         .string()
-        .min(1, "Catatan wajib diisi")
-        .max(150, "Maksimal 150 karakter"),
+        .max(150, "Maksimal 150 karakter")
+        .nullable()
+        .optional(),
     episodeCover: z
         .any()
         .refine((file) => file && file.length > 0, "Cover episode ebook wajib diunggah")
@@ -55,10 +77,14 @@ export const createEbookEpisodeSchema = z.object({
         .refine(
             (file) => file && file[0] && validTypesEbook.includes(file[0].type),
             "Format file tidak valid, harus berformat .doc atau .docx"
-        )
+        ),
+    audioUrl: z
+        .any()
+        .nullable()
+        .optional()
         .refine(
-            (file) => file && file[0] && !file[0].name.includes(" "),
-            "Nama file tidak boleh mengandung spasi"
+            (file) => !file || file.length === 0 || (file[0] && validTypesAudio.includes(file[0].type)),
+            "Format file tidak valid, harus berformat .mp3"
         ),
     termAccepted: z.literal(true).refine(val => val === true, {
         message: "Syarat dan Ketentuan harus disetujui",

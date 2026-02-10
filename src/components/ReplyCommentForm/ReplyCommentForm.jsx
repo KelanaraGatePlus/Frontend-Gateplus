@@ -4,12 +4,12 @@ import React, { forwardRef } from "react";
 import propTypes from "prop-types";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createCommentSchema } from "@/lib/schemas/createCommentSchema";
 import { useReplyCommentMutation } from "@/hooks/api/commentSliceAPI";
 import Image from "next/image";
+import { replyCommentSchema } from "@/lib/schemas/replyCommentSchema";
 
 const ReplyCommentForm = forwardRef(function ReplyCommentForm(props, ref) {
-    const { commentId, imageUrl, profileName, isAuthor} = props;
+    const { commentId, imageUrl, profileName, isAuthor, isDark } = props;
 
     const [createReplyComment, { isLoading, error }] = useReplyCommentMutation();
     const {
@@ -18,7 +18,7 @@ const ReplyCommentForm = forwardRef(function ReplyCommentForm(props, ref) {
         reset,
         formState: { errors },
     } = useForm({
-        resolver: zodResolver(createCommentSchema),
+        resolver: zodResolver(replyCommentSchema),
         mode: "onChange",
         defaultValues: {
             message: "",
@@ -49,7 +49,8 @@ const ReplyCommentForm = forwardRef(function ReplyCommentForm(props, ref) {
                 key={commentId}
             >
                 <div className="flex flex-row items-center justify-between">
-                    <div className="flex flex-row items-center gap-2">
+                    <div className="flex flex-row items-start gap-2">
+                        <p className="text-[#1DBDF5] text-xs">reply</p>
                         <figure>
                             <Image
                                 priority
@@ -63,8 +64,8 @@ const ReplyCommentForm = forwardRef(function ReplyCommentForm(props, ref) {
                             />
                         </figure>
 
-                        <div>
-                            <h5 className="text-xs font-medium">
+                        <div className="self-center">
+                            <h5 className={`text-xs font-medium ${isDark ? "text-white" : "text-black"}`}>
                                 {
                                     profileName
                                 }{" "}
@@ -73,10 +74,6 @@ const ReplyCommentForm = forwardRef(function ReplyCommentForm(props, ref) {
                         </div>
                     </div>
                 </div>
-                <p className="text-[#F5F5F5] text-xs">Reply <span className="text-[#1DBDF5]">
-                    {profileName}
-                </span>
-                </p>
             </div>
             <div className="flex w-full">
                 <form className="flex w-full flex-col gap-2.5" onSubmit={handleSubmit(onSubmit)}>
@@ -123,6 +120,7 @@ ReplyCommentForm.propTypes = {
     imageUrl: propTypes.string,
     profileName: propTypes.string,
     isAuthor: propTypes.bool,
+    isDark: propTypes.bool,
 };
 
 export default ReplyCommentForm;

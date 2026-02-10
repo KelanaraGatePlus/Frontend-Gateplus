@@ -27,6 +27,16 @@ import { discountVoucherAPI } from "../api/discountVoucherAPI";
 import { redeemVoucherAPI } from "../api/redeemVoucherAPI";
 import { savedContentAPI } from "../api/savedContentAPI";
 import { oneTimePasswordAPI } from "../api/oneTimePasswordAPI";
+import { educationAPI } from "../api/educationSliceAPI";
+import { educationCategoryAPI } from "../api/educationCategorySliceAPI";
+import { educationEpisodeAPI } from "../api/educationEpisodeSliceAPI";
+import { quizAPI } from "../api/quizSliceAPI";
+import { certificateEducation } from "../api/certificateEducationAPI";
+import { readProgressAPI } from "../api/readProgressAPI";
+import { episodeSeriesSliceAPI } from "../api/episodeSeriesSliceAPI";
+import { episodePodcastSliceAPI } from "../api/episodePodcastSliceAPI";
+import { episodeEbookSliceAPI } from "../api/episodeEbookSliceAPI";
+import { episodeComicSliceAPI } from "../api/episodeComicSliceAPI";
 
 const rootReducer = combineReducers({
   [ebookApi.reducerPath]: ebookApi.reducer,
@@ -53,13 +63,33 @@ const rootReducer = combineReducers({
   [discountVoucherAPI.reducerPath]: discountVoucherAPI.reducer,
   [redeemVoucherAPI.reducerPath]: redeemVoucherAPI.reducer,
   [savedContentAPI.reducerPath]: savedContentAPI.reducer,
-  [oneTimePasswordAPI.reducerPath]: oneTimePasswordAPI.reducer
+  [oneTimePasswordAPI.reducerPath]: oneTimePasswordAPI.reducer,
+  [educationAPI.reducerPath]: educationAPI.reducer,
+  [educationCategoryAPI.reducerPath]: educationCategoryAPI.reducer,
+  [educationEpisodeAPI.reducerPath]: educationEpisodeAPI.reducer,
+  [quizAPI.reducerPath]: quizAPI.reducer,
+  [certificateEducation.reducerPath]: certificateEducation.reducer,
+  [readProgressAPI.reducerPath]: readProgressAPI.reducer,
+  [episodeSeriesSliceAPI.reducerPath]: episodeSeriesSliceAPI.reducer,
+  [episodePodcastSliceAPI.reducerPath]: episodePodcastSliceAPI.reducer,
+  [episodeEbookSliceAPI.reducerPath]: episodeEbookSliceAPI.reducer,
+  [episodeComicSliceAPI.reducerPath]: episodeComicSliceAPI.reducer,
 });
 
 export const store = configureStore({
   reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(
+    getDefaultMiddleware({
+      // ✅ TAMBAHKAN INI - Prevent unnecessary re-renders
+      serializableCheck: {
+        // Ignore these action types
+        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+      },
+      immutableCheck: {
+        // Reduce checks for better performance
+        warnAfter: 128,
+      },
+    }).concat(
       ebookApi.middleware,
       comicApi.middleware,
       podcastApi.middleware,
@@ -84,7 +114,17 @@ export const store = configureStore({
       discountVoucherAPI.middleware,
       redeemVoucherAPI.middleware,
       savedContentAPI.middleware,
-      oneTimePasswordAPI.middleware
+      oneTimePasswordAPI.middleware,
+      educationAPI.middleware,
+      educationCategoryAPI.middleware,
+      educationEpisodeAPI.middleware,
+      quizAPI.middleware,
+      certificateEducation.middleware,
+      readProgressAPI.middleware,
+      episodeSeriesSliceAPI.middleware,
+      episodePodcastSliceAPI.middleware,
+      episodeEbookSliceAPI.middleware,
+      episodeComicSliceAPI.middleware,
     ),
 });
 

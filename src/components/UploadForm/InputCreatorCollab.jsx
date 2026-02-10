@@ -2,6 +2,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import Image from "next/image";
+import { DEFAULT_AVATAR } from "@/lib/defaults";
 
 export default function InputCreatorCollab({
     query,
@@ -15,10 +16,10 @@ export default function InputCreatorCollab({
     return (
         <section className="flex items-start gap-2 text-[#979797]">
             <div className="flex flex-2 flex-col">
-                <h3 className="montserratFont text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                    Kreator Kolaborasi
+                <h3 className="montserratFont text-base font-semibold text-white md:text-base lg:text-xl">
+                    Kolaborator / Bintang Tamu (Guest Star)
                 </h3>
-                <p className="text-[10px] text-[#979797] italic md:text-sm">Optional</p>
+                <p className="text-[10px] text-[#979797] italic md:text-sm">Opsional</p>
             </div>
 
             <div className="flex h-full w-fit flex-4 flex-wrap items-stretch justify-start gap-x-6 text-white md:flex-10 relative">
@@ -32,7 +33,7 @@ export default function InputCreatorCollab({
                                 <div className="flex flex-row items-center gap-3">
                                     <div className="relative w-10 h-10 rounded-full overflow-hidden">
                                         <Image
-                                            src={creator.imageUrl || "/default-profile.png"}
+                                            src={creator.imageUrl || DEFAULT_AVATAR}
                                             alt={creator.username}
                                             fill
                                             className="object-cover"
@@ -65,7 +66,7 @@ export default function InputCreatorCollab({
                         <input
                             type="text"
                             className="border-none outline-none w-full rounded-lg p-1 placeholder:montserratFont"
-                            placeholder="Masukan Nama Kreator atau Username Kreator"
+                            placeholder="Tag nama narasumber atau co-host. Ini membantu episode muncul saat nama mereka dicari."
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                         />
@@ -94,7 +95,7 @@ export default function InputCreatorCollab({
                                     <div className="flex flex-row items-center gap-3">
                                         <div className="relative w-10 h-10 rounded-full overflow-hidden">
                                             <Image
-                                                src={creator.imageUrl || "/default-profile.png"}
+                                                src={creator.imageUrl || DEFAULT_AVATAR}
                                                 alt={creator.username}
                                                 fill
                                                 className="object-cover"

@@ -13,7 +13,7 @@ import { useUploadSessionData } from "@/hooks/helper/useUploadSession"; // Pasti
 import IconUploadGallery from "@@/icons/upload-content/icons-video-upload.svg";
 
 // Terima prop 'setDuration' yang baru
-export default function UploadLargeFile({ label = "Film", prefix, setDataUrl, setDuration = null, error, name }) {
+export default function UploadLargeFile({ label = "Film", prefix, setDataUrl, setDuration = null, error, name, placeholder = "", description = "" }) {
     const {
         progress,
         totalBytes,
@@ -33,7 +33,7 @@ export default function UploadLargeFile({ label = "Film", prefix, setDataUrl, se
     // Efek ini mengirimkan URL file setelah upload selesai
     useEffect(() => {
         if (isFinish && fileUrl) {
-            setDataUrl(fileUrl.muxAsset.playback_ids[0].id);
+            setDataUrl(fileUrl.location);
             if (setDuration) {
                 // Jika durasi terdeteksi (bukan null) dan prop setDuration ada
                 if (videoDuration && setDuration) {
@@ -52,9 +52,12 @@ export default function UploadLargeFile({ label = "Film", prefix, setDataUrl, se
 
     return (
         <div className="flex items-start gap-2">
-            <h3 className="montserratFont flex-2 text-base font-semibold text-[#979797] md:text-base lg:text-xl">
-                {label}
-            </h3>
+            <div className="flex-2 flex flex-col">
+                <h3 className="montserratFont flex-2 text-base font-semibold text-white md:text-base lg:text-xl">
+                    {label}
+                </h3>
+                <p className="montserratFont text-[#979797]">{description}</p>
+            </div>
             <div className="flex h-full w-fit flex-4 flex-wrap items-stretch justify-start gap-x-6 text-white md:flex-10">
                 <div className={`${error && "border-red-500 focus:border-red-500 border"} container flex w-full flex-wrap items-start gap-4 rounded-md bg-[#585454] p-2`}>
                     {/* Upload Box */}
@@ -152,6 +155,7 @@ export default function UploadLargeFile({ label = "Film", prefix, setDataUrl, se
                         />
                     </div>
                 </div>
+                <p className="montserratFont font-medium text-[#979797]">{placeholder}</p>
             </div>
         </div>
     );
@@ -164,4 +168,6 @@ UploadLargeFile.propTypes = {
     setDuration: PropTypes.func,
     name: PropTypes.string.isRequired,
     error: PropTypes.string,
+    placeholder: PropTypes.string,
+    description: PropTypes.string,
 };

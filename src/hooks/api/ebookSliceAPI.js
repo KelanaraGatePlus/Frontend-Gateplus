@@ -72,6 +72,15 @@ export const ebookApi = createApi({
       }),
       invalidatesTags: ["ebook"],
     }),
+    changeVisibility: builder.mutation({
+      query: ({ id, formData }) => ({
+        url: `/ebooks/${id}/privacy`,
+        method: "PATCH",
+        body: formData,
+        formData: true,
+      }),
+      invalidatesTags: ["ebook"],
+    }),
   }),
 });
 
@@ -85,4 +94,5 @@ export const {
   useDeleteEbookMutation,
   useEditEbookMutation,
   useGetEbookPerContentAnalyticsQuery,
+  useChangeVisibilityMutation,
 } = ebookApi;

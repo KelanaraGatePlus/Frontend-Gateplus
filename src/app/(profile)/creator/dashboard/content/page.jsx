@@ -1,7 +1,7 @@
 "use client";
 import ContentTable from "@/components/Table/ContentTable";
 import { useGetContentDashboardQuery, useGetPerContentDashboardQuery } from "@/hooks/api/creatorSliceAPI";
-import { useDeleteEbookMutation, useGetEbookPerContentAnalyticsQuery } from "@/hooks/api/ebookSliceAPI";
+import { useDeleteEbookMutation, useGetEbookPerContentAnalyticsQuery, useChangeVisibilityMutation as useChangeEbookVisibility } from "@/hooks/api/ebookSliceAPI";
 import { contentTypeArray, contentTypeSingle } from "@/lib/constants/contentType";
 import React from "react";
 import { useState } from "react";
@@ -13,24 +13,49 @@ import { EyeIcon, PencilIcon, TrashIcon } from "lucide-react";
 import HeaderUploadForm from "@/components/UploadForm/HeaderUploadForm";
 import FlexModal from "@/components/Modal/FlexModal";
 import DatabaseDelete from "@@/AdditionalImages/database-delete.png";
-import { useDeleteComicMutation, useGetComicPerContentAnalyticsQuery } from "@/hooks/api/comicSliceAPI";
-import { useDeletePodcastMutation, useGetPodcastPerContentAnalyticsQuery } from "@/hooks/api/podcastSliceAPI";
-import { useDeleteSeriesMutation, useGetSeriesPerContentAnalyticsQuery } from "@/hooks/api/seriesSliceAPI";
-import { useDeleteMovieMutation, useGetMoviePerContentAnalyticsQuery } from "@/hooks/api/movieSliceAPI";
+import { useDeleteComicMutation, useGetComicPerContentAnalyticsQuery, useChangeVisibilityMutation as useChangeComicVisibility } from "@/hooks/api/comicSliceAPI";
+import { useDeletePodcastMutation, useGetPodcastPerContentAnalyticsQuery, useChangeVisibilityMutation as useChangePodcastVisibility } from "@/hooks/api/podcastSliceAPI";
+import { useDeleteSeriesMutation, useGetSeriesPerContentAnalyticsQuery, useChangeVisibilityMutation as useChangeSeriesVisibility } from "@/hooks/api/seriesSliceAPI";
+import { useDeleteMovieMutation, useGetMoviePerContentAnalyticsQuery, useChangeVisibilityMutation as useChangeMovieVisibility } from "@/hooks/api/movieSliceAPI";
 import Link from "next/link";
 import PreviewContentHeader from "@/components/Header/PreviewContentHeader";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+import { Icon } from "@iconify/react";
+import RichTextDisplay from '@/components/RichTextDisplay/page';
+import { ListVideo } from "lucide-react";
+
 
 export default function DashboardContentPage() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState({ id: null, type: null });
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [detailTarget, setDetailTarget] = useState({ id: null, type: null });
+    const [isVisibilityModalOpen, setIsVisibilityModalOpen] = useState(false);
+    const [visibilityTarget, setVisibilityTarget] = useState({ id: null, type: null, currentVisibility: null, isCurrentlyPrivate: null });
+    const [isWarningModalOpen, setIsWarningModalOpen] = useState(false);
+    const [warningMessage, setWarningMessage] = useState('');
+    const [warningContentType, setWarningContentType] = useState(null);
+
     const [deleteEbook, { isLoading: isDeletingEbook }] = useDeleteEbookMutation();
     const [deleteComic, { isLoading: isDeletingComic }] = useDeleteComicMutation();
     const [deletePodcast, { isLoading: isDeletingPodcast }] = useDeletePodcastMutation();
     const [deleteSeries, { isLoading: isDeletingSeries }] = useDeleteSeriesMutation();
     const [deleteMovie, { isLoading: isDeletingMovie }] = useDeleteMovieMutation();
+
+    const [changeEbookVisibility, { isLoading: isChangingEbookVisibility }] = useChangeEbookVisibility();
+    const [changeComicVisibility, { isLoading: isChangingComicVisibility }] = useChangeComicVisibility();
+    const [changePodcastVisibility, { isLoading: isChangingPodcastVisibility }] = useChangePodcastVisibility();
+    const [changeSeriesVisibility, { isLoading: isChangingSeriesVisibility }] = useChangeSeriesVisibility();
+    const [changeMovieVisibility, { isLoading: isChangingMovieVisibility }] = useChangeMovieVisibility();
+    const episodeRouteMap = {
+        series: "series",
+        podcast: "podcast",
+        podcasts: "podcast",
+        ebook: "ebooks",
+        ebooks: "ebooks",
+        comic: "comics",
+        comics: "comics",
+    };
 
     // Analytics hooks - conditionally enabled based on detailTarget
     const { data: ebookAnalytics, isLoading: isLoadingEbookAnalytics } = useGetEbookPerContentAnalyticsQuery(
@@ -163,6 +188,62 @@ export default function DashboardContentPage() {
         }
     };
 
+    const handleChangeVisibility = async () => {
+        if (!visibilityTarget?.id || !visibilityTarget?.type) return;
+        try {
+            const formData = new FormData();
+            // Backend will automatically switch to opposite, so we just send the request
+            formData.append('isPrivate', !visibilityTarget.isCurrentlyPrivate);
+
+            switch (visibilityTarget.type) {
+                case 'ebooks':
+                case 'ebook':
+                    await changeEbookVisibility({
+                        id: visibilityTarget.id,
+                        formData: formData,
+                    }).unwrap();
+                    break;
+                case 'comics':
+                case 'comic':
+                    await changeComicVisibility({
+                        id: visibilityTarget.id,
+                        formData: formData,
+                    }).unwrap();
+                    break;
+                case 'podcast':
+                case 'podcasts':
+                    await changePodcastVisibility({
+                        id: visibilityTarget.id,
+                        formData: formData,
+                    }).unwrap();
+                    break;
+                case 'series':
+                    await changeSeriesVisibility({
+                        id: visibilityTarget.id,
+                        formData: formData,
+                    }).unwrap();
+                    break;
+                case 'movies':
+                case 'movie':
+                    await changeMovieVisibility({
+                        id: visibilityTarget.id,
+                        formData: formData,
+                    }).unwrap();
+                    break;
+                default:
+                    console.warn(`Change visibility not implemented for type: ${visibilityTarget.type}`);
+            }
+            setIsVisibilityModalOpen(false);
+            setVisibilityTarget({ id: null, type: null, currentVisibility: null, isCurrentlyPrivate: null });
+            await Promise.all([
+                refetchPerContent?.(),
+                refetchContentDashboard?.(),
+            ]);
+        } catch (error) {
+            console.error('Failed to change visibility:', error);
+        }
+    };
+
     return (
         <div>
             <HeaderUploadForm title={"Dashboard"} titlePosition="start" />
@@ -240,8 +321,8 @@ export default function DashboardContentPage() {
                             contentData ? contentData.data?.[dataType]?.map(item => ({
                                 title: item.title,
                                 posterImageUrl: item.posterImageUrl || item.coverPodcastImage,
-                                description: item.description,
-                                visibility: 'Publik',
+                                description: <RichTextDisplay content={item.description} className="line-clamp-2" />,
+                                visibility: item.isPrivate == true ? 'Private' : 'Publik',
                                 restriction: item.ageRestriction,
                                 releaseDate: item.createdAt,
                                 comments: item.totalComments,
@@ -275,13 +356,103 @@ export default function DashboardContentPage() {
                                                     text-sm
                                                 "
                                             >
-                                                <DropdownItem key="edit" className="hover:bg-[#4a4a4a] rounded-sm px-2 flex items-center">
+                                                {(item.contentType !== 'movie' && item.contentType !== 'movies' && item.type !== 'movie' && item.type !== 'movies') && (
+                                                    <DropdownItem
+                                                        key="episodes"
+                                                        onClick={() => {
+                                                            const type = item.contentType || item.type;
+                                                            const baseRoute = episodeRouteMap[type];
+
+                                                            if (!baseRoute) return;
+
+                                                            window.location.href = `/creator/${baseRoute}/${item._id || item.id}/episodes`;
+                                                        }}
+                                                        className="hover:bg-[#4a4a4a] rounded-sm px-2 flex items-center"
+                                                    >
+                                                        <ListVideo size={16} className="inline-block mr-2" />
+                                                        Lihat Episode
+                                                    </DropdownItem>
+                                                )}
+                                                <DropdownItem
+                                                    onClick={() => {
+                                                        window.location.href = `/${contentTypeSingle[item.contentType || item.type]?.pluralName}/edit/${item._id || item.id}`;
+                                                    }}
+                                                    key="edit" className="hover:bg-[#4a4a4a] rounded-sm px-2 flex items-center">
                                                     <Link href={`/${contentTypeSingle[item.contentType || item.type]?.pluralName}/edit/${item._id || item.id}`}>
                                                         <PencilIcon size={16} className="inline-block mr-2" />
                                                         Edit
                                                     </Link>
                                                 </DropdownItem>
-                                                <DropdownItem key="preview" className="hover:bg-[#4a4a4a] rounded-sm px-2 flex items-center">
+                                                <DropdownItem
+                                                    onClick={() => {
+                                                        // Validasi jika user ingin mengubah dari Private ke Public
+                                                        if (item.isPrivate) {
+                                                            const type = item.contentType || item.type;
+                                                            let canPublish = true;
+                                                            let message = '';
+
+                                                            switch (type) {
+                                                                case 'podcast':
+                                                                case 'podcasts':
+                                                                    if ((item._count?.episode_podcasts || 0) === 0) {
+                                                                        canPublish = false;
+                                                                        message = 'Podcast tidak dapat dipublikasikan karena belum memiliki episode. Silakan tambahkan minimal 1 episode terlebih dahulu.';
+                                                                    }
+                                                                    break;
+                                                                case 'comic':
+                                                                case 'comics':
+                                                                    if ((item._count?.episode_comics || 0) === 0) {
+                                                                        canPublish = false;
+                                                                        message = 'Komik tidak dapat dipublikasikan karena belum memiliki episode. Silakan tambahkan minimal 1 episode terlebih dahulu.';
+                                                                    }
+                                                                    break;
+                                                                case 'series':
+                                                                    if ((item._count?.episodes || 0) === 0) {
+                                                                        canPublish = false;
+                                                                        message = 'Series tidak dapat dipublikasikan karena belum memiliki episode. Silakan tambahkan minimal 1 episode terlebih dahulu.';
+                                                                    }
+                                                                    break;
+                                                                case 'ebook':
+                                                                case 'ebooks':
+                                                                    if ((item._count?.episode_ebooks || 0) === 0) {
+                                                                        canPublish = false;
+                                                                        message = 'Ebook tidak dapat dipublikasikan karena belum memiliki episode. Silakan tambahkan minimal 1 episode terlebih dahulu.';
+                                                                    }
+                                                                    break;
+                                                                case 'movie':
+                                                                case 'movies':
+                                                                    if (!item.muxPlaybackId) {
+                                                                        canPublish = false;
+                                                                        message = 'Movie tidak dapat dipublikasikan karena video belum selesai diproses. Silakan tunggu hingga proses upload selesai.';
+                                                                    }
+                                                                    break;
+                                                            }
+
+                                                            if (!canPublish) {
+                                                                setWarningMessage(message);
+                                                                setWarningContentType(type);
+                                                                setIsWarningModalOpen(true);
+                                                                return;
+                                                            }
+                                                        }
+
+                                                        setVisibilityTarget({
+                                                            id: item._id || item.id,
+                                                            type: item.contentType || item.type,
+                                                            currentVisibility: item.isPrivate ? 'Private' : 'Publik',
+                                                            isCurrentlyPrivate: item.isPrivate
+                                                        });
+                                                        setIsVisibilityModalOpen(true);
+                                                    }}
+                                                    key="visibility" className="hover:bg-[#4a4a4a] rounded-sm px-2 flex items-center">
+                                                    <Icon icon={'solar:eye-scan-bold'} size={16} className="inline-block mr-2" />
+                                                    Change Visibility
+                                                </DropdownItem>
+                                                <DropdownItem
+                                                    onClick={() => {
+                                                        window.location.href = `/${contentTypeSingle[item.contentType || item.type]?.pluralName}/detail/${item._id || item.id}`;
+                                                    }}
+                                                    key="preview" className="hover:bg-[#4a4a4a] rounded-sm px-2 flex items-center">
                                                     <EyeIcon size={16} className="inline-block mr-2" />
                                                     Preview
                                                 </DropdownItem>
@@ -398,6 +569,89 @@ export default function DashboardContentPage() {
                                 <div className="flex justify-center items-center p-8">
                                     <p className="text-white">No analytics data available</p>
                                 </div>
+                            )}
+                        </div>
+                    </FlexModal>
+                    <FlexModal
+                        isOpen={isVisibilityModalOpen}
+                        onClose={() => setIsVisibilityModalOpen(false)}
+                    >
+                        <div className="flex flex-col gap-6 w-full max-w-md text-[#F5F5F5] montserratFont">
+                            <div className="flex flex-col gap-2">
+                                <h2 className="text-2xl font-bold">Ubah Visibilitas Konten</h2>
+                                <p className="text-sm text-[#979797]">Status saat ini: <span className="font-semibold">{visibilityTarget.currentVisibility}</span></p>
+                                <p className="text-sm text-[#979797]">Visibilitas akan berubah menjadi: <span className="font-semibold text-orange-400">{visibilityTarget.isCurrentlyPrivate ? 'Publik' : 'Private'}</span></p>
+                            </div>
+                            <div className="flex flex-col gap-2 text-sm text-[#979797]">
+                                <p>Anda yakin ingin mengubah visibilitas konten ini?</p>
+                            </div>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setIsVisibilityModalOpen(false)}
+                                    className="flex-1 p-2 border border-[#686868] rounded-lg text-[#979797] hover:bg-[#4a4a4a] transition-all"
+                                >
+                                    Tidak
+                                </button>
+                                <button
+                                    onClick={() => handleChangeVisibility()}
+                                    disabled={isChangingEbookVisibility || isChangingComicVisibility || isChangingPodcastVisibility || isChangingSeriesVisibility || isChangingMovieVisibility}
+                                    className="flex-1 p-2 bg-[#156EB7] rounded-lg text-white hover:bg-[#0d5a94] transition-all disabled:opacity-60 disabled:cursor-not-allowed font-semibold"
+                                >
+                                    {isChangingEbookVisibility || isChangingComicVisibility || isChangingPodcastVisibility || isChangingSeriesVisibility || isChangingMovieVisibility ? 'Mengubah...' : 'Ya'}
+                                </button>
+                            </div>
+                        </div>
+                    </FlexModal>
+                    <FlexModal
+                        isOpen={isWarningModalOpen}
+                        onClose={() => setIsWarningModalOpen(false)}
+                    >
+                        <div className="flex flex-col gap-6 w-full max-w-md text-[#F5F5F5] montserratFont">
+                            <div className="flex flex-col gap-4 items-center">
+                                <div className="w-16 h-16 rounded-full bg-orange-500/20 flex items-center justify-center">
+                                    <Icon icon={'solar:danger-triangle-bold'} size={40} className="text-orange-500" />
+                                </div>
+                                <h2 className="text-2xl font-bold text-center">Peringatan</h2>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <p className="text-sm text-center text-[#979797]">{warningMessage}</p>
+                            </div>
+                            {warningContentType && warningContentType !== 'movie' && warningContentType !== 'movies' ? (
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => setIsWarningModalOpen(false)}
+                                        className="flex-1 p-2 border border-[#686868] rounded-lg text-[#979797] hover:bg-[#4a4a4a] transition-all"
+                                    >
+                                        Mengerti
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const uploadUrls = {
+                                                'podcast': '/podcasts/upload/episode',
+                                                'podcasts': '/podcasts/upload/episode',
+                                                'ebook': '/ebooks/upload/episode',
+                                                'ebooks': '/ebooks/upload/episode',
+                                                'comic': '/comics/upload/episode',
+                                                'comics': '/comics/upload/episode',
+                                                'series': '/series/upload/episode'
+                                            };
+                                            const url = uploadUrls[warningContentType];
+                                            if (url) {
+                                                window.location.href = url;
+                                            }
+                                        }}
+                                        className="flex-1 p-2 bg-[#156EB7] rounded-lg text-white hover:bg-[#0d5a94] transition-all font-semibold"
+                                    >
+                                        Upload Episode
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => setIsWarningModalOpen(false)}
+                                    className="p-2 bg-[#156EB7] rounded-lg text-white hover:bg-[#0d5a94] transition-all font-semibold"
+                                >
+                                    Mengerti
+                                </button>
                             )}
                         </div>
                     </FlexModal>

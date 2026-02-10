@@ -18,7 +18,7 @@ import { useGetUserId } from "@/lib/features/useGetUserId";
 /* Constants & Components */
 import { priceOption } from "@/lib/constants/priceOptions";
 import InputText from "@/components/UploadForm/InputText";
-import InputTextArea from "@/components/UploadForm/InputTextArea";
+import RichTextEditor from '@/components/RichTextEditor/page';
 import InputSelect from "@/components/UploadForm/InputSelect";
 import InputFileDoc from "@/components/UploadForm/InputFileDoc"
 import InputImageBanner from "@/components/UploadForm/InputImageBanner";
@@ -35,6 +35,7 @@ export default function UploadEbookEpisodeForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const seriesFromUrl = searchParams.get("series") || "";
+    const fromEducation = searchParams.get("education") || null;
     const creatorId = useGetCreatorId();
     const userId = useGetUserId();
 
@@ -58,6 +59,7 @@ export default function UploadEbookEpisodeForm() {
             inputFile: [],
             termAccepted: false,
             agreementAccepted: false,
+            audioUrl: [],
         },
     });
 
@@ -76,9 +78,14 @@ export default function UploadEbookEpisodeForm() {
         formData.append("bannerStartEpisodeUrl", data.bannerStart[0]);
         formData.append("bannerEndEpisodeUrl", data.bannerEnd[0]);
         formData.append("ebookUrl", data.inputFile[0]);
+        formData.append("audioUrl", data.audioUrl[0] ? data.audioUrl[0] : null);
 
         try {
             await createEpisode(formData).unwrap();
+            if (fromEducation) {
+                router.push(`/education/detail/${fromEducation}`);
+                return;
+            }
             router.push(`/ebooks/detail/${data.ebookId}`);
         } catch (err) {
             console.error("Error creating episode of ebook:", err);
@@ -108,20 +115,27 @@ export default function UploadEbookEpisodeForm() {
 
                 {/* Judul Episode */}
                 <InputText
-                    label="Judul Episode"
+                    label="Judul Bab/Episode"
                     name="title"
-                    placeholder="Masukkan judul episode"
+                    placeholder="Contoh: Bab 1: Perjumpaan di Kota Tua"
                     {...register("title")}
                     error={errors.title?.message}
                 />
 
-                {/* Deskripsi */}
-                <InputTextArea
-                    label="Deskripsi"
+                {/* Deskripsi - CHANGED TO RICH TEXT EDITOR */}
+                <Controller
                     name="description"
-                    placeholder="Deskripsi"
-                    {...register("description")}
-                    error={errors.description?.message}
+                    control={control}
+                    render={({ field, fieldState }) => (
+                        <RichTextEditor
+                            label="Deskripsi"
+                            name="description"
+                            placeholder="Deskripsi episode"
+                            value={field.value}
+                            onChange={field.onChange}
+                            error={fieldState.error?.message}
+                        />
+                    )}
                 />
 
                 {/* Cover Episode */}
@@ -130,9 +144,9 @@ export default function UploadEbookEpisodeForm() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <InputImageBanner
-                            type="cover"
+                            type="thumbnail"
                             label="Cover Episode"
-                            description="Format banner its 1x1 with maks 500kb."
+                            description="Rasio: 1:1, Format: JPG/PNG, Ukuran Maksimal: 500 KB. Unggah sampul khusus untuk bab ini."
                             name="episodeCover"
                             icon={IconsGalery}
                             files={field.value}
@@ -151,7 +165,7 @@ export default function UploadEbookEpisodeForm() {
                         <InputImageBanner
                             type="banner"
                             label="Banner Cover Episode Start"
-                            description="maks upload per content 5gb, please make part while uploading and naming ascending number"
+                            description="maks upload per content 5mb, please make part while uploading and naming ascending number"
                             name="bannerStart"
                             icon={IconsGalery}
                             files={field.value}
@@ -168,9 +182,27 @@ export default function UploadEbookEpisodeForm() {
                     render={({ field, fieldState }) => (
                         <InputFileDoc
                             name="inputFile"
-                            label="Upload File"
-                            description="Format input .docx"
+                            label="Unggah File Naskah (.docx)"
+                            description="Pastikan file Anda berformat Microsoft Word (.docx). Klik untuk unggah."
                             accept=".doc,.docx"
+                            files={field.value}
+                            onUpload={(e) => field.onChange([...e.target.files])}
+                            onRemove={() => field.onChange([])}
+                            error={fieldState.error?.message}
+                        />
+                    )}
+                />
+
+                {/* Input audio opsional */}
+                <Controller
+                    name="audioUrl"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                        <InputFileDoc
+                            name="audioUrl"
+                            label="File Audio (Opsional)"
+                            description="Pilih file audio (MP3/WAV, maks. 3MB) untuk backsound atau audio Transkrip episode ini."
+                            accept=".mp3,.wav"
                             files={field.value}
                             onUpload={(e) => field.onChange([...e.target.files])}
                             onRemove={() => field.onChange([])}
@@ -199,12 +231,19 @@ export default function UploadEbookEpisodeForm() {
                 />
 
                 {/* Catatan Episode */}
-                <InputTextArea
-                    label="Catatan Kreator"
+                <Controller
                     name="notedEpisode"
-                    placeholder="Tulis catatan kreator"
-                    {...register("notedEpisode")}
-                    error={errors.notedEpisode?.message}
+                    control={control}
+                    render={({ field, fieldState }) => (
+                        <RichTextEditor
+                            label="Catatan Kreator"
+                            name="notedEpisode"
+                            placeholder="Tulis catatan kreator"
+                            value={field.value}
+                            onChange={field.onChange}
+                            error={fieldState.error?.message}
+                        />
+                    )}
                 />
 
                 {/* Harga */}
@@ -213,7 +252,7 @@ export default function UploadEbookEpisodeForm() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <PriceSelector
-                            label="Price"
+                            label="Harga Jual"
                             options={priceOption}
                             selected={field.value}
                             onSelect={(val) => {

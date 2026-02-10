@@ -1,6 +1,7 @@
 "use client";
 import React, { useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import RichTextEditor from '@/components/RichTextEditor/page';
 
 /*[--- THIRD PARTY LIBRARIES ---]*/
 import { useForm, Controller } from "react-hook-form";
@@ -21,7 +22,6 @@ import InputAgeResctriction from '@/components/UploadForm/InputAgeResctriction';
 import InputImageBanner from '@/components/UploadForm/InputImageBanner';
 import InputSelect from '@/components/UploadForm/InputSelect';
 import InputText from '@/components/UploadForm/InputText';
-import InputTextArea from '@/components/UploadForm/InputTextArea';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 /*[--- ASSETS PUBLIC ---]*/
@@ -29,13 +29,15 @@ import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
 import UploadLargeFile from "@/components/UploadForm/UploadLargeFile";
 import PriceSelector from "@/components/UploadForm/PriceSelector";
-import { priceOption } from "@/lib/constants/priceOptions";
 import { useCreateSeriesMutation } from "@/hooks/api/seriesSliceAPI";
+import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
 
 
 
 export default function UploadSeriesForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const fromEducation = searchParams.get("education") || null;
     const posterBannerInputRef = useRef(null);
     const coverBookInputRef = useRef(null);
     const {
@@ -50,7 +52,7 @@ export default function UploadSeriesForm() {
         defaultValues: {
             title: "",
             description: "",
-            genre: "",
+            genre: [],
             language: "",
             ageRestriction: "",
             posterBanner: null,
@@ -75,7 +77,8 @@ export default function UploadSeriesForm() {
             const formData = new FormData();
             formData.append("title", data.title);
             formData.append("description", data.description);
-            formData.append("categoriesId", data.genre);
+            const selectedGenres = Array.isArray(data.genre) ? data.genre : [data.genre].filter(Boolean);
+            formData.append("categoriesId", JSON.stringify(selectedGenres));
             formData.append("language", data.language);
             formData.append("ageRestriction", data.ageRestriction);
             formData.append("subscriptionPrice", data.subscriptionPrice);
@@ -95,7 +98,11 @@ export default function UploadSeriesForm() {
             try {
                 const result = await createSeries(formData).unwrap();
                 if (result) {
-                    router.push(`/`);
+                    if (fromEducation) {
+                        router.push(`/education/detail/${fromEducation}`);
+                        return;
+                    }
+                    router.push(`/series/upload/episode?series=${result.data.id}`);
                 }
             } catch (err) {
                 console.error("Error creating series:", err);
@@ -115,20 +122,26 @@ export default function UploadSeriesForm() {
                 <div className="flex flex-col gap-2">
                     {/* Judul */}
                     <InputText
-                        label="Judul"
+                        label="Judul Utama Seri (Main Series Title)"
                         name="title"
                         placeholder="Judul Series"
                         {...register("title")}
                         error={errors.title?.message}
                     />
 
-                    {/* Deskripsi */}
-                    <InputTextArea
-                        label="Deskripsi"
+                    <Controller
                         name="description"
-                        placeholder="Deskripsi"
-                        {...register("description")}
-                        error={errors.description?.message}
+                        control={control}
+                        render={({ field, fieldState }) => (
+                            <RichTextEditor
+                                label="Sinopsis Lengkap Seri"
+                                name="description"
+                                placeholder="Jelaskan premis utama dunia cerita, konflik sentral, karakter utama, dan tema yang diangkat. Mesin pencari menggunakan teks ini untuk mempertemukan karyamu dengan pembaca yang tepat."
+                                value={field.value}
+                                onChange={field.onChange}
+                                error={fieldState.error?.message}
+                            />
+                        )}
                     />
 
                     {/* Genre */}
@@ -137,67 +150,69 @@ export default function UploadSeriesForm() {
                         control={control}
                         rules={{ required: "Genre wajib dipilih" }}
                         render={({ field, fieldState }) => (
-                            <InputSelect
+                            <GenreMultiSelect
                                 label="Genre"
                                 name="genre"
                                 options={genresData?.data.data || []}
-                                placeholder="Pilih Genre"
-                                value={field.value}
-                                onChange={field.onChange}
-                                onBlur={field.onBlur}
+                                placeholder="Pilih satu atau lebih genre yang paling menggambarkan film ini (Misal: Aksi, Horor, Drama Komedi, Sci-Fi)."
+                                value={field.value || []}
+                                onChange={(val) => {
+                                    field.onChange(val);
+                                    field.onBlur();
+                                }}
                                 error={fieldState.error?.message}
                             />
                         )}
                     />
 
                     <InputText
-                        label={"Rumah Produksi"}
+                        label={"Rumah Produksi (Production House / Studio)"}
                         name="productionHouse"
-                        placeholder="Production House"
+                        placeholder="Tulis nama resmi studio atau perusahaan produksi yang bertanggung jawab"
                         {...register("productionHouse")}
                         error={errors.productionHouse?.message}
                     />
 
                     <InputText
-                        label={"Sutradara"}
+                        label={"Sutradara (Director)"}
                         name="director"
-                        placeholder="Name"
+                        placeholder="Tulis nama lengkap sutradara film ini. Pastikan ejaan benar agar muncul di hasil pencarian profil mereka."
                         {...register("director")}
                         error={errors.director?.message}
                     />
 
                     {/* Produser */}
                     <InputText
-                        label={"Produser"}
+                        label={"Produser (Producer)"}
                         name="producer"
-                        placeholder="Name"
+                        placeholder="Tulis nama produser utama atau produser eksekutif."
                         {...register("producer")}
                         error={errors.producer?.message}
                     />
 
                     {/* Penulis */}
                     <InputText
-                        label={"Penulis"}
+                        label={"Penulis Naskah (Screenwriter)"}
                         name="writer"
-                        placeholder="Full Name"
+                        placeholder="Tulis nama penulis skenario atau cerita asli (Original Story)."
                         {...register("writer")}
                         error={errors.writer?.message}
                     />
 
                     {/* Pemain */}
                     <InputText
-                        label={"Pemain"}
+                        label={"Pemeran & Kru (Cast & Crew)"}
                         name="talent"
-                        placeholder="Full Name"
+                        placeholder="Tag nama aktor utama, sutradara, atau produser agar film muncul saat nama mereka dicari."
                         {...register("talent")}
                         error={errors.talent?.message}
                     />
 
                     {/* Tahun Rilis */}
                     <InputText
-                        label={"Tahun Rilis"}
+                        label={"Tahun Rilis Perdana"}
                         name="releaseYear"
-                        placeholder="Year"
+                        placeholder="Masukkan tahun tayang perdana film ini secara publik (Format: YYYY, Contoh: 2024)."
                         {...register("releaseYear")}
                         error={errors.releaseYear?.message}
                     />
@@ -209,10 +224,10 @@ export default function UploadSeriesForm() {
                         rules={{ required: "Bahasa wajib dipilih" }}
                         render={({ field, fieldState }) => (
                             <InputSelect
-                                label="Bahasa"
+                                label="Bahasa Utama Konten (Original Language)"
                                 name="language"
                                 options={languageOptions}
-                                placeholder="Pilih Bahasa"
+                                placeholder="Pilih bahasa pengantar yang digunakan dalam seri ini."
                                 value={field.value}
                                 onChange={field.onChange}
                                 onBlur={field.onBlur}
@@ -264,7 +279,8 @@ export default function UploadSeriesForm() {
                                     prefix="series/trailer"
                                     setDataUrl={field.onChange}
                                     name={'trailer'}
-                                    label="Trailer Upload"
+                                    label="Video Trailer Seri Utama (Teaser)"
+                                    description="Gunakan rasio 16:9, format MP4/MOV, maks 500KB. Trailer yang menarik sangat penting untuk memancing penonton pertama kali dan meningkatkan visibilitas di hasil pencarian video."
                                 />
                                 <input type="hidden" {...field} value={field.value || ""} />
                                 {fieldState.error?.message && (
@@ -282,8 +298,8 @@ export default function UploadSeriesForm() {
                         render={({ field, fieldState }) => (
                             <InputImageBanner
                                 type="cover"
-                                label="Thumbnail"
-                                description="Gunakan rasio 1,6:2 (1600x2560), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten."
+                                label="Poster Utama Film (Key Visual / Cover Art)"
+                                description='Gunakan rasio 1,6:2 (1600x2560), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten. Gunakan gambar beresolusi tinggi (format vertikal/portrait biasanya standar industri film). Ini adalah "wajah" film Anda di seluruh platform dan hasil pencarian Google. Pastikan gambarnya profesional, memuat judul yang jelas, dan sangat memancing klik (High CTR).'
                                 name="thumbnail"
                                 icon={IconsGalery}
                                 inputRef={coverBookInputRef}
@@ -358,10 +374,12 @@ export default function UploadSeriesForm() {
                         render={({ field, fieldState }) => (
                             <PriceSelector
                                 label="Subscription Price"
-                                options={priceOption}
+                                options={[
+                                    "5000", "10000", "20000", "50000", "100000"
+                                ]}
                                 selected={field.value}
                                 onSelect={(val) => {
-                                    field.onChange(val);
+                                    field.onChange(Number(val));
                                     field.onBlur();
                                 }}
                                 error={fieldState.error?.message}

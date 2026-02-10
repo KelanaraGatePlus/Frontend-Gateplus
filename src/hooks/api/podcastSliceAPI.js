@@ -70,6 +70,15 @@ export const podcastApi = createApi({
             }),
             invalidatesTags: ["podcast"],
         }),
+        changeVisibility: builder.mutation({
+            query: ({ id, formData }) => ({
+                url: `/podcast/${id}/privacy`,
+                method: "PATCH",
+                body: formData,
+                formData: true,
+            }),
+            invalidatesTags: ["podcast"],
+        }),
     }),
 });
 
@@ -82,4 +91,5 @@ export const {
     useDeletePodcastMutation,
     useEditPodcastMutation,
     useGetPodcastPerContentAnalyticsQuery,
+    useChangeVisibilityMutation,
 } = podcastApi;

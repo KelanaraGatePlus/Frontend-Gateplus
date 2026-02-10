@@ -32,6 +32,21 @@ export async function middleware(req) {
         "/login",
         "/register",
         '/session-expired',
+        '/ebooks',
+        '/comics',
+        '/movies',
+        '/series',
+        '/podcasts',
+        '/search'
+    ];
+    const PUBLIC_PATH_PREFIXES = [
+        "/education/certificate/",
+        "/ebooks/",
+        "/comics/",
+        "/podcasts/",
+        "/movies/",
+        "/series/",
+        "/search/"
     ];
 
     /* =========================
@@ -42,9 +57,12 @@ export async function middleware(req) {
     const token = cookieToken || urlToken;
 
     /* =========================
-       🧩 4. Public Path tanpa token
+       🧩 4. Public Path tanpa auth
     ========================== */
-    if (PUBLIC_PATHS.includes(pathname) && !token) {
+    const isPublicPath = PUBLIC_PATHS.includes(pathname)
+        || PUBLIC_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+
+    if (isPublicPath) {
         return NextResponse.next();
     }
 

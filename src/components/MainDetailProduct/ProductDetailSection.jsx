@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import PropTypes from "prop-types";
+import RichTextDisplay from '@/components/RichTextDisplay/page';
 
 /*[--- UTILITY IMPORT ---]*/
 import { useLikeContent } from "@/lib/features/useLikeContent";
@@ -25,6 +26,7 @@ import iconSaveOutline from "@@/logo/logoDetailFilm/save-icons.svg";
 import iconSaveSolid from "@@/logo/logoDetailFilm/saved-icons.svg";
 import DefaultShareButton from "../ShareButton/DefaultShareButton";
 import CreatorCard from "./CreatorCard";
+import { useGetUserId } from "@/lib/features/useGetUserId";
 
 export default function ProductDetailSection({
   productType,
@@ -55,6 +57,7 @@ export default function ProductDetailSection({
   isSubscribe = false,
   isOwner = false,
 }) {
+  const userId = useGetUserId();
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [isLiked, setIsLiked] = useState(productIsLiked);
   const [isDisliked, setIsDisliked] = useState(productIsDisliked);
@@ -153,7 +156,7 @@ export default function ProductDetailSection({
     });
   };
 
-  
+
 
   useEffect(() => {
     setShowSkeleton(isLoading);
@@ -165,19 +168,16 @@ export default function ProductDetailSection({
     <>
       <section className="relative w-full">
         {/* banner */}
-        {productType !== 'podcast' && (
-          <div className="absolute -z-10 h-64 w-full overflow-hidden">
-            {productBanner && (
-              <Image
-                src={productBanner}
-                alt="Poster"
-                fill
-                className="object-cover bg-[#2E2E2E]"
-              />
-            )}
-            <div className="absolute top-0 left-0 z-0 h-full w-full bg-[linear-gradient(to_bottom,_#FFFFFF00,_#FFFFFF00,_#FFFFFF00,_#FFFFFF00,_#737373A1,_#595959BF,_#3F3F3FDE,_#303030ED,_#222222FF)]" />
-          </div>
-        )}
+        <div className="absolute -z-10 h-64 w-full overflow-hidden">
+          {productBanner && (
+            <img
+              src={productBanner}
+              alt="Poster"
+              className="h-full w-full object-cover bg-[#2E2E2E]"
+            />
+          )}
+          <div className="absolute top-0 left-0 z-0 h-full w-full bg-gradient-to-t from-[#222222] to-transparent" />
+        </div>
 
         {/* Back menu */}
         <BackButton />
@@ -185,13 +185,12 @@ export default function ProductDetailSection({
         {/* container content */}
         <div className="flex w-screen flex-col items-center gap-4 px-4 py-8 md:px-15 lg:flex-row">
           {/* cover buku */}
-          <div className={`relative overflow-hidden rounded-lg md:rounded ${productType === 'podcast' ? 'h-[200px] w-[200px] md:h-[337px] md:w-[337px]' : 'h-[300px] w-[200px] md:h-[500px] md:w-[337px]'}`}>
+          <div className={`relative overflow-hidden rounded-lg md:rounded h-[300px] w-[200px] md:h-[500px] md:w-[337px]`}>
             {productCover && (
-              <Image
+              <img
                 src={productCover}
                 alt="Poster"
-                fill
-                className="object-cover bg-[#2E2E2E]"
+                className="object-cover bg-[#2E2E2E] h-full w-full"
               />
             )}
           </div>
@@ -207,21 +206,17 @@ export default function ProductDetailSection({
               </h1>
               <div className="flex items-center justify-center gap-1 text-sm font-light lg:justify-start">
                 <div className="flex h-4 items-center justify-start gap-1">
-                  {
-                    productType !== 'podcast' && (
-                      <>
-                        <Image
-                          src={iconViews}
-                          alt="icon-view"
-                          width={20}
-                          height={20}
-                          className="object-cover opacity-70"
-                          priority
-                        />
-                        <p>{productTotalViews}</p>
-                      </>
-                    )
-                  }
+                  <>
+                    <Image
+                      src={iconViews}
+                      alt="icon-view"
+                      width={20}
+                      height={20}
+                      className="object-cover opacity-70"
+                      priority
+                    />
+                    <p>{productTotalViews}</p>
+                  </>
                 </div>
                 <p>|</p>
                 <div className="flex h-4 items-center justify-start gap-1">
@@ -234,7 +229,7 @@ export default function ProductDetailSection({
               </div>
             </div>
 
-            <div className={`flex  ${productType === 'podcast' ? "flex-row justify-between" : "flex-col gap-4"}`}>
+            <div className={`flex flex-col gap-4`}>
               {/* action button */}
               <div className="flex w-fit justify-center gap-2 self-center md:justify-start lg:self-auto">
                 <div className="flex w-fit flex-1 gap-3 items-center justify-center md:flex-none montserratFont">
@@ -242,7 +237,7 @@ export default function ProductDetailSection({
                     <button
                       onClick={() => handleSubscribe(productID, subscriptionPrice)}
                       disabled={isSubscribe || isOwner}
-                      className={`w-full cursor-pointer rounded-3xl px-12 py-3 font-bold text-white md:w-auto 
+                      className={`w-full cursor-pointer rounded-3xl px-8 md:px-10 py-3 text-sm md:text-[16px] font-bold text-white md:w-auto 
                       ${isSubscribe || isOwner ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#0076E999] hover:bg-[#0076E999]/80'}`}
                     >
                       {isOwner ? 'Ini adalah konten milikmu' : isSubscribe ? 'Subscribed' : 'Subscribe'}
@@ -250,11 +245,10 @@ export default function ProductDetailSection({
                   )}
 
                   {productType === "podcast" && canSubscribe ? (
-                    console.log("productID", productID),
                     <button
                       onClick={() => handleSubscribe(creatorDetail.id, productID, subscriptionPrice)}
                       disabled={isSubscribe || isOwner}
-                      className={`w-full cursor-pointer rounded-3xl px-12 py-3 font-bold text-white md:w-auto 
+                      className={`w-full cursor-pointer rounded-3xl px-8 md:px-10 py-3 font-bold text-white text-xs md:w-auto 
                       ${isSubscribe || isOwner ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#0076E999] hover:bg-[#0076E999]/80'}`}
                     >
                       {isOwner ? 'Ini adalah konten milikmu' : isSubscribe ? 'Subscribed' : 'Subscribe'}
@@ -265,66 +259,55 @@ export default function ProductDetailSection({
                         {productType === "podcast" ? "Dengarkan" : "Baca"}
                       </button>
                     </Link>
-                  ) : (
-                    <button
-                      disabled
-                      className="w-full cursor-not-allowed rounded-3xl bg-gray-400 px-12 py-3 font-bold text-white md:w-auto"
-                    >
-                      Belum Ada
-                    </button>
-                  )}
+                  ) : null}
                 </div>
-                {productType !== "podcast" && (
-                  <>
-                    <div
-                      className={`flex cursor-pointer items-center justify-center gap-1 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 ${isLiked ? "animate-like" : ""}`}
-                      onClick={handleToggleLike}
-                    >
-                      {isLiked ? (
-                        <Image
-                          priority
-                          className="focus-within:bg-purple-300"
-                          width={35}
-                          alt="icon-like-solid"
-                          src={iconLikeSolid}
-                        />
-                      ) : (
-                        <Image
-                          priority
-                          className="focus-within:bg-purple-300"
-                          width={35}
-                          alt="icon-like-outline"
-                          src={iconLikeOutline}
-                        />
-                      )}
-                      <p className="montserratFont mt-1 text-base font-bold">
-                        {totalLike}
-                      </p>
-                    </div>
-                    <div
-                      className={`flex cursor-pointer items-center justify-center gap-1 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 ${isDisliked ? "animate-like" : ""}`}
-                      onClick={handleToggleDislike}
-                    >{isDisliked ? (
-                      <Image
-                        priority
-                        className="focus-within:bg-purple-300"
-                        width={45}
-                        alt="icon-dislike-solid"
-                        src={iconDislikeSolid}
-                      />
-                    ) : (
-                      <Image
-                        priority
-                        className="focus-within:bg-purple-300"
-                        width={35}
-                        alt="icon-like-outline"
-                        src={iconDislike}
-                      />
-                    )}
-                    </div>
-                  </>
+                {userId && <div
+                  className={`flex cursor-pointer items-center justify-center gap-1 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 ${isLiked ? "animate-like" : ""}`}
+                  onClick={handleToggleLike}
+                >
+                  {isLiked ? (
+                    <Image
+                      priority
+                      className="focus-within:bg-purple-300"
+                      width={35}
+                      alt="icon-like-solid"
+                      src={iconLikeSolid}
+                    />
+                  ) : (
+                    <Image
+                      priority
+                      className="focus-within:bg-purple-300"
+                      width={35}
+                      alt="icon-like-outline"
+                      src={iconLikeOutline}
+                    />
+                  )}
+                  <p className="montserratFont mt-1 text-base font-bold">
+                    {totalLike}
+                  </p>
+                </div>}
+                {userId && <div
+                  className={`flex cursor-pointer items-center justify-center gap-1 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 ${isDisliked ? "animate-like" : ""}`}
+                  onClick={handleToggleDislike}
+                >{isDisliked ? (
+                  <Image
+                    priority
+                    className="focus-within:bg-purple-300"
+                    width={45}
+                    alt="icon-dislike-solid"
+                    src={iconDislikeSolid}
+                  />
+                ) : (
+                  <Image
+                    priority
+                    className="focus-within:bg-purple-300"
+                    width={35}
+                    alt="icon-like-outline"
+                    src={iconDislike}
+                  />
                 )}
-                <div
+                </div>}
+                {userId && <div
                   className={`flex cursor-pointer items-center justify-center transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 ${isSaved ? "animate-like" : ""}`}
                   onClick={handleToggleSave}
                 >
@@ -343,12 +326,13 @@ export default function ProductDetailSection({
                       src={iconSaveOutline}
                     />
                   )}
-                </div>
+                </div>}
                 <DefaultShareButton contentType={productType.toUpperCase()} />
               </div>
 
               {/* uploader */}
               <CreatorCard
+                isLogin={userId ? true : false}
                 productType={productType}
                 creatorDetail={creatorDetail}
                 initialIsSubscribed={creatorIsSubscribed}
@@ -361,7 +345,7 @@ export default function ProductDetailSection({
 
             {/* description */}
             <div className="flex w-full max-w-full flex-col gap-6 rounded-lg bg-[#393939] p-2 text-base font-normal">
-              <p>{productDescription}</p>
+              <RichTextDisplay content={productDescription} />
               <p>
                 Judul : {productTitle} <br />
                 Penulis Cerita : {creatorDetail?.profileName} <br />

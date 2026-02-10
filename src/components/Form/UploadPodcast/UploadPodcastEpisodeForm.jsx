@@ -29,6 +29,7 @@ import ButtonSubmit from '@/components/UploadForm/ButtonSubmit';
 import TermsCheckbox from '@/components/UploadForm/TermsCheckbox';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import InputCreatorCollab from '@/components/UploadForm/InputCreatorCollab';
+import RichTextEditor from '@/components/RichTextEditor/page';
 
 /* Assets */
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
@@ -38,6 +39,7 @@ export default function UploadPodcastEpisodeForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const seriesFromUrl = searchParams.get("series") || "";
+    const fromEducation = searchParams.get("education") || null;
     const creatorId = useGetCreatorId();
     const userId = useGetUserId();
     const [query, setQuery] = useState("");
@@ -86,6 +88,10 @@ export default function UploadPodcastEpisodeForm() {
 
         try {
             await createEpisode(formData).unwrap();
+            if (fromEducation) {
+                router.push(`/education/detail/${fromEducation}`);
+                return;
+            }
             router.push(`/podcasts/detail/${data.podcastId}`);
         } catch (err) {
             console.error("Error creating episode of ebook:", err);
@@ -101,7 +107,7 @@ export default function UploadPodcastEpisodeForm() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <InputSelect
-                            label="Judul Series"
+                            label="Judul Seri Podcast"
                             name="series"
                             options={creatorDetailQuery.data?.data?.data?.Podcast || []}
                             value={field.value}
@@ -115,20 +121,27 @@ export default function UploadPodcastEpisodeForm() {
 
                 {/* Judul Episode */}
                 <InputText
-                    label="Judul Episode"
+                    label="Judul Episode (Topik Utama)"
                     name="title"
-                    placeholder="Masukkan judul episode"
+                    placeholder='Tulis judul yang memikat dan mengandung kata kunci topik pembahasan (Contoh: "Strategi Marketing 2024 - Ep. 5")'
                     {...register("title")}
                     error={errors.title?.message}
                 />
 
                 {/* Deskripsi */}
-                <InputTextArea
-                    label="Deskripsi"
+                <Controller
                     name="description"
-                    placeholder="Deskripsi"
-                    {...register("description")}
-                    error={errors.description?.message}
+                    control={control}
+                    render={({ field, fieldState }) => (
+                        <RichTextEditor
+                            label="Show Notes (Deskripsi Lengkap Episode)"
+                            name="description"
+                            placeholder="Tulis ringkasan padat, poin-poin pembahasan (timestamps), nama narasumber/tamu, dan tautan relevan."
+                            value={field.value}
+                            onChange={field.onChange}
+                            error={fieldState.error?.message}
+                        />
+                    )}
                 />
 
                 {/* Cover Episode */}
@@ -137,9 +150,9 @@ export default function UploadPodcastEpisodeForm() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <InputImageBanner
-                            type="cover"
-                            label="Cover Episode"
-                            description="Format banner its 1x1 with maks 500kb."
+                            type="thumbnail"
+                            label="Sampul Episode (Cover Art)"
+                            description="Rasio: 1:1, JPG/PNG, Ukuran Maksimal: 500 KB"
                             name="coverPodcastEpisodeURL"
                             icon={IconsGalery}
                             files={field.value}
@@ -156,8 +169,8 @@ export default function UploadPodcastEpisodeForm() {
                     render={({ field, fieldState }) => (
                         <InputFileDoc
                             name="podcastFileURL"
-                            label="Upload File"
-                            description="Audio Input .mp3, dll"
+                            label="File Audio Podcast Utama"
+                            description="Unggah file rekaman akhir (MP3 disarankan) dengan kualitas audio terbaik agar nyaman didengar."
                             accept=".mp3"
                             files={field.value}
                             onUpload={(e) => field.onChange([...e.target.files])}
@@ -192,7 +205,7 @@ export default function UploadPodcastEpisodeForm() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <PriceSelector
-                            label="Price"
+                            label="Harga Karya"
                             options={priceOption}
                             selected={field.value}
                             onSelect={(val) => {

@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import RichTextEditor from '@/components/RichTextEditor/page';
 
 /* Third-Party */
 import { useForm, Controller } from "react-hook-form";
@@ -18,7 +19,6 @@ import { useCreateEpisodeSeriesMutation } from "@/hooks/api/seriesSliceAPI";
 /* Constants & Components */
 import { priceOption } from "@/lib/constants/priceOptions";
 import InputText from "@/components/UploadForm/InputText";
-import InputTextArea from "@/components/UploadForm/InputTextArea";
 import InputSelect from "@/components/UploadForm/InputSelect";
 import InputImageBanner from "@/components/UploadForm/InputImageBanner";
 import PriceSelector from "@/components/UploadForm/PriceSelector";
@@ -36,6 +36,7 @@ export default function UploadSeriesEpisodeForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const seriesFromUrl = searchParams.get("series") || "";
+    const fromEducation = searchParams.get("education") || null;
     const creatorId = useGetCreatorId();
     const userId = useGetUserId();
 
@@ -76,6 +77,10 @@ export default function UploadSeriesEpisodeForm() {
 
         try {
             await createEpisodeSeries(formData).unwrap();
+            if(fromEducation) {
+                router.push(`/education/detail/${fromEducation}`);
+                return;
+            }
             router.push(`/series/detail/${data.seriesId}`);
         } catch (err) {
             console.error("Error creating episode of series:", err);
@@ -91,7 +96,7 @@ export default function UploadSeriesEpisodeForm() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <InputSelect
-                            label="Judul Series"
+                            label="Judul Utama Seri Film (Main Series Title)"
                             name="series"
                             options={creatorDetailQuery.data?.data?.data?.series || []}
                             value={field.value}
@@ -105,21 +110,28 @@ export default function UploadSeriesEpisodeForm() {
 
                 {/* Judul Episode */}
                 <InputText
-                    label="Judul Episode"
+                    label="Judul Episode (Sub-Judul & Nomor)"
                     name="title"
-                    placeholder="Masukkan judul episode"
+                    placeholder='Tulis judul episode yang spesifik, menarik, dan mengandung kata kunci plot utama (Contoh: "Ep 5: Pertempuran di Benteng Kegelapan")'
                     {...register("title")}
                     error={errors.title?.message}
                 />
 
-                {/* Deskripsi */}
-                <InputTextArea
-                    label="Deskripsi"
-                    name="description"
-                    placeholder="Deskripsi"
-                    {...register("description")}
-                    error={errors.description?.message}
-                />
+{/* Deskripsi */}
+<Controller
+    name="description"
+    control={control}
+    render={({ field, fieldState }) => (
+        <RichTextEditor
+            label="Sinopsis & Detail Episode Lengkap"
+            name="description"
+            placeholder="Jelaskan plot spesifik episode ini, konflik yang terjadi, dan karakter yang terlibat. Jangan gunakan sinopsis umum seri. Mesin pencari membaca teks ini."
+            value={field.value}
+            onChange={field.onChange}
+            error={fieldState.error?.message}
+        />
+    )}
+/>
 
                 {/* Cover Episode */}
                 <Controller
@@ -127,9 +139,9 @@ export default function UploadSeriesEpisodeForm() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <InputImageBanner
-                            type="coverEpisode"
-                            label="Episode Cover"
-                            description="Format dimensi cover adalah 1x1 dengan maksimal ukuran 500kb."
+                            type="thumbnail"
+                            label="Thumbnail Episode (Still Image)"
+                            description="Gunakan rasio 16:9 (landscape), format JPG/PNG, maks 500KB. Pilih satu frame adegan paling dramatis dari episode ini untuk memancing klik (High CTR)."
                             name="coverEpisode"
                             icon={IconsGalery}
                             files={field.value}
@@ -150,7 +162,8 @@ export default function UploadSeriesEpisodeForm() {
                                 prefix="series/episode"
                                 setDataUrl={field.onChange}
                                 name={'episodeFileUrl'}
-                                label="Episode Upload"
+                                label="File Master Video Episode"
+                                description="Gunakan rasio 16:9 (1920x1080 px), format MP4/MOV disarankan. Pastikan kualitas visual dan audio adalah yang terbaik."
                             />
                             <input type="hidden" {...field} value={field.value || ""} />
                             {fieldState.error?.message && (
@@ -166,7 +179,7 @@ export default function UploadSeriesEpisodeForm() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <PriceSelector
-                            label="Price"
+                            label="Harga Akses Episode (Monetisasi)"
                             options={priceOption}
                             selected={field.value}
                             onSelect={(val) => {

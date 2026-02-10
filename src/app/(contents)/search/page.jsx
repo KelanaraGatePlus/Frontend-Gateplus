@@ -11,7 +11,8 @@ import { XIcon } from 'lucide-react';
 import { useGetAllGenresQuery } from '@/hooks/api/genreSliceAPI';
 import { contentType } from '@/lib/constants/contentType';
 import PropTypes from 'prop-types';
-
+import Image from 'next/image';
+import Link from 'next/link';
 
 export default function SearchPage() {
     return (
@@ -27,7 +28,15 @@ function SearchPageComponent() {
     const searchParams = useSearchParams();
     const query = searchParams.get("search") || "";
     const [loading, setLoading] = useState(false);
-    const [searchResults, setSearchResults] = useState([]);
+    const [searchResults, setSearchResults] = useState({
+        creators: [],
+        movies: [],
+        series: [],
+        ebooks: [],
+        comics: [],
+        podcasts: [],
+        totalReturned: 0
+    });
     const [getSearchResults] = useGetSearchResultsMutation();
     const { data: categoryData } = useGetAllGenresQuery();
 
@@ -43,10 +52,13 @@ function SearchPageComponent() {
         value: category.id
     }));
 
-    const contentCategories = Object.keys(contentType).map(key => ({
-        label: contentType[key].capitalizedLabel,
-        value: contentType[key].singleName,
-    }));
+    const contentCategories = [
+        { label: "Kreator", value: "creator" },
+        ...Object.keys(contentType).map(key => ({
+            label: contentType[key].capitalizedLabel,
+            value: contentType[key].singleName,
+        }))
+    ];
 
     const getLabelFromValue = (options, value) => {
         const found = options?.find(opt => opt.value === value);
@@ -57,15 +69,31 @@ function SearchPageComponent() {
         setLoading(true);
         try {
             const params = new URLSearchParams(window.location.search);
+            
+            // Ambil semua nilai dari query params
+            const categories = params.getAll("category");
+            const genres = params.getAll("genre");
+            const relevances = params.getAll("relevance");
+            
             const response = await getSearchResults({
                 q: searchQuery,
-                category: params.getAll("category") || null,
-                genre: params.getAll("genre") || null,
-                relevance: params.getAll("relevance") || null,
+                category: categories.length > 0 ? categories : null,
+                genre: genres.length > 0 ? genres : null,
+                relevance: relevances.length > 0 ? relevances : null,
             }).unwrap();
+            
             setSearchResults(response);
         } catch (error) {
             console.error("Error fetching search results:", error);
+            setSearchResults({
+                creators: [],
+                movies: [],
+                series: [],
+                ebooks: [],
+                comics: [],
+                podcasts: [],
+                totalReturned: 0
+            });
         } finally {
             setLoading(false);
         }
@@ -79,7 +107,7 @@ function SearchPageComponent() {
 
     return (
         <main className="relative flex flex-col lg:px-4">
-            <div className="absolute left-2 md:left-13 top-2">
+            <div className="absolute left-2 md:left-13 top-2 z-50">
                 <BackButton />
             </div>
             <div className='w-full h-full flex flex-col gap-10'>
@@ -88,7 +116,7 @@ function SearchPageComponent() {
                         <Suspense fallback={<LoadingOverlay />}>
                             <DynamicBannerPromo
                                 title="Hasil Pencarian"
-                                subtitle={`100 hasil untuk "${query}"`}
+                                subtitle={`${searchResults.totalReturned} hasil untuk "${query}"`}
                                 bgColor="#F4A2614D"
                                 titleColor="#FFFFFF"
                                 filter={
@@ -115,7 +143,7 @@ function SearchPageComponent() {
                     </div>
                 </div>
 
-                {/* 🔸 Filter Aktif */}
+                {/* Filter Aktif */}
                 {(searchParams.get("category") || searchParams.get("genre") || searchParams.get("relevance")) && (
                     <div className='flex flex-col md:flex-row gap-4 md:items-center md:justify-between mx-2 md:mx-[60px] p-8 border text-white border-white/20 bg-[#DEDEDE1A] rounded-md mb-4'>
                         <h2>Filter Aktif:</h2>
@@ -125,21 +153,21 @@ function SearchPageComponent() {
                                 <FilterCard
                                     key={`cat-${index}`}
                                     label={getLabelFromValue(contentCategories, val)}
-                                    onRemove={() => removeParam("category", val, query)}
+                                    onRemove={() => removeParam("category", val, query, fetchSearchResults)}
                                 />
                             ))}
                             {searchParams.getAll("genre").map((val, index) => (
                                 <FilterCard
                                     key={`gen-${index}`}
                                     label={getLabelFromValue(genreOptions, val)}
-                                    onRemove={() => removeParam("genre", val, query)}
+                                    onRemove={() => removeParam("genre", val, query, fetchSearchResults)}
                                 />
                             ))}
                             {searchParams.getAll("relevance").map((val, index) => (
                                 <FilterCard
                                     key={`rel-${index}`}
                                     label={getLabelFromValue(relevanceOptions, val)}
-                                    onRemove={() => removeParam("relevance", val, query)}
+                                    onRemove={() => removeParam("relevance", val, query, fetchSearchResults)}
                                 />
                             ))}
                         </div>
@@ -161,8 +189,8 @@ function SearchPageComponent() {
                 )}
 
                 <div>
-                    {/* 🔸 Hasil Pencarian */}
-                    <div className=" px-2 md:px-[60px] flex flex-row justify-between text-white font-bold">
+                    {/* Hasil Pencarian */}
+                    <div className="px-2 md:px-[60px] flex flex-row justify-between text-white font-bold">
                         <h2 className='text-2xl zeinFont'>
                             Hasil Search Untuk <b>{query}</b>
                         </h2>
@@ -171,7 +199,7 @@ function SearchPageComponent() {
                         </p>
                     </div>
                     <Suspense fallback={<LoadingOverlay />}>
-                        <PodcastContent searchResults={searchResults} loading={loading} />
+                        <SearchResultsContent searchResults={searchResults} loading={loading} />
                     </Suspense>
                 </div>
             </div>
@@ -179,26 +207,85 @@ function SearchPageComponent() {
     );
 }
 
-function removeParam(key, value) {
+function removeParam(key, value, query, fetchSearchResults) {
     const params = new URLSearchParams(window.location.search);
     const updated = params.getAll(key).filter(v => v !== value);
     params.delete(key);
     updated.forEach(v => params.append(key, v));
     window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
-    // trigger search ulang
-    const event = new Event('popstate');
-    window.dispatchEvent(event);
+    
+    // Trigger search ulang
+    if (fetchSearchResults && query) {
+        fetchSearchResults(query);
+    }
 }
 
-function PodcastContent({ searchResults, loading }) {
+function SearchResultsContent({ searchResults, loading }) {
     return (
-        <>
-            <CarouselTemplate label="Hasil Movie" contents={searchResults.movies || []} isLoading={loading} type="movie" />
-            <CarouselTemplate label="Hasil Series" contents={searchResults.series || []} isLoading={loading} type="series" />
-            <CarouselTemplate label="Hasil eBook" contents={searchResults.ebooks || []} isLoading={loading} type="ebook" />
-            <CarouselTemplate label="Hasil Komik" contents={searchResults.comics || []} isLoading={loading} type="comic" />
-            <CarouselTemplate label="Hasil Podcast" contents={searchResults.podcasts || []} isLoading={loading} type="podcast" />
-        </>
+        <div className="flex flex-col gap-6">
+            {/* Hasil Kreator */}
+            {searchResults.creators && searchResults.creators.length > 0 && (
+                <div className="px-2 md:px-[60px] my-6">
+                    <h2 className="text-white text-2xl md:text-3xl lg:text-4xl xl:text-[40px] font-extrabold mb-4 zeinFont">
+                        Kreator ({searchResults.creators.length})
+                    </h2>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                        {searchResults.creators.map((creator, index) => (
+                            <Link href={`/creator/${creator.id}`} key={index}>
+                                <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-pointer border border-transparent hover:border-blue-500">
+                                    <div className="relative w-20 h-20 rounded-full overflow-hidden">
+                                        <Image
+                                            src={creator.imageUrl || '/default-avatar.png'}
+                                            alt={creator.profileName || creator.username}
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    </div>
+                                    <h3 className="text-white text-center text-sm font-semibold line-clamp-2">
+                                        {creator.profileName || creator.username}
+                                    </h3>
+                                    <p className="text-gray-400 text-xs">
+                                        {creator._count?.subscriptions || 0} Followers
+                                    </p>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Hasil Konten */}
+            <CarouselTemplate 
+                label="Hasil Movie" 
+                contents={searchResults.movies || []} 
+                isLoading={loading} 
+                type="movie" 
+            />
+            <CarouselTemplate 
+                label="Hasil Series" 
+                contents={searchResults.series || []} 
+                isLoading={loading} 
+                type="series" 
+            />
+            <CarouselTemplate 
+                label="Hasil eBook" 
+                contents={searchResults.ebooks || []} 
+                isLoading={loading} 
+                type="ebook" 
+            />
+            <CarouselTemplate 
+                label="Hasil Komik" 
+                contents={searchResults.comics || []} 
+                isLoading={loading} 
+                type="comic" 
+            />
+            <CarouselTemplate 
+                label="Hasil Podcast" 
+                contents={searchResults.podcasts || []} 
+                isLoading={loading} 
+                type="podcast" 
+            />
+        </div>
     );
 }
 
@@ -213,7 +300,7 @@ function FilterCard({ label, onRemove }) {
     );
 }
 
-PodcastContent.propTypes = {
+SearchResultsContent.propTypes = {
     searchResults: PropTypes.object.isRequired,
     loading: PropTypes.bool.isRequired,
 };

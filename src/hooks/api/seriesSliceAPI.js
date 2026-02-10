@@ -66,9 +66,19 @@ export const seriesAPI = createApi({
       }),
       invalidatesTags: (result, error, { id }) => [{ type: 'series', id }],
     }),
+    changeVisibility: builder.mutation({
+      query: ({ id, formData }) => ({
+        url: `/series/${id}/privacy`,
+        method: "PATCH",
+        body: formData,
+        formData: true,
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: 'series', id }],
+    }),
   }),
 });
 
 export const { useGetSeriesQuery, useCreateSeriesMutation, useGetSeriesByIdQuery, useCreateEpisodeSeriesMutation,
-  useGetSeriesHomeDataQuery, useDeleteSeriesMutation, useEditSeriesMutation, useGetSeriesPerContentAnalyticsQuery
+  useGetSeriesHomeDataQuery, useDeleteSeriesMutation, useEditSeriesMutation, useGetSeriesPerContentAnalyticsQuery,
+  useChangeVisibilityMutation
 } = seriesAPI;

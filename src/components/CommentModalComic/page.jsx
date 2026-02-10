@@ -12,15 +12,15 @@ export default function CommentModalComic({
     return (
         <div
             className={`
-                fixed w-screen bg-[#121212] z-50
+                fixed w-screen bg-[#121212]
                 transition-all duration-500 ease-in-out
                 
-                top-[60px] /* Mulai TEPAT DI BAWAH header 60px */
-                h-[calc(100vh-60px)] /* Isi sisa layar */
+                top-[100px] /* Mulai TEPAT DI BAWAH header 100px */
+                h-[calc(100vh-100px)] /* Isi sisa layar */
                 
                 ${isCommentVisible
-                    ? "translate-y-0 opacity-100"
-                    : "translate-y-full opacity-0" /* Sembunyikan ke bawah */
+                    ? "translate-y-0 opacity-100 z-50 pointer-events-auto"
+                    : "translate-y-full opacity-0 -z-10 pointer-events-none" /* Sembunyikan ke bawah */
                 }
             `}
         >
@@ -40,7 +40,7 @@ export default function CommentModalComic({
                 <CommentComponent
                     commentData={commentData}
                     isLoadingGetComment={isLoadingGetComment}
-                    typeContent={"comic"}
+                    contentType={"COMIC"}
                     episodeId={episodeId}
                 />
             </div>

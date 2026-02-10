@@ -1,6 +1,7 @@
 "use client";
 import React, { useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import RichTextEditor from '@/components/RichTextEditor/page';
 
 /*[--- THIRD PARTY LIBRARIES ---]*/
 import { useForm, Controller } from "react-hook-form";
@@ -19,9 +20,9 @@ import { languageOptions } from '@/lib/constants/languageOptions';
 import ButtonSubmit from '@/components/UploadForm/ButtonSubmit';
 import InputAgeResctriction from '@/components/UploadForm/InputAgeResctriction';
 import InputImageBanner from '@/components/UploadForm/InputImageBanner';
+import GenreMultiSelect from '@/components/UploadForm/GenreMultiSelect';
 import InputSelect from '@/components/UploadForm/InputSelect';
 import InputText from '@/components/UploadForm/InputText';
-import InputTextArea from '@/components/UploadForm/InputTextArea';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 /*[--- ASSETS PUBLIC ---]*/
@@ -31,10 +32,13 @@ import UploadLargeFile from "@/components/UploadForm/UploadLargeFile";
 import { useCreateMovieMutation } from "@/hooks/api/movieSliceAPI";
 import PriceSelector from "@/components/UploadForm/PriceSelector";
 import { priceOption } from "@/lib/constants/priceOptions";
+import TermsCheckbox from "@/components/UploadForm/TermsCheckbox";
 
 
 export default function UploadMovieForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const fromEducation = searchParams.get("education") || null;
     const posterBannerInputRef = useRef(null);
     const coverBookInputRef = useRef(null);
     const {
@@ -50,7 +54,7 @@ export default function UploadMovieForm() {
         defaultValues: {
             title: "",
             description: "",
-            genre: "",
+            genre: [],
             language: "",
             ageRestriction: "",
             posterBanner: null,
@@ -77,7 +81,8 @@ export default function UploadMovieForm() {
             const formData = new FormData();
             formData.append("title", data.title);
             formData.append("description", data.description);
-            formData.append("categoriesId", data.genre);
+            const selectedGenres = Array.isArray(data.genre) ? data.genre : [data.genre].filter(Boolean);
+            formData.append("categoriesId", JSON.stringify(selectedGenres));
             formData.append("language", data.language);
             formData.append("ageRestriction", data.ageRestriction);
             formData.append("price", data.price);
@@ -98,7 +103,11 @@ export default function UploadMovieForm() {
             try {
                 const result = await createMovie(formData).unwrap();
                 if (result) {
-                    router.push(`/`);
+                    if (fromEducation) {
+                        router.push(`/education/detail/${fromEducation}`);
+                        return;
+                    }
+                    router.push(`/movies/detail/${result.data.data.id}`);
                 }
             } catch (err) {
                 console.error("Error creating movie:", err);
@@ -120,87 +129,93 @@ export default function UploadMovieForm() {
                     <InputText
                         label="Judul"
                         name="title"
-                        placeholder="Judul Series"
+                        placeholder="Tulis judul yang menarik, akurat, dan mengandung kata kunci utama video"
                         {...register("title")}
                         error={errors.title?.message}
                     />
-
-                    {/* Deskripsi */}
-                    <InputTextArea
-                        label="Deskripsi"
+                    <Controller
                         name="description"
-                        placeholder="Deskripsi"
-                        {...register("description")}
-                        error={errors.description?.message}
+                        control={control}
+                        render={({ field, fieldState }) => (
+                            <RichTextEditor
+                                label="Deskripsi"
+                                name="description"
+                                placeholder="Jelaskan premis utama film, konflik sentral, karakter utama, dan tema yang diangkat. Mesin pencari menggunakan teks ini untuk mempertemukan karyamu dengan penonton yang tepat."
+                                value={field.value}
+                                onChange={field.onChange}
+                                error={fieldState.error?.message}
+                            />
+                        )}
                     />
-
                     {/* Genre */}
                     <Controller
                         name="genre"
                         control={control}
                         rules={{ required: "Genre wajib dipilih" }}
                         render={({ field, fieldState }) => (
-                            <InputSelect
+                            <GenreMultiSelect
                                 label="Genre"
                                 name="genre"
                                 options={genresData?.data.data || []}
-                                placeholder="Pilih Genre"
-                                value={field.value}
-                                onChange={field.onChange}
-                                onBlur={field.onBlur}
+                                placeholder="Pilih satu atau lebih genre yang paling menggambarkan film ini (Misal: Aksi, Horor, Drama Komedi, Sci-Fi)."
+                                value={field.value || []}
+                                onChange={(val) => {
+                                    field.onChange(val);
+                                    field.onBlur();
+                                }}
                                 error={fieldState.error?.message}
                             />
                         )}
                     />
 
                     <InputText
-                        label={"Rumah Produksi"}
+                        label={"Rumah Produksi (Production House / Studio)"}
                         name="productionHouse"
-                        placeholder="Production House"
+                        placeholder="Tulis nama resmi studio atau perusahaan produksi yang bertanggung jawab (Contoh: Miles Films, A24, Warner Bros)."
                         {...register("productionHouse")}
                         error={errors.productionHouse?.message}
                     />
 
                     <InputText
-                        label={"Sutradara"}
+                        label={"Sutradara (Director)"}
                         name="director"
-                        placeholder="Name"
+                        placeholder="Tulis nama lengkap sutradara film ini. Pastikan ejaan benar agar muncul di hasil pencarian profil mereka."
                         {...register("director")}
                         error={errors.director?.message}
                     />
 
                     {/* Produser */}
                     <InputText
-                        label={"Produser"}
+                        label={"Produser (Producer)"}
                         name="producer"
-                        placeholder="Name"
+                        placeholder="Tulis nama produser utama atau produser eksekutif."
                         {...register("producer")}
                         error={errors.producer?.message}
                     />
 
                     {/* Penulis */}
                     <InputText
-                        label={"Penulis"}
+                        label={"Penulis Naskah (Script Writer)"}
                         name="writer"
-                        placeholder="Full Name"
+                        placeholder="Tulis nama penulis skenario atau cerita asli (Original Story)."
                         {...register("writer")}
                         error={errors.writer?.message}
                     />
 
                     {/* Pemain */}
                     <InputText
-                        label={"Pemain"}
+                        label={"Pemeran & Kru (Cast & Crew)"}
                         name="talent"
-                        placeholder="Full Name"
+                        placeholder="Tag nama aktor utama, sutradara, atau produser agar film muncul saat nama mereka dicari."
                         {...register("talent")}
                         error={errors.talent?.message}
                     />
 
                     {/* Tahun Rilis */}
                     <InputText
-                        label={"Tahun Rilis"}
+                        label={"Tahun Rilis Perdana"}
                         name="releaseYear"
-                        placeholder="Year"
+                        placeholder="Masukkan tahun tayang perdana film ini secara publik (Format: YYYY, Contoh: 2024)."
                         {...register("releaseYear")}
                         error={errors.releaseYear?.message}
                     />
@@ -212,10 +227,10 @@ export default function UploadMovieForm() {
                         rules={{ required: "Bahasa wajib dipilih" }}
                         render={({ field, fieldState }) => (
                             <InputSelect
-                                label="Bahasa"
+                                label="Bahasa Utama Audio (Original Language)"
                                 name="language"
                                 options={languageOptions}
-                                placeholder="Pilih Bahasa"
+                                placeholder="Pilih bahasa dialog asli yang dominan digunakan dalam film."
                                 value={field.value}
                                 onChange={field.onChange}
                                 onBlur={field.onBlur}
@@ -250,7 +265,8 @@ export default function UploadMovieForm() {
                                     prefix="movie/file"
                                     setDataUrl={field.onChange}
                                     name={'movie'}
-                                    label="Movie Upload"
+                                    label="Terbitkan Film / Video"
+                                    placeholder="Unggah file video final (MP4/MOV disarankan) dengan kualitas terbaik. Proses encoding mungkin memakan waktu."
                                     error={fieldState.error?.message}
                                     setDuration={(durationValue) => {
                                         // Gunakan setValue untuk mengisi field 'duration'
@@ -280,27 +296,26 @@ export default function UploadMovieForm() {
                     )}
 
                     {/* Trailer URL (muncul setelah movie ada) */}
-                    {watch("movieFileUrl") && (
-                        <Controller
-                            name="trailerFileUrl"
-                            control={control}
-                            rules={{ required: "File trailer wajib diunggah" }}
-                            render={({ field, fieldState }) => (
-                                <div>
-                                    <UploadLargeFile
-                                        prefix="movie/trailer"
-                                        setDataUrl={field.onChange}
-                                        name={'trailer'}
-                                        label="Trailer Upload"
-                                    />
-                                    <input type="hidden" {...field} value={field.value || ""} />
-                                    {fieldState.error?.message && (
-                                        <p className="text-red-500 text-sm">{fieldState.error.message}</p>
-                                    )}
-                                </div>
-                            )}
-                        />
-                    )}
+                    <Controller
+                        name="trailerFileUrl"
+                        control={control}
+                        rules={{ required: "File trailer wajib diunggah" }}
+                        render={({ field, fieldState }) => (
+                            <div>
+                                <UploadLargeFile
+                                    prefix="movie/trailer"
+                                    setDataUrl={field.onChange}
+                                    name={'trailer'}
+                                    label="File Video Trailer (Teaser)"
+                                    placeholder="Unggah video trailer pendek (durasi 1-3 menit disarankan) dengan kualitas terbaik. Trailer yang menarik sangat penting untuk memancing penonton pertama kali dan meningkatkan visibilitas di hasil pencarian video."
+                                />
+                                <input type="hidden" {...field} value={field.value || ""} />
+                                {fieldState.error?.message && (
+                                    <p className="text-red-500 text-sm">{fieldState.error.message}</p>
+                                )}
+                            </div>
+                        )}
+                    />
 
                     {/* Thumbnail */}
                     <Controller
@@ -310,7 +325,7 @@ export default function UploadMovieForm() {
                         render={({ field, fieldState }) => (
                             <InputImageBanner
                                 type="cover"
-                                label="Thumbnail"
+                                label="Poster Utama Film (Key Visual / Cover Art)"
                                 description="Gunakan rasio 1,6:2 (1600x2560), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten."
                                 name="thumbnail"
                                 icon={IconsGalery}
@@ -396,9 +411,27 @@ export default function UploadMovieForm() {
                             />
                         )}
                     />
+
+                    {/* Checkbox: Term & Agreement */}
+                    <section className="flex w-4/6 flex-col text-sm md:text-base lg:w-10/12 lg:self-end">
+                        <TermsCheckbox
+                            name="termAccepted"
+                            control={control}
+                            label="Saya telah membaca dan menyetujui Syarat & Ketentuan serta Panduan Komunitas."
+                            linkHref="/term-and-conditions"
+                            linkText="Syarat & Ketentuan"
+                        />
+                        <TermsCheckbox
+                            name="agreementAccepted"
+                            control={control}
+                            label="Saya menyatakan bahwa materi video ini orisinal atau saya memiliki hak penuh untuk mempublikasikannya (Bebas Pelanggaran Hak Cipta)."
+                            linkHref="/agreement"
+                            linkText="Agreement"
+                        />
+                    </section>
                 </div>
 
-                <ButtonSubmit type="submit" icon={IconsButtonSubmit} label="Buat Series" isLoading={isLoading} />
+                <ButtonSubmit type="submit" icon={IconsButtonSubmit} label="Publikasikan Video" isLoading={isLoading} />
                 {error && <p className="text-red-500 text-sm">Gagal upload: {error.data?.message || "Terjadi kesalahan"}</p>}
             </form>
             {isLoading && (

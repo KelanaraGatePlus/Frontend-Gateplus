@@ -23,6 +23,7 @@ import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
+import RichTextEditor from '@/components/RichTextEditor/page';
 
 export default function UploadComicEpisodeForm() {
     const router = useRouter();
@@ -30,6 +31,7 @@ export default function UploadComicEpisodeForm() {
     const seriesFromUrl = searchParams.get("series") || "";
     const creatorId = useGetCreatorId();
     const userId = useGetUserId();
+    const fromEducation = searchParams.get("education") || null;
 
     const {
         register,
@@ -57,7 +59,6 @@ export default function UploadComicEpisodeForm() {
     const creatorDetailQuery = useGetCreatorDetailQuery({ id: creatorId, userId }, { skip });
 
     const onSubmit = async (data) => {
-        const sortedFiles = data.inputFile.sort((a, b) => a.name.localeCompare(b.name));
         const formData = new FormData();
         formData.append("comicsId", data.comicId);
         formData.append("title", data.title);
@@ -66,12 +67,16 @@ export default function UploadComicEpisodeForm() {
         formData.append("notedEpisode", data.notedEpisode);
         formData.append("coverImageUrl", data.episodeCover[0]);
 
-        sortedFiles.forEach((file) => {
+        data.inputFile.forEach((file) => {
             formData.append("fileImageComics", file);
         });
 
         try {
             await createEpisode(formData).unwrap();
+            if (fromEducation) {
+                router.push(`/education/detail/${fromEducation}`);
+                return;
+            }
             router.push(`/comics/detail/${data.comicId}`);
         } catch (err) {
             console.error("Error creating episode of comic:", err);
@@ -86,7 +91,7 @@ export default function UploadComicEpisodeForm() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <InputSelect
-                            label="Judul Series"
+                            label="Bagian dari Serial Komik Induk"
                             name="series"
                             options={creatorDetailQuery.data?.data?.data?.Comics || []}
                             value={field.value}
@@ -99,19 +104,26 @@ export default function UploadComicEpisodeForm() {
                 />
 
                 <InputText
-                    label="Judul Episode"
+                    label="Judul Chapter / Episode (Nomor & Sub-Judul)"
                     name="title"
-                    placeholder="Masukkan judul episode"
+                    placeholder='Tulis judul chapter yang spesifik. Gabungkan nomor dan kata kunci plot utama (Contoh: "Chapter 45: Pertarungan di Menara Iblis")'
                     {...register("title")}
                     error={errors.title?.message}
                 />
 
-                <InputTextArea
-                    label="Deskripsi"
+                <Controller
                     name="description"
-                    placeholder="Deskripsi"
-                    {...register("description")}
-                    error={errors.description?.message}
+                    control={control}
+                    render={({ field, fieldState }) => (
+                        <RichTextEditor
+                            label="Sinopsis & Detail Chapter Lengkap"
+                            name="description"
+                            placeholder="Jelaskan plot spesifik chapter ini, kejadian penting, dan karakter yang terlibat. Jangan gunakan sinopsis umum seri. Mesin pencari membaca teks ini."
+                            value={field.value}
+                            onChange={field.onChange}
+                            error={fieldState.error?.message}
+                        />
+                    )}
                 />
 
                 <Controller
@@ -119,9 +131,9 @@ export default function UploadComicEpisodeForm() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <InputImageBanner
-                            type="cover"
-                            label="Cover Episode"
-                            description="Format 1x1 dengan maksimal 500kb."
+                            type="thumbnail"
+                            label="Thumbnail Chapter (Still Image)"
+                            description="Gunakan rasio 1:1 atau sesuai standar platform, format JPG/PNG, maks 500KB. Pilih satu panel paling menarik atau representatif dari chapter ini untuk memancing klik (High CTR)."
                             name="episodeCover"
                             icon={IconsGalery}
                             files={field.value}
@@ -138,12 +150,15 @@ export default function UploadComicEpisodeForm() {
                     render={({ field, fieldState }) => (
                         <InputComicPic
                             uploadedFiles={{ inputFile: field.value }}
+                            description="Unggah semua halaman chapter (JPG/PNG). Setelah upload, geser/drag gambar untuk mengatur urutan halaman."
+                            label="File Gambar Chapter Komik (Halaman Lengkap)"
                             handleFileUpload={(e) => field.onChange([...field.value, ...e.target.files].sort((a, b) => a.name.localeCompare(b.name)))}
                             handleRemoveFile={(_, index) => {
                                 const updated = [...field.value];
                                 updated.splice(index, 1);
                                 field.onChange(updated);
                             }}
+                            onReorder={(reorderedFiles) => field.onChange(reorderedFiles)}
                             error={fieldState.error?.message}
                         />
                     )}
@@ -162,7 +177,7 @@ export default function UploadComicEpisodeForm() {
                     control={control}
                     render={({ field, fieldState }) => (
                         <PriceSelector
-                            label="Harga"
+                            label="Harga Karya"
                             options={priceOption}
                             selected={field.value}
                             onSelect={(val) => {

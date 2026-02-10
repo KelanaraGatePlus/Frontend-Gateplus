@@ -1,6 +1,6 @@
 "use client";
 import React, { useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 /*[--- THIRD PARTY LIBRARIES ---]*/
 import { useForm, Controller } from "react-hook-form";
@@ -22,16 +22,19 @@ import InputAgeResctriction from '@/components/UploadForm/InputAgeResctriction';
 import InputImageBanner from '@/components/UploadForm/InputImageBanner';
 import InputSelect from '@/components/UploadForm/InputSelect';
 import InputText from '@/components/UploadForm/InputText';
-import InputTextArea from '@/components/UploadForm/InputTextArea';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+import RichTextEditor from '@/components/RichTextEditor/page';
 
 /*[--- ASSETS PUBLIC ---]*/
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
+import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
 
 export default function UploadPodcastSeriesForm() {
     const router = useRouter();
     const coverPodcastInputRef = useRef(null);
+    const searchParams = useSearchParams();
+    const fromEducation = searchParams.get("education") || null;
     const {
         register,
         handleSubmit,
@@ -43,7 +46,7 @@ export default function UploadPodcastSeriesForm() {
         defaultValues: {
             title: "",
             description: "",
-            genre: "",
+            genre: [],
             language: "",
             ageRestriction: "",
             coverPodcast: null,
@@ -57,7 +60,8 @@ export default function UploadPodcastSeriesForm() {
         const formData = new FormData();
         formData.append("title", data.title);
         formData.append("description", data.description);
-        formData.append("categoriesId", data.genre);
+        const selectedGenres = Array.isArray(data.genre) ? data.genre : [data.genre].filter(Boolean);
+        formData.append("categoriesId", JSON.stringify(selectedGenres));
         formData.append("language", data.language);
         formData.append("ageRestriction", data.ageRestriction);
 
@@ -65,6 +69,10 @@ export default function UploadPodcastSeriesForm() {
 
         try {
             const result = await createPodcast(formData).unwrap();
+            if (fromEducation) {
+                router.push(`/podcasts/upload/episode?fromEducation=${fromEducation}&series=${result.data.id}`);
+                return;
+            }
             router.push(`/podcasts/upload/episode?series=${result.data.id}`);
         } catch (err) {
             console.error("Error creating podcast:", err);
@@ -78,20 +86,27 @@ export default function UploadPodcastSeriesForm() {
                 <div className="flex flex-col gap-2">
                     {/* Judul */}
                     <InputText
-                        label="Judul"
+                        label="Judul Seri Podcast"
                         name="title"
-                        placeholder="Judul Series"
+                        placeholder="Tulis nama podcast yang unik dan mudah diingat (Contoh: Podkeskak)"
                         {...register("title")}
                         error={errors.title?.message}
                     />
 
                     {/* Deskripsi */}
-                    <InputTextArea
-                        label="Deskripsi"
+                    <Controller
                         name="description"
-                        placeholder="Deskripsi"
-                        {...register("description")}
-                        error={errors.description?.message}
+                        control={control}
+                        render={({ field, fieldState }) => (
+                            <RichTextEditor
+                                label="Sinopsis Lengkap Podcast"
+                                name="description"
+                                placeholder="Jelaskan topik utama, format acara, dan siapa target pendengar Anda agar mudah ditemukan."
+                                value={field.value}
+                                onChange={field.onChange}
+                                error={fieldState.error?.message}
+                            />
+                        )}
                     />
 
                     {/* Genre */}
@@ -100,14 +115,16 @@ export default function UploadPodcastSeriesForm() {
                         control={control}
                         rules={{ required: "Genre wajib dipilih" }}
                         render={({ field, fieldState }) => (
-                            <InputSelect
+                            <GenreMultiSelect
                                 label="Genre"
                                 name="genre"
                                 options={genresData?.data.data || []}
-                                placeholder="Pilih Genre"
-                                value={field.value}
-                                onChange={field.onChange}
-                                onBlur={field.onBlur}
+                                placeholder="Pilih satu atau lebih genre yang paling menggambarkan film ini (Misal: Aksi, Horor, Drama Komedi, Sci-Fi)."
+                                value={field.value || []}
+                                onChange={(val) => {
+                                    field.onChange(val);
+                                    field.onBlur();
+                                }}
                                 error={fieldState.error?.message}
                             />
                         )}
@@ -120,10 +137,10 @@ export default function UploadPodcastSeriesForm() {
                         rules={{ required: "Bahasa wajib dipilih" }}
                         render={({ field, fieldState }) => (
                             <InputSelect
-                                label="Bahasa"
+                                label="Bahasa Pengantar Audio"
                                 name="language"
                                 options={languageOptions}
-                                placeholder="Pilih Bahasa"
+                                placeholder="Pilih bahasa utama yang digunakan dalam rekaman (Misal: Indonesia)"
                                 value={field.value}
                                 onChange={field.onChange}
                                 onBlur={field.onBlur}
@@ -153,9 +170,9 @@ export default function UploadPodcastSeriesForm() {
                         rules={{ required: "Cover podcast wajib diunggah" }}
                         render={({ field, fieldState }) => (
                             <InputImageBanner
-                                type="cover"
-                                label="Cover Podcast"
-                                description="Gunakan rasio 1,6:2 (1600x2560), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten."
+                                type="thumbnail"
+                                label="Sampul Seri Utama (Cover Art)"
+                                description="Rasio: 1:1 Format: JPG/PNG Ukuran Maksimal: 500 KB"
                                 name="coverPodcast"
                                 icon={IconsGalery}
                                 inputRef={coverPodcastInputRef}

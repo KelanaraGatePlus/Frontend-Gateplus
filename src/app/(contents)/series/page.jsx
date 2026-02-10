@@ -72,6 +72,8 @@ function SeriesContent() {
                 contents={newestData}
                 isLoading={isLoading}
                 type={"series"}
+                withNewestTag={true}
+                withTopTag={false}
             />
         </>
     )

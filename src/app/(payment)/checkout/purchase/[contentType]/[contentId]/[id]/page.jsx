@@ -7,11 +7,6 @@ import RacunSangga from "@@/poster/poster-content-racunSangga.svg";
 import { usePayment } from "@/hooks/api/paymentAPI";
 
 // Import semua query
-import { useGetEbookByIdQuery } from "@/hooks/api/ebookSliceAPI";
-import { useGetComicByIdQuery } from "@/hooks/api/comicSliceAPI";
-import { useGetSeriesByIdQuery } from "@/hooks/api/seriesSliceAPI";
-import { useGetPodcastByIdQuery } from "@/hooks/api/podcastSliceAPI";
-import { fee } from "@/lib/constants/fee";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import { useGetDiscountByVoucherDiscountCodeMutation } from "@/hooks/api/discountVoucherAPI";
 import FlexModal from "@/components/Modal/FlexModal";
@@ -20,10 +15,15 @@ import { contentType as contentTypeConst } from "@/lib/constants/contentType";
 import PaymentSuccessImage from "@@/AdditionalImages/payment-success.svg";
 import PaymentFailedImage from "@@/AdditionalImages/payment-failed.svg";
 import { useSearchParams } from "next/navigation";
+import { useGetPublicEpisodeComicsByIdQuery, useGetPublicEpisodeEbookByIdQuery, useGetPublicEpisodePodcastByIdQuery, useGetPublicEpisodeSeriesByIdQuery } from "@/hooks/api/contentSliceAPI";
+import PaymentMethodSelector from "@/components/Payment/PaymentMethodSelector";
+import VoucherInput from "@/components/Payment/VoucherInput";
+import TipSelector from "@/components/Payment/TipSelector";
+import PaymentSummary from "@/components/Payment/PaymentSummary";
 
 export default function PurchaseContentPaymentPage({ params }) {
     const resolvedParams = React.use(params);
-    const { contentType, contentId, id } = resolvedParams;
+    const { contentType, id } = resolvedParams;
     const searchParams = useSearchParams();
     const isSuccessParams = searchParams.get("isSuccess");
     const isFailedParams = searchParams.get("isFailed");
@@ -32,30 +32,28 @@ export default function PurchaseContentPaymentPage({ params }) {
     const [voucherCode, setVoucherCode] = useState("");
     const [successModal, setSuccessModal] = useState(isSuccessParams === "true" ? true : false);
     const [failedModal, setFailedModal] = useState(isFailedParams === "true" ? true : false);
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
 
     const [selectedTip, setSelectedTip] = useState(null);
     const { pay } = usePayment();
     const [getDiscount, { isLoading: getDiscountLoading, error: getDiscountError, isSuccess }] = useGetDiscountByVoucherDiscountCodeMutation();
 
-    // Simulasi userId kalau diperlukan
-    const userId = 1;
-
-    const { data: ebookData, isLoading: ebookLoading } = useGetEbookByIdQuery(
-        { id: contentId, withEpisodes: true },
+    const { data: ebookData, isLoading: ebookLoading } = useGetPublicEpisodeEbookByIdQuery(
+        { id },
         { skip: contentType !== "ebooks" }
     );
 
-    const { data: comicData, isLoading: comicLoading } = useGetComicByIdQuery(
-        { id: contentId, userId, withEpisodes: true },
+    const { data: comicData, isLoading: comicLoading } = useGetPublicEpisodeComicsByIdQuery(
+        { id },
         { skip: contentType !== "comics" }
     );
 
-    const { data: seriesData, isLoading: seriesLoading } = useGetSeriesByIdQuery({ id: contentId, withEpisodes: true }, {
+    const { data: seriesData, isLoading: seriesLoading } = useGetPublicEpisodeSeriesByIdQuery({ id, withEpisodes: true }, {
         skip: contentType !== "series",
     });
 
-    const { data: podcastData, isLoading: podcastLoading } = useGetPodcastByIdQuery(
-        { id: contentId, userId, withEpisodes: true },
+    const { data: podcastData, isLoading: podcastLoading } = useGetPublicEpisodePodcastByIdQuery(
+        { id },
         { skip: contentType !== "podcasts" }
     );
 
@@ -65,44 +63,45 @@ export default function PurchaseContentPaymentPage({ params }) {
 
     switch (contentType) {
         case "ebooks":
-            contentData = ebookData?.data;
+            contentData = ebookData?.data?.data?.ebooks;
             isLoading = ebookLoading;
             break;
         case "comics":
-            contentData = comicData?.data;
+            contentData = comicData?.data?.data?.comics;
             isLoading = comicLoading;
             break;
         case "series":
-            contentData = seriesData?.data?.data;
-            console.log("Series Data:", contentData);
+            contentData = seriesData?.data?.data?.series;
             isLoading = seriesLoading;
             break;
         case "podcasts":
-            contentData = podcastData?.data;
+            contentData = podcastData?.data?.data?.podcasts;
             isLoading = podcastLoading;
             break;
         default:
             contentData = null;
     }
 
-    let episodeList = [];
-    if (contentType === 'ebooks' && contentData?.episode_ebooks?.episodes) { // Asumsi nama array, sesuaikan
-        episodeList = contentData.episode_ebooks.episodes;
-    } else if (contentType === 'comics' && contentData?.episode_comics?.episodes) { // Asumsi nama array, sesuaikan
-        episodeList = contentData.episode_comics.episodes;
-    } else if (contentType === 'podcasts' && contentData?.episode_podcasts?.episodes) { // Asumsi nama array, sesuaikan
-        episodeList = contentData.episode_podcasts.episodes;
-    } else if (contentType === 'series' && contentData?.episodes?.episodes) { // Asumsi nama array, sesuaikan
-        episodeList = contentData.episodes.episodes;
+    let episodeData = null;
+    if (contentType === 'ebooks' && ebookData?.data?.data) { // Asumsi nama array, sesuaikan
+        episodeData = ebookData.data.data;
+    } else if (contentType === 'comics' && comicData?.data?.data) { // Asumsi nama array, sesuaikan
+        episodeData = comicData.data.data;
+    } else if (contentType === 'podcasts' && podcastData?.data?.data) { // Asumsi nama array, sesuaikan
+        episodeData = podcastData.data.data;
+    } else if (contentType === 'series' && seriesData?.data?.data) { // Asumsi nama array, sesuaikan
+        episodeData = seriesData.data.data;
     }
-
-    const episodeData = episodeList.find(episode => episode.id === id);
 
     async function handlePayment() {
         try {
+            if (!selectedPaymentMethod) {
+                alert("❌ Silakan pilih metode pembayaran.");
+                return;
+            }
             setIsShowInput(false);
             await pay(
-                { episodeId: id, contentType: contentTypeConst[contentType]['singleName'].toUpperCase(), tip: selectedTip, voucherCode },
+                { episodeId: id, contentType: contentTypeConst[contentType]['singleName'].toUpperCase(), tip: selectedTip, voucherCode, paymentMethod: selectedPaymentMethod },
                 {
                     onSuccess: (result) => {
                         console.log("✅ Sukses:", result);
@@ -144,15 +143,15 @@ export default function PurchaseContentPaymentPage({ params }) {
     const price = episodeData?.price || 0;
 
     return (
-        <div className="w-full h-max flex justify-center items-center mt-10">
-            {isShowInput && <div className="bg-[#0881AB] w-full md:min-w-3xl xl:min-w-5xl 2xl:min-w-6xl text-xs md:text-[16px] max-w-max rounded-md montserratFont text-white">
+        <div className="w-full h-max flex justify-center items-center mt-10 px-2">
+            {isShowInput && <div className="bg-[#515151] drop-shadow-md drop-shadow-[#0000004D] min-w-full px md:min-w-3xl xl:min-w-5xl 2xl:min-w-6xl text-xs md:text-[16px] max-w-max rounded-md montserratFont text-white">
                 <div className="px-8 pt-4 pb-10 flex flex-col gap-8">
                     <h1 className="zeinFont font-black text-xl md:text-3xl text-center">Konfirmasi Pesanan</h1>
 
                     {/* Produk */}
-                    <div className="flex flex-row gap-2">
+                    <div className="flex flex-row gap-2 md:px-8">
                         <Image
-                            src={contentData?.coverImageUrl || RacunSangga}
+                            src={contentData?.coverImageUrl || contentData?.coverPodcastImage || RacunSangga}
                             alt="Poster"
                             width={100}
                             height={150}
@@ -175,99 +174,66 @@ export default function PurchaseContentPaymentPage({ params }) {
                         </div>
                     </div>
 
+                    {/* Pemilihan metode pembayaran */}
+                    <PaymentMethodSelector
+                        selectedPaymentMethod={selectedPaymentMethod}
+                        onMethodChange={setSelectedPaymentMethod}
+                        showError={!selectedPaymentMethod}
+                    />
+
                     {/* Voucher & Tip Section */}
                     <div className="flex flex-col px-0 md:px-8 gap-8">
-                        <div className="flex flex-col gap-2">
-                            {price && <div className="flex md:flex-row flex-col bg-[#DEDEDE4D] rounded-lg overflow-hidden">
-                                <button disabled={!voucherCode} onClick={() => handleApplyVoucher(voucherCode, Number(price))} className="px-6 md:px-12 py-3 bg-[#0075e9c4] font-semibold whitespace-nowrap rounded-sm hover:cursor-pointer">
-                                    Gunakan Voucher
-                                </button>
-                                <input
-                                    type="text"
-                                    className="flex-1 text-center placeholder:text-center px-2 py-3 outline-none"
-                                    placeholder="Gunakan / Masukan Kode Voucher"
-                                    onChange={
-                                        (e) => setVoucherCode(e.target.value)
-                                    }
-                                />
-                            </div>}
-                            <div className="flex items-center">
-                                {getDiscountLoading && <LoadingOverlay />}
-                                {getDiscountError && <p className="text-red-500">{getDiscountError.data.message}</p>}
-                                {isSuccess && <p className="text-green-500">Voucher applied successfully!</p>}
-                            </div>
-                        </div>
+                        {price && (
+                            <VoucherInput
+                                voucherCode={voucherCode}
+                                onVoucherChange={setVoucherCode}
+                                onApplyVoucher={(code) =>
+                                    handleApplyVoucher(code, Number(price))
+                                }
+                                isLoading={getDiscountLoading}
+                                error={getDiscountError}
+                                isSuccess={isSuccess}
+                            />
+                        )}
 
-                        <div className="flex flex-col gap-2">
-                            <div className="bg-[#2222224D] p-4 rounded-md">
-                                <p><b>Sawerkuy!</b> kasih tip biar kreator hepi</p>
-                            </div>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-                                {[5000, 10000, 15000, 20000].map((amount) => {
-                                    const isSelected = selectedTip === amount;
-                                    return (
-                                        <button
-                                            key={amount}
-                                            onClick={() => setSelectedTip(prev => prev === amount ? null : amount)}
-                                            className={`py-4 rounded-md font-semibold transition hover:cursor-pointer ${isSelected ? "bg-[#1A207480]" : "bg-[#0075E9C4] hover:bg-[#0075e9]"
-                                                }`}
-                                        >
-                                            Rp {amount.toLocaleString("id-ID")}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
+                        <TipSelector
+                            selectedTip={selectedTip}
+                            onTipChange={setSelectedTip}
+                        />
                     </div>
                 </div>
 
                 {/* Rincian Pembayaran */}
-                <div className="bg-[#1A207480] p-8 flex flex-col gap-4">
-                    <h2 className="font-bold text-2xl">Rincian</h2>
-                    <div className="flex flex-col gap-1">
-                        <div className="flex flex-row justify-between">
-                            <p>Harga konten</p>
-                            <p className="font-bold">
-                                Rp {(Number(price) || 0).toLocaleString("id-ID")}
-                            </p>
-                        </div>
-                        <div className="flex flex-row justify-between">
-                            <p>Sawerin</p>
-                            <p className="font-bold">Rp {selectedTip ? Number(selectedTip).toLocaleString("id-ID") : "0"}</p>
-                        </div>
-                        <div className="flex flex-row justify-between">
-                            <p>Voucher</p>
-                            <p className="font-bold text-red-600">- Rp {Math.round(totalDiscount).toLocaleString("id-ID")}</p>
-                        </div>
-                        <div className="flex flex-row justify-between">
-                            <p>Biaya Admin</p>
-                            <p className="font-bold">Rp {Math.round(((Number(price) - totalDiscount + (Number(selectedTip) || 0)) * fee.serviceFee)).toLocaleString("id-ID")}</p>
-                        </div>
-                        <div className="flex flex-row justify-between border-b border-white pb-2">
-                            <p>Pajak</p>
-                            <p className="font-bold">Rp {Math.round(((Number(price) - totalDiscount + (Number(selectedTip) || 0)) * fee.taxFee)).toLocaleString("id-ID")}</p>
-                        </div>
-                        <div className="flex flex-row justify-between border-white pb-2 text-xl">
-                            <p>Total</p>
-                            <p className="font-bold">
-                                Rp {Math.round((Number(price) - totalDiscount + (Number(selectedTip) || 0) + ((Number(price) - totalDiscount + (Number(selectedTip) || 0)) * (fee.taxFee + fee.serviceFee)))).toLocaleString("id-ID")}
-                            </p>
-                        </div>
-                    </div>
-                    {isPurchased ?
+                <PaymentSummary
+                    price={price}
+                    selectedTip={selectedTip}
+                    totalDiscount={totalDiscount}
+                    selectedPaymentMethod={selectedPaymentMethod}
+                />
+
+                {/* Payment Buttons */}
+                <div className="bg-[#222222] p-8 flex flex-col gap-4">
+                    {isPurchased ? (
                         <button
                             onClick={handlePayment}
                             disabled
                             className="rounded-4xl bg-[#0076E9CC] py-4 font-semibold hover:cursor-not-allowed"
                         >
                             Kamu sudah berlangganan
-                        </button> : <button
+                        </button>
+                    ) : (
+                        <button
                             onClick={handlePayment}
-                            className="rounded-4xl bg-[#0076E9CC] py-4 font-semibold hover:cursor-pointer"
+                            disabled={!selectedPaymentMethod}
+                            className={`rounded-4xl py-4 font-semibold ${
+                                selectedPaymentMethod
+                                    ? "bg-[#0076E9CC] hover:bg-[#005bb5] hover:cursor-pointer"
+                                    : "bg-[#686868] hover:cursor-not-allowed opacity-50"
+                            }`}
                         >
                             Pay Now
                         </button>
-                    }
+                    )}
                 </div>
             </div>}
 
@@ -282,7 +248,7 @@ export default function PurchaseContentPaymentPage({ params }) {
                         className="mx-auto"
                     />
                     <h2 className="text-center font-bold text-2xl text-[#C6C6C6]">Pembayaran Berhasil!</h2>
-                    <Link href={`/${contentTypeConst[contentType]['pluralName']}/detail/${contentId}`}
+                    <Link href={`/${contentTypeConst[contentType]['pluralName']}/detail/${contentData?.id}`}
                         className="rounded-4xl bg-[#0076E9CC] py-4 min-w-4xl font-semibold hover:cursor-pointer text-center text-white"
                     >
                         Lanjut Menonton
@@ -308,7 +274,7 @@ export default function PurchaseContentPaymentPage({ params }) {
                     >
                         Ulangi Pesanan
                     </button>
-                    <Link href={`/${contentTypeConst[contentType]['pluralName']}/detail/${contentId}`}
+                    <Link href={`/${contentTypeConst[contentType]['pluralName']}/detail/${contentData?.id}`}
                         className="rounded-4xl bg-[#686868] py-4 min-w-4xl font-semibold hover:cursor-pointer text-center text-white"
                     >
                         Kembali
@@ -321,7 +287,7 @@ export default function PurchaseContentPaymentPage({ params }) {
 
 PurchaseContentPaymentPage.propTypes = {
     params: PropTypes.shape({
-        contentType: PropTypes.oneOf(["ebook", "comic", "podcast", "series"]).isRequired,
+        contentType: PropTypes.oneOf(["ebooks", "comics", "podcasts", "series"]).isRequired,
         contentId: PropTypes.string.isRequired,
         id: PropTypes.string.isRequired,
     }).isRequired,

@@ -1,49 +1,40 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
 
-import {
-    Carousel,
-    CarouselContent,
-    CarouselItem,
-    CarouselNext,
-    CarouselPrevious,
-} from "@/components/ui/carousel";
 import PropTypes from "prop-types";
+import { useEffect } from "react";
 
-import movie1 from "@@/logo/logoFilm/film_1.svg";
-import movie2 from "@@/logo/logoFilm/film_2.svg";
-import movie3 from "@@/logo/logoFilm/film_3.svg";
-import { useEffect, useState } from "react";
-
-import Image from "next/legacy/image";
 import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
-import ProductEpisodeSection from "@/components/MainDetailProduct/ProductEpisodeSection";
 import { useGetEpisodeSeriesByIdQuery } from "@/hooks/api/contentSliceAPI";
 import CommentComponent from "@/components/Comment/page";
 import { useGetCommentByEpisodeSeriesQuery } from "@/hooks/api/commentSliceAPI";
+import EpisodeController from "@/components/EpisodeController/EpisodeController";
+import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 /* ===========================
    Halaman: DetailSeriesPage (JSX)
    =========================== */
 export default function DetailSeriesPage({ params }) {
     const { id } = params;
-    const { data, error } = useGetEpisodeSeriesByIdQuery(id);
-    const [loading] = useState(false);
+    const { data, error, isLoading } = useGetEpisodeSeriesByIdQuery(id);
 
     const episodeData = data?.data?.data || {};
     const seriesData = data?.data?.data?.series || {};
-    const episode_series = (seriesData.episodes || []).slice().sort((a, b) => {
-        return new Date(a.createdAt) - new Date(b.createdAt);
-    });
     const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByEpisodeSeriesQuery(id, {
         skip: !id,
     });
 
     useEffect(() => {
         if (error && error.status === 403) {
-            window.location.href = "/";
+            window.location.href = "/checkout/purchase/series/x/" + id;
         }
     }, [error]);
+
+    if (isLoading) {
+        return (
+            <LoadingOverlay />
+        )
+    }
 
     return (
         <div>
@@ -52,6 +43,7 @@ export default function DetailSeriesPage({ params }) {
                 <div className="mx-auto my-auto flex w-screen justify-center rounded-lg object-cover">
                     {episodeData && <DefaultVideoPlayer
                         className="rounded-lg"
+                        playbackId={episodeData?.muxPlaybackId}
                         src={episodeData?.episodeFileUrl}
                         poster={episodeData?.thumbnailUrl}
                         startFrom={episodeData?.WatchProgress?.[0]?.progressSeconds || 0}
@@ -65,89 +57,23 @@ export default function DetailSeriesPage({ params }) {
                 </div>
             </section>
 
-            <main className="px-5 text-white">
-                <ProductEpisodeSection
-                    productType={'series'}
-                    productEpisodes={episode_series}
-                    isLoading={loading}
-                    handlePayment={() => {
-                        console.log('Payment initiated for series:');
-                    }}
-                />
-
-                <section className="mt-5">
-                    <section className="my-10 flex flex-col">
-                        <section className="mt-10">
-                            <Carousel className="">
-                                <div className="flex justify-between text-white">
-                                    <p className="mb-5 text-[20px] font-bold md:ml-3">Dari Creator</p>
-                                    <p className="mb-5 text-[20px] font-bold md:ml-3">Lainnya</p>
-                                </div>
-                                <CarouselContent className="">
-                                    <CarouselItem className="">
-                                        <Image src={movie1} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie2} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie1} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie3} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie1} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie3} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem className="">
-                                        <Image src={movie1} priority alt="movies-logo-banner" />
-                                    </CarouselItem>
-                                </CarouselContent>
-                                <CarouselPrevious />
-                                <CarouselNext />
-                            </Carousel>
-                        </section>
-
-                        <section className="mt-10">
-                            <Carousel className="sm:max-h-auto sm:max-w-auto">
-                                <div className="flex justify-between text-white">
-                                    <p className="mb-5 text-[20px] font-bold md:ml-3">Rekomendasi Serupa</p>
-                                    <p className="mb-5 text-[20px] font-bold md:ml-3">Lainnya</p>
-                                </div>
-                                <CarouselContent>
-                                    <CarouselItem>
-                                        <Image src={movie1} priority alt="logo-movie-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem>
-                                        <Image src={movie2} priority alt="logo-movie-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem>
-                                        <Image src={movie1} priority alt="logo-movie-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem>
-                                        <Image src={movie3} priority alt="logo-movie-banner" />
-                                    </CarouselItem>
-                                    <CarouselItem>
-                                        <Image src={movie2} priority alt="logo-movie-banner" />
-                                    </CarouselItem>
-                                </CarouselContent>
-                                <CarouselPrevious />
-                                <CarouselNext />
-                            </Carousel>
-                        </section>
-                    </section>
-                </section>
+            <main className="md:px-5 text-white mt-8 md:mt-16">
+                <div className="px-5 md:px-16">
+                    <EpisodeController
+                        nextEpisodeUrl={data?.data?.nextEpisode ? `/series/watch/${data.data.nextEpisode.id}` : null}
+                        prevEpisodeUrl={data?.data?.previousEpisode ? `/series/watch/${data.data.previousEpisode.id}` : null}
+                    />
+                </div>
 
                 {/* Comment Baru */}
-                <CommentComponent
-                    commentData={commentData?.data?.data || []}
-                    isLoadingGetComment={isLoadingGetComment}
-                    typeContent={"series"}
-                    episodeId={id}
-                />
+                <div className="md:px-11">
+                    <CommentComponent
+                        commentData={commentData?.data?.data || []}
+                        isLoadingGetComment={isLoadingGetComment}
+                        contentType={"SERIES"}
+                        episodeId={id}
+                    />
+                </div>
             </main>
         </div>
     );

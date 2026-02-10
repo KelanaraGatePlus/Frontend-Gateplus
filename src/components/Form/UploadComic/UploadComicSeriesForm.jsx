@@ -1,6 +1,6 @@
 "use client";
 import React, { useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 /*[--- THIRD PARTY LIBRARIES ---]*/
 import { useForm, Controller } from "react-hook-form";
@@ -22,16 +22,20 @@ import InputAgeResctriction from '@/components/UploadForm/InputAgeResctriction';
 import InputImageBanner from '@/components/UploadForm/InputImageBanner';
 import InputSelect from '@/components/UploadForm/InputSelect';
 import InputText from '@/components/UploadForm/InputText';
-import InputTextArea from '@/components/UploadForm/InputTextArea';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 /*[--- ASSETS PUBLIC ---]*/
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
+import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
+import PriceSelector from "@/components/UploadForm/PriceSelector";
+import RichTextEditor from '@/components/RichTextEditor/page';
 
 export default function UploadComicSeriesForm() {
     const router = useRouter();
     const posterBannerInputRef = useRef(null);
+    const searchParams = useSearchParams();
+    const fromEducation = searchParams.get("education") || null;
     const coverBookInputRef = useRef(null);
     const {
         register,
@@ -45,7 +49,7 @@ export default function UploadComicSeriesForm() {
         defaultValues: {
             title: "",
             description: "",
-            genre: "",
+            genre: [],
             language: "",
             ageRestriction: "",
             posterBanner: null,
@@ -63,7 +67,8 @@ export default function UploadComicSeriesForm() {
         const formData = new FormData();
         formData.append("title", data.title);
         formData.append("description", data.description);
-        formData.append("categoriesId", data.genre);
+        const selectedGenres = Array.isArray(data.genre) ? data.genre : [data.genre].filter(Boolean);
+        formData.append("categoriesId", JSON.stringify(selectedGenres));
         formData.append("language", data.language);
         formData.append("ageRestriction", data.ageRestriction);
         formData.append("canSubscribe", data.canSubscribe);
@@ -74,6 +79,10 @@ export default function UploadComicSeriesForm() {
 
         try {
             const result = await createComic(formData).unwrap();
+            if (fromEducation) {
+                router.push(`/education/detail/${fromEducation}`);
+                return;
+            }
             router.push(`/comics/upload/episode?series=${result.data.id}`);
         } catch (err) {
             console.error("Error creating comic:", err);
@@ -87,21 +96,29 @@ export default function UploadComicSeriesForm() {
                 <div className="flex flex-col gap-2">
                     {/* Judul */}
                     <InputText
-                        label="Judul"
+                        label="Judul Utama Seri Komik (Main Series Title)"
                         name="title"
-                        placeholder="Judul Series"
+                        placeholder="Tulis judul resmi dan unik dari seri komik ini. Hindari singkatan agar mudah dicari."
                         {...register("title")}
                         error={errors.title?.message}
                     />
 
                     {/* Deskripsi */}
-                    <InputTextArea
-                        label="Deskripsi"
+                    <Controller
                         name="description"
-                        placeholder="Deskripsi"
-                        {...register("description")}
-                        error={errors.description?.message}
+                        control={control}
+                        render={({ field, fieldState }) => (
+                            <RichTextEditor
+                                label="Sinopsis Lengkap Seri Komik"
+                                name="description"
+                                placeholder="Jelaskan premis utama dunia cerita, konflik sentral, karakter utama, dan tema yang diangkat. Mesin pencari menggunakan teks ini untuk mempertemukan karyamu dengan pembaca yang tepat."
+                                value={field.value}
+                                onChange={field.onChange}
+                                error={fieldState.error?.message}
+                            />
+                        )}
                     />
+
 
                     {/* Genre */}
                     <Controller
@@ -109,14 +126,16 @@ export default function UploadComicSeriesForm() {
                         control={control}
                         rules={{ required: "Genre wajib dipilih" }}
                         render={({ field, fieldState }) => (
-                            <InputSelect
+                            <GenreMultiSelect
                                 label="Genre"
                                 name="genre"
                                 options={genresData?.data.data || []}
-                                placeholder="Pilih Genre"
-                                value={field.value}
-                                onChange={field.onChange}
-                                onBlur={field.onBlur}
+                                placeholder="Pilih satu atau lebih genre yang paling menggambarkan film ini (Misal: Aksi, Horor, Drama Komedi, Sci-Fi)."
+                                value={field.value || []}
+                                onChange={(val) => {
+                                    field.onChange(val);
+                                    field.onBlur();
+                                }}
                                 error={fieldState.error?.message}
                             />
                         )}
@@ -129,10 +148,10 @@ export default function UploadComicSeriesForm() {
                         rules={{ required: "Bahasa wajib dipilih" }}
                         render={({ field, fieldState }) => (
                             <InputSelect
-                                label="Bahasa"
+                                label="Bahasa Utama Teks (Original Language)"
                                 name="language"
                                 options={languageOptions}
-                                placeholder="Pilih Bahasa"
+                                placeholder="Pilih bahasa pengantar yang digunakan dalam teks seri komik ini."
                                 value={field.value}
                                 onChange={field.onChange}
                                 onBlur={field.onBlur}
@@ -181,14 +200,19 @@ export default function UploadComicSeriesForm() {
                             control={control}
                             rules={{ required: "Harga langganan wajib diisi" }}
                             render={({ field, fieldState }) => (
-                                <InputText
-                                    label="Harga Langganan"
-                                    name="subscriptionPrice"
-                                    type="number"
-                                    placeholder="Masukkan harga langganan"
-                                    value={field.value}
-                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                <PriceSelector
+                                    label="Harga Langganan Seri"
+                                    options={[
+                                        "5000", "10000", "15000", "25000", "50000"
+                                    ]}
+                                    selected={field.value}
+                                    onSelect={(val) => {
+                                        field.onChange(parseInt(val, 10));
+                                        field.onBlur();
+                                    }}
                                     error={fieldState.error?.message}
+                                    placeholder="Tentukan harga jual untuk kelas ini."
+                                    canFree={false}
                                 />
                             )}
                         />
@@ -196,17 +220,17 @@ export default function UploadComicSeriesForm() {
 
                     {/* Poster Banner */}
                     <Controller
-                        name="posterBanner"
+                        name="coverBook"
                         control={control}
                         rules={{ required: "Poster banner wajib diunggah" }}
                         render={({ field, fieldState }) => (
                             <InputImageBanner
                                 type="banner"
-                                label="Poster Banner"
-                                description="Gunakan rasio 16:9 (1920x1080 px), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten."
-                                name="posterBanner"
+                                label="Banner Promosi Seri (Wide Banner)"
+                                description="Gunakan rasio 16:9 (1920x1080 px), format JPG/PNG, maks 500KB. Banner ini digunakan untuk fitur promosi di halaman utama. Pastikan visualnya menarik dan memuat judul."
+                                name="coverBook"
                                 icon={IconsGalery}
-                                inputRef={posterBannerInputRef}
+                                inputRef={coverBookInputRef}
                                 files={field.value || []}
                                 onUpload={(e) => {
                                     const files = [...e.target.files];
@@ -221,17 +245,17 @@ export default function UploadComicSeriesForm() {
                     />
                     {/* Cover Book */}
                     <Controller
-                        name="coverBook"
+                        name="posterBanner"
                         control={control}
                         rules={{ required: "Cover book wajib diunggah" }}
                         render={({ field, fieldState }) => (
                             <InputImageBanner
                                 type="cover"
-                                label="Cover Book"
-                                description="Gunakan rasio 1,6:2 (1600x2560), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten."
-                                name="coverBook"
+                                label="Sampul Seri Utama (Cover Art)"
+                                description="Gunakan rasio 1:1.6 (1600x2560 px), format JPG/PNG, maks 500KB. Cover harus menarik secara visual, memuat judul dengan jelas, dan memancing klik (High CTR) di hasil pencarian dan rak buku digital."
+                                name="posterBanner"
                                 icon={IconsGalery}
-                                inputRef={coverBookInputRef}
+                                inputRef={posterBannerInputRef}
                                 files={field.value || []}
                                 onUpload={(e) => {
                                     const files = [...e.target.files];

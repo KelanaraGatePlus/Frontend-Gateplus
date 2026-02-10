@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import PropTypes from "prop-types";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
@@ -10,8 +10,60 @@ export default function InputComicPic({
     uploadedFiles = {},
     handleFileUpload,
     handleRemoveFile,
+    onReorder,
     error,
 }) {
+    const [draggedIndex, setDraggedIndex] = useState(null);
+
+    const handleDragStart = (e, index) => {
+        setDraggedIndex(index);
+        e.dataTransfer.effectAllowed = "move";
+    };
+
+    const handleDragOver = (e, index) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+
+        if (draggedIndex === null || draggedIndex === index) return;
+
+        const items = [...uploadedFiles.inputFile];
+        const draggedItem = items[draggedIndex];
+
+        items.splice(draggedIndex, 1);
+        items.splice(index, 0, draggedItem);
+
+        setDraggedIndex(index);
+        if (onReorder) {
+            onReorder(items);
+        }
+    };
+
+    const handleDragEnd = () => {
+        setDraggedIndex(null);
+    };
+
+    const moveLeft = (index) => {
+        if (index === 0) return; // Sudah di posisi paling kiri
+        const items = [...uploadedFiles.inputFile];
+        const temp = items[index];
+        items[index] = items[index - 1];
+        items[index - 1] = temp;
+        if (onReorder) {
+            onReorder(items);
+        }
+    };
+
+    const moveRight = (index) => {
+        if (index === uploadedFiles.inputFile.length - 1) return; // Sudah di posisi paling kanan
+        const items = [...uploadedFiles.inputFile];
+        const temp = items[index];
+        items[index] = items[index + 1];
+        items[index + 1] = temp;
+        if (onReorder) {
+            onReorder(items);
+        }
+    };
+
     return (
         <section className="flex items-start gap-2 text-[#979797] montserratFont">
             <div className="flex flex-2 flex-col">
@@ -57,7 +109,12 @@ export default function InputComicPic({
                         {uploadedFiles.inputFile?.map((file, index) => (
                             <div
                                 key={index}
-                                className="relative flex h-28 w-36 flex-col items-center overflow-hidden rounded-md bg-gray-500 md:h-46 md:w-32"
+                                draggable
+                                onDragStart={(e) => handleDragStart(e, index)}
+                                onDragOver={(e) => handleDragOver(e, index)}
+                                onDragEnd={handleDragEnd}
+                                className={`relative flex h-28 w-36 flex-col items-center overflow-hidden rounded-md bg-gray-500 md:h-46 md:w-32 cursor-move transition-all ${draggedIndex === index ? "opacity-50 scale-95" : "opacity-100 scale-100"
+                                    }`}
                             >
                                 <div className="relative h-24 w-full md:h-42 md:w-32">
                                     <img
@@ -65,10 +122,40 @@ export default function InputComicPic({
                                         alt={`preview-${index}`}
                                         className="h-full w-full object-cover object-center"
                                     />
+                                    <div className="absolute top-1 left-1 flex h-6 w-6 items-center justify-center rounded-full bg-blue-600/80 text-xs font-bold text-white">
+                                        {index + 1}
+                                    </div>
+
+                                    {/* Tombol Geser Kiri */}
+                                    {index > 0 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => moveLeft(index)}
+                                            className="absolute left-1 bottom-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-green-600/80 text-white hover:bg-green-700/90 transition-colors"
+                                            title="Geser ke kiri"
+                                        >
+                                            <span className="text-sm font-bold">←</span>
+                                        </button>
+                                    )}
+
+                                    {/* Tombol Geser Kanan */}
+                                    {index < uploadedFiles.inputFile.length - 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => moveRight(index)}
+                                            className="absolute right-1 bottom-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-green-600/80 text-white hover:bg-green-700/90 transition-colors"
+                                            title="Geser ke kanan"
+                                        >
+                                            <span className="text-sm font-bold">→</span>
+                                        </button>
+                                    )}
+
+                                    {/* Tombol Hapus */}
                                     <button
                                         type="button"
                                         onClick={() => handleRemoveFile("inputFile", index)}
-                                        className="absolute top-1 right-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-red-600/50 text-xs text-white"
+                                        className="absolute top-1 right-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-red-600/80 text-white hover:bg-red-700/90 transition-colors"
+                                        title="Hapus gambar"
                                     >
                                         <span className="flex text-base lg:-mt-0.5">&times;</span>
                                     </button>
@@ -92,5 +179,6 @@ InputComicPic.propTypes = {
     uploadedFiles: PropTypes.object.isRequired,
     handleFileUpload: PropTypes.func.isRequired,
     handleRemoveFile: PropTypes.func.isRequired,
+    onReorder: PropTypes.func,
     error: PropTypes.string,
 };

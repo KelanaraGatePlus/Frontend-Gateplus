@@ -74,6 +74,8 @@ function ComicContent() {
                 contents={newestData}
                 isLoading={isLoading}
                 type={"comic"}
+                withTopTag={false}
+                withNewestTag={true}
             />
         </>
     );
