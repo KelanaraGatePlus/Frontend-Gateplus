@@ -9,6 +9,7 @@ import Cimbniaga from "@@/PaymentMethodLogo/Cimbniaga.png";
 import Danamon from "@@/PaymentMethodLogo/Danamon.png";
 import BRI from "@@/PaymentMethodLogo/BRI.png";
 import Atmbersama from "@@/PaymentMethodLogo/Atmbersama.png";
+import QRIS from "@@/PaymentMethodLogo/QRIS.png";
 
 
 export const paymentMethods = {
@@ -94,7 +95,8 @@ export const paymentMethods = {
         display_name: 'QRIS',
         feeType: 'percentage',
         adminFee: 0.7 / 100,
-        isActive: false
+        isActive: true,
+        logo: QRIS
     },
 
     // ===== DATA BARU (isActive: false) =====
