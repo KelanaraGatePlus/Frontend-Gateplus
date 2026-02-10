@@ -192,6 +192,7 @@ export default function PaymentCheckoutPage({ params }) {
                         selectedPaymentMethod={selectedPaymentMethod}
                         onMethodChange={setSelectedPaymentMethod}
                         showError={!selectedPaymentMethod}
+                        basePrice={Number(price) || 0}
                     />
 
                     {/* Voucher & Tip Section */}

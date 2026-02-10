@@ -95,7 +95,7 @@ export const paymentMethods = {
         display_name: 'QRIS',
         feeType: 'percentage',
         adminFee: 0.7 / 100,
-        isActive: true,
+        isActive: false,
         logo: QRIS
     },
 
