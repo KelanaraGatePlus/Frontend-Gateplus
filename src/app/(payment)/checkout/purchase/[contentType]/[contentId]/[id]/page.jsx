@@ -179,6 +179,7 @@ export default function PurchaseContentPaymentPage({ params }) {
                         selectedPaymentMethod={selectedPaymentMethod}
                         onMethodChange={setSelectedPaymentMethod}
                         showError={!selectedPaymentMethod}
+                        basePrice={Number(price) + Number(selectedTip)}
                     />
 
                     {/* Voucher & Tip Section */}
@@ -225,11 +226,10 @@ export default function PurchaseContentPaymentPage({ params }) {
                         <button
                             onClick={handlePayment}
                             disabled={!selectedPaymentMethod}
-                            className={`rounded-4xl py-4 font-semibold ${
-                                selectedPaymentMethod
+                            className={`rounded-4xl py-4 font-semibold ${selectedPaymentMethod
                                     ? "bg-[#0076E9CC] hover:bg-[#005bb5] hover:cursor-pointer"
                                     : "bg-[#686868] hover:cursor-not-allowed opacity-50"
-                            }`}
+                                }`}
                         >
                             Pay Now
                         </button>

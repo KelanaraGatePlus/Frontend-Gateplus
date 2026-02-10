@@ -65,9 +65,9 @@ export default function PaymentCheckoutPage({ params }) {
         { skip: contentType !== "podcasts" }
     );
 
-    const {data: educationData, isLoading: educationLoading} = useGetEducationByIdQuery(
+    const { data: educationData, isLoading: educationLoading } = useGetEducationByIdQuery(
         id,
-        {skip: contentType !== "education"}
+        { skip: contentType !== "education" }
     );
 
     // Gabungkan data & loading berdasarkan contentType yang aktif
@@ -192,7 +192,7 @@ export default function PaymentCheckoutPage({ params }) {
                         selectedPaymentMethod={selectedPaymentMethod}
                         onMethodChange={setSelectedPaymentMethod}
                         showError={!selectedPaymentMethod}
-                        basePrice={Number(price) || 0}
+                        basePrice={Number(price) + Number(selectedTip)}
                     />
 
                     {/* Voucher & Tip Section */}
@@ -239,11 +239,10 @@ export default function PaymentCheckoutPage({ params }) {
                         <button
                             onClick={handlePayment}
                             disabled={!selectedPaymentMethod}
-                            className={`rounded-4xl py-4 font-semibold ${
-                                selectedPaymentMethod
+                            className={`rounded-4xl py-4 font-semibold ${selectedPaymentMethod
                                     ? "bg-[#0076E9CC] hover:bg-[#005bb5] hover:cursor-pointer"
                                     : "bg-[#686868] hover:cursor-not-allowed opacity-50"
-                            }`}
+                                }`}
                         >
                             Pay Now
                         </button>
