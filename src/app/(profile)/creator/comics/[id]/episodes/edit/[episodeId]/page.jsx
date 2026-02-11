@@ -211,165 +211,202 @@ export default function EditComicEpisodePage() {
                     )}
                 />
 
-                {/* Cover Image */}
+                {/* Cover Image - SESUAIKAN LAYOUT DENGAN RICH TEXT EDITOR */}
                 <Controller
                     name="coverImageUrl"
                     control={control}
                     render={({ field, fieldState }) => (
-                        <div className="flex flex-col gap-2">
-                            <label className="text-white font-semibold">Cover Episode</label>
-                            <p className="text-sm text-gray-400">
-                                Gunakan rasio 1:1 (square), format JPG/PNG, maks 500KB
-                            </p>
-                            
-                            <div className="bg-[#2A2A2A] rounded-lg p-4 border border-[#4A4A4A]">
-                                <p className="text-white font-medium mb-2">Upload Gambar</p>
-                                
-                                {/* Jika ada gambar existing dan belum upload baru */}
-                                {episode?.coverImageUrl && field.value.length === 0 ? (
-                                    <div className="flex items-start gap-3">
-                                        {/* Button Upload */}
-                                        <label className="cursor-pointer flex-shrink-0">
-                                            <div className="w-24 h-24 bg-[#3A3A3A] rounded flex flex-col items-center justify-center hover:bg-[#4A4A4A] transition">
-                                                <img src={IconsGalery} alt="upload" className="w-8 h-8 mb-1" />
-                                                <span className="text-white text-xs">Upload</span>
-                                            </div>
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                className="hidden"
-                                                onChange={(e) => {
-                                                    if (e.target.files && e.target.files.length > 0) {
-                                                        field.onChange([...e.target.files]);
-                                                    }
-                                                }}
-                                            />
-                                        </label>
+                        <div className="flex items-start gap-2">
+                            {/* Label - Sama persis dengan RichTextEditor */}
+                            <h3 className="montserratFont flex-2 text-base font-semibold text-white md:text-base lg:text-xl">
+                                Cover Episode
+                            </h3>
 
-                                        {/* Preview gambar existing */}
-                                        <div className="relative">
-                                            <img
-                                                src={episode.coverImageUrl}
-                                                alt="cover"
-                                                className="w-20 h-20 object-cover rounded"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    const input = e.currentTarget.closest('.bg-\\[\\#2A2A2A\\]').querySelector('input[type="file"]');
-                                                    if (input) input.click();
-                                                }}
-                                                className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white text-xs transition"
-                                            >
-                                                ✕
-                                            </button>
-                                            <p className="text-xs text-gray-400 mt-1 max-w-[80px] truncate">
-                                                {episode.coverImageUrl.split('/').pop()}
-                                            </p>
+                            {/* Main Container - Sama persis dengan RichTextEditor */}
+                            <div className="flex w-full flex-4 text-white md:flex-10 flex-col">
+                                <div className={`
+                                    group rounded-xl overflow-hidden w-full
+                                    bg-gradient-to-b from-[#252525] to-[#1a1a1a]
+                                    border transition-all duration-200
+                                    ${fieldState.error 
+                                        ? 'border-red-500' 
+                                        : 'border-[#F5F5F540]'
+                                    }
+                                `}>
+                                    <div className="p-4">
+                                        <p className="text-sm text-gray-400 mb-4">
+                                            Gunakan rasio 1:1 (square), format JPG/PNG, maks 500KB
+                                        </p>
+                                        
+                                        <div className="bg-[#2A2A2A] rounded-lg p-4 border border-[#4A4A4A]">
+                                            <p className="text-white font-medium mb-2">Upload Gambar</p>
+                                            
+                                            {/* Jika ada gambar existing dan belum upload baru */}
+                                            {episode?.coverImageUrl && field.value.length === 0 ? (
+                                                <div className="flex items-start gap-3">
+                                                    {/* Button Upload */}
+                                                    <label className="cursor-pointer flex-shrink-0">
+                                                        <div className="w-24 h-24 bg-[#3A3A3A] rounded flex flex-col items-center justify-center hover:bg-[#4A4A4A] transition">
+                                                            <img src={IconsGalery} alt="upload" className="w-8 h-8 mb-1" />
+                                                            <span className="text-white text-xs">Upload</span>
+                                                        </div>
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            className="hidden"
+                                                            onChange={(e) => {
+                                                                if (e.target.files && e.target.files.length > 0) {
+                                                                    field.onChange([...e.target.files]);
+                                                                }
+                                                            }}
+                                                        />
+                                                    </label>
+
+                                                    {/* Preview gambar existing */}
+                                                    <div className="relative">
+                                                        <img
+                                                            src={episode.coverImageUrl}
+                                                            alt="cover"
+                                                            className="w-20 h-20 object-cover rounded"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                const input = e.currentTarget.closest('.bg-\\[\\#2A2A2A\\]').querySelector('input[type="file"]');
+                                                                if (input) input.click();
+                                                            }}
+                                                            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white text-xs transition"
+                                                        >
+                                                            ✕
+                                                        </button>
+                                                        <p className="text-xs text-gray-400 mt-1 max-w-[80px] truncate">
+                                                            {episode.coverImageUrl.split('/').pop()}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <InputImageBanner
+                                                    type="thumbnail"
+                                                    name="coverImageUrl"
+                                                    icon={IconsGalery}
+                                                    files={field.value}
+                                                    onUpload={(e) => {
+                                                        if (e?.preventDefault) e.preventDefault();
+                                                        if (e?.stopPropagation) e.stopPropagation();
+                                                        
+                                                        const files = e.target?.files || e;
+                                                        field.onChange([...files]);
+                                                    }}
+                                                    onRemove={(e) => {
+                                                        if (e?.preventDefault) e.preventDefault();
+                                                        if (e?.stopPropagation) e.stopPropagation();
+                                                        
+                                                        field.onChange([]);
+                                                    }}
+                                                    error={fieldState.error?.message}
+                                                />
+                                            )}
+
+                                            {!episode?.coverImageUrl && field.value.length === 0 && (
+                                                <p className="text-sm text-gray-400 mt-2 italic">No file chosen</p>
+                                            )}
                                         </div>
                                     </div>
-                                ) : (
-                                    <InputImageBanner
-                                        type="thumbnail"
-                                        name="coverImageUrl"
-                                        icon={IconsGalery}
-                                        files={field.value}
-                                        onUpload={(e) => {
-                                            if (e?.preventDefault) e.preventDefault();
-                                            if (e?.stopPropagation) e.stopPropagation();
-                                            
-                                            const files = e.target?.files || e;
-                                            field.onChange([...files]);
-                                        }}
-                                        onRemove={(e) => {
-                                            if (e?.preventDefault) e.preventDefault();
-                                            if (e?.stopPropagation) e.stopPropagation();
-                                            
-                                            field.onChange([]);
-                                        }}
-                                        error={fieldState.error?.message}
-                                    />
-                                )}
-
-                                {!episode?.coverImageUrl && field.value.length === 0 && (
-                                    <p className="text-sm text-gray-400 mt-2 italic">No file chosen</p>
+                                </div>
+                                
+                                {fieldState.error?.message && (
+                                    <p className="text-red-500 text-sm mt-1">{fieldState.error.message}</p>
                                 )}
                             </div>
-                            
-                            {fieldState.error?.message && (
-                                <p className="text-red-500 text-sm">{fieldState.error.message}</p>
-                            )}
                         </div>
                     )}
                 />
 
-                {/* Comic Images - Multiple Upload */}
+                {/* Comic Images - Multiple Upload - SESUAIKAN LAYOUT DENGAN RICH TEXT EDITOR */}
                 <Controller
                     name="fileImageComics"
                     control={control}
                     render={({ field, fieldState }) => (
-                        <div className="flex flex-col gap-2">
-                            <label className="text-white font-semibold">
-                                Halaman Comic (Multiple Images) - Opsional
-                            </label>
-                            <p className="text-sm text-gray-400">
-                                Upload gambar baru jika ingin mengganti. Maksimal 10 file. Kosongkan jika tidak ingin mengubah.
-                            </p>
-                            
-                            {episode?.fileImageComics && episode.fileImageComics.length > 0 && field.value.length === 0 && (
-                                <div className="p-3 bg-[#2D2D2D] rounded-lg border border-[#4A4A4A] flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <p className="text-sm text-gray-300">
-                                            {episode.fileImageComics.length} halaman sudah terupload
-                                        </p>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            const input = document.querySelector('input[name="fileImageComics"]');
-                                            if (input) input.click();
-                                        }}
-                                        className="text-blue-500 hover:text-blue-400 text-sm font-semibold transition"
-                                    >
-                                        Ganti
-                                    </button>
-                                </div>
-                            )}
+                        <div className="flex items-start gap-2">
+                            {/* Label - Sama persis dengan RichTextEditor */}
+                            <h3 className="montserratFont flex-2 text-base font-semibold text-white md:text-base lg:text-xl">
+                                Halaman Comic
+                            </h3>
 
-                            <input
-                                type="file"
-                                accept="image/*"
-                                multiple
-                                name="fileImageComics"
-                                onChange={(e) => {
-                                    if (e.target.files && e.target.files.length > 0) {
-                                        field.onChange([...e.target.files]);
+                            {/* Main Container - Sama persis dengan RichTextEditor */}
+                            <div className="flex w-full flex-4 text-white md:flex-10 flex-col">
+                                <div className={`
+                                    group rounded-xl overflow-hidden w-full
+                                    bg-gradient-to-b from-[#252525] to-[#1a1a1a]
+                                    border transition-all duration-200
+                                    ${fieldState.error 
+                                        ? 'border-red-500' 
+                                        : 'border-[#F5F5F540]'
                                     }
-                                }}
-                                className="block w-full text-sm text-gray-400
-                                    file:mr-4 file:py-2 file:px-4
-                                    file:rounded-md file:border-0
-                                    file:text-sm file:font-semibold
-                                    file:bg-[#156EB7] file:text-white
-                                    hover:file:bg-[#0d5a94]
-                                    file:cursor-pointer cursor-pointer
-                                    border border-[#686868] rounded-lg p-2"
-                            />
-                            {field.value && field.value.length > 0 && (
-                                <p className="text-sm text-green-400">
-                                    ✓ {field.value.length} file baru dipilih
-                                </p>
-                            )}
-                            {fieldState.error?.message && (
-                                <p className="text-red-500 text-sm">{fieldState.error.message}</p>
-                            )}
+                                `}>
+                                    <div className="p-4">
+                                        <p className="text-sm text-gray-400 mb-2">
+                                            Upload gambar baru jika ingin mengganti. Maksimal 10 file. Kosongkan jika tidak ingin mengubah.
+                                        </p>
+                                        
+                                        {episode?.fileImageComics && episode.fileImageComics.length > 0 && field.value.length === 0 && (
+                                            <div className="p-3 bg-[#2D2D2D] rounded-lg border border-[#4A4A4A] flex items-center justify-between mb-4">
+                                                <div className="flex items-center gap-2">
+                                                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    <p className="text-sm text-gray-300">
+                                                        {episode.fileImageComics.length} halaman sudah terupload
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        const input = document.querySelector('input[name="fileImageComics"]');
+                                                        if (input) input.click();
+                                                    }}
+                                                    className="text-blue-500 hover:text-blue-400 text-sm font-semibold transition"
+                                                >
+                                                    Ganti
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            multiple
+                                            name="fileImageComics"
+                                            onChange={(e) => {
+                                                if (e.target.files && e.target.files.length > 0) {
+                                                    field.onChange([...e.target.files]);
+                                                }
+                                            }}
+                                            className="block w-full text-sm text-gray-400
+                                                file:mr-4 file:py-2 file:px-4
+                                                file:rounded-md file:border-0
+                                                file:text-sm file:font-semibold
+                                                file:bg-[#156EB7] file:text-white
+                                                hover:file:bg-[#0d5a94]
+                                                file:cursor-pointer cursor-pointer
+                                                border border-[#686868] rounded-lg p-2"
+                                        />
+                                        {field.value && field.value.length > 0 && (
+                                            <p className="text-sm text-green-400 mt-2">
+                                                ✓ {field.value.length} file baru dipilih
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                                
+                                {fieldState.error?.message && (
+                                    <p className="text-red-500 text-sm mt-1">{fieldState.error.message}</p>
+                                )}
+                            </div>
                         </div>
                     )}
                 />
@@ -395,33 +432,72 @@ export default function EditComicEpisodePage() {
                     name="price"
                     control={control}
                     render={({ field, fieldState }) => (
-                        <PriceSelector
-                            label="Harga Akses Episode"
-                            options={priceOption}
-                            selected={field.value}
-                            onSelect={(val) => {
-                                field.onChange(val);
-                                field.onBlur();
-                            }}
-                            error={fieldState.error?.message}
-                        />
+                        <div className="flex items-start gap-2">
+                            {/* Label - Sama persis dengan RichTextEditor */}
+                            <h3 className="montserratFont flex-2 text-base font-semibold text-white md:text-base lg:text-xl">
+                                Harga Akses Episode
+                            </h3>
+
+                            {/* Main Container - Sama persis dengan RichTextEditor */}
+                            <div className="flex w-full flex-4 text-white md:flex-10 flex-col">
+                                <div className={`
+                                    group rounded-xl overflow-hidden w-full
+                                    bg-gradient-to-b from-[#252525] to-[#1a1a1a]
+                                    border transition-all duration-200
+                                    ${fieldState.error 
+                                        ? 'border-red-500' 
+                                        : 'border-[#F5F5F540]'
+                                    }
+                                `}>
+                                    <div className="p-4">
+                                        <PriceSelector
+                                            label=""
+                                            options={priceOption}
+                                            selected={field.value}
+                                            onSelect={(val) => {
+                                                field.onChange(val);
+                                                field.onBlur();
+                                            }}
+                                            error={fieldState.error?.message}
+                                        />
+                                    </div>
+                                </div>
+                                
+                                {fieldState.error?.message && (
+                                    <p className="text-red-500 text-sm mt-1">{fieldState.error.message}</p>
+                                )}
+                            </div>
+                        </div>
                     )}
                 />
 
                 {/* Submit Button */}
-                <div onClick={handleUpdateClick}>
-                    <ButtonSubmit
-                        type="button"
-                        icon={IconsButtonSubmit}
-                        label="Update Episode"
-                        isLoading={isUpdating}
-                    />
+                <div className="flex items-start gap-2">
+                    {/* Spacer untuk sejajar dengan label di komponen lain */}
+                    <div className="flex-2"></div>
+                    
+                    {/* Container button - Sama lebar dengan konten di komponen lain */}
+                    <div className="flex w-full flex-4 md:flex-10">
+                        <div onClick={handleUpdateClick} className="w-full">
+                            <ButtonSubmit
+                                type="button"
+                                icon={IconsButtonSubmit}
+                                label="Update Episode"
+                                isLoading={isUpdating}
+                            />
+                        </div>
+                    </div>
                 </div>
                 
                 {error && (
-                    <p className="text-red-500 mt-2 text-sm">
-                        Gagal update: {error.data?.message || "Terjadi kesalahan"}
-                    </p>
+                    <div className="flex items-start gap-2">
+                        <div className="flex-2"></div>
+                        <div className="flex w-full flex-4 md:flex-10">
+                            <p className="text-red-500 mt-2 text-sm">
+                                Gagal update: {error.data?.message || "Terjadi kesalahan"}
+                            </p>
+                        </div>
+                    </div>
                 )}
             </form>
 
