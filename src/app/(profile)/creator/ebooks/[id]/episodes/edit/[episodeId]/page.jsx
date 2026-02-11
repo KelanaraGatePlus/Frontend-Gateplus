@@ -86,7 +86,7 @@ export default function EditEbookEpisodePage() {
 
         if (episode?.title) {
             console.log("📦 Episode Data:", episode);
-            
+
             reset({
                 title: episode.title || "",
                 description: episode.description || "",
@@ -108,13 +108,13 @@ export default function EditEbookEpisodePage() {
         }
 
         console.log("📤 FORM SUBMITTED - Button clicked");
-        
+
         const formData = new FormData();
         formData.append("title", data.title);
         formData.append("description", data.description);
         formData.append("price", String(data.price || "0"));
         formData.append("explicitUpdate", "true");
-        
+
         if (data.notedEpisode) {
             formData.append("notedEpisode", data.notedEpisode);
         }
@@ -176,7 +176,7 @@ export default function EditEbookEpisodePage() {
 
     const handleFormSubmit = (e) => {
         e.preventDefault();
-        
+
         if (canSubmit) {
             handleSubmit(onSubmit)(e);
         } else {
@@ -197,21 +197,19 @@ export default function EditEbookEpisodePage() {
         return <LoadingOverlay message="Loading episode data..." />;
     }
 
-    const episode = episodeData?.data?.data || episodeData?.data || episodeData;
-
     return (
         <main className="relative mx-2 flex flex-col lg:mx-6 min-h-screen">
             <div className="mt-4 mb-6">
-                <HeaderUploadForm 
-                    title="Edit Episode Ebook" 
+                <HeaderUploadForm
+                    title="Edit Episode Ebook"
                     titlePosition="start"
                     onBackClick={handleBackClick}
                 />
             </div>
 
-            <form 
+            <form
                 ref={formRef}
-                className="flex flex-col gap-2" 
+                className="flex flex-col gap-2"
                 onSubmit={handleFormSubmit}
             >
                 {/* Judul Episode */}
@@ -390,7 +388,7 @@ export default function EditEbookEpisodePage() {
                         isLoading={isUpdating}
                     />
                 </div>
-                
+
                 {error && (
                     <p className="text-red-500 mt-2 text-sm">
                         Gagal update: {error.data?.message || "Terjadi kesalahan"}
