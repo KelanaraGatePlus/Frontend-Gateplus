@@ -287,19 +287,17 @@ function PlayingMoviePage({ params }) {
               <div className="text-sm text-white">{movieData?.totalSubscribers} followers</div>
             </Link>
           </div>
+        </section >
 
-
-          {/* Comment Baru */}
-          {commentData && (
-            <div className="md:px-11">
-              <CommentComponent
-                commentData={commentData?.data?.data || []}
-                isLoadingGetComment={isLoadingGetComment}
-                contentType={"MOVIE"}
-                episodeId={id}
-              />
-            </div>
-          )}
+        <section className="flex flex-row gap-3 items-stretch mt-5 px-4 md:px-15">
+          {/* Poster 3:2 */}
+          <div className="relative aspect-[2/3] w-[220px] sm:w-[160px] lg:w-[250px] flex-shrink-0">
+            {movieData.thumbnailImageUrl && <img
+              src={movieData.thumbnailImageUrl}
+              alt="logo-racunsangga-movie"
+              className="rounded-md object-cover"
+            />}
+          </div>
 
           {/* Deskripsi */}
           <div className="rounded-md bg-[#393939] flex-1">
@@ -310,7 +308,6 @@ function PlayingMoviePage({ params }) {
                   __html: DOMPurify.sanitize(movieData?.description || ""),
                 }}
               />
-
 
               <div className="mt-10">
                 <p>Judul: {movieData.title}</p>
@@ -326,7 +323,19 @@ function PlayingMoviePage({ params }) {
               </div>
             </div>
           </div>
-        </section >
+        </section>
+
+        {/* Comment Baru */}
+        {commentData && (
+          <div className="md:px-11">
+            <CommentComponent
+              commentData={commentData?.data?.data || []}
+              isLoadingGetComment={isLoadingGetComment}
+              contentType={"MOVIE"}
+              episodeId={id}
+            />
+          </div>
+        )}
 
         <section className="mt-5">
           <section className="my-10 flex flex-col">
