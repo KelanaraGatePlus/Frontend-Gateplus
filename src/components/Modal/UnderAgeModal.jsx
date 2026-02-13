@@ -42,8 +42,9 @@ export default function UnderAgeModal({ open, ageRestriction, title }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       {/* Backdrop */}
       <div
-        className={`absolute inset-0 transition-opacity duration-300 ${isExiting ? "opacity-0" : "opacity-100"
-          }`}
+        className={`absolute inset-0 transition-opacity duration-300 ${
+          isExiting ? "opacity-0" : "opacity-100"
+        }`}
         style={{
           backdropFilter: "blur(8px)",
           background: "rgba(0,0,0,0.85)",
@@ -53,8 +54,9 @@ export default function UnderAgeModal({ open, ageRestriction, title }) {
 
       {/* Modal */}
       <div
-        className={`relative w-full max-w-lg rounded-3xl transition-all duration-300 ${isExiting ? "scale-95 opacity-0" : "scale-100 opacity-100"
-          }`}
+        className={`relative w-full max-w-lg rounded-3xl transition-all duration-300 ${
+          isExiting ? "scale-95 opacity-0" : "scale-100 opacity-100"
+        }`}
         onClick={(e) => e.stopPropagation()}
         style={{
           background: "#3A3A3A",
@@ -97,7 +99,9 @@ export default function UnderAgeModal({ open, ageRestriction, title }) {
             minimum untuk melihat
           </p>
 
-          <p className="mb-8 text-xl font-semibold text-white">&quot;{title}&quot;</p>
+          <p className="mb-8 text-xl font-semibold text-white">
+            &quot;{title}&quot;
+          </p>
 
           <button
             onClick={handleBackHome}

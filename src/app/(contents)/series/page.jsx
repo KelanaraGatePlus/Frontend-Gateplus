@@ -15,13 +15,14 @@ import PropTypes from "prop-types";
 export default function SeriesPage() {
   const { userAge, isReady } = useSyncUserData();
 
+  // blur
   const isBlurred = useCallback(
     (content) => {
       if (!isReady) return true;
 
       const minAge = getMinAge(content?.ageRestriction);
 
-      // SU / R13 → bebas
+      // SU dan 13 bebas
       if (minAge === null) return false;
 
       // belum isi DOB

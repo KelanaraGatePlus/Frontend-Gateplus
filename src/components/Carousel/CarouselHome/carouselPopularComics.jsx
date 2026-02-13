@@ -19,5 +19,5 @@ export default function CarouselPopularComics({ isBlurred }) {
 }
 
 CarouselPopularComics.propTypes = {
-  isBlurred: PropTypes.bool.isRequired,
+  isBlurred: PropTypes.func,
 };

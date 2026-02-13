@@ -25,7 +25,7 @@ export default function ComicCard({
     >
       <div className="group relative h-full w-full overflow-hidden rounded-[6px]">
         {/* Banner Atas */}
-        <div className="absolute top-0 left-0 z-20 flex w-full items-center justify-between px-2 py-1">
+        <div className="absolute inset-x-0 top-0 z-20 flex items-start justify-between rounded-t-[6px] px-2 py-1">
           <div className="flex flex-row items-start gap-1 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100">
             {withTopTag && rank && (
               <div className="zeinFont flex flex-col items-center rounded-sm bg-[#22222233] px-4 py-1 font-black text-cyan-400 backdrop-blur-xs">
@@ -39,21 +39,11 @@ export default function ComicCard({
               </span>
             )}
             {hasNewEpisode && (
-              <span className="zeinFont rounded-sm bg-[#22222233] px-2 text-sm font-semibold text-cyan-200 backdrop-blur-xs">
+              <span className="zeinFont rounded-sm bg-[#22222233] px-1.5 py-[3px] text-[12px] font-medium text-cyan-200 backdrop-blur-xs">
                 Episode Baru
               </span>
             )}
           </div>
-
-          {/* Icon more → hanya muncul saat hover
-                    <Image
-                        priority
-                        width={24}
-                        height={24}
-                        src={iconMore}
-                        alt="more-icon"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out"
-                    /> */}
         </div>
 
         {/* Konten Bawah */}

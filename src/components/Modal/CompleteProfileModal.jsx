@@ -55,12 +55,14 @@ export default function CompleteProfileModal({ onConfirm, title, minAge }) {
             </p>
 
             <div className="mb-3 inline-block rounded-lg bg-gray-800 px-4 py-2">
-              <span className="font-medium text-white">&quot;{title}&quot;</span>
+              <span className="font-medium text-white">
+                &quot;{title}&quot;
+              </span>
             </div>
 
             <p className="text-gray-300">
-              Konten &quot;{title}&quot; memerlukan verifikasi usia untuk memastikan
-              pengalaman yang sesuai.
+              Konten &quot;{title}&quot; memerlukan verifikasi usia untuk
+              memastikan pengalaman yang sesuai.
             </p>
           </div>
 

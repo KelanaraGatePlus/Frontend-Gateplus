@@ -1,128 +1,140 @@
 "use client";
-import React from "react";
-import { use, useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import PropTypes from "prop-types";
 
-/*[--- API HOOKS ---]*/
+/* --- API HOOKS --- */
 import { useGetComicByIdQuery } from "@/hooks/api/comicSliceAPI";
-import CompleteProfileModal from "@/components/Modal/CompleteProfileModal";
-import UnderAgeModal from "@/components/Modal/UnderAgeModal";
+import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import useSyncUserData from "@/hooks/api/useSyncUserData";
-import getMinAge from "@/lib/helper/minAge";
 
-/*[--- UI COMPONENTS ---]*/
+/* --- UI COMPONENTS --- */
 import MainTemplateLayout from "@/components/MainDetailProduct/page";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
-import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
+import CompleteProfileModal from "@/components/Modal/CompleteProfileModal";
+import UnderAgeModal from "@/components/Modal/UnderAgeModal";
+
+/* --- HELPERS --- */
+import getMinAge from "@/lib/helper/minAge";
 
 export default function DetailComicPage({ params }) {
-  const { id } = use(params);
-  // const [selectedEpisode, setSelectedEpisode] = useState(null);
-  // const [isModalOpen, setIsModalOpen] = useState(false);
-  // const [selectedPrice, setSelectedPrice] = useState(null);
+  const { id } = params;
+
   const [loading, setLoading] = useState(false);
-  // const [selectedContentId, setSelectedContentId] = useState(null);
-  // const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [isHydrated, setIsHydrated] = useState(false); // 🔥 hydration guard
   const [createLog] = useCreateLogMutation();
 
-  // const handleModalSubscribeOpen = (contentId, price) => {
-  //   setSelectedContentId(contentId);
-  //   setSelectedPrice(price);
-  //   setIsModalSubscribeOpen(true);
-  // };
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedUserId = localStorage.getItem("users_id");
+      setUserId(storedUserId);
+      setIsHydrated(true); // tandai sudah siap
+    }
+  }, []);
 
-  // const handleModalOpen = (episodeId, price) => {
-  //   setSelectedEpisode(episodeId);
-  //   setSelectedPrice(price);
-  //   setIsModalOpen(true);
-  // }
+  const { data, isLoading } = useGetComicByIdQuery(
+    { id, userId },
+    { skip: !id || !isHydrated },
+  );
+
+  const comicData = data?.data || {};
+
+  const {
+    userAge,
+    isReady,
+    showCompleteProfileModal,
+    showUnderAgeModal,
+    goToProfile,
+    continueDespiteUnderAge,
+  } = useSyncUserData(comicData?.ageRestriction || null);
+
+  const episode_comics = (comicData?.episode_comics?.episodes || [])
+    .slice()
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+  const topContent = data?.topContent || [];
+  const recommendedContent = data?.recommendation || [];
+
+  useEffect(() => {
+    if (id && isHydrated) {
+      createLog({
+        contentType: "COMIC",
+        logType: "CLICK",
+        contentId: id,
+      });
+    }
+  }, [id, isHydrated, createLog]);
+
+  const isBlurred = useCallback(
+    (content) => {
+      if (!isReady) return true;
+
+      const minAge = getMinAge(content?.ageRestriction);
+
+      if (minAge === null) return false;
+      if (userAge == null) return true;
+
+      return userAge < minAge;
+    },
+    [userAge, isReady],
+  );
 
   const handleBuy = async (episodeId) => {
     setLoading(true);
     window.location.href = `/checkout/purchase/comics/${id}/${episodeId}`;
-    setLoading(false);
   };
 
   const handleSubscribe = async (contentId) => {
     setLoading(true);
     window.location.href = `/checkout/subscribe/comics/${contentId}`;
-    setLoading(false);
   };
 
-  useEffect(() => {
-    createLog({
-      contentType: "COMIC",
-      logType: "CLICK", // atau WATCH_TRAILER / WATCH_CONTENT sesuai kebutuhan
-      contentId: id,
-    });
-  }, [id, createLog]);
-
-  const skip = !id;
-  const { data, isLoading } = useGetComicByIdQuery({ id }, { skip });
-  const comicData = data?.data || {};
-  const {
-    showCompleteProfileModal,
-    showUnderAgeModal,
-    goToProfile,
-    continueDespiteUnderAge,
-  } = useSyncUserData(comicData?.ageRestriction);
-
-  const episode_comics = (comicData?.episode_comics?.episodes || [])
-    .slice()
-    .sort((a, b) => {
-      return new Date(a.createdAt) - new Date(b.createdAt);
-    });
-  const topContent = data?.topContent || [];
-  const recommendedContent = data?.recommendation || [];
+  if (!isHydrated || isLoading || !data || !isReady) {
+    return <LoadingOverlay />;
+  }
 
   return (
-    comicData && (
-      <div>
-        <MainTemplateLayout
-          productType="comic"
-          productDetail={comicData}
-          productEpisode={episode_comics}
-          isLoading={isLoading}
-          handlePayment={handleBuy}
-          handleSubscribe={handleSubscribe}
-          topContentData={topContent}
-          recomendationData={recommendedContent}
-        />
+    <div>
+      <MainTemplateLayout
+        productType="comic"
+        productDetail={comicData}
+        productEpisode={episode_comics}
+        isLoading={isLoading}
+        handlePayment={handleBuy}
+        handleSubscribe={handleSubscribe}
+        topContentData={topContent}
+        recomendationData={recommendedContent}
+        isBlurred={isBlurred}
+      />
 
-        {/* <SimpleModal
-          title={"Konten ini masih terkunci, apakah kamu bersedia membeli nya dengan harga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onConfirm={handleBuy}
-        />
-        <SimpleModal
-          title={"Subscribe untuk menikmati seluruh episode dari konten ini selama sebulan seharga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
-          isOpen={isModalSubscribeOpen}
-          onClose={() => setIsModalSubscribeOpen(false)}
-          onConfirm={handleSubscribe}
-        /> */}
-        {loading && <LoadingOverlay />}
-        {showCompleteProfileModal && (
-          <CompleteProfileModal
-            onConfirm={goToProfile}
-            title={comicData?.title}
-            minAge={getMinAge(comicData?.ageRestriction)}
-          />
-        )}
+      {loading && <LoadingOverlay />}
 
-        {showUnderAgeModal && (
-          <UnderAgeModal
-            open={showUnderAgeModal}
-            ageRestriction={comicData?.ageRestriction}
-            title={comicData?.title}
-            onContinue={continueDespiteUnderAge}
-          />
-        )}
-      </div>
-    )
+      {comicData?.id && (
+        <>
+          {showCompleteProfileModal && (
+            <CompleteProfileModal
+              onConfirm={goToProfile}
+              title={comicData?.title}
+              minAge={getMinAge(comicData?.ageRestriction)}
+            />
+          )}
+
+          {showUnderAgeModal && (
+            <UnderAgeModal
+              open={showUnderAgeModal}
+              ageRestriction={comicData?.ageRestriction}
+              title={comicData?.title}
+              onContinue={continueDespiteUnderAge}
+            />
+          )}
+        </>
+      )}
+    </div>
   );
 }
 
 DetailComicPage.propTypes = {
-  params: PropTypes.string,
+  params: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  }).isRequired,
 };

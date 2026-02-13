@@ -21,7 +21,7 @@ export default function PodcastsPage() {
 
       const minAge = getMinAge(content?.ageRestriction);
 
-      // SU / R13 → bebas
+      // SU dan 13 bebas akses
       if (minAge === null) return false;
 
       // belum isi DOB
