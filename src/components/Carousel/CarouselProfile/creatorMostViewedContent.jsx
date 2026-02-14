@@ -10,15 +10,11 @@ export default function CreatorMostViewedContent({ creatorId }) {
   const skip = !creatorId;
   const { data, isLoading } = useGetMostViewedContentQuery(creatorId, { skip });
   const mostViewedContent = data?.data?.data || [];
-  const [isReady, setIsReady] = useState(false);
-  const [userId, setUserId] = useState(null);
 
   //ambil user id
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedUserId = localStorage.getItem("users_id");
-      setUserId(storedUserId);
-      setIsReady(true);
     }
   }, []);
 
