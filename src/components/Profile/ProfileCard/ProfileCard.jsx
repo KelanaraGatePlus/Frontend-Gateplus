@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Image from "next/image";
 import PropTypes from "prop-types";
@@ -26,6 +26,11 @@ export default function ProfileCard({
   const [isSubscribed, setIsSubscribed] = useState(isFollowed);
   const [isSubscribing, setIsSubscribing] = useState(false);
   const [showToast, setShowToast] = useState(false);
+
+  // Sinkronisasi state dengan prop isFollowed
+  useEffect(() => {
+    setIsSubscribed(isFollowed);
+  }, [isFollowed]);
 
   const handleToggleSubscribe = async () => {
     if (isSubscribed) {

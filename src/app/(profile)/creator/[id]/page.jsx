@@ -20,6 +20,7 @@ import "react-loading-skeleton/dist/skeleton.css";
 import { imageDefaultValue } from "@/lib/constants/imageDefaultValue";
 import CarouselTemplate from "@/components/Carousel/carouselTemplate";
 import getMinAge from "@/lib/helper/minAge";
+import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 export default function CreatorProfilePage({ params }) {
   const { id } = params;
@@ -80,6 +81,12 @@ export default function CreatorProfilePage({ params }) {
     },
     [userAge, isUserReady],
   );
+
+  if (creatorDetailQuery.isLoading) {
+    return (
+      <LoadingOverlay />
+    );
+  }
 
   return (
     <main className="relative mx-2 flex flex-col lg:mx-6">
