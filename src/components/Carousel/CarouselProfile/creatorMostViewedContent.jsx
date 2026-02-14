@@ -2,7 +2,7 @@ import React from "react";
 import { useGetMostViewedContentQuery } from "@/hooks/api/creatorSliceAPI";
 import PropTypes from "prop-types";
 import CarouselTemplate from "@/components/Carousel/carouselTemplate";
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import getMinAge from "@/lib/helper/minAge";
 import useSyncUserData from "@/hooks/api/useSyncUserData";
 
