@@ -2,7 +2,7 @@ import React from "react";
 import { useGetMostViewedContentQuery } from "@/hooks/api/creatorSliceAPI";
 import PropTypes from "prop-types";
 import CarouselTemplate from "@/components/Carousel/carouselTemplate";
-import { useEffect, useCallback } from "react";
+import { useCallback } from "react";
 import getMinAge from "@/lib/helper/minAge";
 import useSyncUserData from "@/hooks/api/useSyncUserData";
 
@@ -10,13 +10,6 @@ export default function CreatorMostViewedContent({ creatorId }) {
   const skip = !creatorId;
   const { data, isLoading } = useGetMostViewedContentQuery(creatorId, { skip });
   const mostViewedContent = data?.data?.data || [];
-
-  //ambil user id
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedUserId = localStorage.getItem("users_id");
-    }
-  }, []);
 
   const { userAge, isReady: isUserReady } = useSyncUserData();
 
