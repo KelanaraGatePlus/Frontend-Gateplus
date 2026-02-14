@@ -14,6 +14,7 @@ export default function CarouselPopularSeries({ isBlurred }) {
       isLoading={isLoading}
       type="series"
       isBlurred={isBlurred}
+      isHomepage={true}
     />
   );
 }

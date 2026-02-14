@@ -14,6 +14,7 @@ export default function CarouselPopularComics({ isBlurred }) {
       isLoading={isLoading}
       type="comic"
       isBlurred={isBlurred}
+      isHomepage={true}
     />
   );
 }

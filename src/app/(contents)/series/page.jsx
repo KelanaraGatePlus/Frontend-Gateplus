@@ -77,7 +77,7 @@ function SeriesContent({ isBlurred }) {
   const highlightedData = data?.data?.highlightsSeries || [];
 
   return (
-    <>
+    <div className="flex flex-col">
       <CarouselTemplate
         label={"Highlight Series"}
         contents={highlightedData}
@@ -102,7 +102,7 @@ function SeriesContent({ isBlurred }) {
         withTopTag={false}
         isBlurred={isBlurred}
       />
-    </>
+    </div>
   );
 }
 

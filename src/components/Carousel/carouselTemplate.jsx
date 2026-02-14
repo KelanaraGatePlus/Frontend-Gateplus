@@ -29,12 +29,13 @@ export default function CarouselTemplate({
   isOnCreatorProfile = false,
   withTopTag = true,
   withNewestTag = false,
-  isBlurred,
+  // isBlurred,
+  isHomepage = false,
 }) {
-  const resolveBlur = (item) => {
-    if (typeof isBlurred !== "function") return false;
-    return isBlurred(item);
-  };
+  // const resolveBlur = (item) => {
+  //   if (typeof isBlurred !== "function") return false;
+  //   return isBlurred(item);
+  // };
 
   const resolveMinAge = (item) => {
     if (!item?.ageRestriction) return null;
@@ -54,28 +55,29 @@ export default function CarouselTemplate({
     }
 
     if (isTopTen) {
-      return "h-[220px] w-[250px] md:h-[230px] md:w-[250px] lg:w-[290px]";
+      return "h-[200px] w-[220px] md:h-[230px] md:w-[240px] lg:w-[240px]";
     }
 
-    return "h-[212px] w-[149px]";
+    return "h-[160px] w-[112px] md:h-[212px] md:w-[149px]";
   };
 
   return (
     <div className="relative h-full w-full overflow-hidden rounded-md">
       <section
-        className={`px-8 ${isOnCreatorProfile ? "md:px-8" : "md:px-16"}`}
+        className={`px-0 ${isOnCreatorProfile ? "md:px-4" : isHomepage ? "md:px-6" : "md:px-16"}`}
       >
         {isLoading ? (
-          <CarouselLoading />
+          <div className="px-4">
+            <CarouselLoading />
+          </div>
         ) : (
           contents.length > 0 && (
             <section
-              className={`flex flex-col ${
-                isOnCreatorProfile ? "my-3 md:my-0" : "my-3 md:my-5"
-              }`}
+              className={`flex flex-col ${isOnCreatorProfile ? "my-3 md:my-0" : "my-3 md:my-5"
+                }`}
             >
               <Carousel>
-                <p className="zeinFont mb-1 text-2xl font-extrabold text-white md:mb-2 md:text-3xl lg:text-4xl xl:text-[40px]">
+                <p className="zeinFont px-4 md:px-0 mb-1 text-2xl font-extrabold text-white md:mb-2 md:text-3xl lg:text-4xl xl:text-[40px]">
                   {label}
                 </p>
 
@@ -85,7 +87,7 @@ export default function CarouselTemplate({
                   >
                     {contents.map((item, index) => {
                       const fixedType = resolveType(item);
-                      const blurred = resolveBlur(item);
+
                       const minAge = resolveMinAge(item);
 
                       const isUniquePodcast = fixedType === "podcast" && type;
@@ -95,14 +97,14 @@ export default function CarouselTemplate({
                       return (
                         <CarouselItem
                           key={index}
-                          className={`group relative flex cursor-pointer items-center overflow-visible ${podcastSize}`}
+                          className={`group relative ${index === 0 ? "pl-4 md:pl-0" : ""} flex cursor-pointer items-center overflow-visible ${podcastSize}`}
                           style={{ flex: "0 0 auto" }}
                         >
                           {isTopTen ? (
-                            <div className="flex h-full w-full items-end gap-y-5 md:w-[600px] lg:w-[700px]">
+                            <div className="flex h-full w-full items-end gap-y-5 md:w-[500px] lg:w-[600px]">
                               <div className="flex h-full w-1/3 items-end justify-end overflow-visible">
                                 <p
-                                  className="zeinFont translate-x-[40%] translate-y-[10%] text-[280px] leading-[0.7] font-extrabold text-[#1297DC] sm:text-[290px] md:text-[290px] lg:text-[290px]"
+                                  className="zeinFont translate-x-[30%] md:translate-x-[40%] translate-y-[10%] text-[220px] leading-[0.7] font-extrabold text-[#1297DC] sm:text-[230px] md:text-[240px] lg:text-[250px]"
                                   style={{
                                     filter:
                                       "drop-shadow(6px 6px 4px rgba(0,0,0,0.3))",
@@ -114,7 +116,7 @@ export default function CarouselTemplate({
                                 </p>
                               </div>
 
-                              <div className="relative h-[220px] w-[149px] overflow-hidden rounded-[6px]">
+                              <div className={`relative h-full w-full md:h-[220px] md:w-[149px] overflow-hidden rounded-[6px]`}>
                                 {fixedType === "ebook" && (
                                   <EbookCard
                                     {...item}
@@ -145,17 +147,6 @@ export default function CarouselTemplate({
                                     {...item}
                                     coverUrl={item.posterImageUrl}
                                   />
-                                )}
-
-                                {blurred && minAge && (
-                                  <div className="pointer-events-none absolute inset-0 z-10 rounded-[6px]">
-                                    <div className="absolute inset-0 rounded-[6px] bg-black/20 backdrop-blur-sm" />
-                                    <div className="absolute top-1/2 left-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
-                                      <span className="rounded-lg bg-red-600 px-4 py-2 text-sm font-black text-white">
-                                        {minAge}+
-                                      </span>
-                                    </div>
-                                  </div>
                                 )}
                               </div>
                             </div>
@@ -229,7 +220,7 @@ export default function CarouselTemplate({
                                   creatorName={item.Creator?.profileName}
                                   releaseDate={item.createdAt}
                                   hasNewEpisode={item.hasNewEpisodes}
-                                  isBlurred={blurred}
+
                                   minAge={minAge}
                                 />
                               )}
@@ -243,33 +234,18 @@ export default function CarouselTemplate({
                                   releaseDate={item.createdAt}
                                 />
                               )}
-
-                              {blurred && minAge && !isUniquePodcast && (
-                                <div className="pointer-events-none absolute inset-0 z-10">
-                                  <div className="absolute inset-0 rounded-[6px] bg-black/20 backdrop-blur-sm" />
-                                  <div className="absolute top-1/2 left-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
-                                    <span className="rounded-lg bg-red-600 px-4 py-2 text-sm font-black text-white">
-                                      {minAge}+
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
                             </div>
                           )}
                         </CarouselItem>
                       );
                     })}
                   </CarouselContent>
-                  {type !== "podcast" && (
-                    <>
-                      <div className="pointer-events-none absolute top-0 left-0 z-10 h-full w-10 rounded-[6px] bg-gradient-to-r from-white/20 to-transparent backdrop-blur-[0.5px]" />
-                      <div className="pointer-events-none absolute top-0 right-0 z-10 h-full w-10 rounded-[6px] bg-gradient-to-l from-white/20 to-transparent backdrop-blur-[0.5px]" />
-                    </>
-                  )}
 
                   {/* BUTTON */}
-                  <CarouselPrevious />
-                  <CarouselNext />
+                  <div className="hidden md:block">
+                    <CarouselPrevious />
+                    <CarouselNext />
+                  </div>
                 </div>
               </Carousel>
             </section>
@@ -290,4 +266,5 @@ CarouselTemplate.propTypes = {
   withTopTag: PropTypes.bool,
   withNewestTag: PropTypes.bool,
   isBlurred: PropTypes.func,
+  isHomepage: PropTypes.bool,
 };

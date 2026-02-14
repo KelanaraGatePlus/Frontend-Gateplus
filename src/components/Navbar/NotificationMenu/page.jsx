@@ -12,6 +12,7 @@ import { formatDateTime } from "@/lib/timeFormatter";
 /*[--- ASSETS IMPORT ---]*/
 import logoLonceng from "@@/logo/logoSosmed/lonceng_fix.svg";
 import { BACKEND_URL } from "@/lib/constants/backendUrl";
+import { useGetAllNotificationsQuery } from "@/hooks/api/notificationSliceAPI";
 
 export default function NotificationMenu() {
   const notificationRef = useRef(null);
@@ -20,62 +21,25 @@ export default function NotificationMenu() {
   const [visibleCount, setVisibleCount] = useState(5);
   const [isNotificationOpen, setNotificationOpen] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const { data: notificationData } = useGetAllNotificationsQuery();
 
-  const fetchNotifications = async () => {
-    try {
-      const role = localStorage.getItem("role");
-      const userId = localStorage.getItem("users_id");
-      const creatorId = localStorage.getItem("creators_id");
-      const token = Cookies.get("token");
-
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      };
-
-      let notifList = [];
-      if (!token) {
-        localStorage.clear();
-        setIsAuthorized(false);
+  useEffect(() => {
+    const token = Cookies.get("token");
+    if (!token) {
+      localStorage.clear();
+      setIsAuthorized(false);
+      setNotifications([]);
+      setHasNotifications(false);
+    } else {
+      setIsAuthorized(true);
+      if (notificationData?.data) {
+        setNotifications(notificationData?.data || []);
+        const hasUnread = notificationData?.data?.some((notif) => !notif.isRead);
+        setHasNotifications(hasUnread);
+        console.log("Notifications:", notificationData);
       }
-      if (token) {
-        setIsAuthorized(true);
-        if (role === "Creators" && creatorId) {
-          const resCreator = await axios.get(
-            `${BACKEND_URL}/creator/${creatorId}`,
-            {
-              headers,
-            },
-          );
-          const creatorData = resCreator.data?.data?.data;
-          console.log("data notif creator 2:", creatorData);
-          notifList =
-            creatorData.notifications?.filter(
-              (notif) => notif.notificationTarget === "Creators",
-            ) || [];
-        } else if (role === "Users" && userId) {
-          const resUser = await axios.get(
-            `${BACKEND_URL}/users/${userId}`,
-            {
-              headers,
-            },
-          );
-          const userData = resUser.data?.data?.data;
-          console.log("data notif user:", userId);
-          notifList =
-            userData.notifications?.filter(
-              (notif) => notif.notificationTarget === "Users",
-            ) || [];
-        }
-      }
-      const hasUnread = notifList.some((notif) => !notif.isRead);
-
-      setNotifications(notifList);
-      setHasNotifications(hasUnread);
-      console.log(notifList);
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
     }
-  };
+  }, [notificationData]);
 
   const toggleNotificationDropdown = () => {
     setNotificationOpen(!isNotificationOpen);
@@ -100,15 +64,11 @@ export default function NotificationMenu() {
         `${BACKEND_URL}/notifications/${id}/read`,
       );
       console.log("Notifikasi dibaca:", response.data);
-      fetchNotifications();
+      // Hook akan otomatis refetch data setelah notifikasi dibaca
     } catch (error) {
       console.error("Gagal update notifikasi:", error.message);
     }
   };
-
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -163,7 +123,7 @@ export default function NotificationMenu() {
               </Link>{" "}
               untuk melihat notifikasi.
             </p>
-          ) : hasNotifications > 0 ? (
+          ) : notificationData?.data?.length > 0 ? (
             <ul>
               {notifications
                 .slice(0, visibleCount)
@@ -178,13 +138,7 @@ export default function NotificationMenu() {
                         className="leading-6 font-bold"
                         title={notification.user?.username || "Unknown"}
                       >
-                        {(notification.user?.username || "Unknown").slice(
-                          0,
-                          10,
-                        )}
-                        {(notification.user?.username || "Unknown").length > 10
-                          ? "..."
-                          : ""}
+                        {notification.title}
                       </span>
                       <span>{notification.message}</span>
                     </div>
@@ -209,11 +163,10 @@ export default function NotificationMenu() {
           )}
           {notifications.length > 5 && (
             <button
-              className={`my-2 w-full cursor-pointer rounded-full px-4 py-1 text-white transition ${
-                visibleCount >= notifications.length
+              className={`my-2 w-full cursor-pointer rounded-full px-4 py-1 text-white transition ${visibleCount >= notifications.length
                   ? "bg-gray-600 hover:bg-gray-700"
                   : "bg-blue-600 hover:bg-blue-700"
-              }`}
+                }`}
               onClick={handleLoadMore}
             >
               {visibleCount >= notifications.length

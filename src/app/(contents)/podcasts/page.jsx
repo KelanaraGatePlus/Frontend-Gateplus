@@ -78,7 +78,7 @@ function PodcastContent({ isBlurred }) {
   const highlightedData = data?.data?.highlightsPodcast || [];
 
   return (
-    <>
+    <div className="flex flex-col">
       <CarouselTemplate
         label={"Highlight Podcast"}
         contents={highlightedData}
@@ -103,7 +103,7 @@ function PodcastContent({ isBlurred }) {
         withGradient={false}
         isBlurred={isBlurred}
       />
-    </>
+    </div>
   );
 }
 

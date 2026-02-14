@@ -7,7 +7,6 @@ import IconsSaveChanges from "@@/icons/icons-save-changes.svg";
 import logoUsersComment from "@@/icons/logo-users-comment.svg";
 import axios from "axios";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BACKEND_URL } from "@/lib/constants/backendUrl";
 import { useUpdateUserMutation } from "@/hooks/api/userSliceAPI";
@@ -15,12 +14,10 @@ import ProfileModal from "@/components/Modal/ProfileModal";
 import { useAuth } from "@/components/Context/AuthContext";
 
 export default function UserSettingsPage() {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [imageFile, setImageFile] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
   const [userId, setUserId] = useState(null);
-  const [id, setId] = useState("");
   const [profileName, setProfileName] = useState("");
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
@@ -131,7 +128,6 @@ export default function UserSettingsPage() {
       setPhone(usersData.phone || "");
       setdateOfBirth(usersData.dateOfBirth || "");
       setRegion(usersData.region || "");
-      setId(usersData.id || "");
       setCanChangeUsername(usersData.canChangeUsername || false);
       setImageUrl(usersData.imageUrl || null);
     } catch (error) {

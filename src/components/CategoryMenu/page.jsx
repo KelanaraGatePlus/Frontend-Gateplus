@@ -8,7 +8,7 @@ import Cookies from "js-cookie";
 import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 /*[--- ASSETS IMPORT ---]*/
-import { contentTypeArray } from "@/lib/constants/contentType";
+import { navbarOptions } from "@/lib/constants/navbarOptions";
 
 export default function CategoryMenu() {
   const [selectedCategory] = useState(null);
@@ -136,21 +136,21 @@ export default function CategoryMenu() {
     <div className="block md:hidden">
       <section className="my-5 md:my-10">
         <div className="grid grid-cols-5 md:grid-cols-5 justify-between">
-          {contentTypeArray.map((content, index) =>
+          {navbarOptions.map((content, index) =>
             <Link
               key={index}
               className={`flex transform cursor-pointer flex-col items-center justify-between gap-0 transition duration-100 ease-linear md:gap-2 ${selectedCategory === "Comic"
                 ? "scale-110 rounded-lg bg-[#04475E] grayscale-35"
                 : "hover:scale-105 hover:grayscale-50"
                 }`}
-              href={`/${content.pluralName}`}
+              href={`${content.url}`}
             >
               <div className="flex h-full w-full flex-col items-center">
                 <div className="aspect-auto scale-90 md:scale-100 relative w-16 h-16 ">
-                  <Image priority alt="logo-comic" src={content.icon} fill className="w-full h-full object-cover scale-125" />
+                  <Image priority alt={content.tittle} src={content.icon} fill className="w-full h-full object-cover scale-125" />
                 </div>
                 <div className="montserratFont w-full text-center font-medium text-white ">
-                  <span className="text-sm md:text-base">{content.capitalizedLabel}</span>
+                  <span className="text-sm md:text-base">{content.tittle}</span>
                 </div>
               </div>
             </Link>

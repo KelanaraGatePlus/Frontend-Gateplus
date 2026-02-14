@@ -15,6 +15,7 @@ export default function CarouselPopularEbooks({ isBlurred }) {
       type="podcast"
       withGradient={false}
       isBlurred={isBlurred}
+      isHomepage={true}
     />
   );
 }

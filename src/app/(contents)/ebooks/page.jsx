@@ -78,7 +78,7 @@ function EbookContent({ isBlurred }) {
   const highlightedData = data?.data?.highlightsEbooks || [];
 
   return (
-    <>
+    <div className="flex h-full w-full flex-col">
       <CarouselTemplate
         label="Highlight Ebooks"
         contents={highlightedData}
@@ -104,7 +104,7 @@ function EbookContent({ isBlurred }) {
         withTopTag={false}
         isBlurred={isBlurred}
       />
-    </>
+    </div>
   );
 }
 

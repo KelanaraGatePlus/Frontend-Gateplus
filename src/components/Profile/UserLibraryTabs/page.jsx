@@ -26,7 +26,6 @@ export default function UserLibraryTabs() {
   const {
     data,
     isLoading: isLoadingSavedContent,
-    isSuccess,
   } = useGetUserSavedContentQuery();
   const { data: lastWatchedData, isLoading: isLoadingLastWatched } =
     useGetUserLastWatchedContentQuery();

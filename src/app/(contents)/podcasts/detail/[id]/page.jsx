@@ -21,8 +21,7 @@ import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
 
 export default function DetailPodcastPage({ params }) {
   const { id } = use(params);
-
-  const [loading, setLoading] = useState(false);
+  
   const [isHydrated, setIsHydrated] = useState(false); // 🔥 hydration guard
   const [createLog] = useCreateLogMutation();
 
@@ -140,8 +139,6 @@ export default function DetailPodcastPage({ params }) {
           )}
         </>
       )}
-
-      {loading && <LoadingOverlay />}
     </div>
   );
 }

@@ -84,7 +84,7 @@ function ComicContent({ isBlurred }) {
   const isDataLoading = isLoading || isFetching;
 
   return (
-    <div className="flex flex-col gap-8 pb-20">
+    <div className="flex flex-col gap-0 pb-20">
       <CarouselTemplate
         label={"Highlight Comics"}
         contents={highlightedData}

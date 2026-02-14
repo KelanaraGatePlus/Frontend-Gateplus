@@ -15,6 +15,7 @@ export default function CarouselNewest({ isBlurred }) {
       withTopTag={false}
       withNewestTag={true}
       isBlurred={isBlurred} // Tambahkan baris ini
+      isHomepage={true} // Tambahkan baris ini
     />
   );
 }

@@ -139,4 +139,7 @@ MainTemplateLayout.propTypes = {
   handleSubscribe: PropTypes.func,
   topContentData: PropTypes.array.isRequired,
   recomendationData: PropTypes.array.isRequired,
+  refreshTrigger: PropTypes.any,
+  setRefreshTrigger: PropTypes.func,
+  isBlurred: PropTypes.func,
 };

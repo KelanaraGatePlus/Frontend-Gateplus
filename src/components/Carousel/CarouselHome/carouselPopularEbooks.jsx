@@ -14,6 +14,7 @@ export default function CarouselPopularEbooks({ isBlurred }) {
       isLoading={isLoading}
       type="ebook"
       isBlurred={isBlurred}
+      isHomepage={true}
     />
   );
 }

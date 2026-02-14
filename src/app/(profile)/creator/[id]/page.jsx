@@ -27,7 +27,6 @@ export default function CreatorProfilePage({ params }) {
   const itemsPerPage = 10;
   const [totalItems, setTotalItems] = useState(0);
   const [userId, setUserId] = useState(null);
-  const [isReady, setIsReady] = useState(false);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [totalSubs, setTotalSubs] = useState(0);
   const [bannerImageUrl, setBannerImageUrl] = useState(null);
@@ -38,7 +37,6 @@ export default function CreatorProfilePage({ params }) {
     if (typeof window !== "undefined") {
       const storedUserId = localStorage.getItem("users_id");
       setUserId(storedUserId);
-      setIsReady(true);
     }
   }, []);
 
