@@ -5,6 +5,7 @@ import { CommentBody } from "./CommentBody";
 import { CommentHeader } from "./CommentHeader";
 
 export const CommentItem = ({
+    commentId,
     user,
     isAuthor,
     createdAt,
@@ -14,6 +15,7 @@ export const CommentItem = ({
     onReply,
     repliedToName,
     isIndented = false,
+    currentUserId, // ⬅️ TAMBAHKAN
 }) => (
     <div className={`flex flex-col gap-4 rounded-lg bg-transparent py-4 ${isIndented ? "ml-8" : ""}`}>
         <CommentHeader
@@ -21,6 +23,10 @@ export const CommentItem = ({
             isAuthor={isAuthor}
             createdAt={createdAt}
             isDark={isDark}
+            commentId={commentId}
+            message={message}
+            onReply={onReply}
+            currentUserId={currentUserId} // ⬅️ TAMBAHKAN
         />
 
         {donationAmount && (
@@ -37,7 +43,9 @@ export const CommentItem = ({
 );
 
 CommentItem.propTypes = {
+    commentId: PropTypes.string.isRequired,
     user: PropTypes.shape({
+        id: PropTypes.string.isRequired, // ⬅️ PASTIKAN ADA
         profileName: PropTypes.string,
         username: PropTypes.string.isRequired,
         imageUrl: PropTypes.string,
@@ -50,4 +58,5 @@ CommentItem.propTypes = {
     onReply: PropTypes.func,
     repliedToName: PropTypes.string,
     isIndented: PropTypes.bool,
+    currentUserId: PropTypes.string, // ⬅️ TAMBAHKAN
 };

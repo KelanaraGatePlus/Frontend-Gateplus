@@ -68,6 +68,14 @@ export const commentAPI = createApi({
             }),
             invalidatesTags: ["comment"],
         }),
+        // ⬇️ Endpoint DELETE Comment
+        deleteComment: builder.mutation({
+            query: (commentId) => ({
+                url: `/comment/${commentId}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["comment"],
+        }),
     }),
 });
 
@@ -81,4 +89,5 @@ export const {
     useReplyCommentMutation,
     useGetCommentByEpisodePodcastQuery,
     useGetCommentByEducationQuery,
+    useDeleteCommentMutation, // ⬅️ ditambahkan
 } = commentAPI;

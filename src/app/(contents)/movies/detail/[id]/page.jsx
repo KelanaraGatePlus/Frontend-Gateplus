@@ -312,7 +312,7 @@ function PlayingMoviePage({ params }) {
               className="rounded-full"
               src={
                 movieData?.creator?.imageUrl &&
-                movieData?.creator?.imageUrl !== "null"
+                  movieData?.creator?.imageUrl !== "null"
                   ? movieData.creator.imageUrl
                   : DEFAULT_AVATAR.src
               }
@@ -326,67 +326,102 @@ function PlayingMoviePage({ params }) {
           </div>
         </div>
 
-        <div className="mt-5 rounded-md bg-[#393939] p-4">
-          <div
-            dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(movieData?.description || ""),
-            }}
-          />
-        </div>
-
-        {commentData && (
-          <div className="mt-5">
-            <CommentComponent
-              commentData={commentData?.data?.data || []}
-              isLoadingGetComment={isLoadingGetComment}
-              contentType="MOVIE"
-              episodeId={id}
-            />
+        <section className="flex flex-row gap-3 items-stretch mt-5">
+          {/* Poster 3:2 */}
+          <div className="relative aspect-[2/3] w-[220px] sm:w-[160px] lg:w-[250px] flex-shrink-0">
+            {movieData.thumbnailImageUrl && <img
+              src={movieData.thumbnailImageUrl}
+              alt="logo-racunsangga-movie"
+              className="rounded-md object-cover"
+            />}
           </div>
-        )}
 
-        <section className="mt-10">
-          <CarouselTemplate
-            label="Banyak Dilihat"
-            type="movie"
-            contents={data?.data?.topContent || []}
-            isLoading={!data}
-            isBlurred={isBlurred}
-          />
+          {/* Deskripsi */}
+          <div className="rounded-md bg-[#393939] flex-1">
+            <div className="mx-4 my-4 text-white h-full flex flex-col">
+              <div
+                className="prose prose-invert max-w-none"
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(movieData?.description || ""),
+                }}
+              />
 
-          <CarouselTemplate
-            label="Rekomendasi Serupa"
-            type="movie"
-            contents={data?.data?.recommendation || []}
-            isLoading={!data}
-            isBlurred={isBlurred}
-          />
+
+              <div className="mt-10">
+                <p>Judul: {movieData.title}</p>
+                <p>Sutradara : {movieData.director}</p>
+                <p>Rumah Produksi : {movieData.productionHouse}</p>
+                <p>Produser : {movieData.producer}</p>
+                <p>Penulis Cerita : {movieData.writer}</p>
+                <p>Pemeran : {movieData.talent}</p>
+                <p>Durasi : {formatDuration(movieData.duration)}</p>
+                <p>Genre : {Array.isArray(movieData?.categories) ? movieData.categories.map(cat => cat.category?.tittle || cat.category?.title).filter(Boolean).join(', ') : movieData?.categories?.tittle || movieData?.categories?.title}</p>
+                <p>Tahun Rilis : {movieData.releaseYear}</p>
+                <p>Bahasa : {movieData.language}</p>
+              </div>
+            </div>
+          </div>
         </section>
       </main>
-      {showCompleteProfileModal && (
-        <CompleteProfileModal
-          onConfirm={goToProfile}
-          title={movieData?.title}
-          minAge={getMinAge(movieData?.ageRestriction)}
-        />
-      )}
 
-      {showUnderAgeModal && (
-        <UnderAgeModal
-          open={showUnderAgeModal}
-          ageRestriction={movieData?.ageRestriction}
-          title={movieData?.title}
-          onContinue={continueDespiteUnderAge}
+      <section className="mt-10">
+        <CarouselTemplate
+          label="Banyak Dilihat"
+          type="movie"
+          contents={data?.data?.topContent || []}
+          isLoading={!data}
+          isBlurred={isBlurred}
         />
-      )}
-      {showToast && (
-        <Toast
-          message={toastMessage}
-          type={toastType}
-          onClose={() => setShowToast(false)}
+
+        <CarouselTemplate
+          label="Rekomendasi Serupa"
+          type="movie"
+          contents={data?.data?.recommendation || []}
+          isLoading={!data}
+          isBlurred={isBlurred}
         />
+      </section>
+
+      {commentData && (
+        <div className="mt-5 px-4 md:px-11">
+          <CommentComponent
+            commentData={commentData?.data?.data || []}
+            isLoadingGetComment={isLoadingGetComment}
+            contentType="MOVIE"
+            episodeId={id}
+          />
+        </div>
       )}
-    </div>
+      {
+        showCompleteProfileModal && (
+          <CompleteProfileModal
+            onConfirm={goToProfile}
+            title={movieData?.title}
+            minAge={getMinAge(movieData?.ageRestriction)}
+          />
+        )
+      }
+
+      {
+        showUnderAgeModal && (
+          <UnderAgeModal
+            open={showUnderAgeModal}
+            ageRestriction={movieData?.ageRestriction}
+            title={movieData?.title}
+            onContinue={continueDespiteUnderAge}
+          />
+        )
+      }
+      {
+        showToast && (
+          <Toast
+            message={toastMessage}
+            type={toastType}
+            onClose={() => setShowToast(false)}
+          />
+        )
+      }
+    </div >
   );
 }
 

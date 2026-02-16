@@ -24,42 +24,108 @@ import LogoGoogle from "@@/logo/logoGoogle/icons-google.svg";
 import { BACKEND_URL } from "@/lib/constants/backendUrl";
 import { useAuth } from "@/components/Context/AuthContext";
 
-export default function FormLogin({ setIsError, setError, setIsSuccess, setForgotPasswordSuccess, setErrorMessage }) {
+export default function FormLogin({
+  setIsError,
+  setError,
+  setIsSuccess,
+  setForgotPasswordSuccess,
+  setErrorMessage,
+  setAccountStatus,
+}) {
   const router = useRouter();
   const { isVisible: isPasswordVisible, toggle: toggleShowPassword } = useTogglePassword();
   const [loginMutation, { isLoading, isSuccess, isError, error }] = useLoginUserMutation();
+  const { login } = useAuth();
 
-  const { login } = useAuth(); // ambil dari context
-
-  const { register, handleSubmit, formState: { errors }, reset, trigger, getValues } = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    trigger,
+    getValues,
+  } = useForm({
     resolver: zodResolver(loginSchema),
     mode: "onChange",
     reValidateMode: "onBlur",
   });
 
-  const [forgotPasswordRequest, { isLoading: isForgotPasswordLoading }] = useResetPasswordRequestMutation();
+  const [forgotPasswordRequest, { isLoading: isForgotPasswordLoading }] =
+    useResetPasswordRequestMutation();
 
   useEffect(() => {
     setIsError(isError);
     setError(error);
     setIsSuccess(isSuccess);
-  }, [isError, error, isSuccess]);
+  }, [isError, error, isSuccess, setIsError, setError, setIsSuccess]);
 
   const onSubmit = async (data) => {
     try {
       const response = await loginMutation(data).unwrap();
-      if (
-        response.data.isNotVerified == true
-      ) {
+
+      // ===============================
+      // ✅ HANDLE ACCOUNT BANNED
+      // ===============================
+      if (response?.code === "ACCOUNT_BANNED") {
+        setAccountStatus({
+          type: "BANNED",
+          reason: response?.banReason,
+        });
+        return;
+      }
+
+      // ===============================
+      // ✅ HANDLE ACCOUNT SUSPENDED
+      // ===============================
+      if (response?.code === "ACCOUNT_SUSPENDED") {
+        setAccountStatus({
+          type: "SUSPENDED",
+          reason: response?.suspendReason,
+          suspendedUntil: response?.suspendedUntil,
+        });
+        return;
+      }
+
+      // ===============================
+      // EXISTING FLOW (TIDAK DIUBAH)
+      // ===============================
+      if (response.data.isNotVerified == true) {
         reset();
-        router.push('/otp?token=' + response.data.token);
+        router.push("/otp?token=" + response.data.token);
         return;
       } else {
         login(response.data);
         reset();
-        router.push('/');
+        router.push("/");
       }
     } catch (err) {
+      // ===============================
+      // ✅ HANDLE 403 DARI BACKEND
+      // ===============================
+      if (err?.status === 403) {
+        const errorData = err?.data;
+
+        if (errorData?.code === "ACCOUNT_BANNED") {
+          setAccountStatus({
+            type: "BANNED",
+            reason: errorData?.banReason,
+          });
+          return;
+        }
+
+        if (errorData?.code === "ACCOUNT_SUSPENDED") {
+          setAccountStatus({
+            type: "SUSPENDED",
+            reason: errorData?.suspendReason,
+            suspendedUntil: errorData?.suspendedUntil,
+          });
+          return;
+        }
+      }
+
+      // ===============================
+      // EXISTING ERROR FLOW (TIDAK DIUBAH)
+      // ===============================
       setErrorMessage(err?.data?.error || "Login gagal. Silakan coba lagi.");
       setIsError(true);
       setIsSuccess(false);
@@ -69,19 +135,22 @@ export default function FormLogin({ setIsError, setError, setIsSuccess, setForgo
 
   const handleRequestPasswordReset = async () => {
     try {
-      const isValid = await trigger("email"); // validasi field email
+      const isValid = await trigger("email");
       if (!isValid) return;
 
-      const email = getValues("email"); // ambil dari form utama
+      const email = getValues("email");
       await forgotPasswordRequest({ email }).unwrap();
+
       setForgotPasswordSuccess(true);
       setIsError(false);
       setErrorMessage("");
       reset();
-
     } catch (err) {
       setForgotPasswordSuccess(false);
-      setErrorMessage(err?.data?.message || "Gagal mengirim permintaan reset password. Silakan coba lagi.");
+      setErrorMessage(
+        err?.data?.message ||
+          "Gagal mengirim permintaan reset password. Silakan coba lagi."
+      );
       setIsError(true);
       reset();
     }
@@ -95,7 +164,7 @@ export default function FormLogin({ setIsError, setError, setIsSuccess, setForgo
           id="email"
           className="peer montserratFont w-full rounded-lg bg-white px-3 pt-6 pb-2 text-sm font-normal placeholder-transparent focus:outline-blue-500"
           type="email"
-          autoComplete='off'
+          autoComplete="off"
           placeholder="Email"
           {...register("email")}
         />
@@ -148,10 +217,15 @@ export default function FormLogin({ setIsError, setError, setIsSuccess, setForgo
         <Link href="/register" className="text-left">
           <span>Create new account</span>
         </Link>
-        <button type="button" onClick={handleRequestPasswordReset} disabled={isForgotPasswordLoading || isLoading} className="hover:cursor-pointer text-right">
-          <span>{
-            isForgotPasswordLoading ? "Sending..." : "Forgot Password?"
-          }</span>
+        <button
+          type="button"
+          onClick={handleRequestPasswordReset}
+          disabled={isForgotPasswordLoading || isLoading}
+          className="hover:cursor-pointer text-right"
+        >
+          <span>
+            {isForgotPasswordLoading ? "Sending..." : "Forgot Password?"}
+          </span>
         </button>
       </span>
 
@@ -169,7 +243,9 @@ export default function FormLogin({ setIsError, setError, setIsSuccess, setForgo
         className="zeinFont flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-blue-900 py-2 text-2xl font-bold text-white hover:bg-blue-950"
       >
         <Image priority src={LogoGoogle} alt="logo-google" />
-        <p><span>Sign In with Google</span></p>
+        <p>
+          <span>Sign In with Google</span>
+        </p>
       </Link>
     </form>
   );
@@ -181,4 +257,5 @@ FormLogin.propTypes = {
   setError: PropTypes.func.isRequired,
   setForgotPasswordSuccess: PropTypes.func.isRequired,
   setErrorMessage: PropTypes.func.isRequired,
+  setAccountStatus: PropTypes.func.isRequired,
 };
