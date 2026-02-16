@@ -1,5 +1,5 @@
 import React from "react";
-import LoadingGif from "@@/logo/LoadingGateplus2.gif";
+import LoadingGif from "@@/logo/LoadingGateplus.gif";
 
 // eslint-disable-next-line react/prop-types
 export default function LoadingOverlay({ message = "Loading..." }) {
