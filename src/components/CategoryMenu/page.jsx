@@ -146,7 +146,7 @@ export default function CategoryMenu() {
               href={`${content.url}`}
             >
               <div className="flex h-full w-full flex-col items-center">
-                <div className="aspect-auto scale-90 md:scale-100 relative w-16 h-16 ">
+                <div className="aspect-auto scale-90 md:scale-100 relative w-12 h-12">
                   <Image priority alt={content.tittle} src={content.icon} fill className="w-full h-full object-cover scale-125" />
                 </div>
                 <div className="montserratFont w-full text-center font-medium text-white ">

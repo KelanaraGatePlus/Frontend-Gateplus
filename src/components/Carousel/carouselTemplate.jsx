@@ -83,7 +83,7 @@ export default function CarouselTemplate({
 
                 <div className="relative">
                   <CarouselContent
-                    className={isTopTen ? "flex gap-x-5" : "flex gap-x-4"}
+                    className={isTopTen ? "flex gap-x-5" : "flex gap-x-2"}
                   >
                     {contents.map((item, index) => {
                       const fixedType = resolveType(item);
