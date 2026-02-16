@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import FormRegister from '@/components/Form/AuthForm/FormRegister/page';
 import logo from "@@/logo/logoGate+/logo-header-register.svg";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function RegisterPage() {
     const [isError, setIsError] = useState(false);
@@ -12,7 +13,7 @@ export default function RegisterPage() {
     return (
         <div className="flex min-h-screen min-w-screen items-center justify-center px-4">
             <main className="flex h-full w-full max-w-lg flex-col rounded-lg border-[#1382C9] bg-[#135B8E] px-4 py-6 [box-shadow:0px_4px_70px_rgba(19,130,201,0.5)]">
-                <section className="flex flex-col">
+                <Link href={'/'} className="flex flex-col">
                     <div className="relative ml-2 flex h-24 w-fit items-center justify-start">
                         <div className="scale-125">
                             <Image
@@ -32,7 +33,7 @@ export default function RegisterPage() {
                             <span>Create an account</span>
                         </p>
                     </div>
-                </section>
+                </Link>
                 <section className="">
                     {isError && (
                         <div className="mb-2 flex items-center space-x-2 rounded-lg border border-red-600 bg-red-800 px-4 py-3 text-xs font-medium text-red-200">
