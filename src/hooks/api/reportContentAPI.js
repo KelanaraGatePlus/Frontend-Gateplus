@@ -20,7 +20,7 @@ export const reportContentAPI = createApi({
     endpoints: (builder) => ({
         createReportContent: builder.mutation({
             query: (payload) => ({
-                url: "reportContent",
+                url: "/api/report-content", // ✅ UBAH INI (dari "reportContent")
                 method: "POST",
                 body: payload,
             }),
