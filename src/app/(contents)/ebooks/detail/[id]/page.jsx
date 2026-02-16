@@ -1,68 +1,95 @@
 "use client";
-import React from "react";
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from "react";
+import PropTypes from "prop-types";
 
-/*[--- COMPONENT IMPORT ---]*/
+/* --- COMPONENT IMPORT --- */
 import MainTemplateLayout from "@/components/MainDetailProduct/page";
-
-/*[--- API HOOKS ---]*/
-import { useGetEbookByIdQuery } from "@/hooks/api/ebookSliceAPI";
-// import SimpleModal from "@/components/Modal/SimpleModal";
+import CompleteProfileModal from "@/components/Modal/CompleteProfileModal";
+import UnderAgeModal from "@/components/Modal/UnderAgeModal";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+
+/* --- HOOKS --- */
+import useSyncUserData from "@/hooks/api/useSyncUserData";
+import getMinAge from "@/lib/helper/minAge";
+import { useGetEbookByIdQuery } from "@/hooks/api/ebookSliceAPI";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 
-// eslint-disable-next-line react/prop-types
 export default function DetailEbookPage({ params }) {
   const { id } = React.use(params);
+
+  const [userId, setUserId] = useState(null);
+  const [isHydrated, setIsHydrated] = useState(false); // 🔥 hydration guard
   const [loading, setLoading] = useState(false);
-  // const [selectedEpisode, setSelectedEpisode] = useState(null);
-  // const [selectedContentId, setSelectedContentId] = useState(null);
-  // const [isModalOpen, setIsModalOpen] = useState(false);
-  // const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
-  // const [selectedPrice, setSelectedPrice] = useState(null);
   const [createLog] = useCreateLogMutation();
 
-  // const handleModalOpen = (episodeId, price) => {
-  //   setSelectedEpisode(episodeId);
-  //   setSelectedPrice(price);
-  //   setIsModalOpen(true);
-  // };
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedUserId = localStorage.getItem("users_id");
+      setUserId(storedUserId);
+      setIsHydrated(true); // tandain sudah siap render
+    }
+  }, []);
 
-  // const handleModalSubscribeOpen = (contentId, price) => {
-  //   setSelectedContentId(contentId);
-  //   setSelectedPrice(price);
-  //   setIsModalSubscribeOpen(true);
-  // };
+  const { data, isLoading } = useGetEbookByIdQuery(
+    { id, userId },
+    { skip: !id || !isHydrated },
+  );
+
+  const ebookData = data?.data || {};
+
+  const {
+    userAge,
+    isReady,
+    showCompleteProfileModal,
+    showUnderAgeModal,
+    goToProfile,
+    continueDespiteUnderAge,
+  } = useSyncUserData(ebookData?.ageRestriction || null);
+
+  const episode_ebooks = (ebookData?.episode_ebooks?.episodes || [])
+    .slice()
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+  useEffect(() => {
+    if (id && isHydrated) {
+      createLog({
+        contentType: "EBOOK",
+        logType: "CLICK",
+        contentId: id,
+      });
+    }
+  }, [id, isHydrated, createLog]);
+
+  const isBlurred = useCallback(
+    (content) => {
+      if (!isReady) return true;
+
+      const minAge = getMinAge(content?.ageRestriction);
+
+      if (minAge === null) return false;
+      if (userAge == null) return true;
+
+      return userAge < minAge;
+    },
+    [userAge, isReady],
+  );
 
   const handleBuy = async (episodeId) => {
     setLoading(true);
     window.location.href = `/checkout/purchase/ebooks/${id}/${episodeId}`;
-    setLoading(false);
   };
 
   const handleSubscribe = async (contentId) => {
     setLoading(true);
     window.location.href = `/checkout/subscribe/ebooks/${contentId}`;
-    setLoading(false);
   };
 
-  const skip = !id;
-  const { data, isLoading } = useGetEbookByIdQuery({ id }, { skip });
-  const ebookData = data?.data || {};
-  const episode_ebooks = (ebookData?.episode_ebooks?.episodes || []).slice().sort((a, b) => {
-    return new Date(a.createdAt) - new Date(b.createdAt);
-  });
-
-  useEffect(() => {
-    createLog({
-      contentType: "EBOOK",
-      logType: "CLICK",        // atau WATCH_TRAILER / WATCH_CONTENT sesuai kebutuhan
-      contentId: id,
-    });
-  }, [id, createLog]);
+  if (!isHydrated || isLoading || !data || !isReady) {
+    return <LoadingOverlay />;
+  }
 
   return (
-    <div>
+    <div className="flex flex-col">
       <MainTemplateLayout
         productType="ebook"
         productDetail={ebookData}
@@ -72,20 +99,35 @@ export default function DetailEbookPage({ params }) {
         handleSubscribe={handleSubscribe}
         topContentData={data?.topContent || []}
         recomendationData={data?.recommendation || []}
+        isBlurred={isBlurred}
       />
-      {/* <SimpleModal
-        title={"Konten ini masih terkunci, apakah kamu bersedia membeli nya dengan harga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onConfirm={handleBuy}
-      />
-      <SimpleModal
-        title={"Subscribe untuk menikmati seluruh episode dari konten ini selama sebulan seharga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
-        isOpen={isModalSubscribeOpen}
-        onClose={() => setIsModalSubscribeOpen(false)}
-        onConfirm={handleSubscribe}
-      /> */}
+
       {loading && <LoadingOverlay />}
+
+      {ebookData?.id && (
+        <>
+          {showCompleteProfileModal && (
+            <CompleteProfileModal
+              onConfirm={goToProfile}
+              title={ebookData?.title}
+              minAge={getMinAge(ebookData?.ageRestriction)}
+            />
+          )}
+
+          {showUnderAgeModal && (
+            <UnderAgeModal
+              open={showUnderAgeModal}
+              ageRestriction={ebookData?.ageRestriction}
+              title={ebookData?.title}
+              onContinue={continueDespiteUnderAge}
+            />
+          )}
+        </>
+      )}
     </div>
   );
 }
+
+DetailEbookPage.propTypes = {
+  params: PropTypes.object.isRequired,
+};

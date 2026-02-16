@@ -1,17 +1,24 @@
 import React from "react";
 import { useGetTopTenQuery } from "@/hooks/api/homeSliceAPI.js";
 import CarouselTemplate from "@/components/Carousel/carouselTemplate";
+import PropTypes from "prop-types";
 
-export default function CarouselTopTen() {
-            const { data, isLoading } = useGetTopTenQuery();
-            const topTenData = data?.data || [];
+export default function CarouselTopTen({ isBlurred }) {
+  const { data, isLoading } = useGetTopTenQuery();
+  const topTenData = data?.data || [];
 
-    return (
-        <CarouselTemplate
-            label={"Top 10 GATE"}
-            contents={topTenData}
-            isLoading={isLoading}
-            isTopTen={true}
-        />
-    );
+  return (
+    <CarouselTemplate
+      label={"Top 10 GATE"}
+      contents={topTenData}
+      isLoading={isLoading}
+      isTopTen={true}
+      isBlurred={isBlurred}
+      isHomepage={true}
+    />
+  );
 }
+
+CarouselTopTen.propTypes = {
+  isBlurred: PropTypes.bool.isRequired,
+};

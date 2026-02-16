@@ -26,6 +26,33 @@ export default function CommentComponent({
     isDark = true,
     withReward = true,
 }) {
+    // ⬇️ DECODE TOKEN DARI LOCALSTORAGE
+    const getCurrentUserId = () => {
+        if (typeof window === 'undefined') return null;
+        
+        const token = localStorage.getItem('token');
+        if (!token) return null;
+        
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(
+                atob(base64)
+                    .split('')
+                    .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                    .join('')
+            );
+            
+            const decoded = JSON.parse(jsonPayload);
+            return decoded.id || decoded.userId || decoded.sub || null;
+        } catch (error) {
+            console.error('Error decoding token:', error);
+            return null;
+        }
+    };
+    
+    const currentUserId = getCurrentUserId();
+    
     const [isCommentFieldHide, setIsCommentFieldHide] = useState(false);
     const [isReplyFieldHide, setIsReplyFieldHide] = useState(true);
     const [openReplies, setOpenReplies] = useState({});
@@ -40,8 +67,8 @@ export default function CommentComponent({
 
     const handleToggleReplies = (commentId) => {
         setOpenReplies(prev => ({
-            ...prev, // Salin semua state sebelumnya
-            [commentId]: !prev[commentId] // Ubah state untuk commentId yang spesifik
+            ...prev,
+            [commentId]: !prev[commentId]
         }));
     };
 
@@ -137,6 +164,7 @@ export default function CommentComponent({
                                     return (
                                         <div key={comment.id} className="flex flex-col rounded-lg bg-transparent py-4">
                                             <CommentItem
+                                                commentId={comment.id}
                                                 user={comment.user}
                                                 isAuthor={isAuthor}
                                                 createdAt={comment.createdAt}
@@ -144,12 +172,14 @@ export default function CommentComponent({
                                                 isDark={isDark}
                                                 message={comment.message}
                                                 onReply={() => handleReplyToComment(comment)}
+                                                currentUserId={currentUserId}
                                             />
 
                                             {/* Reply Comment */}
                                             {openReplies[comment.id] && comment.ReplyComment.map((reply) => (
                                                 <CommentItem
                                                     key={reply.id}
+                                                    commentId={reply.id}
                                                     user={reply.user}
                                                     isAuthor={isAuthor}
                                                     createdAt={reply.createdAt}
@@ -159,10 +189,11 @@ export default function CommentComponent({
                                                         ? comment.user.profileName
                                                         : comment.user.username}
                                                     isIndented
+                                                    currentUserId={currentUserId}
                                                 />
                                             ))}
 
-                                            {/* [MODIFIKASI 3] Tombol untuk toggle reply. Hanya muncul jika ada balasan. */}
+                                            {/* Tombol untuk toggle reply. Hanya muncul jika ada balasan. */}
                                             {comment.ReplyComment && comment.ReplyComment.length > 0 && (
                                                 <div
                                                     className="flex flex-row gap-1 items-center cursor-pointer mt-4 ml-1"

@@ -1,389 +1,432 @@
 "use client";
 
-import PropTypes from 'prop-types';
-import React from "react";
+import PropTypes from "prop-types";
+import React, { useEffect, useState, useCallback } from "react";
+import Image from "next/image";
+import Link from "next/link";
 
 import logoDislike from "@@/logo/logoDetailFilm/dislike-icons.svg";
 import logoLike from "@@/logo/logoDetailFilm/like-icons.svg";
 import logoSave from "@@/logo/logoDetailFilm/save-icons.svg";
-import { useEffect, useState } from "react";
-
-import Image from "next/image";
-import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
-import { useGetSeriesByIdQuery } from "@/hooks/api/seriesSliceAPI";
-import ProductEpisodeSection from "@/components/MainDetailProduct/ProductEpisodeSection";
-import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
-import { useLikeContent } from "@/lib/features/useLikeContent";
-import { useDislikeContent } from "@/lib/features/useDislikeContent";
-import DefaultShareButton from "@/components/ShareButton/DefaultShareButton";
 import iconLikeSolid from "@@/logo/logoDetailFilm/liked-icons.svg";
 import iconDislikeSolid from "@@/logo/logoDetailFilm/dislike-icons-solid.svg";
 import iconSaveSolid from "@@/logo/logoDetailFilm/saved-icons.svg";
-import { useSaveContent } from '@/lib/features/useSaveContent';
-import CarouselTemplate from '@/components/Carousel/carouselTemplate';
-import Link from 'next/link';
-import { DEFAULT_AVATAR } from '@/lib/defaults';
-import { useGetUserId } from '@/lib/features/useGetUserId';
-import LoadingOverlay from '@/components/LoadingOverlay/page';
+
+import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
+import ProductEpisodeSection from "@/components/MainDetailProduct/ProductEpisodeSection";
+import CarouselTemplate from "@/components/Carousel/carouselTemplate";
+import LoadingOverlay from "@/components/LoadingOverlay/page";
+import CompleteProfileModal from "@/components/Modal/CompleteProfileModal";
+import UnderAgeModal from "@/components/Modal/UnderAgeModal";
+import DefaultShareButton from "@/components/ShareButton/DefaultShareButton";
+
+import { useGetSeriesByIdQuery } from "@/hooks/api/seriesSliceAPI";
+import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
+import { useLikeContent } from "@/lib/features/useLikeContent";
+import { useDislikeContent } from "@/lib/features/useDislikeContent";
+import { useSaveContent } from "@/lib/features/useSaveContent";
+import { useGetUserId } from "@/lib/features/useGetUserId";
+import useSyncUserData from "@/hooks/api/useSyncUserData";
+import getMinAge from "@/lib/helper/minAge";
+import { DEFAULT_AVATAR } from "@/lib/defaults";
+
+import Toast from "@/components/Toast/page";
 
 function DetailSeriesPage({ params }) {
-    const { id } = params;
-    const userId = useGetUserId();
-    const { data, isLoading } = useGetSeriesByIdQuery({ id, withEpisodes: false });
-    const [loading, setLoading] = useState(false);
-    // // const [selectedContentId, setSelectedContentId] = useState(null);
-    // const [isModalSubscribeOpen, setIsModalSubscribeOpen] = useState(false);
-    // // const [selectedPrice, setSelectedPrice] = useState(null);
-    // const [isModalOpen, setIsModalOpen] = useState(false);
-    // const [selectedEpisode, setSelectedEpisode] = useState(null);
-    const [createLog] = useCreateLogMutation();
-    const { toggleLike } = useLikeContent();
-    const { toggleDislike } = useDislikeContent();
-    const { toggleSave } = useSaveContent();
+  const { id } = params;
+  const userId = useGetUserId();
+  const [isHydrated, setIsHydrated] = useState(false);
 
-    const [isLiked, setIsLiked] = useState(false);
-    const [idLiked, setIdLiked] = useState(null);
-    const [totalLike, setTotalLike] = useState(0);
-    const [isDisliked, setIsDisliked] = useState(false);
-    const [idDisliked, setIdDisliked] = useState(null);
-    const [isSaved, setIsSaved] = useState(false);
-    const [idSaved, setIdSaved] = useState(null);
-
-    const seriesData = data?.data?.data || {};
-    const episode_series = (seriesData?.episodes?.episodes || []).slice().sort((a, b) => {
-        return new Date(a.createdAt) - new Date(b.createdAt);
-    });
-
-    // const handleModalSubscribeOpen = (contentId, price) => {
-    //     setSelectedContentId(contentId);
-    //     setSelectedPrice(price);
-    //     setIsModalSubscribeOpen(true);
-    // };
-
-    // const handleModalOpen = (episodeId, price) => {
-    //     setSelectedEpisode(episodeId);
-    //     setSelectedPrice(price);
-    //     setIsModalOpen(true);
-    // };
-
-    const handleBuy = async (episodeId) => {
-        setLoading(true);
-        window.location.href = `/checkout/purchase/series/${id}/${episodeId}`;
-        setLoading(false);
-    };
-
-    const handleSubscribe = async (contentId) => {
-        setLoading(true);
-        window.location.href = `/checkout/subscribe/series/${contentId}`;
-        setLoading(false);
-    };
-
-    useEffect(() => {
-        createLog({
-            contentType: "SERIES",
-            logType: "CLICK",
-            contentId: id,
-        });
-    }, [id, createLog]);
-
-    useEffect(() => {
-        // Mengisi state dari data API saat pertama kali dimuat
-        if (seriesData && seriesData.id) {
-            setIsLiked(seriesData.isLiked || false);
-            setIdLiked(seriesData?.isLiked?.id || null);
-            setTotalLike(seriesData.likes || 0);
-            setIsDisliked(seriesData.isDisliked || false);
-            setIdDisliked(seriesData?.isDisliked?.id || null);
-            setIsSaved(seriesData.isSaved || false);
-            setIdSaved(seriesData?.isSaved?.id || null);
-        }
-    }, [seriesData]);
-
-    const handleToggleDislike = () => {
-        if (!seriesData.id) return; // Mencegah aksi jika data belum siap
-        // Jika konten sedang di-like, batalkan like terlebih dahulu
-        if (isLiked) {
-            // Panggil toggleLike untuk unlike
-            toggleLike({
-                isLiked: true, // Paksa jadi true untuk proses unlike
-                id: seriesData.id,
-                fieldKey: "seriesId",
-                idLiked,
-                setIsLiked,
-                setTotalLike,
-                setIdLiked,
-            });
-        }
-        // Lanjutkan dengan proses dislike
-        toggleDislike({
-            isDisliked,
-            id: seriesData.id,
-            fieldKey: "seriesId", // Pastikan key ini sesuai dengan backend
-            idDisliked,
-            setIsDisliked,
-            setIdDisliked,
-        });
-    };
-
-    const handleToggleLike = () => {
-        if (!seriesData.id) return; // Mencegah aksi jika data belum siap
-        // Jika konten sedang di-dislike, batalkan dislike terlebih dahulu
-        if (isDisliked) {
-            toggleDislike({
-                isDisliked: true, // Paksa jadi true untuk proses un-dislike
-                id: seriesData.id,
-                fieldKey: "seriesId",
-                idDisliked,
-                setIsDisliked,
-                setIdDisliked,
-            });
-        }
-        // Lanjutkan dengan proses like
-        toggleLike({
-            isLiked,
-            id: seriesData.id,
-            fieldKey: "seriesId", // Pastikan key ini sesuai dengan backend
-            idLiked,
-            setIsLiked,
-            setTotalLike,
-            setIdLiked,
-        });
-    };
-
-    const handleToggleSave = () => {
-        toggleSave({
-            isSaved,
-            title: seriesData.title,
-            id: seriesData.id,
-            fieldKey: "seriesId",
-            idSaved,
-            setShowToast: () => { },
-            setToastMessage: () => { },
-            setToastType: () => { },
-            setIsSaved,
-            setIdSaved,
-        });
-    };
-
-    if (isLoading) {
-        return (
-            <LoadingOverlay />
-        )
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsHydrated(true);
     }
+  }, []);
 
-    return (
-        <div>
-            <section className="flex justify-center rounded-md relative">
-                {/* Player bergaya YouTube */}
-                <div className="mx-auto my-auto flex w-screen justify-center rounded-lg object-cover">
-                    <DefaultVideoPlayer
-                        className="rounded-lg"
-                        src={seriesData?.trailerFileUrl}
-                        poster={seriesData?.posterImageUrl}
-                        logType={"WATCH_TRAILER"}
-                        contentType={"SERIES"}
-                        contentId={seriesData?.id}
-                        ageRestriction={seriesData?.ageRestriction}
-                        title={'Trailer ' + seriesData?.title}
-                        genre={Array.isArray(seriesData?.categories) ? seriesData.categories.map(cat => cat.category.tittle || cat.category.title).join(', ') : seriesData?.categories?.tittle || seriesData?.categories?.title}
-                    />
-                </div>
-            </section>
+  const { data, isLoading } = useGetSeriesByIdQuery(
+    {
+      id,
+      withEpisodes: false,
+    },
+    {
+      skip: !id || !isHydrated,
+    },
+  );
 
-            <main className="text-white mt-10">
-                <section className="w-full px-4 md:px-15 flex flex-col gap-4 md:gap-0 md:flex-row md:items-center justify-between pb-4">
-                    <div className="flex flex-col gap-4 md:w-1/2 w-full">
-                        <div className="flex flex-col gap-2">
-                            <h1 className="font-black text-4xl">
-                                {seriesData?.title || "Judul Series Tidak Tersedia"}
-                            </h1>
-                            <p className=" text-sm/normal">
-                                {seriesData?.ageRestriction} | {seriesData?.categories?.map(cat => cat.category.tittle || cat.category.title).join(', ') || seriesData?.categories?.tittle || seriesData?.categories?.title}
-                            </p>
-                        </div>
-                        <div className="flex flex-row gap-6">
-                            <div className="flex items-center justify-center w-max">
-                                <button disabled={seriesData?.isOwner || seriesData?.isSubscribed} onClick={seriesData?.isOwner ? null : !seriesData?.isSubscribed && seriesData?.canSubscribe ? () => { handleSubscribe(seriesData?.id, seriesData?.subscriptionPrice) } : null} className="rounded-3xl bg-[#0076E999] disabled:bg-[#9CA3AF] px-12 py-3 font-bold text-white w-full hover:cursor-pointer">
-                                    {seriesData?.isOwner ? "Series ini adalah karya mu" : !seriesData?.canSubscribe ? 'Buy Episode To Watch' : seriesData?.isSubscribed ? "Watch" : "Subscribe"}
-                                </button>
-                            </div>
-                            <div className="flex items-center justify-center w-max gap-2">
-                                {userId && <div onClick={handleToggleLike} className="flex items-center justify-center transition delay-150 duration-400 ease-linear hover:-translate-y-1 hover:scale-x-110 hover:scale-y-110 cursor-pointer">
-                                    {isLiked ? (
-                                        <Image
-                                            priority
-                                            className="focus-within:bg-purple-300"
-                                            width={35}
-                                            alt="icon-like-solid"
-                                            src={iconLikeSolid}
-                                        />
-                                    ) : (
-                                        <Image
-                                            priority
-                                            className="focus-within:bg-purple-300"
-                                            width={35}
-                                            alt="icon-like-outline"
-                                            src={logoLike}
-                                        />
-                                    )}
-                                    <p className="montserratFont mt-1 text-base font-bold pl-2">
-                                        {totalLike}
-                                    </p>
-                                </div>}
-                                {/* Tombol Dislike */}
-                                {userId && <div onClick={handleToggleDislike} className="flex items-center justify-center cursor-pointer">
-                                    {isDisliked ? (
-                                        <Image
-                                            priority
-                                            className="focus-within:bg-purple-300"
-                                            width={35}
-                                            alt="icon-like-solid"
-                                            src={iconDislikeSolid}
-                                        />
-                                    ) : (
-                                        <Image
-                                            priority
-                                            className="focus-within:bg-purple-300"
-                                            width={35}
-                                            alt="icon-like-outline"
-                                            src={logoDislike}
-                                        />
-                                    )}
-                                </div>}
-                                {userId && <div onClick={handleToggleSave} className="flex items-center justify-center cursor-pointer">
-                                    {isSaved ? (
-                                        <Image
-                                            priority
-                                            width={35}
-                                            alt="icon-saved-solid"
-                                            src={iconSaveSolid}
-                                        />
-                                    ) : (
-                                        <Image
-                                            priority
-                                            width={35}
-                                            alt="logo-save"
-                                            src={logoSave}
-                                        />
-                                    )}
-                                </div>}
-                                <DefaultShareButton contentType={'SERIES'} />
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex flex-row items-center md:justify-end w-full md:w-1/2 gap-3">
-                        <div className="flex items-center justify-center">
-                            <img
-                                width={60}
-                                alt="logo-subscribers"
-                                src={seriesData?.creator?.imageUrl || DEFAULT_AVATAR.src}
-                            />
-                        </div>
-                        <Link href={`/creator/${seriesData?.creator?.id}`} className="grid grid-rows-2">
-                            <div className="flex place-content-center justify-center text-2xl font-bold text-white hover:underline">
-                                {seriesData?.creator?.profileName}
-                            </div>
-                            <div className="text-sm text-white">{seriesData?.creator?.totalSubscribers} followers</div>
-                        </Link>
-                    </div>
-                </section>
+  const [loading, setLoading] = useState(false);
 
-                <section className="flex flex-row gap-3 items-stretch px-4 md:px-15 mt-5">
-                    {/* Poster 3:2 */}
-                    <div className="relative aspect-[2/3] w-[220px] sm:w-[160px] lg:w-[250px] flex-shrink-0">
-                        {seriesData.thumbnailImageUrl && <img
-                            src={seriesData.thumbnailImageUrl}
-                            alt="logo-racunsangga-movie"
-                            className="rounded-md object-cover h-full w-full"
-                        />}
-                    </div>
+  const [isLiked, setIsLiked] = useState(false);
+  const [idLiked, setIdLiked] = useState(null);
+  const [totalLike, setTotalLike] = useState(0);
+  const [isDisliked, setIsDisliked] = useState(false);
+  const [idDisliked, setIdDisliked] = useState(null);
+  const [isSaved, setIsSaved] = useState(false);
+  const [idSaved, setIdSaved] = useState(null);
 
-                    {/* Deskripsi */}
-                    <div className="rounded-md bg-[#393939] flex-1">
-                        <div className="mx-4 my-4 text-white h-full flex flex-col">
-                            <div
-                                className="prose prose-invert max-w-none"
-                                dangerouslySetInnerHTML={{ __html: seriesData?.description || "" }}
-                            />
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState("success"); // success / failed
 
-                            <div className="mt-10">
-                                <p>Judul: {seriesData.title}</p>
-                                <p>Sutradara : {seriesData.director}</p>
-                                <p>Rumah Produksi : {seriesData.productionHouse}</p>
-                                <p>Produser : {seriesData.producer}</p>
-                                <p>Penulis Cerita : {seriesData.writer}</p>
-                                <p>Pemeran : {seriesData.talent}</p>
-                                <p>Durasi : {seriesData.duration}</p>
-                                <p>Genre : {Array.isArray(seriesData?.categories) ? seriesData.categories.map(cat => cat.category.tittle || cat.category.title).join(', ') : seriesData?.categories?.tittle || seriesData?.categories?.title}</p>
-                                <p>Tahun Rilis : {seriesData.releaseYear}</p>
-                                <p>Bahasa : {seriesData.language}</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+  const seriesData = data?.data?.data || {};
+  const episode_series = (seriesData?.episodes?.episodes || [])
+    .slice()
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
-                <ProductEpisodeSection
-                    productType={'series'}
-                    productEpisodes={episode_series}
-                    isLoading={loading}
-                    isSubscribe={seriesData?.isSubscribed}
-                    handlePayment={handleBuy}
-                    productId={
-                        seriesData?.id
-                    }
-                    isOwner={seriesData?.isOwner}
-                    itemClassname='px-4 md:px-15'
-                />
+  const {
+    showCompleteProfileModal,
+    showUnderAgeModal,
+    goToProfile,
+    continueDespiteUnderAge,
+    userAge,
+    isReady,
+  } = useSyncUserData(seriesData?.ageRestriction);
 
-                <section className="mt-5">
-                    <section className="my-10 flex flex-col">
-                        <section className="mt-10">
-                            <CarouselTemplate
-                                label="Banyak Dilihat"
-                                type="series"
-                                contents={data?.data?.topContent || []}
-                                isLoading={!data}
-                                withTopTag={false}
-                                withNewestTag={false}
-                            />
-                        </section>
+  const { toggleSave } = useSaveContent({
+    userAge,
+    isReady,
+    ageRestriction: seriesData?.ageRestriction,
+  });
 
-                        <section className="mt-10">
-                            <CarouselTemplate
-                                label="Rekomendasi Serupa"
-                                type="seriess"
-                                contents={data?.data?.recommendation || []}
-                                isLoading={!data}
-                                withTopTag={false}
-                                withNewestTag={false}
-                            />
-                        </section>
-                    </section>
-                </section>
+  const [createLog] = useCreateLogMutation();
+  const { toggleLike } = useLikeContent();
+  const { toggleDislike } = useDislikeContent();
 
-                {/* <SimpleModal
-                    title={"Subscribe untuk menikmati seluruh episode dari konten ini selama sebulan seharga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
-                    isOpen={isModalSubscribeOpen}
-                    onClose={() => setIsModalSubscribeOpen(false)}
-                    onConfirm={handleSubscribe}
-                />
+  // Set initial state Like/Dislike/Save
+  useEffect(() => {
+    if (seriesData && seriesData.id) {
+      setIsLiked(seriesData.isLiked || false);
+      setIdLiked(seriesData?.isLiked?.id || null);
+      setTotalLike(seriesData.likes || 0);
+      setIsDisliked(seriesData.isDisliked || false);
+      setIdDisliked(seriesData?.isDisliked?.id || null);
+      setIsSaved(seriesData.isSaved || false);
+      setIdSaved(seriesData?.isSaved?.id || null);
+    }
+  }, [seriesData]);
 
-                <SimpleModal
-                    title={"Konten ini masih terkunci, apakah kamu bersedia membeli nya dengan harga Rp. " + (selectedPrice?.toLocaleString() ?? 0) + ",- ?"}
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                    onConfirm={handleBuy}
-                /> */}
-            </main>
+  useEffect(() => {
+    if (id) {
+      createLog({ contentType: "SERIES", logType: "CLICK", contentId: id });
+    }
+  }, [id, createLog]);
+
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => setShowToast(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
+
+  // blur jika umur belum memenuhi
+  const isBlurred = useCallback(
+    (seriesData) => {
+      if (!isReady) return true;
+      const minAge = getMinAge(seriesData?.ageRestriction);
+      if (minAge === null) return false;
+      if (userAge == null) return true;
+      return userAge < minAge;
+    },
+    [userAge, isReady],
+  );
+
+  const handleToggleLike = () => {
+    if (!seriesData.id) return;
+    if (isDisliked) {
+      toggleDislike({
+        isDisliked: true,
+        id: seriesData.id,
+        fieldKey: "seriesId",
+        idDisliked,
+        setIsDisliked,
+        setIdDisliked,
+      });
+    }
+    toggleLike({
+      isLiked,
+      id: seriesData.id,
+      fieldKey: "seriesId",
+      idLiked,
+      setIsLiked,
+      setTotalLike,
+      setIdLiked,
+    });
+  };
+
+  const handleToggleDislike = () => {
+    if (!seriesData.id) return;
+    if (isLiked) {
+      toggleLike({
+        isLiked: true,
+        id: seriesData.id,
+        fieldKey: "seriesId",
+        idLiked,
+        setIsLiked,
+        setTotalLike,
+        setIdLiked,
+      });
+    }
+    toggleDislike({
+      isDisliked,
+      id: seriesData.id,
+      fieldKey: "seriesId",
+      idDisliked,
+      setIsDisliked,
+      setIdDisliked,
+    });
+  };
+
+  const handleToggleSave = () => {
+    toggleSave({
+      isSaved,
+      title: seriesData.title,
+      id: seriesData.id,
+      fieldKey: "seriesId",
+      idSaved,
+      setShowToast,
+      setToastMessage,
+      setToastType,
+      setIsSaved,
+      setIdSaved,
+      onUnderAge: () => showUnderAgeModal(true),
+      onIncompleteDOB: goToProfile,
+    });
+  };
+
+  const handleBuy = async (episodeId) => {
+    setLoading(true);
+    window.location.href = `/checkout/purchase/series/${id}/${episodeId}`;
+    setLoading(false);
+  };
+
+  const handleSubscribe = async (contentId) => {
+    setLoading(true);
+    window.location.href = `/checkout/subscribe/series/${contentId}`;
+    setLoading(false);
+  };
+
+  if (!isHydrated || isLoading || !data || !isReady) {
+    return <LoadingOverlay />;
+  }
+
+  return (
+    <div>
+      <section className="relative flex justify-center rounded-md">
+        <div className="mx-auto my-auto flex w-screen justify-center rounded-lg object-cover">
+          <DefaultVideoPlayer
+            className="rounded-lg"
+            src={seriesData?.trailerFileUrl}
+            poster={seriesData?.posterImageUrl}
+            logType="WATCH_TRAILER"
+            contentType="SERIES"
+            contentId={seriesData?.id}
+            ageRestriction={seriesData?.ageRestriction}
+            title={`Trailer ${seriesData?.title}`}
+            genre={
+              Array.isArray(seriesData?.categories)
+                ? seriesData.categories
+                    .map((cat) => cat.category.tittle || cat.category.title)
+                    .join(", ")
+                : seriesData?.categories?.tittle ||
+                  seriesData?.categories?.title
+            }
+          />
         </div>
-    );
+      </section>
 
+      <main className="mt-10 text-white">
+        <section className="flex flex-col gap-4 px-4 md:flex-row md:items-center md:px-15">
+          <div className="flex flex-col gap-4 md:w-1/2">
+            <h1 className="text-4xl font-black">{seriesData?.title}</h1>
+            <p className="text-sm/normal">
+              {seriesData?.ageRestriction} |{" "}
+              {Array.isArray(seriesData?.categories)
+                ? seriesData.categories
+                    .map((cat) => cat.category.tittle || cat.category.title)
+                    .join(", ")
+                : seriesData?.categories?.tittle ||
+                  seriesData?.categories?.title}
+            </p>
+
+            <div className="flex gap-6">
+              <button
+                disabled={seriesData?.isOwner || seriesData?.isSubscribed}
+                onClick={
+                  seriesData?.isOwner
+                    ? null
+                    : !seriesData?.isSubscribed && seriesData?.canSubscribe
+                      ? () => handleSubscribe(seriesData?.id)
+                      : null
+                }
+                className="w-full rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white hover:cursor-pointer disabled:bg-[#9CA3AF]"
+              >
+                {seriesData?.isOwner
+                  ? "Series ini adalah karya mu"
+                  : !seriesData?.canSubscribe
+                    ? "Buy Episode To Watch"
+                    : seriesData?.isSubscribed
+                      ? "Watch"
+                      : "Subscribe"}
+              </button>
+
+              {userId && (
+                <div className="flex gap-2">
+                  <div
+                    onClick={handleToggleLike}
+                    className="flex cursor-pointer items-center"
+                  >
+                    <Image
+                      width={35}
+                      src={isLiked ? iconLikeSolid : logoLike}
+                      alt="like"
+                    />
+                    <p className="pl-2 font-bold">{totalLike}</p>
+                  </div>
+                  <div
+                    onClick={handleToggleDislike}
+                    className="flex cursor-pointer items-center"
+                  >
+                    <Image
+                      width={35}
+                      src={isDisliked ? iconDislikeSolid : logoDislike}
+                      alt="dislike"
+                    />
+                  </div>
+                  <div
+                    onClick={handleToggleSave}
+                    className="flex cursor-pointer items-center"
+                  >
+                    <Image
+                      width={35}
+                      src={isSaved ? iconSaveSolid : logoSave}
+                      alt="save"
+                    />
+                  </div>
+                  <DefaultShareButton contentType="SERIES" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex w-full items-center gap-3 md:w-1/2 md:justify-end">
+            <img
+              width={60}
+              alt="creator-avatar"
+              src={seriesData?.creator?.imageUrl || DEFAULT_AVATAR.src}
+            />
+            <Link
+              href={`/creator/${seriesData?.creator?.id}`}
+              className="grid grid-rows-2"
+            >
+              <span className="text-2xl font-bold hover:underline">
+                {seriesData?.creator?.profileName}
+              </span>
+              <span className="text-sm">
+                {seriesData?.creator?.totalSubscribers} followers
+              </span>
+            </Link>
+          </div>
+        </section>
+
+        <section className="mt-5 flex gap-3 px-4 md:px-15">
+          <div className="relative aspect-[2/3] w-[220px] flex-shrink-0 sm:w-[160px] lg:w-[250px]">
+            {seriesData.thumbnailImageUrl && (
+              <img
+                src={seriesData.thumbnailImageUrl}
+                alt="poster"
+                className="h-full w-full rounded-md object-cover"
+              />
+            )}
+          </div>
+
+          <div className="flex-1 rounded-md bg-[#393939] text-white">
+            <div className="mx-4 my-4">
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: seriesData?.description || "",
+                }}
+              />
+              <div className="mt-10 space-y-1">
+                <p>Judul: {seriesData.title}</p>
+                <p>Sutradara: {seriesData.director}</p>
+                <p>Rumah Produksi: {seriesData.productionHouse}</p>
+                <p>Produser: {seriesData.producer}</p>
+                <p>Penulis Cerita: {seriesData.writer}</p>
+                <p>Pemeran: {seriesData.talent}</p>
+                <p>Durasi: {seriesData.duration}</p>
+                <p>
+                  Genre:{" "}
+                  {Array.isArray(seriesData?.categories)
+                    ? seriesData.categories
+                        .map((cat) => cat.category.tittle || cat.category.title)
+                        .join(", ")
+                    : seriesData?.categories?.tittle ||
+                      seriesData?.categories?.title}
+                </p>
+                <p>Tahun Rilis: {seriesData.releaseYear}</p>
+                <p>Bahasa: {seriesData.language}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <ProductEpisodeSection
+          productType="series"
+          productEpisodes={episode_series}
+          isLoading={loading}
+          isSubscribe={seriesData?.isSubscribed}
+          handlePayment={handleBuy}
+          productId={seriesData?.id}
+          isOwner={seriesData?.isOwner}
+          itemClassname="px-4 md:px-15"
+        />
+
+        <section className="my-10 flex flex-col gap-5">
+          <CarouselTemplate
+            label="Banyak Dilihat"
+            type="series"
+            contents={data?.data?.topContent || []}
+            isLoading={!data}
+            isBlurred={isBlurred}
+          />
+          <CarouselTemplate
+            label="Rekomendasi Serupa"
+            type="series"
+            contents={data?.data?.recommendation || []}
+            isLoading={!data}
+            isBlurred={isBlurred}
+          />
+        </section>
+
+        {showCompleteProfileModal && (
+          <CompleteProfileModal
+            onConfirm={goToProfile}
+            title={seriesData?.title}
+            minAge={getMinAge(seriesData?.ageRestriction)}
+          />
+        )}
+        {showUnderAgeModal && (
+          <UnderAgeModal
+            open={showUnderAgeModal}
+            ageRestriction={seriesData?.ageRestriction}
+            title={seriesData?.title}
+            onContinue={continueDespiteUnderAge}
+          />
+        )}
+
+        {showToast && (
+          <Toast
+            message={toastMessage}
+            type={toastType}
+            onClose={() => setShowToast(false)}
+          />
+        )}
+      </main>
+    </div>
+  );
 }
 
 DetailSeriesPage.propTypes = {
-    params: PropTypes.shape({
-        id: PropTypes.string.isRequired,
-    }).isRequired,
+  params: PropTypes.shape({ id: PropTypes.string.isRequired }).isRequired,
 };
 
 export default DetailSeriesPage;

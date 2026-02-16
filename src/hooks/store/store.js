@@ -37,6 +37,8 @@ import { episodeSeriesSliceAPI } from "../api/episodeSeriesSliceAPI";
 import { episodePodcastSliceAPI } from "../api/episodePodcastSliceAPI";
 import { episodeEbookSliceAPI } from "../api/episodeEbookSliceAPI";
 import { episodeComicSliceAPI } from "../api/episodeComicSliceAPI";
+import { notificationAPI } from "../api/notificationSliceAPI";
+import { reportCommentAPI } from "../api/reportCommentAPI";
 
 const rootReducer = combineReducers({
   [ebookApi.reducerPath]: ebookApi.reducer,
@@ -74,6 +76,8 @@ const rootReducer = combineReducers({
   [episodePodcastSliceAPI.reducerPath]: episodePodcastSliceAPI.reducer,
   [episodeEbookSliceAPI.reducerPath]: episodeEbookSliceAPI.reducer,
   [episodeComicSliceAPI.reducerPath]: episodeComicSliceAPI.reducer,
+  [notificationAPI.reducerPath]: notificationAPI.reducer,
+  [reportCommentAPI.reducerPath]: reportCommentAPI.reducer,
 });
 
 export const store = configureStore({
@@ -125,6 +129,8 @@ export const store = configureStore({
       episodePodcastSliceAPI.middleware,
       episodeEbookSliceAPI.middleware,
       episodeComicSliceAPI.middleware,
+      notificationAPI.middleware,
+      reportCommentAPI.middleware,
     ),
 });
 

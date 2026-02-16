@@ -22,7 +22,6 @@ import iconChartYellow from "@@/icons/icon-chart-yellow.svg";
 
 /*[--- CONTEXT IMPORT ---]*/
 import { useAuth } from "../Context/AuthContext";
-import { contentTypeArray } from "@/lib/constants/contentType";
 import { useGetPopularSearchesQuery, useGetSearchHistoryByUserQuery } from "@/hooks/api/searchAPI";
 import { Icon } from "@iconify/react";
 
@@ -72,8 +71,8 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
         className={`${isMenuBarsOpen ? "rounded-b-xl" : ""} fixed z-30 w-full bg-white/5 backdrop-blur`}
       >
         <section className={`${isSearchActive ? "hidden md:flex" : "flex"} items-center justify-between p-1 2xl:p-4 md:flex md:justify-between md:bg-fixed`}>
-          <div className="-mt-3 w-fit -translate-x-8 ps-0 md:mt-0 md:-translate-x-0 md:place-items-start lg:px-6">
-            <Link href="/"><div className="flex aspect-auto justify-center"><Image className="ml-6 h-auto w-auto" src={logoHome} alt="logo-gate+" priority /></div></Link>
+          <div className="">
+            <Link href="/"><div className="flex aspect-auto justify-center"><Image className="w-20 mb-1.5 md:h-auto md:w-auto" src={logoHome} alt="logo-gate+" priority /></div></Link>
           </div>
 
           {!isSearchActive ? (
@@ -133,12 +132,11 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
 
             {isAuthenticated ? (
               <div className="flex flex-row gap-2 items-center">
-                <Link href={'/education'} className="zeinFont flex h-max items-center w-fit justify-between gap-1 2xl:gap-3 rounded-full px-6 py-1 2xl:py-2 text-sm 2xl:text-xl leading-tight transition-all duration-300 ease-in-out md:flex bg-[#0881AB] hover:bg-[#066d8f]">
+                <Link href={'/education'} className="zeinFont flex items-center justify-between gap-1 2xl:gap-3 rounded-full px-2 lg:px-6 py-1 md:py-1 2xl:py-2 text-sm 2xl:text-xl leading-tight transition-all duration-300 ease-in-out md:flex bg-[#0881AB] hover:bg-[#066d8f]">
                   <Icon
                     icon={'solar:square-academic-cap-bold'}
-                    className="text-white"
-                    width={28}
-                    height={28}
+                    className="text-white w-6 h-6 md:w-7 md:h-7"
+                    alt="education"
                   />
                 </Link>
                 <NotificationMenu key={role} />
@@ -206,10 +204,10 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
           onClick={(e) => e.stopPropagation()}
         >
           <div className="my-6 grid grid-cols-5 gap-4 text-center">
-            {contentTypeArray.map((type) => (
-              <Link key={type.pluralName} href={`/${type.pluralName}`} className="flex flex-col items-center gap-2 text-white hover:text-white transition-colors">
-                <Image src={type.icon} width={65} height={65} />
-                <span className="text-sm font-semibold">{type.singleName.toUpperCase()}</span>
+            {navbarOptions.map((type) => (
+              <Link key={type.id} href={`/${type.url}`} className="flex flex-col items-center gap-2 text-white hover:text-white transition-colors">
+                <Image alt={type.tittle} src={type.icon} width={65} height={65} />
+                <span className="text-sm font-semibold">{type.tittle.toUpperCase()}</span>
               </Link>
             ))}
           </div>
@@ -219,19 +217,19 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
           <div className="grid grid-cols-1 gap-2 p-4 text-xs">
             <div>
               <div className="flex items-center gap-1">
-                <Image src={iconChartRed} width={24} height={24} className="inline-block mr-2" />
+                <Image alt="Trending Search Icon" src={iconChartRed} width={24} height={24} className="inline-block mr-2" />
                 <h3 className="font-semibold text-white mb-1">Trending Search</h3>
               </div>
               <div className="p-1">
                 <ul className="space-y-1">{trendingData?.popularSearches?.map((item, index) => (<li key={index}><Link href={`/search?search=${item.searchQuery}`} className="text-white hover:text-white flex flex-row items-center gap-1">
-                  <Image src={iconChartYellow} width={24} height={24} className="inline-block " />
+                  <Image alt="Trending Search Icon" src={iconChartYellow} width={24} height={24} className="inline-block " />
                   <p>{item.searchQuery}</p></Link></li>))}</ul>
               </div>
             </div>
 
             <div>
               <div className="flex items-center gap-1">
-                <Image src={iconChartRed} width={24} height={24} className="inline-block mr-2" />
+                <Image alt="Search History Icon" src={iconChartRed} width={24} height={24} className="inline-block mr-2" />
                 <h3 className="font-semibold text-white mb-1">Search History</h3>
               </div>
               <div>

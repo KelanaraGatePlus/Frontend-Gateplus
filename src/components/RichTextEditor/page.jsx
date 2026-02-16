@@ -66,37 +66,37 @@ const RichTextEditor = forwardRef(({
     updateActiveFormats();
   };
 
-const handlePaste = (e) => {
-  e.preventDefault();
-  
-  // Ambil HTML dari clipboard
-  let html = e.clipboardData.getData('text/html');
-  const text = e.clipboardData.getData('text/plain');
-  
-  if (html) {
-    // ✅ Bersihkan hanya yang berbahaya, PERTAHANKAN formatting & struktur
-    html = html
-      .replace(/<script[^>]*>.*?<\/script>/gi, '')
-      .replace(/<style[^>]*>.*?<\/style>/gi, '')
-      .replace(/style="[^"]*"/gi, '') // Hapus inline styles (opsional)
-      .replace(/class="[^"]*"/gi, '')
-      .replace(/id="[^"]*"/gi, '')
-      .replace(/on\w+="[^"]*"/gi, ''); // Hapus event handlers
-    
-    // Insert HTML yang sudah dibersihkan
-    document.execCommand('insertHTML', false, html);
-  } else {
-    // Plain text - pertahankan line breaks
-    const htmlText = text.replace(/\n/g, '<br>');
-    document.execCommand('insertHTML', false, htmlText);
-  }
-  
-  // Update state
-  setTimeout(() => {
-    updateContent();
-    updateActiveFormats();
-  }, 0);
-};
+  const handlePaste = (e) => {
+    e.preventDefault();
+
+    // Ambil HTML dari clipboard
+    let html = e.clipboardData.getData('text/html');
+    const text = e.clipboardData.getData('text/plain');
+
+    if (html) {
+      // ✅ Bersihkan hanya yang berbahaya, PERTAHANKAN formatting & struktur
+      html = html
+        .replace(/<script[^>]*>.*?<\/script>/gi, '')
+        .replace(/<style[^>]*>.*?<\/style>/gi, '')
+        .replace(/style="[^"]*"/gi, '') // Hapus inline styles (opsional)
+        .replace(/class="[^"]*"/gi, '')
+        .replace(/id="[^"]*"/gi, '')
+        .replace(/on\w+="[^"]*"/gi, ''); // Hapus event handlers
+
+      // Insert HTML yang sudah dibersihkan
+      document.execCommand('insertHTML', false, html);
+    } else {
+      // Plain text - pertahankan line breaks
+      const htmlText = text.replace(/\n/g, '<br>');
+      document.execCommand('insertHTML', false, htmlText);
+    }
+
+    // Update state
+    setTimeout(() => {
+      updateContent();
+      updateActiveFormats();
+    }, 0);
+  };
 
   const handleKeyDown = (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
@@ -134,8 +134,8 @@ const handlePaste = (e) => {
         className={`
           relative flex items-center justify-center w-8 h-8 rounded-md
           transition-all duration-150 ease-out
-          ${isActive 
-            ? 'bg-blue-500/20 text-blue-400 shadow-inner' 
+          ${isActive
+            ? 'bg-blue-500/20 text-blue-400 shadow-inner'
             : 'text-gray-400 hover:bg-white/5 hover:text-white active:scale-95'
           }
         `}
@@ -176,10 +176,10 @@ const handlePaste = (e) => {
           group rounded-xl overflow-hidden w-full
           bg-gradient-to-b from-[#252525] to-[#1a1a1a]
           border transition-all duration-200
-          ${isFocused 
-            ? 'border-blue-500 shadow-[0_0_0_3px_rgba(59,130,246,0.1)]' 
-            : error 
-              ? 'border-red-500' 
+          ${isFocused
+            ? 'border-blue-500 shadow-[0_0_0_3px_rgba(59,130,246,0.1)]'
+            : error
+              ? 'border-red-500'
               : 'border-[#F5F5F540]'
           }
         `}>
