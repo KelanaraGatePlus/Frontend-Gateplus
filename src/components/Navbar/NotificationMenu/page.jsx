@@ -62,7 +62,7 @@ export default function NotificationMenu() {
     try {
       const token = Cookies.get("token");
 
-      await axios.patch(
+      const response = await axios.patch(
         `${BACKEND_URL}/notifications/${id}/read`,
         {},
         {

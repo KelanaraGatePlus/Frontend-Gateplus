@@ -5,6 +5,7 @@ import PropTypes from "prop-types";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
 import logo from "@@/logo/logoGate+/logo-header-login.svg";
+import styles from "./AccountStatusModal.module.css";
 
 export default function AccountStatusModal({ type, reason, suspendedUntil, onClose }) {
     const isBanned = type === "BANNED";
@@ -23,8 +24,8 @@ export default function AccountStatusModal({ type, reason, suspendedUntil, onClo
     };
 
     return (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 animate-fade-in">
-            <div className="bg-[#2A2E35] rounded-2xl max-w-xl w-full text-center p-8 md:p-10 relative overflow-hidden shadow-2xl animate-slide-up">
+        <div className={`fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 ${styles['animate-fade-in']}`}>
+            <div className={`bg-[#2A2E35] rounded-2xl max-w-xl w-full text-center p-8 md:p-10 relative overflow-hidden shadow-2xl ${styles['animate-slide-up']}`}>
                 
                 {/* Close Button */}
                 <button
@@ -36,7 +37,7 @@ export default function AccountStatusModal({ type, reason, suspendedUntil, onClo
                 </button>
 
                 {/* Logo with scale animation */}
-                <div className="flex justify-center mb-4 animate-scale-in">
+                <div className={`flex justify-center mb-4 ${styles['animate-scale-in']}`}>
                     <Image
                         src={logo}
                         alt="Gateplus"
@@ -51,28 +52,28 @@ export default function AccountStatusModal({ type, reason, suspendedUntil, onClo
                 <div className="flex justify-center mb-6">
                     <div className="relative">
                         {/* Animated pulse rings */}
-                        <div className={`absolute inset-0 rounded-full ${isBanned ? 'bg-red-500' : 'bg-blue-500'} animate-ping-slow opacity-20`}></div>
-                        <div className={`absolute inset-0 rounded-full ${isBanned ? 'bg-red-400' : 'bg-blue-400'} animate-ping-slower opacity-10`}></div>
+                        <div className={`absolute inset-0 rounded-full ${isBanned ? 'bg-red-500' : 'bg-blue-500'} ${styles['animate-ping-slow']} opacity-20`}></div>
+                        <div className={`absolute inset-0 rounded-full ${isBanned ? 'bg-red-400' : 'bg-blue-400'} ${styles['animate-ping-slower']} opacity-10`}></div>
                         
                         {isBanned ? (
                             // Banned - Shield with X
-                            <div className="relative w-32 h-32 animate-float">
-                                <div className="absolute inset-0 bg-red-500/20 rounded-full blur-2xl animate-pulse-glow"></div>
+                            <div className={`relative w-32 h-32 ${styles['animate-float']}`}>
+                                <div className={`absolute inset-0 bg-red-500/20 rounded-full blur-2xl ${styles['animate-pulse-glow']}`}></div>
                                 <div className="relative w-full h-full flex items-center justify-center hover:scale-110 transition-transform duration-300">
                                     <Icon 
                                         icon="mdi:shield-off" 
-                                        className="w-28 h-28 text-red-400 drop-shadow-2xl animate-rotate-shake"
+                                        className={`w-28 h-28 text-red-400 drop-shadow-2xl ${styles['animate-rotate-shake']}`}
                                     />
                                 </div>
                             </div>
                         ) : (
                             // Suspended - Clock/Timer
-                            <div className="relative w-32 h-32 animate-float">
-                                <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-2xl animate-pulse-glow"></div>
+                            <div className={`relative w-32 h-32 ${styles['animate-float']}`}>
+                                <div className={`absolute inset-0 bg-blue-500/20 rounded-full blur-2xl ${styles['animate-pulse-glow']}`}></div>
                                 <div className="relative w-full h-full flex items-center justify-center hover:scale-110 transition-transform duration-300">
                                     <Icon 
                                         icon="mdi:clock-alert-outline" 
-                                        className="w-28 h-28 text-blue-400 drop-shadow-2xl animate-swing"
+                                        className={`w-28 h-28 text-blue-400 drop-shadow-2xl ${styles['animate-swing']}`}
                                     />
                                 </div>
                             </div>
@@ -153,142 +154,6 @@ export default function AccountStatusModal({ type, reason, suspendedUntil, onClo
                 </button>
 
             </div>
-
-            {/* Custom CSS for Animations */}
-            <style jsx>{`
-                /* Entrance animations */
-                @keyframes fade-in {
-                    from {
-                        opacity: 0;
-                    }
-                    to {
-                        opacity: 1;
-                    }
-                }
-
-                @keyframes slide-up {
-                    from {
-                        opacity: 0;
-                        transform: translateY(30px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-
-                @keyframes scale-in {
-                    from {
-                        opacity: 0;
-                        transform: scale(0.8);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: scale(1);
-                    }
-                }
-
-                /* Icon animations */
-                @keyframes float {
-                    0%, 100% {
-                        transform: translateY(0px);
-                    }
-                    50% {
-                        transform: translateY(-15px);
-                    }
-                }
-
-                @keyframes swing {
-                    0%, 100% {
-                        transform: rotate(-8deg);
-                    }
-                    50% {
-                        transform: rotate(8deg);
-                    }
-                }
-
-                @keyframes rotate-shake {
-                    0%, 100% {
-                        transform: rotate(0deg);
-                    }
-                    25% {
-                        transform: rotate(-10deg);
-                    }
-                    75% {
-                        transform: rotate(10deg);
-                    }
-                }
-
-                @keyframes pulse-glow {
-                    0%, 100% {
-                        opacity: 0.4;
-                    }
-                    50% {
-                        opacity: 0.8;
-                    }
-                }
-
-                /* Pulse ring animations */
-                @keyframes ping-slow {
-                    0% {
-                        transform: scale(1);
-                        opacity: 0.3;
-                    }
-                    100% {
-                        transform: scale(1.8);
-                        opacity: 0;
-                    }
-                }
-
-                @keyframes ping-slower {
-                    0% {
-                        transform: scale(1);
-                        opacity: 0.2;
-                    }
-                    100% {
-                        transform: scale(2.5);
-                        opacity: 0;
-                    }
-                }
-
-                /* Apply animations */
-                .animate-fade-in {
-                    animation: fade-in 0.3s ease-out;
-                }
-
-                .animate-slide-up {
-                    animation: slide-up 0.4s ease-out;
-                }
-
-                .animate-scale-in {
-                    animation: scale-in 0.5s ease-out 0.2s both;
-                }
-
-                .animate-float {
-                    animation: float 3s ease-in-out infinite;
-                }
-
-                .animate-swing {
-                    animation: swing 2s ease-in-out infinite;
-                    transform-origin: top center;
-                }
-
-                .animate-rotate-shake {
-                    animation: rotate-shake 2.5s ease-in-out infinite;
-                }
-
-                .animate-pulse-glow {
-                    animation: pulse-glow 2s ease-in-out infinite;
-                }
-
-                .animate-ping-slow {
-                    animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-                }
-
-                .animate-ping-slower {
-                    animation: ping-slower 3s cubic-bezier(0, 0, 0.2, 1) infinite;
-                }
-            `}</style>
         </div>
     );
 }

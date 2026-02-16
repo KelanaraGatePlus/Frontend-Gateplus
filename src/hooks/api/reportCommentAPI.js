@@ -1,11 +1,10 @@
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-
-const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 export const reportCommentAPI = createApi({
     reducerPath: "reportCommentAPI",
     baseQuery: fetchBaseQuery({
-        baseUrl: `${baseUrl}/api/report-comment`,
+        baseUrl: `${BACKEND_URL}/api/report-comment`,
         prepareHeaders: (headers) => {
             if (typeof window !== 'undefined') {
                 const token = localStorage.getItem("token");

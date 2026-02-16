@@ -16,7 +16,6 @@ import LoadingOverlay from "@/components/LoadingOverlay/page";
 import { useGetMovieByIdQuery } from "@/hooks/api/movieSliceAPI";
 import { useGetEpisodeComicsByIdQuery, useGetEpisodeSeriesByIdQuery, useGetEpisodeEbookByIdQuery, useGetEpisodePodcastByIdQuery } from "@/hooks/api/contentSliceAPI";
 import PropTypes from "prop-types";
-import DOMPurify from "dompurify";
 
 export default function ReportPage({ params }) {
   const { contentType, id } = React.use(params);

@@ -88,7 +88,7 @@ function LoginContent() {
 
                         <div className="-mt-6 mb-2.5 flex translate-y-2">
                             <p className="montserratFont my-2 text-sm font-normal text-[#1DBDF5]">
-                                Welcome back, you've been missed
+                                Welcome back, you&apos;ve been missed
                             </p>
                         </div>
                     </section>
