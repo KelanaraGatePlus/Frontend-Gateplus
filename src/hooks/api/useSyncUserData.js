@@ -9,7 +9,7 @@ import getMinAge from "@/lib/helper/minAge";
 
 export default function useSyncUserData(seriesAgeRestriction = null) {
   const router = useRouter();
-  const { data, isSuccess, isLoading } = useGetMeQuery();
+  const { data, isSuccess, isLoading, isError, error } = useGetMeQuery();
 
   const [userAge, setUserAge] = useState(null);
   const [isReady, setIsReady] = useState(false);
@@ -20,7 +20,16 @@ export default function useSyncUserData(seriesAgeRestriction = null) {
   const [underAgeConfirmed, setUnderAgeConfirmed] = useState(false);
 
   useEffect(() => {
-    if (isLoading || !isSuccess || !data?.Session) return;
+    if (isLoading) return;
+
+    if (isError && error?.status === 401) {
+      setShowUnderAgeModal(false);
+      setShowCompleteProfileModal(false);
+      setIsReady(true);
+      return;
+    }
+
+    if (!isSuccess || !data?.Session) return;
 
     const session = data.Session;
 
@@ -58,7 +67,7 @@ export default function useSyncUserData(seriesAgeRestriction = null) {
     } else {
       setShowUnderAgeModal(false);
     }
-  }, [isLoading, isSuccess, data, seriesAgeRestriction, underAgeConfirmed]);
+  }, [isLoading, isSuccess, isError, error, data, seriesAgeRestriction, underAgeConfirmed]);
 
   const goToProfile = () => {
     setShowCompleteProfileModal(false);
