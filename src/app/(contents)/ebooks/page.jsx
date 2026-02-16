@@ -1,5 +1,5 @@
 "use client";
-import React, { Suspense } from "react";
+import React, { Suspense, useCallback } from "react";
 import CarouselTemplate from "@/components/Carousel/carouselTemplate";
 import { useGetEbooksHomeDataQuery } from "@/hooks/api/ebookSliceAPI";
 import StaticBannerPromo from "@/components/BannerPromoSlider/StaticBannerPromo";
@@ -9,19 +9,19 @@ import { useSearchParams } from "next/navigation";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import getMinAge from "@/lib/helper/minAge";
 import useSyncUserData from "@/hooks/api/useSyncUserData";
-import { useCallback } from "react";
 import PropTypes from "prop-types";
 
 export default function EbooksPage() {
   const { userAge, isReady } = useSyncUserData();
 
+  // blur
   const isBlurred = useCallback(
-    (content) => {
+    (ebookData) => {
       if (!isReady) return true;
 
-      const minAge = getMinAge(content?.ageRestriction);
+      const minAge = getMinAge(ebookData?.ageRestriction);
 
-      // SU / R13 → bebas
+      // SU dan 13 bebas
       if (minAge === null) return false;
 
       // belum isi DOB
@@ -31,6 +31,7 @@ export default function EbooksPage() {
     },
     [userAge, isReady],
   );
+
   return (
     <main className="relative flex h-full w-full flex-col gap-4 md:gap-10 lg:px-4">
       <div className="absolute top-2 left-2 md:left-13">
@@ -77,33 +78,33 @@ function EbookContent({ isBlurred }) {
   const highlightedData = data?.data?.highlightsEbooks || [];
 
   return (
-    <>
+    <div className="flex h-full w-full flex-col">
       <CarouselTemplate
-        label={"Highlight Ebooks"}
+        label="Highlight Ebooks"
         contents={highlightedData}
         isLoading={isLoading}
-        type={"ebook"}
+        type="ebook"
         isBlurred={isBlurred}
       />
       <CarouselTemplate
-        label={"Top 10 Ebooks"}
+        label="Top 10 Ebooks"
         contents={topTenData}
         isLoading={isLoading}
-        type={"ebook"}
+        type="ebook"
         isTopTen={true}
         withTopTag={true}
         isBlurred={isBlurred}
       />
       <CarouselTemplate
-        label={"Newest"}
+        label="Newest"
         contents={newestData}
         isLoading={isLoading}
-        type={"ebook"}
+        type="ebook"
         withNewestTag={true}
         withTopTag={false}
         isBlurred={isBlurred}
       />
-    </>
+    </div>
   );
 }
 

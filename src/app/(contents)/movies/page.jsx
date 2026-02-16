@@ -69,7 +69,7 @@ function MovieContent({ isBlurred }) {
   const highlightedData = data?.data?.highlightsMovies || [];
 
   return (
-    <>
+    <div className="flex flex-col">
       <CarouselTemplate
         label={"Best Seller"}
         contents={highlightedData}
@@ -95,7 +95,7 @@ function MovieContent({ isBlurred }) {
         withTopTag={false}
         isBlurred={isBlurred}
       />
-    </>
+    </div>
   );
 }
 

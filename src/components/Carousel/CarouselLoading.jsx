@@ -1,7 +1,7 @@
 import React from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem} from "@/components/ui/carousel";
 
 export default function CarouselLoading() {
     return (
@@ -52,9 +52,6 @@ export default function CarouselLoading() {
                         </CarouselItem>
                     ))}
                 </CarouselContent>
-
-                <CarouselPrevious />
-                <CarouselNext />
             </Carousel>
         </section>
     );

@@ -1,65 +1,52 @@
-import React from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import PropTypes from 'prop-types';
+import React from "react";
+import Image from "next/image";
+import Link from "next/link";
+import PropTypes from "prop-types";
 
-/*[--- CONSTANT IMPORT ---]*/
-import { categoryIcons } from "@/lib/constants/categoryIcons";
+export default function ContentItem({ item, type, isBlurred }) {
+  const blurred = isBlurred ? isBlurred(item) : false;
 
-export default function ContentItem({ item, type }) {
+  // ambil umur
+  const minAge = item?.ageRestriction ?? null;
 
-    return (
-        <div className="overflow-hidden grow-0 group relative h-[180px] w-[120px] cursor-pointer rounded-lg sm:h-[200px] sm:w-[140px] md:h-[320px] md:w-[230px] group">
-            <Link href={`/${type.toLowerCase()}s/detail/${item.id}`}>
-                <div className="relative h-full w-full">
-                    <>
-                        <div className="bottom-0 right-0 rounded-tl-full bg-opacity-60 absolute z-10 bg-[#02536e] px-2 py-1 text-xs text-white h-[18%] md:h-[20%] w-[30%] drop-shadow-[0_0_2px_rgba(255,255,255,0.3)] flex items-center justify-center">
-                            <div className="relative w-full h-full">
-                                <Image
-                                    priority
-                                    width={45}
-                                    height={45}
-                                    src={categoryIcons[type]}
-                                    alt={type}
-                                    className="bg-[#222222] rounded-full p-1 absolute bottom-0 md:right-0 -right-0.5"
-                                />
-                            </div>
-                        </div>
-                        <div className="absolute  flex left-0  items-center justify-center h-fit w-full -bottom-12 group-hover:bottom-2 transition-all duration-300 ease-in-out">
-                            <div className="rounded-2xl py-2 bg-opacity-60 w-[95%] z-10 bg-[#02536e]/30 backdrop-blur-2xl px-2 text-xs text-white h-fit drop-shadow-[0_0_2px_rgba(255,255,255,0.3)] flex items-center justify-center">
-                                <div className="relative w-full h-full flex items-center justify-start gap-2 md:pr-2">
-                                    <div className="relative w-[18px] h-[18px] md:w-[25px] md:h-[25px] shrink-0">
-                                        <Image
-                                            priority
-                                            src={categoryIcons[type]}
-                                            alt={type}
-                                            fill
-                                            className="bg-[#222222] p-1 rounded-full object-contain"
-                                        />
-                                    </div>
-                                    <p className="font-semibold montserratFont text-[8px] md:text-base line-clamp-1">
-                                        {item.title}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </>
-                    <Image
-                        src={type === "podcast" ? item.coverPodcastImage : item.coverImageUrl}
-                        priority
-                        width={240}
-                        height={353}
-                        alt={item.title || "podcast-image"}
-                        unoptimized
-                        className={`h-full w-full rounded-lg bg-[#2E2E2E] object-cover group-hover:opacity-50 transition-all duration-300 ease-in-out`}
-                    />
-                </div>
-            </Link>
+  return (
+    <div className="group relative h-[180px] w-[120px] grow-0 cursor-pointer overflow-hidden rounded-lg transition-all duration-300 sm:h-[200px] sm:w-[140px] md:h-[320px] md:w-[230px]">
+      <Link href={`/${type.toLowerCase()}s/detail/${item.id}`}>
+        <div className="relative h-full w-full">
+          <Image
+            src={
+              type === "podcast" ? item.coverPodcastImage : item.coverImageUrl
+            }
+            priority
+            width={240}
+            height={353}
+            alt={item.title || "image"}
+            unoptimized
+            className={`h-full w-full rounded-lg bg-[#2E2E2E] object-cover transition-all duration-300 ease-in-out group-hover:opacity-50`}
+          />
+          {blurred && minAge && (
+            <div className="pointer-events-none absolute inset-0 z-10 rounded-lg">
+              <div className="absolute inset-0 rounded-lg bg-black/20 backdrop-blur-sm" />
+              <div className="absolute top-1/2 left-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
+                <span className="rounded-lg bg-red-600 px-4 py-2 text-sm font-black text-white">
+                  {String(minAge).replace(/\D/g, "")}+
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Bottom info */}
+          <div className="absolute right-0 bottom-0 left-0 rounded-b-lg bg-black/40 p-2 text-xs text-white md:text-sm">
+            {item.title}
+          </div>
         </div>
-    )
+      </Link>
+    </div>
+  );
 }
 
 ContentItem.propTypes = {
-    item: PropTypes.array.isRequired,
-    type: PropTypes.string.isRequired,
-}
+  item: PropTypes.object.isRequired,
+  type: PropTypes.string.isRequired,
+  isBlurred: PropTypes.func, // harus diteruskan dari ContentList
+};

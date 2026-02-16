@@ -24,15 +24,40 @@ function Carousel({
   plugins,
   className,
   children,
+  freeScrollOnMobile = true,
   ...props
 }) {
-  const [carouselRef, api] = useEmblaCarousel(
-    {
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const carouselOpts = React.useMemo(() => {
+    const baseOpts = {
       ...opts,
       axis: orientation === "horizontal" ? "x" : "y",
-    },
-    plugins,
-  );
+    };
+
+    if (freeScrollOnMobile && isMobile) {
+      return {
+        ...baseOpts,
+        dragFree: true,
+        containScroll: false,
+        align: "start",
+      };
+    }
+
+    return baseOpts;
+  }, [opts, orientation, freeScrollOnMobile, isMobile]);
+
+  const [carouselRef, api] = useEmblaCarousel(carouselOpts, plugins);
 
   const [canScrollPrev, setCanScrollPrev] = React.useState(false);
   const [canScrollNext, setCanScrollNext] = React.useState(false);
@@ -92,6 +117,8 @@ function Carousel({
         scrollNext,
         canScrollPrev,
         canScrollNext,
+        isMobile,
+        freeScrollOnMobile,
       }}
     >
       <div
@@ -150,9 +177,8 @@ function CarouselItem({ className, ...props }) {
    🔥 LIQUID GLASS BUTTON STYLE
    ================================ */
 const liquidButtonStyles =
-  "size-6 sm:size-10 md:size-10 lg:size-14 rounded-full " +
-  "bg-white/20 backdrop-blur-xl border border-white/40 " +
-  "shadow-[0_0_15px_4px_rgba(255,255,255,0.2)] " +
+  "size-6 sm:size-10 md:size-6 lg:size-8 rounded-full " +
+  "bg-white/20 hover:bg-white/40 backdrop-blur-xl border border-white/40 " +
   "flex items-center justify-center cursor-pointer";
 
 
@@ -160,12 +186,14 @@ const liquidButtonStyles =
    ⬅️  PREVIOUS BUTTON — Liquid Glass
    ====================================== */
 function CarouselPrevious({ className, ...props }) {
-  const { orientation, scrollPrev, canScrollPrev } = useCarousel();
+  const { orientation, scrollPrev, canScrollPrev, isMobile, freeScrollOnMobile } = useCarousel();
+
+  if (freeScrollOnMobile && isMobile) return null;
 
   return (
     <button
       className={cn(
-        "absolute -ml-4 md:-ml-6 lg:-ml-8",
+        "absolute -ml-4 md:-ml-3 lg:-ml-4",
         liquidButtonStyles,
         orientation === "horizontal"
           ? "top-1/2 -left-0.5 -translate-y-1/2"
@@ -178,8 +206,8 @@ function CarouselPrevious({ className, ...props }) {
     >
       <Icon
         icon={'material-symbols:chevron-left-rounded'}
-        width={40}
-        height={40}
+        width={24}
+        height={24}
         alt="prev"
         className="outline-chevron text-[#222222]"
       />
@@ -191,12 +219,14 @@ function CarouselPrevious({ className, ...props }) {
    ➡️  NEXT BUTTON — Liquid Glass
    ====================================== */
 function CarouselNext({ className, ...props }) {
-  const { orientation, scrollNext, canScrollNext } = useCarousel();
+  const { orientation, scrollNext, canScrollNext, isMobile, freeScrollOnMobile } = useCarousel();
+
+  if (freeScrollOnMobile && isMobile) return null;
 
   return (
     <button
       className={cn(
-        "absolute -mr-4 md:-mr-6 lg:-mr-8",
+        "absolute -mr-4 md:-mr-3 lg:-mr-4",
         liquidButtonStyles,
         orientation === "horizontal"
           ? "top-1/2 -right-0.5 -translate-y-1/2"
@@ -209,8 +239,8 @@ function CarouselNext({ className, ...props }) {
     >
       <Icon
         icon={'material-symbols:chevron-right-rounded'}
-        width={40}
-        height={40}
+        width={24}
+        height={24}
         alt="next"
         className="outline-chevron text-[#222222]"
       />

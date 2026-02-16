@@ -129,7 +129,7 @@ export default function HomePage() {
       <div className="flex flex-col">
         <SliderBannerPage banners={banners} isBlurred={isBlurred} />
 
-        <main className="flex flex-col px-3 md:mx-5 md:px-0">
+        <main className="flex flex-col md:mx-5 md:px-0">
           <CategoryMenu />
 
           <CarouselNewest isBlurred={isBlurred} />
@@ -144,7 +144,7 @@ export default function HomePage() {
                 key={idx}
                 data-group-index={idx}
                 ref={(el) => (refs.current[idx] = el)}
-                className="relative my-6 min-h-[14rem] md:min-h-[16rem]"
+                className="relative min-h-[14rem] md:min-h-[16rem]"
               >
                 {loadedGroups[idx] ? (
                   <>
@@ -160,7 +160,9 @@ export default function HomePage() {
                     )}
                   </>
                 ) : (
-                  <CarouselLoading />
+                  <div className="px-4">                  
+                    <CarouselLoading /> 
+                  </div>
                 )}
               </section>
             );

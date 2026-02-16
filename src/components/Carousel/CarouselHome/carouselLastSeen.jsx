@@ -23,6 +23,7 @@ export default function CarouselLastSeen() {
             label={"Terakhir Anda Lihat"}
             contents={lastSeenData}
             isLoading={isLoading}
+            isHomepage={true}
         />
     )
 }

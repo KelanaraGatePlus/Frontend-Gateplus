@@ -14,6 +14,7 @@ export default function CarouselTopTen({ isBlurred }) {
       isLoading={isLoading}
       isTopTen={true}
       isBlurred={isBlurred}
+      isHomepage={true}
     />
   );
 }

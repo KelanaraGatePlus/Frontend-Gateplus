@@ -13,6 +13,7 @@ export default function CarouselHighlight({ isBlurred }) {
       contents={hightlightData}
       isLoading={isLoading}
       isBlurred={isBlurred}
+      isHomepage={true}
     />
   );
 }

@@ -15,13 +15,14 @@ import PropTypes from "prop-types";
 export default function SeriesPage() {
   const { userAge, isReady } = useSyncUserData();
 
+  // blur
   const isBlurred = useCallback(
     (content) => {
       if (!isReady) return true;
 
       const minAge = getMinAge(content?.ageRestriction);
 
-      // SU / R13 → bebas
+      // SU dan 13 bebas
       if (minAge === null) return false;
 
       // belum isi DOB
@@ -76,7 +77,7 @@ function SeriesContent({ isBlurred }) {
   const highlightedData = data?.data?.highlightsSeries || [];
 
   return (
-    <>
+    <div className="flex flex-col">
       <CarouselTemplate
         label={"Highlight Series"}
         contents={highlightedData}
@@ -101,7 +102,7 @@ function SeriesContent({ isBlurred }) {
         withTopTag={false}
         isBlurred={isBlurred}
       />
-    </>
+    </div>
   );
 }
 

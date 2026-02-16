@@ -13,6 +13,7 @@ export default function CarouselRecommendations({ isBlurred }) {
       contents={recommendationsData}
       isLoading={isLoading}
       isBlurred={isBlurred}
+      isHomepage={true}
     />
   );
 }

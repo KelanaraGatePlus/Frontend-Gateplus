@@ -14,10 +14,11 @@ export default function CarouselPopularComics({ isBlurred }) {
       isLoading={isLoading}
       type="comic"
       isBlurred={isBlurred}
+      isHomepage={true}
     />
   );
 }
 
 CarouselPopularComics.propTypes = {
-  isBlurred: PropTypes.bool.isRequired,
+  isBlurred: PropTypes.func,
 };

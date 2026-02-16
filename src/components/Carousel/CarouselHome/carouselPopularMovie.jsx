@@ -14,6 +14,7 @@ export default function CarouselPopularMovies({ isBlurred }) {
       isLoading={isLoading}
       type="movie"
       isBlurred={isBlurred}
+      isHomepage={true}
     />
   );
 }
