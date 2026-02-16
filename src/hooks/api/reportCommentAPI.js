@@ -20,7 +20,7 @@ export const reportCommentAPI = createApi({
     endpoints: (builder) => ({
         createCommentReport: builder.mutation({
             query: (formData) => ({
-                url: "/",
+                url: "",
                 method: "POST",
                 body: formData,
             }),
