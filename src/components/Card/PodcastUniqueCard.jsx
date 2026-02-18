@@ -34,10 +34,9 @@ export default function PodcastUniqueCard({
           </div>
         )}
 
-        <Image
+        <img
           src={coverUrl}
           alt={title}
-          fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover"
         />

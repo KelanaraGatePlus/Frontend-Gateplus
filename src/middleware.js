@@ -37,7 +37,8 @@ export async function middleware(req) {
         '/movies',
         '/series',
         '/podcasts',
-        '/search'
+        '/search',
+        '/public'
     ];
     const PUBLIC_PATH_PREFIXES = [
         "/education/certificate/",
