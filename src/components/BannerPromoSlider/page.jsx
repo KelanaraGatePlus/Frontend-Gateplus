@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Splide, SplideSlide } from "@splidejs/react-splide";
-import Image from "next/image";
+import { Splide, SplideSlide } from "@splidejs/react-splide";\
 import Link from "next/link";
 import "@splidejs/react-splide/css/skyblue";
 
