@@ -55,8 +55,8 @@ export default function BannerPromoSlider() {
           height={400}
           width="100%"
           borderRadius="0.75rem"
-          baseColor="#1c2033"
-          highlightColor="#252a42"
+          baseColor="#2e2e2e"
+          highlightColor="#3d3d3d"
         />
       ) : (
         <Splide

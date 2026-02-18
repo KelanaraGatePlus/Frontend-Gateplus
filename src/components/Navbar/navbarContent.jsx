@@ -35,7 +35,6 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
   const [isMenuBarsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchActive, setIsSearchActive] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
   const { data } = useGetSearchHistoryByUserQuery();
   const { data: trendingData } = useGetPopularSearchesQuery();
 
@@ -66,19 +65,10 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
     setImageUrl(user?.isCreator ? user?.image_creators : user?.image_users);
   }, [user]);
 
-  // detect scroll to change navbar background
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 0);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
     <Fragment>
       <nav
-        className={`${isMenuBarsOpen ? "rounded-b-xl" : ""} fixed z-30 w-full transition-all duration-300 ${isScrolled ? "bg-white/5 backdrop-blur" : "bg-[#0e0f15] border-[#2a2f45] border-b"}`}
+        className={`${isMenuBarsOpen ? "rounded-b-xl" : ""} fixed z-30 w-full bg-white/5 backdrop-blur`}
       >
         <section className={`${isSearchActive ? "hidden md:flex" : "flex"} items-center justify-between p-1 2xl:p-4 md:flex md:justify-between md:bg-fixed`}>
           <div className="">
@@ -157,40 +147,17 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
                 {/* FIXED: tampilkan juga di mobile */}
                 <div className="flex md:flex md:flex-col md:py-3">
                   <Link href="/login">
-                    <div className="
-                      flex justify-center rounded-full
-                      bg-gradient-to-t from-[#0E5BA8] to-[#0395BC]
-                      py-2 font-semibold px-4 lg:px-6 xl:px-8
-                      transition-all duration-300 ease-in-out
-                      hover:scale-105
-                      hover:-translate-y-1
-                      hover:shadow-[0_0_20px_rgba(3,149,188,0.6)]
-                      hover:brightness-110
-                      cursor-pointer
-                    ">
-                      <span className="zeinFont mt-0.5 text-center text-lg leading-tight drop-shadow-[0_0_2px_rgba(255,255,255,0.4)]">
-                        Log In
-                      </span>
+                    <div className="flex justify-center rounded-full bg-linear-to-t from-[#0E5BA8] to-[#0395BC] py-2 font-semibold px-4 lg:px-6 xl:px-8">
+                      <span className="zeinFont mt-0.5 text-center text-lg leading-tight drop-shadow-[0_0_2px_rgba(255,255,255,0.4)]">Log In</span>
                     </div>
                   </Link>
                 </div>
 
-
                 {/* FIXED: tampilkan juga di mobile */}
-                <div className="flex md:flex md:flex-col md:py-3">
+                <div className="block md:block md:py-3">
                   <Link href="/register">
-                    <div className="
-                      flex justify-center rounded-full
-                      bg-gradient-to-t from-[#0E5BA8] to-[#0395BC]
-                      py-2 font-semibold px-4 lg:px-6 xl:px-8
-                      transition-all duration-300 ease-in-out
-                      hover:scale-105
-                      hover:-translate-y-1
-                      hover:shadow-[0_0_20px_rgba(3,149,188,0.6)]
-                      hover:brightness-110
-                      cursor-pointer
-                    ">
-                      <span className="zeinFont mt-0.5 text-center text-lg leading-tight drop-shadow-[0_0_2px_rgba(255,255,255,0.4)]">Sign Up</span>
+                    <div className="flex justify-center rounded-full bg-[#0881AB] py-2 font-semibold px-4 lg:px-6 xl:px-8">
+                      <span className="zeinFont mt-0.5 text-center text-base leading-tight drop-shadow-[0_0_2px_rgba(255,255,255,0.4)]">Sign Up</span>
                     </div>
                   </Link>
                 </div>
