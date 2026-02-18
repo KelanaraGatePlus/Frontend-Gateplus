@@ -1,7 +1,7 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react"; // Tambah useCallback
+import { useEffect, useRef, useState } from "react"; // Tambah useCallback
 import dynamic from "next/dynamic";
 import SliderBannerPage from "@/components/BannerPromoSlider/page";
 import CategoryMenu from "@/components/CategoryMenu/page";
@@ -10,8 +10,6 @@ import CarouselHighlight from "@/components/Carousel/CarouselHome/carouselHighli
 import CarouselTopTen from "@/components/Carousel/CarouselHome/carouselTopTen";
 import "@splidejs/react-splide/css";
 import CarouselLoading from "@/components/Carousel/CarouselLoading";
-import getMinAge from "@/lib/helper/minAge";
-import useSyncUserData from "@/hooks/api/useSyncUserData";
 
 // Dynamic imports tetap sama...
 const CarouselLastSeen = dynamic(
@@ -56,8 +54,6 @@ export default function HomePage() {
     Array(groupCount).fill(false),
   );
   const refs = useRef([]);
-  const [banners, setBanners] = useState([]);
-  const { userAge, isReady } = useSyncUserData();
 
   // Intersection observer tetap sama...
   useEffect(() => {
@@ -83,58 +79,17 @@ export default function HomePage() {
     return () => observer.disconnect();
   }, [groupCount]);
 
-  const isBlurred = useCallback(
-    (content) => {
-      if (!isReady) return true;
-
-      const minAge = getMinAge(content?.ageRestriction);
-
-      // SU / R13 → tidak diblur
-      if (minAge === null) return false;
-
-      // belum login / belum isi DOB
-      if (userAge == null) return true;
-
-      return userAge < minAge;
-    },
-    [userAge, isReady],
-  );
-
-  // Fetch Banners
-  useEffect(() => {
-    async function fetchBanners() {
-      try {
-        const res = await fetch("http://localhost:3000/api/banners/home", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-
-        const responseData = await res.json();
-
-        setBanners(responseData.data || responseData);
-      } catch (err) {
-        console.error("Gagal ambil banner:", err);
-      }
-    }
-
-    fetchBanners();
-  }, []);
-
   return (
     <div className="flex flex-col overflow-x-hidden">
       <div className="flex flex-col">
-        <SliderBannerPage banners={banners} isBlurred={isBlurred} />
+        <SliderBannerPage isBlurred={false} />
 
         <main className="flex flex-col md:mx-5 md:px-0">
           <CategoryMenu />
 
-          <CarouselNewest isBlurred={isBlurred} />
-          <CarouselHighlight isBlurred={isBlurred} />
-          <CarouselTopTen isBlurred={isBlurred} />
+          <CarouselNewest isBlurred={false} />
+          <CarouselHighlight isBlurred={false} />
+          <CarouselTopTen isBlurred={false} />
 
           {groups.map((group, idx) => {
             const CompA = group[0];
@@ -150,18 +105,18 @@ export default function HomePage() {
                   <>
                     {CompA && (
                       <div className="relative">
-                        <CompA isBlurred={isBlurred} />
+                        <CompA isBlurred={false} />
                       </div>
                     )}
                     {CompB && (
                       <div className="relative">
-                        <CompB isBlurred={isBlurred} />
+                        <CompB isBlurred={false} />
                       </div>
                     )}
                   </>
                 ) : (
-                  <div className="px-4">                  
-                    <CarouselLoading /> 
+                  <div className="px-4">
+                    <CarouselLoading />
                   </div>
                 )}
               </section>
