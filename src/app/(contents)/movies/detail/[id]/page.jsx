@@ -309,7 +309,7 @@ function PlayingMoviePage({ params }) {
             <img
               width={60}
               height={60}
-              className="rounded-full"
+              className="rounded-full overflow-hidden"
               src={
                 movieData?.creator?.imageUrl &&
                   movieData?.creator?.imageUrl !== "null"

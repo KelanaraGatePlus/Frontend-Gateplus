@@ -5,7 +5,7 @@ import LoadingGif from "@@/logo/LoadingGateplus.gif";
 export default function LoadingOverlay({ message = "Loading..." }) {
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/70 backdrop-blur-xs"
       aria-modal="true"
       role="dialog"
       aria-labelledby="loading-message"

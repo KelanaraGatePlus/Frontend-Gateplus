@@ -62,7 +62,7 @@ export default function CarouselTemplate({
   };
 
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-md">
+    <div className="relative h-full w-full overflow-visible rounded-md">
       <section
         className={`px-0 ${isOnCreatorProfile ? "md:px-4" : isHomepage ? "md:px-6" : "md:px-16"}`}
       >
@@ -97,11 +97,20 @@ export default function CarouselTemplate({
                       return (
                         <CarouselItem
                           key={index}
-                          className={`group relative ${index === 0 ? "pl-4 md:pl-0" : ""} flex cursor-pointer items-center overflow-visible ${podcastSize}`}
+                          className={`
+                            group relative
+                            ${index === 0 ? "pl-4 md:pl-0" : ""}
+                            flex cursor-pointer items-center overflow-visible
+                            ${podcastSize}
+                            transition-all duration-300 ease-out
+                            hover:scale-105
+                            hover:-translate-y-1
+                            origin-bottom
+                          `}
                           style={{ flex: "0 0 auto" }}
                         >
                           {isTopTen ? (
-                            <div className="flex h-full w-full items-end gap-y-5 md:w-[500px] lg:w-[600px]">
+                            <div className="flex h-full w-full overflow-y-hidden items-end gap-y-5 md:w-[500px] lg:w-[600px]">
                               <div className="flex h-full w-1/3 items-end justify-end overflow-visible">
                                 <p
                                   className="zeinFont translate-x-[30%] md:translate-x-[40%] translate-y-[10%] text-[220px] leading-[0.7] font-extrabold text-[#1297DC] sm:text-[230px] md:text-[240px] lg:text-[250px]"
@@ -116,7 +125,7 @@ export default function CarouselTemplate({
                                 </p>
                               </div>
 
-                              <div className={`relative h-full w-full md:h-[220px] md:w-[149px] overflow-hidden rounded-[6px]`}>
+                              <div className={`relative h-full w-full md:h-[220px] md:w-[149px] overflow-visible rounded-[6px]`}>
                                 {fixedType === "ebook" && (
                                   <EbookCard
                                     {...item}

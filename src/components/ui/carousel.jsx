@@ -141,7 +141,7 @@ function CarouselContent({ className, ...props }) {
   return (
     <div
       ref={carouselRef}
-      className="overflow-hidden rounded-sm md:rounded-lg"
+      className="rounded-sm md:rounded-lg"
       data-slot="carousel-content"
     >
       <div

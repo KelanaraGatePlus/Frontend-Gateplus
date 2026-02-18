@@ -39,17 +39,17 @@
 }
 
 :root {
-  --foreground: #222222;
+  --foreground: #090a0f;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #222222;
+    --background: #090a0f;
   }
 }
 @media (prefers-color-scheme: light) {
   :root {
-    --background: #222222;
+    --background: #090a0f;
   }
 }
 

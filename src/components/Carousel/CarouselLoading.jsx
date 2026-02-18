@@ -11,8 +11,8 @@ export default function CarouselLoading() {
                     <div className="w-[140px] h-[28px] md:w-[200px] md:h-[32px] lg:w-[240px] lg:h-[40px]">
                         <Skeleton
                             borderRadius={8}
-                            baseColor="#2e2e2e"
-                            highlightColor="#3d3d3d"
+                            baseColor="#1c2033"
+                            highlightColor="#252a42"
                             height="100%"
                             width="100%"
                         />
@@ -30,22 +30,22 @@ export default function CarouselLoading() {
                                     height="100%"
                                     width="100%"
                                     borderRadius="0.75rem"
-                                    baseColor="#2e2e2e"
-                                    highlightColor="#3d3d3d"
+                                    baseColor="#1c2033"
+                                    highlightColor="#252a42"
                                 />
                             </div>
                             <div className="mt-2">
                                 <Skeleton
                                     height={12}
                                     width="80%"
-                                    baseColor="#2e2e2e"
-                                    highlightColor="#3d3d3d"
+                                    baseColor="#1c2033"
+                                    highlightColor="#252a42"
                                 />
                                 <Skeleton
                                     height={10}
                                     width="60%"
-                                    baseColor="#2e2e2e"
-                                    highlightColor="#3d3d3d"
+                                    baseColor="#1c2033"
+                                    highlightColor="#252a42"
                                     className="mt-1"
                                 />
                             </div>

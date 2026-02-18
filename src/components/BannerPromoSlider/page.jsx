@@ -56,8 +56,8 @@ export default function BannerPromoSlider() {
           height={400}
           width="100%"
           borderRadius="0.75rem"
-          baseColor="#2e2e2e"
-          highlightColor="#3d3d3d"
+          baseColor="#1c2033"
+          highlightColor="#252a42"
         />
       ) : (
         <Splide
@@ -80,7 +80,7 @@ export default function BannerPromoSlider() {
           {bannerPromo.map((item) => (
             <SplideSlide key={item.id}>
               <Link href={item.url}>
-                <Image
+                <img
                   priority
                   src={item.image}
                   alt={`BannerPromo00${item.id}`}

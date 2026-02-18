@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useGetAllCategoriesQuery } from "@/hooks/api/categorySliceAPI";
 import IconFilter from "@@/icons/icon_filter.svg";
 import Image from "next/image";
@@ -15,6 +15,7 @@ export default function Filter({ contentType, textColor, buttonColor }) {
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
+    const [hoveredGenre, setHoveredGenre] = useState(null);
 
     const currentGenre = searchParams.get("cat") || "Semua";
 
@@ -79,13 +80,16 @@ export default function Filter({ contentType, textColor, buttonColor }) {
                     <button
                         key={genre}
                         onClick={() => handleClick(genre)}
+                        onMouseEnter={() => setHoveredGenre(genre)}
+                        onMouseLeave={() => setHoveredGenre(null)}
                         style={{
-                            background: currentGenre === genre
-                                ? `linear-gradient(to bottom, ${buttonColor?.activeFrom || "#219BFF"}, ${buttonColor?.activeTo || "#156EB7"})`
-                                : "#686868", // default color
+                            background:
+                                currentGenre === genre || hoveredGenre === genre
+                                    ? `linear-gradient(to bottom, ${buttonColor?.activeFrom || "#219BFF"}, ${buttonColor?.activeTo || "#156EB7"})`
+                                    : "#686868",
                             color: "white",
                         }}
-                        className={"rounded-full w-max text-center px-4 py-1 md:py-2 font-semibold text-[14px] transition hover:cursor-pointer"}
+                        className="rounded-full w-max text-center px-4 py-1 md:py-2 font-semibold text-[14px] transition hover:cursor-pointer"
                     >
                         {genre}
                     </button>
