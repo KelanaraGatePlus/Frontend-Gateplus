@@ -80,10 +80,8 @@ export default function BannerPromoSlider() {
             <SplideSlide key={item.id}>
               <Link href={item.url}>
                 <img
-                  priority
                   src={item.image}
                   alt={`BannerPromo00${item.id}`}
-                  layout="responsive"
                 />
               </Link>
             </SplideSlide>
