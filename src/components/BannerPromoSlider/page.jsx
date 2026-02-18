@@ -11,6 +11,7 @@ import bannerPromo5 from "@@/BannerPromo/hero-banner-5.jpg";
 
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import Image from "next/image";
 
 export default function BannerPromoSlider() {
   const [isLoading, setIsLoading] = useState(true);
