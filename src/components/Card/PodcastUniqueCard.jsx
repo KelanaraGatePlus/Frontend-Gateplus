@@ -1,6 +1,5 @@
 import React from "react";
 import { contentType } from "@/lib/constants/contentType";
-import Image from "next/image";
 import Link from "next/link";
 import PropTypes from "prop-types";
 
