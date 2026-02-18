@@ -79,7 +79,9 @@ export default function BannerPromoSlider() {
           {bannerPromo.map((item) => (
             <SplideSlide key={item.id}>
               <Link href={item.url}>
-                <img
+                <Image
+                  priority
+                  layout="responsive"
                   src={item.image}
                   alt={`BannerPromo00${item.id}`}
                 />
