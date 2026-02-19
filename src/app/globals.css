@@ -52,7 +52,16 @@
     --background: #222222;
   }
 }
+/* Hide number input spinner */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
 
+input[type="number"] {
+  -moz-appearance: textfield;
+}
 @theme {
   --font-zain: "var(--font-zain)";
 }
