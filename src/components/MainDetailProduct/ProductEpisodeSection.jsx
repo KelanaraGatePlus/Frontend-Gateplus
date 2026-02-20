@@ -306,7 +306,7 @@ export default function ProductEpisodeSection({
                             </h1>
                             <div className="hidden md:block text-start">
                               <RichTextDisplay
-                                content={item.description?.substring(0, 120) + (item.description?.length > 120 ? '...' : '')}
+                                content={item.description?.substring(0, 30) + (item.description?.length > 30 ? '...' : '')}
                               />
                             </div>
                           </div>
