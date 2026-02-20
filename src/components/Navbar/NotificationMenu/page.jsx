@@ -32,12 +32,14 @@ export default function NotificationMenu() {
       setHasNotifications(false);
     } else {
       setIsAuthorized(true);
-      if (notificationData?.data) {
-        setNotifications(notificationData?.data || []);
-        const hasUnread = notificationData?.data?.some((notif) => !notif.isRead);
-        setHasNotifications(hasUnread);
-        console.log("Notifications:", notificationData);
-      }
+      // Ambil array notifikasi yang benar dari data nested
+      const notifArray = Array.isArray(notificationData?.data?.data)
+        ? notificationData.data.data
+        : [];
+
+      setNotifications(notifArray);
+      const hasUnread = notifArray.some((notif) => !notif.isRead);
+      setHasNotifications(hasUnread);
     }
   }, [notificationData]);
 
@@ -69,7 +71,7 @@ export default function NotificationMenu() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
       console.log("Notifikasi dibaca:", response.data);
       // Hook akan otomatis refetch data setelah notifikasi dibaca
@@ -115,11 +117,9 @@ export default function NotificationMenu() {
       {isNotificationOpen && (
         <div className="absolute top-8 right-0 z-50 mt-3.5 max-h-[1100px] w-3xs overflow-y-auto rounded-lg bg-[#2a6475] p-3.5 shadow-lg md:top-11 md:right-0 lg:w-md">
           <div className="flex items-start justify-between">
-            <h2 className="mb-2 text-lg font-bold text-white">
-              Notifications
-            </h2>
+            <h2 className="mb-2 text-lg font-bold text-white">Notifications</h2>
             <div
-              className="flex h-6 w-6 items-center justify-center rounded-full bg-[#808080] pb-1 text-xl font-bold text-white cursor-pointer"
+              className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-[#808080] pb-1 text-xl font-bold text-white"
               onClick={toggleNotificationDropdown}
             >
               &times;
@@ -138,22 +138,19 @@ export default function NotificationMenu() {
             <ul>
               {[...notifications]
                 .sort(
-                  (a, b) =>
-                    new Date(b.createdAt) - new Date(a.createdAt) // 🔥 terbaru di atas
+                  (a, b) => new Date(b.createdAt) - new Date(a.createdAt), // 🔥 terbaru di atas
                 )
                 .slice(0, visibleCount)
                 .map((notification) => (
                   <li
                     key={notification.id}
                     className={`relative my-2 flex flex-col rounded-lg p-2 text-lg text-gray-500 ${
-                      notification.isRead
-                        ? "bg-transparent"
-                        : "bg-[#28a4cc]"
+                      notification.isRead ? "bg-transparent" : "bg-[#28a4cc]"
                     }`}
                   >
                     <div className="flex flex-wrap gap-1 text-white">
                       <span
-                        className="font-bold leading-6"
+                        className="leading-6 font-bold"
                         title={notification.user?.username || "Unknown"}
                       >
                         {notification.title}
@@ -181,17 +178,16 @@ export default function NotificationMenu() {
                 ))}
             </ul>
           ) : (
-            <p className="text-sm text-white/75">
-              No new notifications.
-            </p>
+            <p className="text-sm text-white/75">No new notifications.</p>
           )}
 
           {notifications.length > 5 && (
             <button
-              className={`my-2 w-full cursor-pointer rounded-full px-4 py-1 text-white transition ${visibleCount >= notifications.length
+              className={`my-2 w-full cursor-pointer rounded-full px-4 py-1 text-white transition ${
+                visibleCount >= notifications.length
                   ? "bg-gray-600 hover:bg-gray-700"
                   : "bg-blue-600 hover:bg-blue-700"
-                }`}
+              }`}
               onClick={handleLoadMore}
             >
               {visibleCount >= notifications.length

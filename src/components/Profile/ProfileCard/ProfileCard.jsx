@@ -27,6 +27,13 @@ export default function ProfileCard({
   const [isSubscribing, setIsSubscribing] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
+  const bio =
+    data?.bio && data.bio !== "null"
+      ? data.bio
+      : data?.user?.bio && data.user.bio !== "null"
+        ? data.user.bio
+        : "";
+
   // Sinkronisasi state dengan prop isFollowed
   useEffect(() => {
     setIsSubscribed(isFollowed);
@@ -111,7 +118,7 @@ export default function ProfileCard({
         {/* personal information */}
         {data && (
           <PersonalInformationSection
-            data={data}
+            data={{ ...data, bio }}
             totalSubsribers={totalSubs}
             profileFor={profileFor}
             isOwnProfile={isOwnProfile}
