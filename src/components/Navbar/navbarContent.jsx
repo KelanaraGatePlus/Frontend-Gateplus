@@ -205,7 +205,7 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
         >
           <div className="my-6 grid grid-cols-5 gap-4 text-center">
             {navbarOptions.map((type) => (
-              <Link key={type.id} href={`/${type.url}`} className="flex flex-col items-center gap-2 text-white hover:text-white transition-colors">
+              <Link key={type.id} href={`${type.url}`} className="flex flex-col items-center gap-2 text-white hover:text-white transition-colors">
                 <Image alt={type.tittle} src={type.icon} width={65} height={65} />
                 <span className="text-sm font-semibold">{type.tittle.toUpperCase()}</span>
               </Link>
