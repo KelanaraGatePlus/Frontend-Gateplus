@@ -1,7 +1,8 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import PropTypes from "prop-types";
 
 /*[--- THIRD PARTY LIBRARIES ---]*/
 import { useForm } from "react-hook-form";
@@ -267,3 +268,10 @@ export default function FormRegisterCreator({
         </form>
     );
 }
+
+FormRegisterCreator.propTypes = {
+    profilePictureUrl: PropTypes.string,
+    profilePicturePreview: PropTypes.string,
+    selectedIconUrl: PropTypes.string,
+    onProfilePictureClick: PropTypes.func,
+};

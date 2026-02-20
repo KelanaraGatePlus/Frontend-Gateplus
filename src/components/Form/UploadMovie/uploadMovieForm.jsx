@@ -79,7 +79,7 @@ export default function UploadMovieForm() {
         },
     });
 
-    const [createMovie, { isLoading, error, isError }] = useCreateMovieMutation();
+    const [createMovie, { isLoading, error }] = useCreateMovieMutation();
     const { data: genresData } = useGetAllGenresQuery();
 
     const findExplicitField = (fileName) => {
