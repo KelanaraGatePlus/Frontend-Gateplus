@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,6 +20,7 @@ import PriceSelector from "@/components/UploadForm/PriceSelector";
 import ButtonSubmit from "@/components/UploadForm/ButtonSubmit";
 import TermsCheckbox from "@/components/UploadForm/TermsCheckbox";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+import ContentExplicitModal from "@/components/Modal/ContentExplicitModal";
 
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
@@ -32,12 +33,18 @@ export default function UploadComicEpisodeForm() {
     const creatorId = useGetCreatorId();
     const userId = useGetUserId();
     const fromEducation = searchParams.get("education") || null;
+    const episodeCoverInputRef = useRef(null);
+    const comicPagesInputRef = useRef(null);
+    const [isExplicitModalOpen, setIsExplicitModalOpen] = useState(false);
+    const [explicitImageName, setExplicitImageName] = useState("");
+    const [explicitField, setExplicitField] = useState("");
 
     const {
         register,
         handleSubmit,
         control,
         formState: { errors },
+        getValues,
     } = useForm({
         resolver: zodResolver(createComicEpisodeSchema),
         mode: "onChange",
@@ -57,6 +64,33 @@ export default function UploadComicEpisodeForm() {
     const [createEpisode, { isLoading, error }] = useCreateEpisodeMutation();
     const skip = !creatorId;
     const creatorDetailQuery = useGetCreatorDetailQuery({ id: creatorId, userId }, { skip });
+
+    const findExplicitField = (fileName) => {
+        if (!fileName) return "";
+        const { episodeCover, inputFile } = getValues();
+        const candidates = [
+            { name: "episodeCover", files: episodeCover },
+            { name: "inputFile", files: inputFile },
+        ];
+        const match = candidates.find((item) =>
+            Array.isArray(item.files)
+            && item.files[0]
+            && typeof item.files[0] !== "string"
+            && item.files.some((file) => file?.name === fileName)
+        );
+        return match?.name || "";
+    };
+
+    const handleRetryExplicitUpload = () => {
+        setIsExplicitModalOpen(false);
+        if (explicitField === "episodeCover") {
+            episodeCoverInputRef.current?.click();
+            return;
+        }
+        if (explicitField === "inputFile") {
+            comicPagesInputRef.current?.click();
+        }
+    };
 
     const onSubmit = async (data) => {
         const formData = new FormData();
@@ -79,6 +113,13 @@ export default function UploadComicEpisodeForm() {
             }
             router.push(`/comics/detail/${data.comicId}`);
         } catch (err) {
+            if (err.status == 403) {
+                const fileName = err.data?.fileName || "Gambar";
+                setExplicitField(findExplicitField(fileName));
+                setIsExplicitModalOpen(true);
+                setExplicitImageName(fileName);
+                return;
+            }
             console.error("Error creating episode of comic:", err);
         }
     };
@@ -136,6 +177,7 @@ export default function UploadComicEpisodeForm() {
                             description="Gunakan rasio 1:1 atau sesuai standar platform, format JPG/PNG, maks 500KB. Pilih satu panel paling menarik atau representatif dari chapter ini untuk memancing klik (High CTR)."
                             name="episodeCover"
                             icon={IconsGalery}
+                            inputRef={episodeCoverInputRef}
                             files={field.value}
                             onUpload={(e) => field.onChange([...e.target.files])}
                             onRemove={() => field.onChange([])}
@@ -152,6 +194,7 @@ export default function UploadComicEpisodeForm() {
                             uploadedFiles={{ inputFile: field.value }}
                             description="Unggah semua halaman chapter (JPG/PNG). Setelah upload, geser/drag gambar untuk mengatur urutan halaman."
                             label="File Gambar Chapter Komik (Halaman Lengkap)"
+                            inputRef={comicPagesInputRef}
                             handleFileUpload={(e) => field.onChange([...field.value, ...e.target.files].sort((a, b) => a.name.localeCompare(b.name)))}
                             handleRemoveFile={(_, index) => {
                                 const updated = [...field.value];
@@ -212,6 +255,13 @@ export default function UploadComicEpisodeForm() {
                 )}
             </form>
             {isLoading && <LoadingOverlay message="Uploading..." />}
+            {isExplicitModalOpen && (
+                <ContentExplicitModal
+                    imageName={explicitImageName}
+                    onClose={() => setIsExplicitModalOpen(false)}
+                    onRetry={handleRetryExplicitUpload}
+                />
+            )}
         </>
     );
 }

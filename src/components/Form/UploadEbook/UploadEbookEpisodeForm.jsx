@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 /* Third-Party */
@@ -26,6 +26,7 @@ import PriceSelector from "@/components/UploadForm/PriceSelector";
 import ButtonSubmit from '@/components/UploadForm/ButtonSubmit';
 import TermsCheckbox from '@/components/UploadForm/TermsCheckbox';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+import ContentExplicitModal from "@/components/Modal/ContentExplicitModal";
 
 /* Assets */
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
@@ -38,12 +39,21 @@ export default function UploadEbookEpisodeForm() {
     const fromEducation = searchParams.get("education") || null;
     const creatorId = useGetCreatorId();
     const userId = useGetUserId();
+    const episodeCoverInputRef = useRef(null);
+    const bannerStartInputRef = useRef(null);
+    const bannerEndInputRef = useRef(null);
+    const inputFileInputRef = useRef(null);
+    const audioUrlInputRef = useRef(null);
+    const [isExplicitModalOpen, setIsExplicitModalOpen] = useState(false);
+    const [explicitImageName, setExplicitImageName] = useState("");
+    const [explicitField, setExplicitField] = useState("");
 
     const {
         register,
         handleSubmit,
         control,
         formState: { errors },
+        getValues,
     } = useForm({
         resolver: zodResolver(createEbookEpisodeSchema),
         mode: "onChange",
@@ -67,6 +77,48 @@ export default function UploadEbookEpisodeForm() {
     const skip = !creatorId;
     const creatorDetailQuery = useGetCreatorDetailQuery({ id: creatorId, userId }, { skip });
 
+    const findExplicitField = (fileName) => {
+        if (!fileName) return "";
+        const { episodeCover, bannerStart, bannerEnd, inputFile, audioUrl } = getValues();
+        const candidates = [
+            { name: "episodeCover", files: episodeCover },
+            { name: "bannerStart", files: bannerStart },
+            { name: "bannerEnd", files: bannerEnd },
+            { name: "inputFile", files: inputFile },
+            { name: "audioUrl", files: audioUrl },
+        ];
+        const match = candidates.find((item) =>
+            Array.isArray(item.files)
+            && item.files[0]
+            && typeof item.files[0] !== "string"
+            && item.files[0].name === fileName
+        );
+        return match?.name || "";
+    };
+
+    const handleRetryExplicitUpload = () => {
+        setIsExplicitModalOpen(false);
+        if (explicitField === "episodeCover") {
+            episodeCoverInputRef.current?.click();
+            return;
+        }
+        if (explicitField === "bannerStart") {
+            bannerStartInputRef.current?.click();
+            return;
+        }
+        if (explicitField === "bannerEnd") {
+            bannerEndInputRef.current?.click();
+            return;
+        }
+        if (explicitField === "inputFile") {
+            inputFileInputRef.current?.click();
+            return;
+        }
+        if (explicitField === "audioUrl") {
+            audioUrlInputRef.current?.click();
+        }
+    };
+
     const onSubmit = async (data) => {
         const formData = new FormData();
         formData.append("ebookId", data.ebookId);
@@ -88,6 +140,13 @@ export default function UploadEbookEpisodeForm() {
             }
             router.push(`/ebooks/detail/${data.ebookId}`);
         } catch (err) {
+            if (err.status == 403) {
+                const fileName = err.data?.fileName || "Gambar";
+                setExplicitField(findExplicitField(fileName));
+                setIsExplicitModalOpen(true);
+                setExplicitImageName(fileName);
+                return;
+            }
             console.error("Error creating episode of ebook:", err);
         }
     };
@@ -149,6 +208,7 @@ export default function UploadEbookEpisodeForm() {
                             description="Rasio: 1:1, Format: JPG/PNG, Ukuran Maksimal: 500 KB. Unggah sampul khusus untuk bab ini."
                             name="episodeCover"
                             icon={IconsGalery}
+                            inputRef={episodeCoverInputRef}
                             files={field.value}
                             onUpload={(e) => field.onChange([...e.target.files])}
                             onRemove={() => field.onChange([])}
@@ -168,6 +228,7 @@ export default function UploadEbookEpisodeForm() {
                             description="maks upload per content 5mb, please make part while uploading and naming ascending number"
                             name="bannerStart"
                             icon={IconsGalery}
+                            inputRef={bannerStartInputRef}
                             files={field.value}
                             onUpload={(e) => field.onChange([...e.target.files])}
                             onRemove={() => field.onChange([])}
@@ -185,6 +246,7 @@ export default function UploadEbookEpisodeForm() {
                             label="Unggah File Naskah (.docx)"
                             description="Pastikan file Anda berformat Microsoft Word (.docx). Klik untuk unggah."
                             accept=".doc,.docx"
+                            inputRef={inputFileInputRef}
                             files={field.value}
                             onUpload={(e) => field.onChange([...e.target.files])}
                             onRemove={() => field.onChange([])}
@@ -203,6 +265,7 @@ export default function UploadEbookEpisodeForm() {
                             label="File Audio (Opsional)"
                             description="Pilih file audio (MP3/WAV, maks. 3MB) untuk backsound atau audio Transkrip episode ini."
                             accept=".mp3,.wav"
+                            inputRef={audioUrlInputRef}
                             files={field.value}
                             onUpload={(e) => field.onChange([...e.target.files])}
                             onRemove={() => field.onChange([])}
@@ -222,6 +285,7 @@ export default function UploadEbookEpisodeForm() {
                             description="maks upload per content 5gb, please make part while uploading and naming ascending number"
                             name="bannerEnd"
                             icon={IconsGalery}
+                            inputRef={bannerEndInputRef}
                             files={field.value}
                             onUpload={(e) => field.onChange([...e.target.files])}
                             onRemove={() => field.onChange([])}
@@ -289,6 +353,13 @@ export default function UploadEbookEpisodeForm() {
                 )}
             </form>
             {isLoading && <LoadingOverlay message="Uploading..." />}
+            {isExplicitModalOpen && (
+                <ContentExplicitModal
+                    imageName={explicitImageName}
+                    onClose={() => setIsExplicitModalOpen(false)}
+                    onRetry={handleRetryExplicitUpload}
+                />
+            )}
         </>
     );
 }

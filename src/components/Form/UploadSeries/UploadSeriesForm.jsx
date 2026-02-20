@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import RichTextEditor from '@/components/RichTextEditor/page';
 
@@ -31,6 +31,7 @@ import UploadLargeFile from "@/components/UploadForm/UploadLargeFile";
 import PriceSelector from "@/components/UploadForm/PriceSelector";
 import { useCreateSeriesMutation } from "@/hooks/api/seriesSliceAPI";
 import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
+import ContentExplicitModal from "@/components/Modal/ContentExplicitModal";
 
 
 
@@ -40,12 +41,17 @@ export default function UploadSeriesForm() {
     const fromEducation = searchParams.get("education") || null;
     const posterBannerInputRef = useRef(null);
     const coverBookInputRef = useRef(null);
+    const thumbnailInputRef = useRef(null);
+    const [isExplicitModalOpen, setIsExplicitModalOpen] = useState(false);
+    const [explicitImageName, setExplicitImageName] = useState("");
+    const [explicitField, setExplicitField] = useState("");
     const {
         register,
         handleSubmit,
         control,
         watch,
         formState: { errors },
+        getValues,
     } = useForm({
         resolver: zodResolver(createSeriesSchema),
         mode: "onChange",
@@ -71,6 +77,38 @@ export default function UploadSeriesForm() {
 
     const [createSeries, { isLoading, error }] = useCreateSeriesMutation();
     const { data: genresData } = useGetAllGenresQuery();
+
+    const findExplicitField = (fileName) => {
+        if (!fileName) return "";
+        const { posterBanner, coverBook, thumbnail } = getValues();
+        const candidates = [
+            { name: "posterBanner", files: posterBanner },
+            { name: "coverBook", files: coverBook },
+            { name: "thumbnail", files: thumbnail },
+        ];
+        const match = candidates.find((item) =>
+            Array.isArray(item.files)
+            && item.files[0]
+            && typeof item.files[0] !== "string"
+            && item.files[0].name === fileName
+        );
+        return match?.name || "";
+    };
+
+    const handleRetryExplicitUpload = () => {
+        setIsExplicitModalOpen(false);
+        if (explicitField === "posterBanner") {
+            posterBannerInputRef.current?.click();
+            return;
+        }
+        if (explicitField === "coverBook") {
+            coverBookInputRef.current?.click();
+            return;
+        }
+        if (explicitField === "thumbnail") {
+            thumbnailInputRef.current?.click();
+        }
+    };
 
     const onSubmit = async (data) => {
         try {
@@ -105,6 +143,13 @@ export default function UploadSeriesForm() {
                     router.push(`/series/upload/episode?series=${result.data.id}`);
                 }
             } catch (err) {
+                if (err.status == 403) {
+                    const fileName = err.data?.fileName || "Gambar";
+                    setExplicitField(findExplicitField(fileName));
+                    setIsExplicitModalOpen(true);
+                    setExplicitImageName(fileName);
+                    return;
+                }
                 console.error("Error creating series:", err);
             }
         } catch (error) {
@@ -302,7 +347,7 @@ export default function UploadSeriesForm() {
                                 description='Gunakan rasio 1,6:2 (1600x2560), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten. Gunakan gambar beresolusi tinggi (format vertikal/portrait biasanya standar industri film). Ini adalah "wajah" film Anda di seluruh platform dan hasil pencarian Google. Pastikan gambarnya profesional, memuat judul yang jelas, dan sangat memancing klik (High CTR).'
                                 name="thumbnail"
                                 icon={IconsGalery}
-                                inputRef={coverBookInputRef}
+                                inputRef={thumbnailInputRef}
                                 files={field.value || []}
                                 onUpload={(e) => {
                                     const files = [...e.target.files];
@@ -394,6 +439,13 @@ export default function UploadSeriesForm() {
             </form>
             {isLoading && (
                 <LoadingOverlay message="Tunggu Sebentar... <br/> Sedang membuat series" />
+            )}
+            {isExplicitModalOpen && (
+                <ContentExplicitModal
+                    imageName={explicitImageName}
+                    onClose={() => setIsExplicitModalOpen(false)}
+                    onRetry={handleRetryExplicitUpload}
+                />
             )}
         </>
     )

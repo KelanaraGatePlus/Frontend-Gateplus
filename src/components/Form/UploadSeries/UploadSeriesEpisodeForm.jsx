@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import RichTextEditor from '@/components/RichTextEditor/page';
 
@@ -25,6 +25,7 @@ import PriceSelector from "@/components/UploadForm/PriceSelector";
 import ButtonSubmit from '@/components/UploadForm/ButtonSubmit';
 import TermsCheckbox from '@/components/UploadForm/TermsCheckbox';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+import ContentExplicitModal from "@/components/Modal/ContentExplicitModal";
 
 /* Assets */
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
@@ -39,12 +40,17 @@ export default function UploadSeriesEpisodeForm() {
     const fromEducation = searchParams.get("education") || null;
     const creatorId = useGetCreatorId();
     const userId = useGetUserId();
+    const coverEpisodeInputRef = useRef(null);
+    const [isExplicitModalOpen, setIsExplicitModalOpen] = useState(false);
+    const [explicitImageName, setExplicitImageName] = useState("");
+    const [explicitField, setExplicitField] = useState("");
 
     const {
         register,
         handleSubmit,
         control,
         formState: { errors },
+        getValues,
     } = useForm({
         resolver: zodResolver(createSeriesEpisodeSchema),
         mode: "onChange",
@@ -63,6 +69,26 @@ export default function UploadSeriesEpisodeForm() {
     const [createEpisodeSeries, { isLoading, error }] = useCreateEpisodeSeriesMutation();
     const skip = !creatorId;
     const creatorDetailQuery = useGetCreatorDetailQuery({ id: creatorId, userId }, { skip });
+
+    const findExplicitField = (fileName) => {
+        if (!fileName) return "";
+        const { coverEpisode } = getValues();
+        const candidates = [{ name: "coverEpisode", files: coverEpisode }];
+        const match = candidates.find((item) =>
+            Array.isArray(item.files)
+            && item.files[0]
+            && typeof item.files[0] !== "string"
+            && item.files[0].name === fileName
+        );
+        return match?.name || "";
+    };
+
+    const handleRetryExplicitUpload = () => {
+        setIsExplicitModalOpen(false);
+        if (explicitField === "coverEpisode") {
+            coverEpisodeInputRef.current?.click();
+        }
+    };
 
     const onSubmit = async (data) => {
         const formData = new FormData();
@@ -83,6 +109,13 @@ export default function UploadSeriesEpisodeForm() {
             }
             router.push(`/series/detail/${data.seriesId}`);
         } catch (err) {
+            if (err.status == 403) {
+                const fileName = err.data?.fileName || "Gambar";
+                setExplicitField(findExplicitField(fileName));
+                setIsExplicitModalOpen(true);
+                setExplicitImageName(fileName);
+                return;
+            }
             console.error("Error creating episode of series:", err);
         }
     };
@@ -144,6 +177,7 @@ export default function UploadSeriesEpisodeForm() {
                             description="Gunakan rasio 16:9 (landscape), format JPG/PNG, maks 500KB. Pilih satu frame adegan paling dramatis dari episode ini untuk memancing klik (High CTR)."
                             name="coverEpisode"
                             icon={IconsGalery}
+                            inputRef={coverEpisodeInputRef}
                             files={field.value}
                             onUpload={(e) => field.onChange([...e.target.files])}
                             onRemove={() => field.onChange([])}
@@ -216,6 +250,13 @@ export default function UploadSeriesEpisodeForm() {
                 )}
             </form>
             {isLoading && <LoadingOverlay message="Uploading..." />}
+            {isExplicitModalOpen && (
+                <ContentExplicitModal
+                    imageName={explicitImageName}
+                    onClose={() => setIsExplicitModalOpen(false)}
+                    onRetry={handleRetryExplicitUpload}
+                />
+            )}
         </>
     );
 }
