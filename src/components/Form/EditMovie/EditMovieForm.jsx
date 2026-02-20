@@ -20,6 +20,7 @@ import { languageOptions } from "@/lib/constants/languageOptions";
 /*[--- UI COMPONENTS ---]*/
 import ButtonSubmit from "@/components/UploadForm/ButtonSubmit";
 import InputImageBanner from "@/components/UploadForm/InputImageBanner";
+import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
 import InputSelect from "@/components/UploadForm/InputSelect";
 import InputText from "@/components/UploadForm/InputText";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
@@ -37,6 +38,40 @@ export default function EditMovieForm({ id }) {
     const [editMovie, { isLoading, error }] = useEditMovieMutation();
     const { data: movieData } = useGetMovieByIdQuery(id, { skip: !id });
 
+    const normalizeGenres = (genres) => {
+        if (Array.isArray(genres)) return genres;
+        if (typeof genres === "string") {
+            try {
+                const parsed = JSON.parse(genres);
+                if (Array.isArray(parsed)) return parsed;
+            } catch {
+                return genres ? [genres] : [];
+            }
+            return genres ? [genres] : [];
+        }
+        return [];
+    };
+
+    const getInitialGenres = (movie) => {
+        const fromCategoriesId = normalizeGenres(movie?.categoriesId).map(String);
+        if (fromCategoriesId.length > 0) return fromCategoriesId;
+
+        const fromAllCategories = Array.isArray(movie?.allCategories)
+            ? movie.allCategories
+                .map((item) => String(item?.id || ""))
+                .filter(Boolean)
+            : [];
+        if (fromAllCategories.length > 0) return fromAllCategories;
+
+        return Array.isArray(movie?.categories)
+            ? movie.categories
+                .map((item) => String(item?.categoryId || item?.category?.id || ""))
+                .filter(Boolean)
+            : [];
+    };
+
+    const movie = movieData?.data?.data;
+
     const {
         register,
         handleSubmit,
@@ -47,17 +82,17 @@ export default function EditMovieForm({ id }) {
         resolver: zodResolver(editMovieSchema),
         mode: "onChange",
         defaultValues: {
-            title: movieData?.data?.data?.title || "",
-            description: movieData?.data?.data?.description || "",
-            genre: movieData?.data?.data?.categoriesId || "",
-            language: movieData?.data?.data?.language || "",
-            director: movieData?.data?.data?.director || "",
-            producer: movieData?.data?.data?.producer || "",
-            writer: movieData?.data?.data?.writer || "",
-            talent: movieData?.data?.data?.talent || "",
-            releaseYear: movieData?.data?.data?.releaseYear || "",
-            productionHouse: movieData?.data?.data?.productionHouse || "",
-            duration: movieData?.data?.data?.duration || "",
+            title: movie?.title || "",
+            description: movie?.description || "",
+            genre: getInitialGenres(movie),
+            language: movie?.language || "",
+            director: movie?.director || "",
+            producer: movie?.producer || "",
+            writer: movie?.writer || "",
+            talent: movie?.talent || "",
+            releaseYear: movie?.releaseYear || "",
+            productionHouse: movie?.productionHouse || "",
+            duration: movie?.duration || "",
             posterBanner: null,
             coverBook: null,
             thumbnail: null,
@@ -66,11 +101,11 @@ export default function EditMovieForm({ id }) {
 
     // Update form ketika data dari API sudah masuk
     useEffect(() => {
-        if (movieData?.data) {
+        if (movieData?.data?.data) {
             reset({
                 title: movieData.data.data.title || "",
                 description: movieData.data.data.description || "",
-                genre: movieData.data.data.categoriesId || "",
+                genre: getInitialGenres(movieData.data.data),
                 language: movieData.data.data.language || "",
                 director: movieData.data.data.director || "",
                 producer: movieData.data.data.producer || "",
@@ -92,7 +127,10 @@ export default function EditMovieForm({ id }) {
         const formData = new FormData();
         formData.append("title", data.title);
         formData.append("description", data.description);
-        formData.append("categoriesId", data.genre);
+
+        const selectedGenres = Array.isArray(data.genre) ? data.genre : [data.genre].filter(Boolean);
+        formData.append("categoriesId", JSON.stringify(selectedGenres));
+
         formData.append("language", data.language);
         formData.append("director", data.director);
         formData.append("producer", data.producer);
@@ -131,34 +169,36 @@ export default function EditMovieForm({ id }) {
                         error={errors.title?.message}
                     />
 
-<Controller
-    name="description"
-    control={control}
-    render={({ field, fieldState }) => (
-        <RichTextEditor
-            label="Deskripsi"
-            name="description"
-            placeholder="Jelaskan premis utama film, konflik sentral, karakter utama, dan tema yang diangkat. Mesin pencari menggunakan teks ini untuk mempertemukan karyamu dengan penonton yang tepat."
-            value={field.value}
-            onChange={field.onChange}
-            error={fieldState.error?.message}
-        />
-    )}
-/>
+                    <Controller
+                        name="description"
+                        control={control}
+                        render={({ field, fieldState }) => (
+                            <RichTextEditor
+                                label="Deskripsi"
+                                name="description"
+                                placeholder="Jelaskan premis utama film, konflik sentral, karakter utama, dan tema yang diangkat. Mesin pencari menggunakan teks ini untuk mempertemukan karyamu dengan penonton yang tepat."
+                                value={field.value}
+                                onChange={field.onChange}
+                                error={fieldState.error?.message}
+                            />
+                        )}
+                    />
 
                     <Controller
                         name="genre"
                         control={control}
                         rules={{ required: "Genre wajib dipilih" }}
                         render={({ field, fieldState }) => (
-                            <InputSelect
+                            <GenreMultiSelect
                                 label="Genre"
                                 name="genre"
                                 options={genresData?.data.data || []}
-                                placeholder="Pilih Genre"
-                                value={field.value}
-                                onChange={field.onChange}
-                                onBlur={field.onBlur}
+                                placeholder="Pilih satu atau lebih genre yang paling menggambarkan film ini (Misal: Aksi, Horor, Drama Komedi, Sci-Fi)."
+                                value={field.value || []}
+                                onChange={(val) => {
+                                    field.onChange(val);
+                                    field.onBlur();
+                                }}
                                 error={fieldState.error?.message}
                             />
                         )}
@@ -323,5 +363,5 @@ export default function EditMovieForm({ id }) {
 }
 
 EditMovieForm.propTypes = {
-  id: PropTypes.string.isRequired,
+    id: PropTypes.string.isRequired,
 }

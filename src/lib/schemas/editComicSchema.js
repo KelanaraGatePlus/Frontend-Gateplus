@@ -15,7 +15,7 @@ export const editComicSchema = z.object({
             const words = val ? val.trim().split(/\s+/).filter(Boolean) : [];
             return words.length <= 500;
         }, "Maksimal 500 kata"),
-    genre: z.string().min(1, "Genre wajib dipilih"),
+    genre: z.array(z.string()).min(1, "Genre wajib dipilih"),
     language: z.string().min(1, "Bahasa wajib dipilih"),
     posterBanner: z
         .any()

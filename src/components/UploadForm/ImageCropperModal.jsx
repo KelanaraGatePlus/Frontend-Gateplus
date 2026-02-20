@@ -91,6 +91,7 @@ export default function ImageCropperModal({
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
           <h2 className="text-xl font-semibold text-white montserratFont">{title}</h2>
           <button
+            type="button"
             onClick={onCancel}
             className="text-gray-400 hover:text-white transition-colors"
           >
@@ -131,12 +132,14 @@ export default function ImageCropperModal({
           {/* Action Buttons */}
           <div className="flex gap-3 justify-end">
             <button
+              type="button"
               onClick={onCancel}
               className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors montserratFont"
             >
               Batal
             </button>
             <button
+              type="button"
               onClick={handleCropConfirm}
               className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors montserratFont"
             >

@@ -28,6 +28,7 @@ import LoadingOverlay from "@/components/LoadingOverlay/page";
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
 import PropTypes from "prop-types";
+import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
 
 export default function EditEbookForm({ id }) {
     const router = useRouter();
@@ -52,7 +53,7 @@ export default function EditEbookForm({ id }) {
         defaultValues: {
             title: ebookData?.data.title || "",
             description: ebookData?.data.description || "",
-            genre: ebookData?.data.categoriesId || "",
+            genre: ebookData?.data.allCategories?.map(cat => cat.id) || [],
             language: ebookData?.data.language || "",
             posterBanner: null,
             coverBook: null,
@@ -65,7 +66,7 @@ export default function EditEbookForm({ id }) {
             reset({
                 title: ebookData.data.title || "",
                 description: ebookData.data.description || "",
-                genre: ebookData.data.categoriesId || "",
+                genre: ebookData.data.allCategories?.map(cat => cat.id) || [],
                 language: ebookData.data.language || "",
                 posterBanner: ebookData.data.posterImageUrl ? [ebookData.data.posterImageUrl] : null,
                 coverBook: ebookData.data.coverImageUrl ? [ebookData.data.coverImageUrl] : null,
@@ -79,7 +80,8 @@ export default function EditEbookForm({ id }) {
         const formData = new FormData();
         formData.append("title", data.title);
         formData.append("description", data.description);
-        formData.append("categoriesId", data.genre);
+        const selectedGenres = Array.isArray(data.genre) ? data.genre : [data.genre].filter(Boolean);
+        formData.append("categoriesId", JSON.stringify(selectedGenres));
         formData.append("language", data.language);
 
         // Only append file if user uploads new one
@@ -133,14 +135,16 @@ export default function EditEbookForm({ id }) {
                         control={control}
                         rules={{ required: "Genre wajib dipilih" }}
                         render={({ field, fieldState }) => (
-                            <InputSelect
+                            <GenreMultiSelect
                                 label="Genre"
                                 name="genre"
                                 options={genresData?.data.data || []}
-                                placeholder="Pilih Genre"
-                                value={field.value}
-                                onChange={field.onChange}
-                                onBlur={field.onBlur}
+                                placeholder="Pilih satu atau lebih genre yang paling menggambarkan film ini (Misal: Aksi, Horor, Drama Komedi, Sci-Fi)."
+                                value={field.value || []}
+                                onChange={(val) => {
+                                    field.onChange(val);
+                                    field.onBlur();
+                                }}
                                 error={fieldState.error?.message}
                             />
                         )}
