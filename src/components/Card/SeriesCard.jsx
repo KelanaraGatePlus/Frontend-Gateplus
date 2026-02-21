@@ -8,7 +8,7 @@ import blur from "@@/poster/blur.svg";
 // import iconMore from "@@/icons/icon_more.svg";
 import PropTypes from "prop-types";
 
-export default function ComicCard({
+export default function SeriesCard({
   title,
   id,
   coverUrl,
@@ -20,7 +20,7 @@ export default function ComicCard({
 }) {
   return (
     <Link
-      href={`/${contentType.comics.pluralName}/detail/${id}`}
+      href={`/${contentType.series.pluralName}/detail/${id}`}
       className="h-full w-full"
     >
       <div className="group relative h-full w-full overflow-hidden rounded-[6px]">
@@ -48,13 +48,13 @@ export default function ComicCard({
 
         {/* Konten Bawah */}
         <div className="absolute right-0 bottom-0 left-0 z-20 flex items-center justify-between px-1">
-          {/* Ebook icon → selalu tampil */}
+          {/* series icon → selalu tampil */}
           <Image
             priority
             width={45}
             height={45}
-            src={contentType.comics.icon}
-            alt="comic-icon"
+            src={contentType.series.icon}
+            alt="series-icon"
             className="drop-shadow-lg"
           />
 
@@ -90,7 +90,7 @@ export default function ComicCard({
           priority
           width={240}
           height={353}
-          alt={title || "ebook-image"}
+          alt={title || "series-image"}
           unoptimized
           className="h-full w-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
         />
@@ -109,7 +109,7 @@ export default function ComicCard({
   );
 }
 
-ComicCard.propTypes = {
+SeriesCard.propTypes = {
   title: PropTypes.string.isRequired,
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   coverUrl: PropTypes.string.isRequired,
