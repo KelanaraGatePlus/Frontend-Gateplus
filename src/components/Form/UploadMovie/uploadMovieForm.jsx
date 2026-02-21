@@ -33,6 +33,8 @@ import { useCreateMovieMutation } from "@/hooks/api/movieSliceAPI";
 import PriceSelector from "@/components/UploadForm/PriceSelector";
 import { priceOption } from "@/lib/constants/priceOptions";
 import TermsCheckbox from "@/components/UploadForm/TermsCheckbox";
+import ContentExplicitModal from "@/components/Modal/ContentExplicitModal";
+import useExplicitContentHandler from "@/hooks/helper/useExplicitContentHandler";
 
 
 export default function UploadMovieForm() {
@@ -41,6 +43,8 @@ export default function UploadMovieForm() {
     const fromEducation = searchParams.get("education") || null;
     const posterBannerInputRef = useRef(null);
     const coverBookInputRef = useRef(null);
+    const thumbnailInputRef = useRef(null);
+
     const {
         register,
         handleSubmit,
@@ -48,6 +52,7 @@ export default function UploadMovieForm() {
         watch,
         formState: { errors },
         setValue,
+        getValues,
     } = useForm({
         resolver: zodResolver(createMovieSchema),
         mode: "onChange",
@@ -74,6 +79,20 @@ export default function UploadMovieForm() {
 
     const [createMovie, { isLoading, error }] = useCreateMovieMutation();
     const { data: genresData } = useGetAllGenresQuery();
+    const {
+        isExplicitModalOpen,
+        explicitImageName,
+        handleExplicitError,
+        handleRetryExplicitUpload,
+        closeExplicitModal,
+    } = useExplicitContentHandler({
+        getValues,
+        fieldInputRefs: {
+            posterBanner: posterBannerInputRef,
+            coverBook: coverBookInputRef,
+            thumbnail: thumbnailInputRef,
+        },
+    });
 
     const onSubmit = async (data) => {
         console.log("Form Data:", data);
@@ -110,6 +129,9 @@ export default function UploadMovieForm() {
                     router.push(`/movies/detail/${result.data.data.id}`);
                 }
             } catch (err) {
+                if (handleExplicitError(err)) {
+                    return;
+                }
                 console.error("Error creating movie:", err);
             }
         } catch (error) {
@@ -329,7 +351,7 @@ export default function UploadMovieForm() {
                                 description="Gunakan rasio 1,6:2 (1600x2560), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten."
                                 name="thumbnail"
                                 icon={IconsGalery}
-                                inputRef={coverBookInputRef}
+                                inputRef={thumbnailInputRef}
                                 files={field.value || []}
                                 onUpload={(e) => {
                                     const files = [...e.target.files];
@@ -436,6 +458,13 @@ export default function UploadMovieForm() {
             </form>
             {isLoading && (
                 <LoadingOverlay message="Tunggu Sebentar... <br/> Sedang membuat series" />
+            )}
+            {isExplicitModalOpen && (
+                <ContentExplicitModal
+                    imageName={explicitImageName}
+                    onClose={closeExplicitModal}
+                    onRetry={handleRetryExplicitUpload}
+                />
             )}
         </>
     )

@@ -31,6 +31,8 @@ import UploadLargeFile from "@/components/UploadForm/UploadLargeFile";
 import PriceSelector from "@/components/UploadForm/PriceSelector";
 import { useCreateSeriesMutation } from "@/hooks/api/seriesSliceAPI";
 import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
+import ContentExplicitModal from "@/components/Modal/ContentExplicitModal";
+import useExplicitContentHandler from "@/hooks/helper/useExplicitContentHandler";
 
 
 
@@ -40,12 +42,14 @@ export default function UploadSeriesForm() {
     const fromEducation = searchParams.get("education") || null;
     const posterBannerInputRef = useRef(null);
     const coverBookInputRef = useRef(null);
+    const thumbnailInputRef = useRef(null);
     const {
         register,
         handleSubmit,
         control,
         watch,
         formState: { errors },
+        getValues,
     } = useForm({
         resolver: zodResolver(createSeriesSchema),
         mode: "onChange",
@@ -71,6 +75,20 @@ export default function UploadSeriesForm() {
 
     const [createSeries, { isLoading, error }] = useCreateSeriesMutation();
     const { data: genresData } = useGetAllGenresQuery();
+    const {
+        isExplicitModalOpen,
+        explicitImageName,
+        handleExplicitError,
+        handleRetryExplicitUpload,
+        closeExplicitModal,
+    } = useExplicitContentHandler({
+        getValues,
+        fieldInputRefs: {
+            posterBanner: posterBannerInputRef,
+            coverBook: coverBookInputRef,
+            thumbnail: thumbnailInputRef,
+        },
+    });
 
     const onSubmit = async (data) => {
         try {
@@ -105,6 +123,9 @@ export default function UploadSeriesForm() {
                     router.push(`/series/upload/episode?series=${result.data.id}`);
                 }
             } catch (err) {
+                if (handleExplicitError(err)) {
+                    return;
+                }
                 console.error("Error creating series:", err);
             }
         } catch (error) {
@@ -302,7 +323,7 @@ export default function UploadSeriesForm() {
                                 description='Gunakan rasio 1,6:2 (1600x2560), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten. Gunakan gambar beresolusi tinggi (format vertikal/portrait biasanya standar industri film). Ini adalah "wajah" film Anda di seluruh platform dan hasil pencarian Google. Pastikan gambarnya profesional, memuat judul yang jelas, dan sangat memancing klik (High CTR).'
                                 name="thumbnail"
                                 icon={IconsGalery}
-                                inputRef={coverBookInputRef}
+                                inputRef={thumbnailInputRef}
                                 files={field.value || []}
                                 onUpload={(e) => {
                                     const files = [...e.target.files];
@@ -394,6 +415,13 @@ export default function UploadSeriesForm() {
             </form>
             {isLoading && (
                 <LoadingOverlay message="Tunggu Sebentar... <br/> Sedang membuat series" />
+            )}
+            {isExplicitModalOpen && (
+                <ContentExplicitModal
+                    imageName={explicitImageName}
+                    onClose={closeExplicitModal}
+                    onRetry={handleRetryExplicitUpload}
+                />
             )}
         </>
     )

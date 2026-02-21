@@ -29,6 +29,8 @@ import RichTextEditor from '@/components/RichTextEditor/page';
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
 import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
+import ContentExplicitModal from "@/components/Modal/ContentExplicitModal";
+import useExplicitContentHandler from "@/hooks/helper/useExplicitContentHandler";
 
 export default function UploadPodcastSeriesForm() {
     const router = useRouter();
@@ -40,6 +42,7 @@ export default function UploadPodcastSeriesForm() {
         handleSubmit,
         control,
         formState: { errors },
+        getValues,
     } = useForm({
         resolver: zodResolver(createPodcastSchema),
         mode: "onChange",
@@ -55,6 +58,18 @@ export default function UploadPodcastSeriesForm() {
 
     const [createPodcast, { isLoading, error }] = useCreatePodcastMutation();
     const { data: genresData } = useGetAllGenresQuery();
+    const {
+        isExplicitModalOpen,
+        explicitImageName,
+        handleExplicitError,
+        handleRetryExplicitUpload,
+        closeExplicitModal,
+    } = useExplicitContentHandler({
+        getValues,
+        fieldInputRefs: {
+            coverPodcast: coverPodcastInputRef,
+        },
+    });
 
     const onSubmit = async (data) => {
         const formData = new FormData();
@@ -75,6 +90,9 @@ export default function UploadPodcastSeriesForm() {
             }
             router.push(`/podcasts/upload/episode?series=${result.data.id}`);
         } catch (err) {
+            if (handleExplicitError(err)) {
+                return;
+            }
             console.error("Error creating podcast:", err);
         }
     };
@@ -195,6 +213,13 @@ export default function UploadPodcastSeriesForm() {
             </form>
             {isLoading && (
                 <LoadingOverlay message="Tunggu Sebentar... <br/> Sedang membuat series" />
+            )}
+            {isExplicitModalOpen && (
+                <ContentExplicitModal
+                    imageName={explicitImageName}
+                    onClose={closeExplicitModal}
+                    onRetry={handleRetryExplicitUpload}
+                />
             )}
         </>
     )

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 /* Third-Party */
@@ -30,6 +30,8 @@ import TermsCheckbox from '@/components/UploadForm/TermsCheckbox';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import InputCreatorCollab from '@/components/UploadForm/InputCreatorCollab';
 import RichTextEditor from '@/components/RichTextEditor/page';
+import ContentExplicitModal from "@/components/Modal/ContentExplicitModal";
+import useExplicitContentHandler from "@/hooks/helper/useExplicitContentHandler";
 
 /* Assets */
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
@@ -43,6 +45,8 @@ export default function UploadPodcastEpisodeForm() {
     const creatorId = useGetCreatorId();
     const userId = useGetUserId();
     const [query, setQuery] = useState("");
+    const coverEpisodeInputRef = useRef(null);
+    const podcastFileInputRef = useRef(null);
     const [debouncedQuery] = useDebounce(query, 500);
     const { data: creators, isLoading: isLoadingCreator, isError: isErrorCreator } = useSearchCreatorQuery(debouncedQuery, {
         skip: !debouncedQuery,
@@ -54,6 +58,7 @@ export default function UploadPodcastEpisodeForm() {
         handleSubmit,
         control,
         formState: { errors },
+        getValues,
     } = useForm({
         resolver: zodResolver(createPodcastEpisodeSchema),
         mode: "onChange",
@@ -74,6 +79,19 @@ export default function UploadPodcastEpisodeForm() {
     const [createEpisode, { isLoading, error }] = useCreateEpisodeMutation();
     const skip = !creatorId;
     const creatorDetailQuery = useGetCreatorDetailQuery({ id: creatorId, userId }, { skip });
+    const {
+        isExplicitModalOpen,
+        explicitImageName,
+        handleExplicitError,
+        handleRetryExplicitUpload,
+        closeExplicitModal,
+    } = useExplicitContentHandler({
+        getValues,
+        fieldInputRefs: {
+            coverPodcastEpisodeURL: coverEpisodeInputRef,
+            podcastFileURL: podcastFileInputRef,
+        },
+    });
 
     const onSubmit = async (data) => {
         const formData = new FormData();
@@ -94,6 +112,9 @@ export default function UploadPodcastEpisodeForm() {
             }
             router.push(`/podcasts/detail/${data.podcastId}`);
         } catch (err) {
+            if (handleExplicitError(err)) {
+                return;
+            }
             console.error("Error creating episode of ebook:", err);
         }
     };
@@ -155,6 +176,7 @@ export default function UploadPodcastEpisodeForm() {
                             description="Rasio: 1:1, JPG/PNG, Ukuran Maksimal: 500 KB"
                             name="coverPodcastEpisodeURL"
                             icon={IconsGalery}
+                            inputRef={coverEpisodeInputRef}
                             files={field.value}
                             onUpload={(e) => field.onChange([...e.target.files])}
                             onRemove={() => field.onChange([])}
@@ -172,6 +194,7 @@ export default function UploadPodcastEpisodeForm() {
                             label="File Audio Podcast Utama"
                             description="Unggah file rekaman akhir (MP3 disarankan) dengan kualitas audio terbaik agar nyaman didengar."
                             accept=".mp3"
+                            inputRef={podcastFileInputRef}
                             files={field.value}
                             onUpload={(e) => field.onChange([...e.target.files])}
                             onRemove={() => field.onChange([])}
@@ -242,6 +265,13 @@ export default function UploadPodcastEpisodeForm() {
                 )}
             </form>
             {isLoading && <LoadingOverlay message="Uploading..." />}
+            {isExplicitModalOpen && (
+                <ContentExplicitModal
+                    imageName={explicitImageName}
+                    onClose={closeExplicitModal}
+                    onRetry={handleRetryExplicitUpload}
+                />
+            )}
         </>
     );
 }

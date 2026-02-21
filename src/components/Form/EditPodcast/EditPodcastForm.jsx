@@ -20,9 +20,12 @@ import { languageOptions } from "@/lib/constants/languageOptions";
 /*[--- UI COMPONENTS ---]*/
 import ButtonSubmit from "@/components/UploadForm/ButtonSubmit";
 import InputImageBanner from "@/components/UploadForm/InputImageBanner";
+import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
 import InputSelect from "@/components/UploadForm/InputSelect";
 import InputText from "@/components/UploadForm/InputText";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+import ContentExplicitModal from "@/components/Modal/ContentExplicitModal";
+import useExplicitContentHandler from "@/hooks/helper/useExplicitContentHandler";
 
 /*[--- ASSETS PUBLIC ---]*/
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
@@ -35,20 +38,55 @@ export default function EditPodcastForm({ id }) {
     const [editPodcast, { isLoading, error }] = useEditPodcastMutation();
     const { data: podcastData } = useGetPodcastByIdQuery({ id, withEpisodes: false }, { skip: !id });
 
+    const normalizeGenres = (genres) => {
+        if (Array.isArray(genres)) return genres;
+        if (typeof genres === "string") {
+            try {
+                const parsed = JSON.parse(genres);
+                if (Array.isArray(parsed)) return parsed;
+            } catch {
+                return genres ? [genres] : [];
+            }
+            return genres ? [genres] : [];
+        }
+        return [];
+    };
+
+    const getInitialGenres = (podcast) => {
+        const fromCategoriesId = normalizeGenres(podcast?.categoriesId).map(String);
+        if (fromCategoriesId.length > 0) return fromCategoriesId;
+
+        const fromAllCategories = Array.isArray(podcast?.allCategories)
+            ? podcast.allCategories
+                .map((item) => String(item?.id || ""))
+                .filter(Boolean)
+            : [];
+        if (fromAllCategories.length > 0) return fromAllCategories;
+
+        return Array.isArray(podcast?.categories)
+            ? podcast.categories
+                .map((item) => String(item?.categoryId || item?.category?.id || ""))
+                .filter(Boolean)
+            : [];
+    };
+
+    const podcast = podcastData?.data;
+
     const {
         register,
         handleSubmit,
         control,
         formState: { errors },
+        getValues,
         reset,
     } = useForm({
         resolver: zodResolver(editPodcastSchema),
         mode: "onChange",
         defaultValues: {
-            title: podcastData?.data.title || "",
-            description: podcastData?.data.description || "",
-            genre: podcastData?.data.categoriesId || "",
-            language: podcastData?.data.language || "",
+            title: podcast?.title || "",
+            description: podcast?.description || "",
+            genre: getInitialGenres(podcast),
+            language: podcast?.language || "",
             coverPodcast: null,
         },
     });
@@ -59,7 +97,7 @@ export default function EditPodcastForm({ id }) {
             reset({
                 title: podcastData.data.title || "",
                 description: podcastData.data.description || "",
-                genre: podcastData.data.categoriesId || "",
+                genre: getInitialGenres(podcastData.data),
                 language: podcastData.data.language || "",
                 coverPodcast: podcastData.data.coverPodcastImage ? [podcastData.data.coverPodcastImage] : null,
             });
@@ -67,12 +105,27 @@ export default function EditPodcastForm({ id }) {
     }, [podcastData, reset]);
 
     const { data: genresData } = useGetAllGenresQuery();
+    const {
+        isExplicitModalOpen,
+        explicitImageName,
+        handleExplicitError,
+        handleRetryExplicitUpload,
+        closeExplicitModal,
+    } = useExplicitContentHandler({
+        getValues,
+        fieldInputRefs: {
+            coverPodcast: coverPodcastInputRef,
+        },
+    });
 
     const onSubmit = async (data) => {
         const formData = new FormData();
         formData.append("title", data.title);
         formData.append("description", data.description);
-        formData.append("categoriesId", data.genre);
+
+        const selectedGenres = Array.isArray(data.genre) ? data.genre : [data.genre].filter(Boolean);
+        formData.append("categoriesId", JSON.stringify(selectedGenres));
+
         formData.append("language", data.language);
 
         if (data.coverPodcast && data.coverPodcast[0] && data.coverPodcast[0] instanceof File) {
@@ -83,6 +136,9 @@ export default function EditPodcastForm({ id }) {
             await editPodcast({ id, formData }).unwrap();
             router.push(`/creator/dashboard/content`);
         } catch (err) {
+            if (handleExplicitError(err)) {
+                return;
+            }
             console.error("Error editing podcast:", err);
         }
     };
@@ -119,14 +175,16 @@ export default function EditPodcastForm({ id }) {
                         control={control}
                         rules={{ required: "Genre wajib dipilih" }}
                         render={({ field, fieldState }) => (
-                            <InputSelect
+                            <GenreMultiSelect
                                 label="Genre"
                                 name="genre"
                                 options={genresData?.data.data || []}
-                                placeholder="Pilih Genre"
-                                value={field.value}
-                                onChange={field.onChange}
-                                onBlur={field.onBlur}
+                                placeholder="Pilih satu atau lebih genre yang paling menggambarkan podcast ini (Misal: Talkshow, Edukasi, Komedi, Storytelling)."
+                                value={field.value || []}
+                                onChange={(val) => {
+                                    field.onChange(val);
+                                    field.onBlur();
+                                }}
                                 error={fieldState.error?.message}
                             />
                         )}
@@ -181,6 +239,13 @@ export default function EditPodcastForm({ id }) {
             </form>
             {isLoading && (
                 <LoadingOverlay message="Tunggu Sebentar... <br/> Sedang mengubah podcast" />
+            )}
+            {isExplicitModalOpen && (
+                <ContentExplicitModal
+                    imageName={explicitImageName}
+                    onClose={closeExplicitModal}
+                    onRetry={handleRetryExplicitUpload}
+                />
             )}
         </>
     );

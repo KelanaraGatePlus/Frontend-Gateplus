@@ -1,14 +1,25 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 /*[--- UI COMPONENTS ---]*/
 import FormRegisterCreator from "@/components/Form/AuthForm/FormRegisterCreator/page";
 import IconsSignupCreators from "@@/icons/hands holding gold trophy cup.svg";
 import LogoGatePlus from "@@/logo/logoGate+/logo-header-register.svg";
+import ProfileModal from "@/components/Modal/ProfileModal";
+import ImageCropperModal from "@/components/UploadForm/ImageCropperModal";
 
 export default function RegisterCreatorsPage() {
+  // Profile picture states
+  const [profilePictureUrl, setProfilePictureUrl] = useState(null);
+  const [profilePicturePreview, setProfilePicturePreview] = useState(null);
+  const [selectedIconUrl, setSelectedIconUrl] = useState(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showCropper, setShowCropper] = useState(false);
+  const [cropSource, setCropSource] = useState(null);
+  const [pendingFileName, setPendingFileName] = useState("");
+
   const content = {
     title: "Gabung sebagai Kreator dan Nikmati Akses Creator Gate Plus!",
     description:
@@ -17,6 +28,53 @@ export default function RegisterCreatorsPage() {
     subtitleDescription:
       "Daftar sebagai kreator sekarang dan mulai berbagi karya Anda dengan dunia! 🎬🎤📚"
   }
+
+  // Cleanup object URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (profilePicturePreview) URL.revokeObjectURL(profilePicturePreview);
+    };
+  }, [profilePicturePreview]);
+
+  const openCropper = (file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropSource(reader.result);
+      setPendingFileName(file.name);
+      setShowCropper(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCropComplete = async (croppedBlob) => {
+    const fileName = pendingFileName || "profile-image.jpg";
+    const croppedFile = new File([croppedBlob], fileName, {
+      type: "image/jpeg",
+      lastModified: Date.now(),
+    });
+
+    const nextObjectUrl = URL.createObjectURL(croppedFile);
+
+    if (profilePicturePreview) URL.revokeObjectURL(profilePicturePreview);
+    setProfilePicturePreview(nextObjectUrl);
+    setProfilePictureUrl(croppedFile);
+    setSelectedIconUrl(null);
+
+    setShowCropper(false);
+    setCropSource(null);
+    setPendingFileName("");
+  };
+
+  const handleCropCancel = () => {
+    setShowCropper(false);
+    setCropSource(null);
+    setPendingFileName("");
+  };
+
+  const handleProfilePictureClick = () => {
+    setShowProfileModal(true);
+  };
   return (
     <div className="flex h-screen w-screen items-center justify-center px-3">
       <main className="flex h-full w-full flex-col items-center justify-center gap-4 px-0 py-6 lg:flex-row">
@@ -72,7 +130,12 @@ export default function RegisterCreatorsPage() {
             </div>
           </section>
           <section className="">
-            <FormRegisterCreator />
+            <FormRegisterCreator 
+              profilePictureUrl={profilePictureUrl}
+              profilePicturePreview={profilePicturePreview}
+              selectedIconUrl={selectedIconUrl}
+              onProfilePictureClick={handleProfilePictureClick}
+            />
           </section>
         </section>
         {/*  */}
@@ -98,6 +161,36 @@ export default function RegisterCreatorsPage() {
           </div>
         </section>
       </main>
+
+      {/* Modals */}
+      {showCropper && cropSource && (
+        <ImageCropperModal
+          image={cropSource}
+          aspectRatio={1}
+          cropShape="round"
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+          title="Crop Profile Picture"
+        />
+      )}
+
+      <ProfileModal
+        isShow={showProfileModal}
+        setIsShow={setShowProfileModal}
+        onImageUpload={(e) => {
+          const file = e.target.files[0];
+          if (file) {
+            setShowProfileModal(false);
+            openCropper(file);
+          }
+        }}
+        onIconSelect={(iconImage, iconUrl) => {
+          setSelectedIconUrl(iconUrl);
+          setProfilePicturePreview(iconImage);
+          setProfilePictureUrl(null);
+          setShowProfileModal(false);
+        }}
+      />
     </div>
   );
 }

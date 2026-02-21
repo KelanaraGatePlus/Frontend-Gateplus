@@ -11,6 +11,7 @@ export default function InputComicPic({
     handleFileUpload,
     handleRemoveFile,
     onReorder,
+    inputRef,
     error,
 }) {
     const [draggedIndex, setDraggedIndex] = useState(null);
@@ -82,6 +83,7 @@ export default function InputComicPic({
                                 hidden
                                 name="inputFile"
                                 multiple
+                                ref={inputRef}
                                 onChange={handleFileUpload}
                             />
                             <label
@@ -180,5 +182,6 @@ InputComicPic.propTypes = {
     handleFileUpload: PropTypes.func.isRequired,
     handleRemoveFile: PropTypes.func.isRequired,
     onReorder: PropTypes.func,
+    inputRef: PropTypes.any,
     error: PropTypes.string,
 };

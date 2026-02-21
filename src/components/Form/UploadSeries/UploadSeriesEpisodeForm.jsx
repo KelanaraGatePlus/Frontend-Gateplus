@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import RichTextEditor from '@/components/RichTextEditor/page';
 
@@ -25,6 +25,8 @@ import PriceSelector from "@/components/UploadForm/PriceSelector";
 import ButtonSubmit from '@/components/UploadForm/ButtonSubmit';
 import TermsCheckbox from '@/components/UploadForm/TermsCheckbox';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+import ContentExplicitModal from "@/components/Modal/ContentExplicitModal";
+import useExplicitContentHandler from "@/hooks/helper/useExplicitContentHandler";
 
 /* Assets */
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
@@ -39,12 +41,14 @@ export default function UploadSeriesEpisodeForm() {
     const fromEducation = searchParams.get("education") || null;
     const creatorId = useGetCreatorId();
     const userId = useGetUserId();
+    const coverEpisodeInputRef = useRef(null);
 
     const {
         register,
         handleSubmit,
         control,
         formState: { errors },
+        getValues,
     } = useForm({
         resolver: zodResolver(createSeriesEpisodeSchema),
         mode: "onChange",
@@ -63,6 +67,18 @@ export default function UploadSeriesEpisodeForm() {
     const [createEpisodeSeries, { isLoading, error }] = useCreateEpisodeSeriesMutation();
     const skip = !creatorId;
     const creatorDetailQuery = useGetCreatorDetailQuery({ id: creatorId, userId }, { skip });
+    const {
+        isExplicitModalOpen,
+        explicitImageName,
+        handleExplicitError,
+        handleRetryExplicitUpload,
+        closeExplicitModal,
+    } = useExplicitContentHandler({
+        getValues,
+        fieldInputRefs: {
+            coverEpisode: coverEpisodeInputRef,
+        },
+    });
 
     const onSubmit = async (data) => {
         const formData = new FormData();
@@ -83,6 +99,9 @@ export default function UploadSeriesEpisodeForm() {
             }
             router.push(`/series/detail/${data.seriesId}`);
         } catch (err) {
+            if (handleExplicitError(err)) {
+                return;
+            }
             console.error("Error creating episode of series:", err);
         }
     };
@@ -144,6 +163,7 @@ export default function UploadSeriesEpisodeForm() {
                             description="Gunakan rasio 16:9 (landscape), format JPG/PNG, maks 500KB. Pilih satu frame adegan paling dramatis dari episode ini untuk memancing klik (High CTR)."
                             name="coverEpisode"
                             icon={IconsGalery}
+                            inputRef={coverEpisodeInputRef}
                             files={field.value}
                             onUpload={(e) => field.onChange([...e.target.files])}
                             onRemove={() => field.onChange([])}
@@ -216,6 +236,13 @@ export default function UploadSeriesEpisodeForm() {
                 )}
             </form>
             {isLoading && <LoadingOverlay message="Uploading..." />}
+            {isExplicitModalOpen && (
+                <ContentExplicitModal
+                    imageName={explicitImageName}
+                    onClose={closeExplicitModal}
+                    onRetry={handleRetryExplicitUpload}
+                />
+            )}
         </>
     );
 }

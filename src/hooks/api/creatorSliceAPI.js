@@ -34,7 +34,6 @@ export const creatorAPI = createApi({
         }),
         registerCreator: builder.mutation({
             query: (payload) => ({
-                url: `/`,
                 method: "POST",
                 body: payload,
             }),

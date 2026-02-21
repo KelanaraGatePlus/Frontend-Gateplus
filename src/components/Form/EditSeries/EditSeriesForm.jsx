@@ -20,9 +20,12 @@ import { languageOptions } from "@/lib/constants/languageOptions";
 /*[--- UI COMPONENTS ---]*/
 import ButtonSubmit from "@/components/UploadForm/ButtonSubmit";
 import InputImageBanner from "@/components/UploadForm/InputImageBanner";
+import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
 import InputSelect from "@/components/UploadForm/InputSelect";
 import InputText from "@/components/UploadForm/InputText";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+import ContentExplicitModal from "@/components/Modal/ContentExplicitModal";
+import useExplicitContentHandler from "@/hooks/helper/useExplicitContentHandler";
 
 /*[--- ASSETS PUBLIC ---]*/
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
@@ -37,26 +40,61 @@ export default function EditSeriesForm({ id }) {
     const [editSeries, { isLoading, error }] = useEditSeriesMutation();
     const { data: seriesData } = useGetSeriesByIdQuery({ id, withEpisodes: false }, { skip: !id });
 
+    const normalizeGenres = (genres) => {
+        if (Array.isArray(genres)) return genres;
+        if (typeof genres === "string") {
+            try {
+                const parsed = JSON.parse(genres);
+                if (Array.isArray(parsed)) return parsed;
+            } catch {
+                return genres ? [genres] : [];
+            }
+            return genres ? [genres] : [];
+        }
+        return [];
+    };
+
+    const getInitialGenres = (series) => {
+        const fromCategoriesId = normalizeGenres(series?.categoriesId).map(String);
+        if (fromCategoriesId.length > 0) return fromCategoriesId;
+
+        const fromAllCategories = Array.isArray(series?.allCategories)
+            ? series.allCategories
+                .map((item) => String(item?.id || ""))
+                .filter(Boolean)
+            : [];
+        if (fromAllCategories.length > 0) return fromAllCategories;
+
+        return Array.isArray(series?.categories)
+            ? series.categories
+                .map((item) => String(item?.categoryId || item?.category?.id || ""))
+                .filter(Boolean)
+            : [];
+    };
+
+    const series = seriesData?.data?.data;
+
     const {
         register,
         handleSubmit,
         control,
         formState: { errors },
+        getValues,
         reset,
     } = useForm({
         resolver: zodResolver(editSeriesSchema),
         mode: "onChange",
         defaultValues: {
-            title: seriesData?.data?.data?.title || "",
-            description: seriesData?.data?.data?.description || "",
-            genre: seriesData?.data?.data?.categoriesId || "",
-            language: seriesData?.data?.data?.language || "",
-            director: seriesData?.data?.data?.director || "",
-            producer: seriesData?.data?.data?.producer || "",
-            writer: seriesData?.data?.data?.writer || "",
-            talent: seriesData?.data?.data?.talent || "",
-            releaseYear: seriesData?.data?.data?.releaseYear || "",
-            productionHouse: seriesData?.data?.data?.productionHouse || "",
+            title: series?.title || "",
+            description: series?.description || "",
+            genre: getInitialGenres(series),
+            language: series?.language || "",
+            director: series?.director || "",
+            producer: series?.producer || "",
+            writer: series?.writer || "",
+            talent: series?.talent || "",
+            releaseYear: series?.releaseYear || "",
+            productionHouse: series?.productionHouse || "",
             posterBanner: null,
             coverBook: null,
             thumbnail: null,
@@ -65,11 +103,11 @@ export default function EditSeriesForm({ id }) {
 
     // Update form ketika data dari API sudah masuk
     useEffect(() => {
-        if (seriesData?.data) {
+        if (seriesData?.data?.data) {
             reset({
                 title: seriesData.data.data.title || "",
                 description: seriesData.data.data.description || "",
-                genre: seriesData.data.data.categoriesId || "",
+                genre: getInitialGenres(seriesData.data.data),
                 language: seriesData.data.data.language || "",
                 director: seriesData.data.data.director || "",
                 producer: seriesData.data.data.producer || "",
@@ -85,12 +123,29 @@ export default function EditSeriesForm({ id }) {
     }, [seriesData, reset]);
 
     const { data: genresData } = useGetAllGenresQuery();
+    const {
+        isExplicitModalOpen,
+        explicitImageName,
+        handleExplicitError,
+        handleRetryExplicitUpload,
+        closeExplicitModal,
+    } = useExplicitContentHandler({
+        getValues,
+        fieldInputRefs: {
+            posterBanner: posterBannerInputRef,
+            coverBook: coverBookInputRef,
+            thumbnail: thumbnailInputRef,
+        },
+    });
 
     const onSubmit = async (data) => {
         const formData = new FormData();
         formData.append("title", data.title);
         formData.append("description", data.description);
-        formData.append("categoriesId", data.genre);
+
+        const selectedGenres = Array.isArray(data.genre) ? data.genre : [data.genre].filter(Boolean);
+        formData.append("categoriesId", JSON.stringify(selectedGenres));
+
         formData.append("language", data.language);
         formData.append("director", data.director);
         formData.append("producer", data.producer);
@@ -113,6 +168,9 @@ export default function EditSeriesForm({ id }) {
             await editSeries({ id, formData }).unwrap();
             router.push(`/creator/dashboard/content`);
         } catch (err) {
+            if (handleExplicitError(err)) {
+                return;
+            }
             console.error("Error editing series:", err);
         }
     };
@@ -149,14 +207,16 @@ export default function EditSeriesForm({ id }) {
                         control={control}
                         rules={{ required: "Genre wajib dipilih" }}
                         render={({ field, fieldState }) => (
-                            <InputSelect
+                            <GenreMultiSelect
                                 label="Genre"
                                 name="genre"
                                 options={genresData?.data.data || []}
-                                placeholder="Pilih Genre"
-                                value={field.value}
-                                onChange={field.onChange}
-                                onBlur={field.onBlur}
+                                placeholder="Pilih satu atau lebih genre yang paling menggambarkan series ini (Misal: Aksi, Horor, Drama Komedi, Sci-Fi)."
+                                value={field.value || []}
+                                onChange={(val) => {
+                                    field.onChange(val);
+                                    field.onBlur();
+                                }}
                                 error={fieldState.error?.message}
                             />
                         )}
@@ -307,6 +367,13 @@ export default function EditSeriesForm({ id }) {
             </form>
             {isLoading && (
                 <LoadingOverlay message="Tunggu Sebentar... <br/> Sedang mengubah series" />
+            )}
+            {isExplicitModalOpen && (
+                <ContentExplicitModal
+                    imageName={explicitImageName}
+                    onClose={closeExplicitModal}
+                    onRetry={handleRetryExplicitUpload}
+                />
             )}
         </>
     );

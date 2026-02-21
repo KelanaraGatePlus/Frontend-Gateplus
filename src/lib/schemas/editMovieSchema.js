@@ -15,7 +15,9 @@ export const editMovieSchema = z.object({
             const words = val ? val.trim().split(/\s+/).filter(Boolean) : [];
             return words.length <= 500;
         }, "Maksimal 500 kata"),
-    genre: z.string().min(1, "Genre wajib dipilih"),
+    genre: z
+        .array(z.string().min(1, "Genre wajib dipilih"))
+        .min(1, "Genre wajib dipilih"),
     language: z.string().min(1, "Bahasa wajib dipilih"),
     director: z.string().min(1, "Sutradara wajib diisi").max(100, "Maksimal 100 karakter"),
     producer: z.string().min(1, "Produser wajib diisi").max(100, "Maksimal 100 karakter"),
