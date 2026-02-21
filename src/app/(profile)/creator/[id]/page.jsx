@@ -22,6 +22,8 @@ import CarouselTemplate from "@/components/Carousel/carouselTemplate";
 import getMinAge from "@/lib/helper/minAge";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 
+import { useToast } from "@/components/ToastProvider/page";
+
 export default function CreatorProfilePage({ params }) {
   const { id } = params;
   const [currentPage, setCurrentPage] = useState(1);
@@ -44,7 +46,18 @@ export default function CreatorProfilePage({ params }) {
   const skip = !id || !userId;
   const creatorDetailQuery = useGetCreatorDetailQuery({ id, userId }, { skip });
   const creatorContentNewestQuery = useGetNewestContentQuery(id);
-  const creatorDetailData = creatorDetailQuery.data?.data?.data;
+  const creatorDetailRaw = creatorDetailQuery.data?.data?.data;
+
+  const creatorDetailData = creatorDetailRaw
+    ? {
+        ...creatorDetailRaw,
+        description:
+          creatorDetailRaw.description ??
+          creatorDetailRaw.user?.description ??
+          "",
+      }
+    : null;
+
   const creatorContentNewestData =
     creatorContentNewestQuery.data?.data?.data || [];
 
@@ -54,7 +67,8 @@ export default function CreatorProfilePage({ params }) {
       setTotalSubs(creatorDetailData.totalSubscribers);
       const storedCreatorId = localStorage.getItem("creators_id");
       setIsOwnProfile(storedCreatorId === id);
-      setIsLinkedWithGoogle(!!creatorDetailData.user.googleId);
+      setIsLinkedWithGoogle(!!creatorDetailData?.user?.googleId);
+
       setIsSubscribed(creatorDetailData.isSubscribed ?? false);
     }
   }, [creatorDetailQuery.isSuccess, creatorDetailData, id]);
@@ -66,6 +80,29 @@ export default function CreatorProfilePage({ params }) {
   }, [creatorContentNewestQuery.isSuccess, creatorContentNewestData]);
 
   const { userAge, isReady: isUserReady } = useSyncUserData();
+
+  const { addToast } = useToast();
+  // link with google
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const errorStatus = searchParams.get("error");
+    if (errorStatus) {
+      let msg = "Gagal link akun Google!";
+      switch (errorStatus) {
+        case "google_email_mismatch":
+          msg = "Gagal link Google: Email tidak cocok!";
+          break;
+        case "auth_failed":
+          msg = "Gagal link Google: Autentikasi gagal!";
+          break;
+        default:
+          msg = `Gagal link Google: ${errorStatus}`;
+          break;
+      }
+
+      addToast(msg, "error");
+    }
+  }, [addToast]);
 
   // blur
   const isBlurred = useCallback(
@@ -83,9 +120,7 @@ export default function CreatorProfilePage({ params }) {
   );
 
   if (creatorDetailQuery.isLoading) {
-    return (
-      <LoadingOverlay />
-    );
+    return <LoadingOverlay />;
   }
 
   return (

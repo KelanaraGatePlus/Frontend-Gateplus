@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import PropTypes from "prop-types";
-import RichTextDisplay from '@/components/RichTextDisplay/page';
+import RichTextDisplay from "@/components/RichTextDisplay/page";
 
 /*[--- UTILITY IMPORT ---]*/
 import { useLikeContent } from "@/lib/features/useLikeContent";
@@ -75,12 +75,10 @@ export default function ProductDetailSection({
     ebook: "ebookId",
     comic: "comicsId",
     podcast: "podcastId",
-  }
+  };
   const { toggleLike } = useLikeContent();
   const { toggleDislike } = useDislikeContent();
   const { toggleSave } = useSaveContent();
-
-
 
   useEffect(() => {
     setIsLiked(productIsLiked);
@@ -91,9 +89,8 @@ export default function ProductDetailSection({
     setIsSaved(productIsSaved);
     setIdSaved(idSavedProduct);
     setTotalSubs(creatorTotalSubscriber);
-    console.log("tes id like", idLiked)
+    console.log("tes id like", idLiked);
   }, [productIsLiked, productTotalLikes]);
-
 
   const handleToggleDislike = () => {
     if (isLiked) {
@@ -156,11 +153,9 @@ export default function ProductDetailSection({
     });
   };
 
-
-
   useEffect(() => {
     setShowSkeleton(isLoading);
-  }, [isLoading])
+  }, [isLoading]);
 
   if (showSkeleton) return <DetailPageLoading />;
 
@@ -173,7 +168,7 @@ export default function ProductDetailSection({
             <img
               src={productBanner}
               alt="Poster"
-              className="h-full w-full object-cover bg-[#2E2E2E]"
+              className="h-full w-full bg-[#2E2E2E] object-cover"
             />
           )}
           <div className="absolute top-0 left-0 z-0 h-full w-full bg-gradient-to-t from-[#222222] to-transparent" />
@@ -185,12 +180,14 @@ export default function ProductDetailSection({
         {/* container content */}
         <div className="flex w-screen flex-col items-start gap-4 px-4 py-8 md:px-15 lg:flex-row">
           {/* cover buku */}
-          <div className={`relative overflow-hidden rounded-lg md:rounded h-[300px] w-[200px] md:h-[500px] md:w-[337px]`}>
+          <div
+            className={`relative h-[300px] w-[200px] overflow-hidden rounded-lg md:h-[500px] md:w-[337px] md:rounded`}
+          >
             {productCover && (
               <img
                 src={productCover}
                 alt="Poster"
-                className="object-cover bg-[#2E2E2E] h-full w-full"
+                className="h-full w-full bg-[#2E2E2E] object-cover"
               />
             )}
           </div>
@@ -232,101 +229,125 @@ export default function ProductDetailSection({
             <div className={`flex flex-col gap-4`}>
               {/* action button */}
               <div className="flex w-fit justify-center gap-2 self-center md:justify-start lg:self-auto">
-                <div className="flex w-fit flex-1 gap-3 items-center justify-center md:flex-none montserratFont">
-                  {(productType === 'ebook' || productType === 'comic') && canSubscribe && (
-                    <button
-                      onClick={() => handleSubscribe(productID, subscriptionPrice)}
-                      disabled={isSubscribe || isOwner}
-                      className={`w-full cursor-pointer rounded-3xl px-8 md:px-10 py-3 text-sm md:text-[16px] font-bold text-white md:w-auto 
-                      ${isSubscribe || isOwner ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#0076E999] hover:bg-[#0076E999]/80'}`}
-                    >
-                      {isOwner ? 'Ini adalah konten milikmu' : isSubscribe ? 'Subscribed' : 'Subscribe'}
-                    </button>
-                  )}
+                <div className="montserratFont flex w-fit flex-1 items-center justify-center gap-3 md:flex-none">
+                  {(productType === "ebook" || productType === "comic") &&
+                    canSubscribe && (
+                      <button
+                        onClick={() =>
+                          handleSubscribe(productID, subscriptionPrice)
+                        }
+                        disabled={isSubscribe || isOwner}
+                        className={`w-full cursor-pointer rounded-3xl px-8 py-3 text-sm font-bold text-white md:w-auto md:px-10 md:text-[16px] ${isSubscribe || isOwner ? "cursor-not-allowed bg-gray-400" : "bg-[#0076E999] hover:bg-[#0076E999]/80"}`}
+                      >
+                        {isOwner
+                          ? "Ini adalah konten milikmu"
+                          : isSubscribe
+                            ? "Subscribed"
+                            : "Subscribe"}
+                      </button>
+                    )}
 
                   {productType === "podcast" && canSubscribe ? (
                     <button
-                      onClick={() => handleSubscribe(creatorDetail.id, productID, subscriptionPrice)}
+                      onClick={() =>
+                        handleSubscribe(
+                          creatorDetail.id,
+                          productID,
+                          subscriptionPrice,
+                        )
+                      }
                       disabled={isSubscribe || isOwner}
-                      className={`w-full cursor-pointer rounded-3xl px-8 md:px-10 py-3 font-bold text-white text-xs md:w-auto 
-                      ${isSubscribe || isOwner ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#0076E999] hover:bg-[#0076E999]/80'}`}
+                      className={`w-full cursor-pointer rounded-3xl px-8 py-3 text-xs font-bold text-white md:w-auto md:px-10 ${isSubscribe || isOwner ? "cursor-not-allowed bg-gray-400" : "bg-[#0076E999] hover:bg-[#0076E999]/80"}`}
                     >
-                      {isOwner ? 'Ini adalah konten milikmu' : isSubscribe ? 'Subscribed' : 'Subscribe'}
+                      {isOwner
+                        ? "Ini adalah konten milikmu"
+                        : isSubscribe
+                          ? "Subscribed"
+                          : "Subscribe"}
                     </button>
                   ) : productFirstEpisode ? (
-                    <Link href={`/${productType}/read/${productFirstEpisode.id}`}>
+                    <Link
+                      href={`/${productType}/read/${productFirstEpisode.id}`}
+                    >
                       <button className="w-full cursor-pointer rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white hover:bg-[#0076E999]/80 md:w-auto">
                         {productType === "podcast" ? "Dengarkan" : "Baca"}
                       </button>
                     </Link>
                   ) : null}
                 </div>
-                {userId && <div
-                  className={`flex cursor-pointer items-center justify-center gap-1 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 ${isLiked ? "animate-like" : ""}`}
-                  onClick={handleToggleLike}
-                >
-                  {isLiked ? (
-                    <Image
-                      priority
-                      className="focus-within:bg-purple-300"
-                      width={35}
-                      alt="icon-like-solid"
-                      src={iconLikeSolid}
-                    />
-                  ) : (
-                    <Image
-                      priority
-                      className="focus-within:bg-purple-300"
-                      width={35}
-                      alt="icon-like-outline"
-                      src={iconLikeOutline}
-                    />
-                  )}
-                  <p className="montserratFont mt-1 text-base font-bold">
-                    {totalLike}
-                  </p>
-                </div>}
-                {userId && <div
-                  className={`flex cursor-pointer items-center justify-center gap-1 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 ${isDisliked ? "animate-like" : ""}`}
-                  onClick={handleToggleDislike}
-                >{isDisliked ? (
-                  <Image
-                    priority
-                    className="focus-within:bg-purple-300"
-                    width={45}
-                    alt="icon-dislike-solid"
-                    src={iconDislikeSolid}
-                  />
-                ) : (
-                  <Image
-                    priority
-                    className="focus-within:bg-purple-300"
-                    width={35}
-                    alt="icon-like-outline"
-                    src={iconDislike}
-                  />
+                {userId && (
+                  <div
+                    className={`flex cursor-pointer items-center justify-center gap-1 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 ${isLiked ? "animate-like" : ""}`}
+                    onClick={handleToggleLike}
+                  >
+                    {isLiked ? (
+                      <Image
+                        priority
+                        className="focus-within:bg-purple-300"
+                        width={35}
+                        alt="icon-like-solid"
+                        src={iconLikeSolid}
+                      />
+                    ) : (
+                      <Image
+                        priority
+                        className="focus-within:bg-purple-300"
+                        width={35}
+                        alt="icon-like-outline"
+                        src={iconLikeOutline}
+                      />
+                    )}
+                    <p className="montserratFont mt-1 text-base font-bold">
+                      {totalLike}
+                    </p>
+                  </div>
                 )}
-                </div>}
-                {userId && <div
-                  className={`flex cursor-pointer items-center justify-center transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 ${isSaved ? "animate-like" : ""}`}
-                  onClick={handleToggleSave}
-                >
-                  {isSaved ? (
-                    <Image
-                      priority
-                      width={35}
-                      alt="icon-saved-solid"
-                      src={iconSaveSolid}
-                    />
-                  ) : (
-                    <Image
-                      priority
-                      width={35}
-                      alt="logo-save"
-                      src={iconSaveOutline}
-                    />
-                  )}
-                </div>}
+                {userId && (
+                  <div
+                    className={`flex cursor-pointer items-center justify-center gap-1 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 ${isDisliked ? "animate-like" : ""}`}
+                    onClick={handleToggleDislike}
+                  >
+                    {isDisliked ? (
+                      <Image
+                        priority
+                        className="focus-within:bg-purple-300"
+                        width={45}
+                        alt="icon-dislike-solid"
+                        src={iconDislikeSolid}
+                      />
+                    ) : (
+                      <Image
+                        priority
+                        className="focus-within:bg-purple-300"
+                        width={35}
+                        alt="icon-like-outline"
+                        src={iconDislike}
+                      />
+                    )}
+                  </div>
+                )}
+                {userId && (
+                  <div
+                    className={`flex cursor-pointer items-center justify-center transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 ${isSaved ? "animate-like" : ""}`}
+                    onClick={handleToggleSave}
+                  >
+                    {isSaved ? (
+                      <Image
+                        priority
+                        width={35}
+                        alt="icon-saved-solid"
+                        src={iconSaveSolid}
+                      />
+                    ) : (
+                      <Image
+                        priority
+                        width={35}
+                        alt="logo-save"
+                        src={iconSaveOutline}
+                      />
+                    )}
+                  </div>
+                )}
                 <DefaultShareButton contentType={productType.toUpperCase()} />
               </div>
 

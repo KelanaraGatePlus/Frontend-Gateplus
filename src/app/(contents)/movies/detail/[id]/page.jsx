@@ -51,6 +51,61 @@ function PlayingMoviePage({ params }) {
 
   const movieData = data?.data?.data || {};
 
+  const saveMovieProgress = useCallback(
+    (seconds) => {
+      if (!movieData?.id) return;
+
+      try {
+        const raw = localStorage.getItem("last_seen_content");
+        let existing = raw ? JSON.parse(raw) : [];
+
+        const index = existing.findIndex((item) => item.id === movieData.id);
+
+        const duration = movieData?.duration || 0;
+        const progress =
+          duration > 0 ? Math.min((seconds / duration) * 100, 100) : 0;
+
+        const updatedContent = {
+          ...movieData,
+          type: "movie",
+          progress,
+          progressSeconds: seconds,
+          updatedAt: new Date().toISOString(),
+        };
+
+        if (index >= 0) {
+          existing[index] = updatedContent;
+        } else {
+          existing = [updatedContent, ...existing].slice(0, 10);
+        }
+
+        localStorage.setItem("last_seen_content", JSON.stringify(existing));
+      } catch (err) {
+        console.error("Failed save movie progress:", err);
+      }
+    },
+    [movieData],
+  );
+
+  useEffect(() => {
+    if (!movieData?.id) return;
+
+    const interval = setInterval(() => {
+      const videoEl =
+        document.querySelector("video") || document.querySelector("mux-player");
+
+      if (!videoEl) return;
+
+      const seconds = videoEl.currentTime || videoEl.currentTimeSeconds || 0;
+
+      if (seconds > 0) {
+        saveMovieProgress(seconds);
+      }
+    }, 3000); // tiap 3 detik save
+
+    return () => clearInterval(interval);
+  }, [movieData?.id, saveMovieProgress]);
+
   const {
     showCompleteProfileModal,
     showUnderAgeModal,
@@ -312,7 +367,7 @@ function PlayingMoviePage({ params }) {
               className="rounded-full overflow-hidden"
               src={
                 movieData?.creator?.imageUrl &&
-                  movieData?.creator?.imageUrl !== "null"
+                movieData?.creator?.imageUrl !== "null"
                   ? movieData.creator.imageUrl
                   : DEFAULT_AVATAR.src
               }
@@ -326,26 +381,27 @@ function PlayingMoviePage({ params }) {
           </div>
         </div>
 
-        <section className="flex flex-row gap-3 items-stretch mt-5">
+        <section className="mt-5 flex flex-row items-stretch gap-3">
           {/* Poster 3:2 */}
-          <div className="relative aspect-[2/3] w-[220px] sm:w-[160px] lg:w-[250px] flex-shrink-0">
-            {movieData.thumbnailImageUrl && <img
-              src={movieData.thumbnailImageUrl}
-              alt="logo-racunsangga-movie"
-              className="rounded-md object-cover"
-            />}
+          <div className="relative aspect-[2/3] w-[220px] flex-shrink-0 sm:w-[160px] lg:w-[250px]">
+            {movieData.thumbnailImageUrl && (
+              <img
+                src={movieData.thumbnailImageUrl}
+                alt="logo-racunsangga-movie"
+                className="rounded-md object-cover"
+              />
+            )}
           </div>
 
           {/* Deskripsi */}
-          <div className="rounded-md bg-[#393939] flex-1">
-            <div className="mx-4 my-4 text-white h-full flex flex-col">
+          <div className="flex-1 rounded-md bg-[#393939]">
+            <div className="mx-4 my-4 flex h-full flex-col text-white">
               <div
                 className="prose prose-invert max-w-none"
                 dangerouslySetInnerHTML={{
                   __html: DOMPurify.sanitize(movieData?.description || ""),
                 }}
               />
-
 
               <div className="mt-10">
                 <p>Judul: {movieData.title}</p>
@@ -355,7 +411,18 @@ function PlayingMoviePage({ params }) {
                 <p>Penulis Cerita : {movieData.writer}</p>
                 <p>Pemeran : {movieData.talent}</p>
                 <p>Durasi : {formatDuration(movieData.duration)}</p>
-                <p>Genre : {Array.isArray(movieData?.categories) ? movieData.categories.map(cat => cat.category?.tittle || cat.category?.title).filter(Boolean).join(', ') : movieData?.categories?.tittle || movieData?.categories?.title}</p>
+                <p>
+                  Genre :{" "}
+                  {Array.isArray(movieData?.categories)
+                    ? movieData.categories
+                        .map(
+                          (cat) => cat.category?.tittle || cat.category?.title,
+                        )
+                        .filter(Boolean)
+                        .join(", ")
+                    : movieData?.categories?.tittle ||
+                      movieData?.categories?.title}
+                </p>
                 <p>Tahun Rilis : {movieData.releaseYear}</p>
                 <p>Bahasa : {movieData.language}</p>
               </div>
@@ -392,36 +459,30 @@ function PlayingMoviePage({ params }) {
           />
         </div>
       )}
-      {
-        showCompleteProfileModal && (
-          <CompleteProfileModal
-            onConfirm={goToProfile}
-            title={movieData?.title}
-            minAge={getMinAge(movieData?.ageRestriction)}
-          />
-        )
-      }
+      {showCompleteProfileModal && (
+        <CompleteProfileModal
+          onConfirm={goToProfile}
+          title={movieData?.title}
+          minAge={getMinAge(movieData?.ageRestriction)}
+        />
+      )}
 
-      {
-        showUnderAgeModal && (
-          <UnderAgeModal
-            open={showUnderAgeModal}
-            ageRestriction={movieData?.ageRestriction}
-            title={movieData?.title}
-            onContinue={continueDespiteUnderAge}
-          />
-        )
-      }
-      {
-        showToast && (
-          <Toast
-            message={toastMessage}
-            type={toastType}
-            onClose={() => setShowToast(false)}
-          />
-        )
-      }
-    </div >
+      {showUnderAgeModal && (
+        <UnderAgeModal
+          open={showUnderAgeModal}
+          ageRestriction={movieData?.ageRestriction}
+          title={movieData?.title}
+          onContinue={continueDespiteUnderAge}
+        />
+      )}
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+        />
+      )}
+    </div>
   );
 }
 

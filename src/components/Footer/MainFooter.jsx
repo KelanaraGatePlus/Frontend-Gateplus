@@ -2,152 +2,189 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from 'next/navigation';
 
-/*[--- CONSTANTS IMPORT ---]*/
-import { siteMetadata } from '@/lib/constants/siteMetaData';
-import { navbarOptions } from '@/lib/constants/navbarOptions';
+function Footer() {
+  const footerMenus = [
+    {
+      title: "Gate+",
+      items: [
+        { name: "Entertaiment", href: "/" },
+        { name: "Education", href: "education" },
+        { name: "Profile" },
+        { name: "Guide" },
+      ],
+    },
+    {
+      title: "Contact",
+      items: [{ name: "hello@gateplus.id", href: "mailto:hello@gateplus.id" }],
+    },
+    {
+      title: "Available Soon on Platform",
+      items: ["Android", "iOS", "Web App"],
+    },
+  ];
 
-/*[--- ASSETS IMPORT ---]*/
-import logoHome from "@@/icons/logoHome.svg";
+  const socialLinks = [
+    { href: "https://www.instagram.com/kelanarastudios/", icon: "instagram" },
+    {
+      href: "https://www.tiktok.com/@kelanara.studios?is_from_webapp=1&sender_device=pc",
+      icon: "tiktok",
+    },
+    { href: "https://x.com/KelanaraStudio?s=20", icon: "twitter" },
+    // { href: "#", icon: "facebook" },
+  ];
 
-export default function Footer() {
-  const pathname = usePathname();
+  const renderSocialIcon = (icon) => {
+    switch (icon) {
+      case "instagram":
+        return (
+          <svg width="24" height="24" viewBox="0 0 24 24">
+            <path
+              fill="currentColor"
+              d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2m0 2A3.75 3.75 0 0 0 4 7.75v8.5A3.75 3.75 0 0 0 7.75 20h8.5A3.75 3.75 0 0 0 20 16.25v-8.5A3.75 3.75 0 0 0 16.25 4zM12 7a5 5 0 1 1 0 10a5 5 0 0 1 0-10m0 2a3 3 0 1 0 0 6a3 3 0 0 0 0-6m5.25-2.75a1.25 1.25 0 1 1 0 2.5a1.25 1.25 0 0 1 0-2.5"
+            />
+          </svg>
+        );
+      case "tiktok":
+        return (
+          <svg width="24" height="24" viewBox="0 0 24 24">
+            <path
+              fill="currentColor"
+              d="M15 3c.3 1.6 1.6 3.1 3.2 3.6v3a7 7 0 0 1-3.2-.8v5.6a5.8 5.8 0 1 1-5.8-5.8c.4 0 .8 0 1.2.1v3.1a2.7 2.7 0 1 0 1.6 2.5V3z"
+            />
+          </svg>
+        );
+      case "twitter":
+        return (
+          <svg width="24" height="24" viewBox="0 0 24 24">
+            <path
+              fill="currentColor"
+              d="M18.9 2H22l-7.2 8.2L23 22h-6.7l-5.2-6.8L4.9 22H2l7.7-8.8L1 2h6.8l4.7 6.2z"
+            />
+          </svg>
+        );
+      case "facebook":
+        return (
+          <svg width="24" height="24" viewBox="0 0 24 24">
+            <path
+              fill="currentColor"
+              d="M13 22v-8h3l1-4h-4V8c0-1.2.3-2 2-2h2V2.1C16.7 2 15.6 2 14.4 2C11.7 2 10 3.6 10 6.6V10H7v4h3v8z"
+            />
+          </svg>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
-    <footer className="flex flex-col font-semibold text-white gap-4 mt-20">
-      <section className="flex flex-col gap-2 px-2 md:px-8">
-        <div className="flex flex-col gap-2 lg:flex-row">
-          <div className="flex flex-col justify-start rounded-md bg-[#10ADF0] pl-5 py-4 lg:flex-row md:items-center flex-1 montserratFont">
-            <p className="font-bold">JOIN OUR NEWSLATTER</p>
-            <p className="text-sm font-light lg:hidden">
-              Subscribe news latter to get any update our platform
-            </p>
-          </div>
-          <div className="hidden items-center justify-center rounded-md bg-[#10ADF0] px-2 py-4 text-center md:flex flex-1 montserratFont">
-            <p className="text-sm font-light">
-              Subscribe news latter to get any update our platform
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 rounded-md bg-[#10ADF0] px-2 py-4 md:py-1 flex-1 montserratFont">
-            <div className="flex-5">
-              <input
-                className="w-full rounded-full border border-white px-4 py-1.5 md:h-full md:py-1 focus:outline-none"
-                type="email"
-                placeholder="Email Address"
+    <footer className="flex min-h-[300px] flex-col border-t border-gray-700 text-white">
+      <div className="container mx-auto flex flex-col px-4 py-12">
+        <div className="grid grid-cols-1 gap-x-6 sm:grid-cols-2 md:grid-cols-5">
+          <div className="flex flex-col">
+            <Link
+              href="/"
+              className="mb-4 flex items-center text-inherit no-underline"
+              aria-label="Gate Plus"
+            >
+              <Image
+                src="/images/logo/logoGate+/logo-gateplus-blue.png"
+                alt="Logo"
+                width={150}
+                height={40}
+                priority
               />
-            </div>
-            <div className="flex-2">
-              <button className="h-full w-full rounded-full bg-[#156EB7] py-1.5 md:py-1 px-1 font-semibold">
-                Subscribe
-              </button>
-            </div>
-          </div>
-        </div>
+              <span className="mt-[35px] text-[20px] font-bold text-white">
+                Edu
+              </span>
+            </Link>
 
-        <div className="flex flex-col gap-2 lg:flex-row">
-          <div className="flex flex-col gap-2 rounded-md bg-linear-to-t from-[#04475E] to-[#10ADF0] justify-between py-4 px-4 flex-1">
-            <div className="flex flex-col gap-2">
-              <div className="flex montserratFont text-lg items-center text-right font-semibold md:justify-center lg:justify-start">
-                Contact
-              </div>
-              <div className="flex flex-col gap-1">
-                <div className="text-sm font-normal montserratFont">{siteMetadata.contact}</div>
-                <div className="text-sm font-normal montserratFont">{siteMetadata.email}</div>
-                <div className="text-sm font-normal montserratFont">{siteMetadata.address}</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2 rounded-md bg-linear-to-t from-[#04475E] to-[#10ADF0] md:px-4 py-2 flex-2 justify-evenly">
-            <div className="flex content-center items-center justify-center">
-              <Link href={"/"}>
-                <div className="relative h-24 w-48 -mt-4">
-                  <Image priority alt="logo-footer" src={logoHome} fill className="w-full h-full object object-contain" />
-                </div>
-              </Link>
-            </div>
-            <div className="flex flex-wrap items-center justify-center md:justify-evenly gap-2 h-fit montserratFont">
-              {
-                navbarOptions.map((option) => {
-                  const isActive = option.url === pathname;
-                  return (
-                    <div key={option.id} className={`flex justify-center p-1 hover:underline hover underline-offset-4 ${isActive ? "font-bold text-white/70" : "text-white"}`}>
-                      <Link href={option.url}>{option.tittle}</Link>
-                    </div>
-                  );
-                })
-              }
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2 rounded-md bg-linear-to-t from-[#04475E] to-[#10ADF0] justify-between pt-4 pb-2 px-4 flex-1">
-            <div className="flex montserratFont text-lg items-center text-right font-semibold justify-center lg:justify-end lg:pr-2">
-              Social Media
-            </div>
-            <div className="flex flex-wrap items-center md:justify-between justify-center gap-2 h-fit">
-              {siteMetadata.social.map((item) => (
-                <div
-                  key={item.name}
-                  className="flex items-center justify-center rounded-full p-1.5 hover:bg-white/25"
-                >
-                  <Link
-                    href={item.link}
+            <div className="flex flex-col">
+              <div className="mb-6 flex gap-6">
+                {socialLinks.map((s, idx) => (
+                  <a
+                    key={idx}
+                    href={s.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center"
+                    className="flex items-center justify-center rounded-full bg-[#6c757d] p-1 text-white transition-colors duration-200 hover:bg-blue-600"
                   >
-                    <Image
-                      priority
-                      className="aspect-auto shrink-0"
-                      height={35}
-                      width={35}
-                      alt={item.name}
-                      src={item.icon}
-                    />
-                  </Link>
+                    {renderSocialIcon(s.icon)}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-4"></div>
+
+          {footerMenus.map((menu, index) => (
+            <div key={index} className="mb-6 w-[200px]">
+              <h5 className="font-zeint mb-4 text-2xl font-bold">
+                {menu.title}
+              </h5>
+
+              {menu.title === "Available Soon on Platform" ? (
+                <div className="flex flex-col gap-4">
+                  <Image
+                    src="/images/Platform/app-store.png"
+                    alt="App Store"
+                    width={140}
+                    height={45}
+                  />
+                  <Image
+                    src="/images/Platform/play-store.png"
+                    alt="Play Store"
+                    width={140}
+                    height={45}
+                  />
                 </div>
-              ))}
+              ) : (
+                <ul className="flex flex-col">
+                  {menu.items.map((item) => (
+                    <li key={item.name} className="mb-2">
+                      <a
+                        className="font-zeint text-base text-white"
+                        href={item.href}
+                        rel="noopener noreferrer"
+                      >
+                        {item.name}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
+          ))}
+        </div>
 
-            <div className="flex items-center justify-center gap-2 md:mb-2 w-full py-2">
-              {siteMetadata.appDownload.map((store) => (
-                <Link key={store.name} href={store.link}>
-                  <div className="flex rounded-md border-2 border-[#dedede] bg-[#383938] gap-2 flex-1 px-2 py-1 montserratFont items-center justify-center">
-                    <figure className="flex relative h-8 w-8">
-                      <Image priority alt={store.name} src={store.icon} fill className="w-full h-full object object-contain" />
-                    </figure>
-                    <div className="">
-                      <p className="uppercase text-[10px] font-medium">Get iN On</p>
-                      <h5 className="text-base">{store.name}</h5>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+        <div className="mt-20 flex items-end justify-between">
+          <p className="font-zeint w-[300px] text-[14px] leading-[16.8px] font-medium text-[var(--Color-neutral-200,#DEDEDE)]">
+            Copyright 2026 GATE+. All Right Reserved
+          </p>
+          <div className="font-zeint flex gap-8 text-[14px] text-[var(--Color-neutral-200,#DEDEDE)]">
+            <a href="/term-of-service" rel="noopener noreferrer">
+              Terms of Service
+            </a>
+            <a href="/privacy-policy" rel="noopener noreferrer">
+              Privacy Policy
+            </a>
+            <a href="#" rel="noopener noreferrer">
+              Cookies
+            </a>
           </div>
         </div>
-      </section>
+      </div>
 
-      <section className="mx-5 mt-8 mb-4 flex flex-col gap-2 md:mt-0 md:block">
-        <div className="-mb-1 flex justify-center md:hidden">© 2025 GATE+</div>
-        <div className="flex flex-row justify-center gap-2">
-          <div className="hidden text-sm md:flex">© 2025 GATE+</div>
-          <p className="hidden md:flex">|</p>
-          <div className="text-center text-sm text-blue-700 underline md:text-base">
-            <Link href="/privacy-policy">Privacy policy</Link>
-          </div>
-          <p>|</p>
-          <div className="text-center text-sm text-blue-700 underline md:text-base">
-            <Link href="/term-of-service">Terms of services</Link>
-          </div>
-          <p>|</p>
-          <div className="text-center text-sm text-blue-700 underline md:text-base">
-            <Link href="/faq">Help Center</Link>
-          </div>
-        </div>
-      </section>
+      <div
+        className="mt-auto h-[26px] w-full rounded-[6px]"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(3,149,188,0.45) 0%, rgba(3,149,188,0.15) 100%)",
+        }}
+      />
     </footer>
   );
 }
+
+export default Footer;

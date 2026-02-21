@@ -42,23 +42,16 @@ export default function CarouselTemplate({
     return getMinAge(item.ageRestriction);
   };
 
-  const resolveType = (item) => {
-    return item.type || type;
-  };
+  const resolveType = (item) => item.type || type;
 
   const resolvePodcastSize = (label, fixedType) => {
     const isPopularPodcast =
       label === "Popular Podcasts" && fixedType === "podcast";
-
-    if (isPopularPodcast) {
+    if (isPopularPodcast)
       return "h-[200px] w-[120px] md:h-[250px] md:w-[150px] lg:h-[300px] lg:w-[180px]";
-    }
-
-    if (isTopTen) {
+    if (isTopTen)
       return "h-[200px] w-[220px] md:h-[230px] md:w-[240px] lg:w-[240px]";
-    }
-
-    return "h-[160px] w-[112px] md:h-[212px] md:w-[149px]";
+    return "h-[200px] w-[112px] md:h-[240px] md:w-[149px]";
   };
 
   return (
@@ -73,25 +66,23 @@ export default function CarouselTemplate({
         ) : (
           contents.length > 0 && (
             <section
-              className={`flex flex-col ${isOnCreatorProfile ? "my-3 md:my-0" : "my-3 md:my-5"
-                }`}
+              className={`flex flex-col ${isOnCreatorProfile ? "my-3 md:my-0" : "my-3 md:my-5"}`}
             >
               <Carousel>
-                <p className="zeinFont px-4 md:px-0 mb-1 text-2xl font-extrabold text-white md:mb-2 md:text-3xl lg:text-4xl xl:text-[40px]">
+                <p className="zeinFont mb-1 px-4 text-2xl font-extrabold text-white md:mb-2 md:px-0 md:text-3xl lg:text-4xl xl:text-[40px]">
                   {label}
                 </p>
 
                 <div className="relative">
                   <CarouselContent
-                    className={isTopTen ? "flex gap-x-5" : "flex gap-x-2"}
+                    className={`flex ${
+                      isTopTen ? "gap-x-5" : "gap-x-2"
+                    } ${label === "Terakhir Anda Lihat" ? "pr-4 pl-4 md:pr-6 md:pl-6" : ""}`}
                   >
                     {contents.map((item, index) => {
                       const fixedType = resolveType(item);
-
                       const minAge = resolveMinAge(item);
-
                       const isUniquePodcast = fixedType === "podcast" && type;
-
                       const podcastSize = resolvePodcastSize(label, fixedType);
 
                       return (
@@ -113,7 +104,7 @@ export default function CarouselTemplate({
                             <div className="flex h-full w-full overflow-y-hidden items-end gap-y-5 md:w-[500px] lg:w-[600px]">
                               <div className="flex h-full w-1/3 items-end justify-end overflow-visible">
                                 <p
-                                  className="zeinFont translate-x-[30%] md:translate-x-[40%] translate-y-[10%] text-[220px] leading-[0.7] font-extrabold text-[#1297DC] sm:text-[230px] md:text-[240px] lg:text-[250px]"
+                                  className="zeinFont translate-x-[30%] translate-y-[10%] text-[220px] leading-[0.7] font-extrabold text-[#1297DC] sm:text-[230px] md:translate-x-[40%] md:text-[240px] lg:text-[250px]"
                                   style={{
                                     filter:
                                       "drop-shadow(6px 6px 4px rgba(0,0,0,0.3))",
@@ -148,7 +139,6 @@ export default function CarouselTemplate({
                                   <PodcastCard
                                     {...item}
                                     coverUrl={item.coverPodcastImage}
-                                    className="h-full w-full"
                                   />
                                 )}
                                 {fixedType === "comic" && (
@@ -170,6 +160,8 @@ export default function CarouselTemplate({
                                   coverUrl={item.posterImageUrl}
                                   hasNewEpisode={item.hasNewEpisodes}
                                   withNewestTag={withNewestTag}
+                                  progress={item.progress}
+                                  customHref={item.customHref}
                                 />
                               )}
 
@@ -182,6 +174,8 @@ export default function CarouselTemplate({
                                   coverUrl={item.posterImageUrl}
                                   hasNewEpisode={item.hasNewEpisodes}
                                   withNewestTag={withNewestTag}
+                                  progress={item.progress}
+                                  customHref={item.customHref}
                                 />
                               )}
 
@@ -194,6 +188,8 @@ export default function CarouselTemplate({
                                   coverUrl={item.thumbnailImageUrl}
                                   hasNewEpisode={item.hasNewEpisodes}
                                   withNewestTag={withNewestTag}
+                                  progress={item.progress}
+                                  customHref={item.customHref}
                                 />
                               )}
 
@@ -206,6 +202,8 @@ export default function CarouselTemplate({
                                   coverUrl={item.thumbnailImageUrl}
                                   hasNewEpisode={item.hasNewEpisodes}
                                   withNewestTag={withNewestTag}
+                                  progress={item.progress}
+                                  customHref={item.customHref}
                                 />
                               )}
 
@@ -218,6 +216,8 @@ export default function CarouselTemplate({
                                   coverUrl={item.coverPodcastImage}
                                   hasNewEpisode={item.hasNewEpisodes}
                                   withNewestTag={withNewestTag}
+                                  progress={item.progress}
+                                  customHref={item.customHref}
                                 />
                               )}
 
@@ -229,7 +229,6 @@ export default function CarouselTemplate({
                                   creatorName={item.Creator?.profileName}
                                   releaseDate={item.createdAt}
                                   hasNewEpisode={item.hasNewEpisodes}
-
                                   minAge={minAge}
                                 />
                               )}

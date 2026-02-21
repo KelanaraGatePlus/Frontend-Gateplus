@@ -47,6 +47,30 @@ export default function UserSettingsPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // bio gaboleh spasi doang
+    if (bio && bio.trim().length === 0) {
+      setToastMessage("Bio tidak boleh hanya berisi spasi");
+      setToastType("failed");
+      setShowToast(true);
+      return;
+    }
+
+    // profile gaboleh spasi doang
+    if (!profileName.trim()) {
+      setToastMessage("Profile name tidak valid");
+      setToastType("failed");
+      setShowToast(true);
+      return;
+    }
+
+    // username gaboleh spasi doang
+    if (!username.trim()) {
+      setToastMessage("Username tidak valid");
+      setToastType("failed");
+      setShowToast(true);
+      return;
+    }
+
     if (profileName === "" || username === "" || email === "") {
       setShowToast(true);
       setToastMessage("Profile Name, Username, dan Email Wajib diisi");
@@ -117,7 +141,6 @@ export default function UserSettingsPage() {
       const response = await axios.get(`${BACKEND_URL}/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
       const usersData = response.data.data.data;
 
       setProfileName(usersData.profileName || "");
@@ -126,7 +149,13 @@ export default function UserSettingsPage() {
       setGender(usersData.gender || "");
       setEmail(usersData.email || "");
       setPhone(usersData.phone || "");
-      setdateOfBirth(usersData.dateOfBirth || "");
+
+      // konversi format tgl lahir
+      const dob = usersData.dateOfBirth
+        ? new Date(usersData.dateOfBirth).toISOString().split("T")[0]
+        : "";
+
+      setdateOfBirth(dob);
       setRegion(usersData.region || "");
       setCanChangeUsername(usersData.canChangeUsername || false);
       setImageUrl(usersData.imageUrl || null);
@@ -204,16 +233,28 @@ export default function UserSettingsPage() {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {/* name */}
                 <div className="flex items-center gap-4">
-                  <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 lg:text-xl">
-                    Profile Name<span className="text-red-700"> *</span>
+                  <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 md:text-base lg:text-xl">
+                    Profile Name
+                    <span className="align-super text-[12px] text-red-700">
+                      {" *"}
+                    </span>
                   </h3>
                   <div className="flex-1">
                     <input
                       type="text"
                       className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                      onChange={(e) => setProfileName(e.target.value)}
+                      onChange={(e) => {
+                        let value = e.target.value;
+                        // cuma huruf dan spasi
+                        value = value.replace(/[^a-zA-Z\s]/g, "");
+                        // maksimal 20 karakter
+                        value = value.slice(0, 20);
+
+                        setProfileName(value);
+                      }}
                       value={profileName}
                       placeholder="Masukan Profile Name"
+                      maxLength={20}
                       required
                     />
                   </div>
@@ -232,7 +273,12 @@ export default function UserSettingsPage() {
                     <input
                       type="text"
                       className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-gray-400"
-                      onChange={(e) => setUsername(e.target.value)}
+                      onChange={(e) => {
+                        let value = e.target.value;
+                        // cuma abjad
+                        value = value.replace(/[^a-zA-Z]/g, "");
+                        setUsername(value);
+                      }}
                       value={username}
                       placeholder="Masukan username"
                       disabled={!canChangeUsername}
@@ -248,11 +294,20 @@ export default function UserSettingsPage() {
                 </h3>
                 <div className="flex-1">
                   <textarea
-                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
+                    className="w-full resize-none overflow-hidden rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
                     placeholder="Tell us about you, max 150 characters."
-                    onChange={(e) => setBio(e.target.value)}
                     value={bio}
-                    rows={4}
+                    maxLength={150}
+                    rows={1}
+                    onChange={(e) => {
+                      const el = e.target;
+
+                      // reset height kalo kosong
+                      el.style.height = "auto";
+                      el.style.height = el.scrollHeight + "px";
+
+                      setBio(el.value);
+                    }}
                   />
                 </div>
               </div>
@@ -266,11 +321,15 @@ export default function UserSettingsPage() {
                   <div className="flex-1">
                     <input
                       type="email"
-                      className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1 select-none"
                       value={email}
                       placeholder="Masukan Email"
-                      required
+                      readOnly
+                      onCopy={(e) => e.preventDefault()}
+                      onPaste={(e) => e.preventDefault()}
+                      onCut={(e) => e.preventDefault()}
+                      onDrag={(e) => e.preventDefault()}
+                      onDrop={(e) => e.preventDefault()}
                     />
                   </div>
                 </div>
@@ -281,30 +340,54 @@ export default function UserSettingsPage() {
                   </h3>
                   <div className="flex-1">
                     <input
-                      type="number"
+                      type="tel"
                       className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => {
+                        // gaboleh angka
+                        const value = e.target.value.replace(/\D/g, "");
+                        setPhone(value);
+
+                        // otomatis 0 didepan
+                        if (value.length > 0 && value[0] !== "0") {
+                          setPhone("0" + value);
+                        } else {
+                          setPhone(value);
+                        }
+                      }}
                       value={phone}
                       placeholder="Masukan Nomor Telepon"
+                      maxLength={12}
+                      onBlur={() => {
+                        if (phone.length < 10 || phone.length > 12) {
+                          setToastMessage("Nomor telepon harus 10–12 digit");
+                          setToastType("failed");
+                          setShowToast(true);
+                        }
+                      }}
                     />
                   </div>
                 </div>
               </div>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {/* dob */}
-                <div className="flex items-center gap-4">
-                  <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 lg:text-xl">
-                    Date Of Birth
-                  </h3>
-                  <div className="flex-1">
-                    <input
-                      type="date"
-                      className="w-full appearance-none rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                      onChange={(e) => setdateOfBirth(e.target.value)}
-                      value={dateOfBirth}
-                    />
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-4">
+                    <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 lg:text-xl">
+                      Date Of Birth
+                    </h3>
+                    <div className="flex-1">
+                      <input
+                        type="date"
+                        className="w-full appearance-none rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1 text-white"
+                        onChange={(e) => setdateOfBirth(e.target.value)}
+                        value={dateOfBirth || ""}
+                        // maksimal tanggal lahir
+                        max="2025-12-31"
+                      />
+                    </div>
                   </div>
                 </div>
+
                 {/* gender */}
                 <div className="flex items-center gap-4">
                   <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 lg:text-xl">
@@ -349,12 +432,36 @@ export default function UserSettingsPage() {
                     onChange={(e) => setRegion(e.target.value)}
                     value={region}
                   >
-                    <option value="">Pilih Region</option>
-                    <option value="Indonesia">Indonesia</option>
-                    <option value="Malaysia">Malaysia</option>
-                    <option value="Thailand">Thailand</option>
-                    <option value="Vietnam">Vietnam</option>
-                    <option value="Philippines">Philippines</option>
+                    <option className="bg-[#222222] text-white" value="">
+                      Pilih Region
+                    </option>
+                    <option
+                      className="bg-[#222222] text-white"
+                      value="Indonesia"
+                    >
+                      Indonesia
+                    </option>
+                    <option
+                      className="bg-[#222222] text-white"
+                      value="Malaysia"
+                    >
+                      Malaysia
+                    </option>
+                    <option
+                      className="bg-[#222222] text-white"
+                      value="Thailand"
+                    >
+                      Thailand
+                    </option>
+                    <option className="bg-[#222222] text-white" value="Vietnam">
+                      Vietnam
+                    </option>
+                    <option
+                      className="bg-[#222222] text-white"
+                      value="Philippines"
+                    >
+                      Philippines
+                    </option>
                   </select>
                 </div>
               </div>

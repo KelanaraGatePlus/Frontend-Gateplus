@@ -1,20 +1,22 @@
 import axios from "axios";
 import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
-export const showFeatureUnavailableToast = ({
-  setShowToast,
-  setToastMessage,
-  setToastType,
-}) => {
+const safeToast = (
+  setShowToast = () => {},
+  setToastMessage = () => {},
+  setToastType = () => {},
+  message = "",
+  type = "success",
+) => {
   setShowToast(true);
-  setToastMessage("Fitur ini belum tersedia");
-  setToastType("failed");
+  setToastMessage(message);
+  setToastType(type);
 };
 
 export const subscribeCreator = async (
   isSubscribed,
   creatorProfileName,
-  creatorId,
+  creatorIdProp,
   totalSubs,
   {
     setShowToast,
@@ -25,43 +27,63 @@ export const subscribeCreator = async (
     setIsSubscribing,
   },
 ) => {
-  if (isSubscribed) {
-    setShowToast(true);
-    setToastMessage(
-      `Untuk saat ini belum bisa Unsubscribe Creator ${creatorProfileName}`,
-    );
-    setToastType("failed");
-    return;
-  }
+  const creatorName = creatorProfileName || "creator";
 
   try {
     setIsSubscribing(true);
+
     const userId = localStorage.getItem("users_id");
-    if (!userId) {
-      setShowToast(true);
-      setToastMessage("Silakan Login Terlebih Dahulu");
-      setToastType("failed");
+    const creatorId = creatorIdProp;
+
+    console.log("STATUS SAAT KLIK:", isSubscribed);
+
+    if (!userId || !creatorId) {
+      safeToast(
+        setShowToast,
+        setToastMessage,
+        setToastType,
+        "Silakan login atau refresh halaman",
+        "failed",
+      );
       return;
     }
 
-    const requestBody = {
-      userId,
-      creatorId,
-    };
-
-    const response = await axios.post(
-      `${BACKEND_URL}/subscribers`,
-      requestBody,
-    );
-
-    setTotalSubs(totalSubs + 1);
-    setIsSubscribed(true);
-    console.log(response.data);
+    if (!isSubscribed) {
+      // FOLLOW
+      await axios.post(`${BACKEND_URL}/subscribers`, {
+        userId,
+        creatorId,
+      });
+      setIsSubscribed(true);
+      setTotalSubs(totalSubs + 1);
+      safeToast(
+        setShowToast,
+        setToastMessage,
+        setToastType,
+        `Berhasil mengikuti ${creatorName}`,
+        "success",
+      );
+    } else {
+      // UNFOLLOW
+      await axios.delete(`${BACKEND_URL}/subscribers/${creatorId}`, {
+        data: { userId },
+      });
+      setIsSubscribed(false);
+      setTotalSubs(Math.max(0, totalSubs - 1));
+      safeToast(
+        setShowToast,
+        setToastMessage,
+        setToastType,
+        `Berhenti mengikuti ${creatorName}`,
+        "success",
+      );
+    }
   } catch (error) {
-    console.error(error);
-    setShowToast(true);
-    setToastMessage("Gagal subscribe ke creator.");
-    setToastType("failed");
+    console.error("FOLLOW ERROR:", error);
+    const message =
+      error?.response?.data?.message ||
+      `Gagal mengubah status follow ${creatorName}`;
+    safeToast(setShowToast, setToastMessage, setToastType, message, "failed");
   } finally {
     setIsSubscribing(false);
   }
