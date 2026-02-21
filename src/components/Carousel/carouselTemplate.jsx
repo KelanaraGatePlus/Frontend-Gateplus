@@ -19,6 +19,7 @@ import PodcastCard from "../Card/PodcastCard";
 import PodcastUniqueCard from "../Card/PodcastUniqueCard";
 import EducationCard from "../Card/EducationCard";
 import getMinAge from "@/lib/helper/minAge";
+import { cn } from "@/lib/utils";
 
 export default function CarouselTemplate({
   label,
@@ -73,7 +74,7 @@ export default function CarouselTemplate({
             <section
               className={`flex flex-col ${isOnCreatorProfile ? "my-3 md:my-0" : "my-3 md:my-5"}`}
             >
-              <Carousel>
+              <Carousel className={cn('z-20')}>
                 <p className="zeinFont mb-1 px-4 text-2xl font-extrabold text-white md:mb-2 md:px-0 md:text-3xl lg:text-4xl xl:text-[40px]">
                   {label}
                 </p>
@@ -100,6 +101,7 @@ export default function CarouselTemplate({
                             transition-all duration-300 ease-out
                             hover:scale-105
                             hover:-translate-y-1
+                            hover:z-30
                             origin-bottom
                           `}
                           style={{ flex: "0 0 auto" }}
