@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,6 +21,7 @@ import ButtonSubmit from "@/components/UploadForm/ButtonSubmit";
 import TermsCheckbox from "@/components/UploadForm/TermsCheckbox";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import ContentExplicitModal from "@/components/Modal/ContentExplicitModal";
+import useExplicitContentHandler from "@/hooks/helper/useExplicitContentHandler";
 
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
@@ -35,9 +36,6 @@ export default function UploadComicEpisodeForm() {
     const fromEducation = searchParams.get("education") || null;
     const episodeCoverInputRef = useRef(null);
     const comicPagesInputRef = useRef(null);
-    const [isExplicitModalOpen, setIsExplicitModalOpen] = useState(false);
-    const [explicitImageName, setExplicitImageName] = useState("");
-    const [explicitField, setExplicitField] = useState("");
 
     const {
         register,
@@ -64,33 +62,19 @@ export default function UploadComicEpisodeForm() {
     const [createEpisode, { isLoading, error }] = useCreateEpisodeMutation();
     const skip = !creatorId;
     const creatorDetailQuery = useGetCreatorDetailQuery({ id: creatorId, userId }, { skip });
-
-    const findExplicitField = (fileName) => {
-        if (!fileName) return "";
-        const { episodeCover, inputFile } = getValues();
-        const candidates = [
-            { name: "episodeCover", files: episodeCover },
-            { name: "inputFile", files: inputFile },
-        ];
-        const match = candidates.find((item) =>
-            Array.isArray(item.files)
-            && item.files[0]
-            && typeof item.files[0] !== "string"
-            && item.files.some((file) => file?.name === fileName)
-        );
-        return match?.name || "";
-    };
-
-    const handleRetryExplicitUpload = () => {
-        setIsExplicitModalOpen(false);
-        if (explicitField === "episodeCover") {
-            episodeCoverInputRef.current?.click();
-            return;
-        }
-        if (explicitField === "inputFile") {
-            comicPagesInputRef.current?.click();
-        }
-    };
+    const {
+        isExplicitModalOpen,
+        explicitImageName,
+        handleExplicitError,
+        handleRetryExplicitUpload,
+        closeExplicitModal,
+    } = useExplicitContentHandler({
+        getValues,
+        fieldInputRefs: {
+            episodeCover: episodeCoverInputRef,
+            inputFile: comicPagesInputRef,
+        },
+    });
 
     const onSubmit = async (data) => {
         const formData = new FormData();
@@ -113,11 +97,7 @@ export default function UploadComicEpisodeForm() {
             }
             router.push(`/comics/detail/${data.comicId}`);
         } catch (err) {
-            if (err.status == 403) {
-                const fileName = err.data?.fileName || "Gambar";
-                setExplicitField(findExplicitField(fileName));
-                setIsExplicitModalOpen(true);
-                setExplicitImageName(fileName);
+            if (handleExplicitError(err)) {
                 return;
             }
             console.error("Error creating episode of comic:", err);
@@ -258,7 +238,7 @@ export default function UploadComicEpisodeForm() {
             {isExplicitModalOpen && (
                 <ContentExplicitModal
                     imageName={explicitImageName}
-                    onClose={() => setIsExplicitModalOpen(false)}
+                    onClose={closeExplicitModal}
                     onRetry={handleRetryExplicitUpload}
                 />
             )}

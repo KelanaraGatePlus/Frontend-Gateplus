@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 /* Third-Party */
@@ -27,6 +27,7 @@ import ButtonSubmit from '@/components/UploadForm/ButtonSubmit';
 import TermsCheckbox from '@/components/UploadForm/TermsCheckbox';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import ContentExplicitModal from "@/components/Modal/ContentExplicitModal";
+import useExplicitContentHandler from "@/hooks/helper/useExplicitContentHandler";
 
 /* Assets */
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
@@ -44,9 +45,6 @@ export default function UploadEbookEpisodeForm() {
     const bannerEndInputRef = useRef(null);
     const inputFileInputRef = useRef(null);
     const audioUrlInputRef = useRef(null);
-    const [isExplicitModalOpen, setIsExplicitModalOpen] = useState(false);
-    const [explicitImageName, setExplicitImageName] = useState("");
-    const [explicitField, setExplicitField] = useState("");
 
     const {
         register,
@@ -76,48 +74,22 @@ export default function UploadEbookEpisodeForm() {
     const [createEpisode, { isLoading, error }] = useCreateEpisodeMutation();
     const skip = !creatorId;
     const creatorDetailQuery = useGetCreatorDetailQuery({ id: creatorId, userId }, { skip });
-
-    const findExplicitField = (fileName) => {
-        if (!fileName) return "";
-        const { episodeCover, bannerStart, bannerEnd, inputFile, audioUrl } = getValues();
-        const candidates = [
-            { name: "episodeCover", files: episodeCover },
-            { name: "bannerStart", files: bannerStart },
-            { name: "bannerEnd", files: bannerEnd },
-            { name: "inputFile", files: inputFile },
-            { name: "audioUrl", files: audioUrl },
-        ];
-        const match = candidates.find((item) =>
-            Array.isArray(item.files)
-            && item.files[0]
-            && typeof item.files[0] !== "string"
-            && item.files[0].name === fileName
-        );
-        return match?.name || "";
-    };
-
-    const handleRetryExplicitUpload = () => {
-        setIsExplicitModalOpen(false);
-        if (explicitField === "episodeCover") {
-            episodeCoverInputRef.current?.click();
-            return;
-        }
-        if (explicitField === "bannerStart") {
-            bannerStartInputRef.current?.click();
-            return;
-        }
-        if (explicitField === "bannerEnd") {
-            bannerEndInputRef.current?.click();
-            return;
-        }
-        if (explicitField === "inputFile") {
-            inputFileInputRef.current?.click();
-            return;
-        }
-        if (explicitField === "audioUrl") {
-            audioUrlInputRef.current?.click();
-        }
-    };
+    const {
+        isExplicitModalOpen,
+        explicitImageName,
+        handleExplicitError,
+        handleRetryExplicitUpload,
+        closeExplicitModal,
+    } = useExplicitContentHandler({
+        getValues,
+        fieldInputRefs: {
+            episodeCover: episodeCoverInputRef,
+            bannerStart: bannerStartInputRef,
+            bannerEnd: bannerEndInputRef,
+            inputFile: inputFileInputRef,
+            audioUrl: audioUrlInputRef,
+        },
+    });
 
     const onSubmit = async (data) => {
         const formData = new FormData();
@@ -140,11 +112,7 @@ export default function UploadEbookEpisodeForm() {
             }
             router.push(`/ebooks/detail/${data.ebookId}`);
         } catch (err) {
-            if (err.status == 403) {
-                const fileName = err.data?.fileName || "Gambar";
-                setExplicitField(findExplicitField(fileName));
-                setIsExplicitModalOpen(true);
-                setExplicitImageName(fileName);
+            if (handleExplicitError(err)) {
                 return;
             }
             console.error("Error creating episode of ebook:", err);
@@ -356,7 +324,7 @@ export default function UploadEbookEpisodeForm() {
             {isExplicitModalOpen && (
                 <ContentExplicitModal
                     imageName={explicitImageName}
-                    onClose={() => setIsExplicitModalOpen(false)}
+                    onClose={closeExplicitModal}
                     onRetry={handleRetryExplicitUpload}
                 />
             )}

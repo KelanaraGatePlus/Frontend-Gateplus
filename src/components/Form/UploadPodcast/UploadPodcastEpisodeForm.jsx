@@ -31,6 +31,7 @@ import LoadingOverlay from "@/components/LoadingOverlay/page";
 import InputCreatorCollab from '@/components/UploadForm/InputCreatorCollab';
 import RichTextEditor from '@/components/RichTextEditor/page';
 import ContentExplicitModal from "@/components/Modal/ContentExplicitModal";
+import useExplicitContentHandler from "@/hooks/helper/useExplicitContentHandler";
 
 /* Assets */
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
@@ -46,9 +47,6 @@ export default function UploadPodcastEpisodeForm() {
     const [query, setQuery] = useState("");
     const coverEpisodeInputRef = useRef(null);
     const podcastFileInputRef = useRef(null);
-    const [isExplicitModalOpen, setIsExplicitModalOpen] = useState(false);
-    const [explicitImageName, setExplicitImageName] = useState("");
-    const [explicitField, setExplicitField] = useState("");
     const [debouncedQuery] = useDebounce(query, 500);
     const { data: creators, isLoading: isLoadingCreator, isError: isErrorCreator } = useSearchCreatorQuery(debouncedQuery, {
         skip: !debouncedQuery,
@@ -81,33 +79,19 @@ export default function UploadPodcastEpisodeForm() {
     const [createEpisode, { isLoading, error }] = useCreateEpisodeMutation();
     const skip = !creatorId;
     const creatorDetailQuery = useGetCreatorDetailQuery({ id: creatorId, userId }, { skip });
-
-    const findExplicitField = (fileName) => {
-        if (!fileName) return "";
-        const { coverPodcastEpisodeURL, podcastFileURL } = getValues();
-        const candidates = [
-            { name: "coverPodcastEpisodeURL", files: coverPodcastEpisodeURL },
-            { name: "podcastFileURL", files: podcastFileURL },
-        ];
-        const match = candidates.find((item) =>
-            Array.isArray(item.files)
-            && item.files[0]
-            && typeof item.files[0] !== "string"
-            && item.files[0].name === fileName
-        );
-        return match?.name || "";
-    };
-
-    const handleRetryExplicitUpload = () => {
-        setIsExplicitModalOpen(false);
-        if (explicitField === "coverPodcastEpisodeURL") {
-            coverEpisodeInputRef.current?.click();
-            return;
-        }
-        if (explicitField === "podcastFileURL") {
-            podcastFileInputRef.current?.click();
-        }
-    };
+    const {
+        isExplicitModalOpen,
+        explicitImageName,
+        handleExplicitError,
+        handleRetryExplicitUpload,
+        closeExplicitModal,
+    } = useExplicitContentHandler({
+        getValues,
+        fieldInputRefs: {
+            coverPodcastEpisodeURL: coverEpisodeInputRef,
+            podcastFileURL: podcastFileInputRef,
+        },
+    });
 
     const onSubmit = async (data) => {
         const formData = new FormData();
@@ -128,11 +112,7 @@ export default function UploadPodcastEpisodeForm() {
             }
             router.push(`/podcasts/detail/${data.podcastId}`);
         } catch (err) {
-            if (err.status == 403) {
-                const fileName = err.data?.fileName || "Gambar";
-                setExplicitField(findExplicitField(fileName));
-                setIsExplicitModalOpen(true);
-                setExplicitImageName(fileName);
+            if (handleExplicitError(err)) {
                 return;
             }
             console.error("Error creating episode of ebook:", err);
@@ -288,7 +268,7 @@ export default function UploadPodcastEpisodeForm() {
             {isExplicitModalOpen && (
                 <ContentExplicitModal
                     imageName={explicitImageName}
-                    onClose={() => setIsExplicitModalOpen(false)}
+                    onClose={closeExplicitModal}
                     onRetry={handleRetryExplicitUpload}
                 />
             )}

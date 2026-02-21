@@ -24,6 +24,8 @@ import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
 import InputSelect from "@/components/UploadForm/InputSelect";
 import InputText from "@/components/UploadForm/InputText";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+import ContentExplicitModal from "@/components/Modal/ContentExplicitModal";
+import useExplicitContentHandler from "@/hooks/helper/useExplicitContentHandler";
 
 /*[--- ASSETS PUBLIC ---]*/
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
@@ -77,6 +79,7 @@ export default function EditSeriesForm({ id }) {
         handleSubmit,
         control,
         formState: { errors },
+        getValues,
         reset,
     } = useForm({
         resolver: zodResolver(editSeriesSchema),
@@ -120,6 +123,20 @@ export default function EditSeriesForm({ id }) {
     }, [seriesData, reset]);
 
     const { data: genresData } = useGetAllGenresQuery();
+    const {
+        isExplicitModalOpen,
+        explicitImageName,
+        handleExplicitError,
+        handleRetryExplicitUpload,
+        closeExplicitModal,
+    } = useExplicitContentHandler({
+        getValues,
+        fieldInputRefs: {
+            posterBanner: posterBannerInputRef,
+            coverBook: coverBookInputRef,
+            thumbnail: thumbnailInputRef,
+        },
+    });
 
     const onSubmit = async (data) => {
         const formData = new FormData();
@@ -151,6 +168,9 @@ export default function EditSeriesForm({ id }) {
             await editSeries({ id, formData }).unwrap();
             router.push(`/creator/dashboard/content`);
         } catch (err) {
+            if (handleExplicitError(err)) {
+                return;
+            }
             console.error("Error editing series:", err);
         }
     };
@@ -347,6 +367,13 @@ export default function EditSeriesForm({ id }) {
             </form>
             {isLoading && (
                 <LoadingOverlay message="Tunggu Sebentar... <br/> Sedang mengubah series" />
+            )}
+            {isExplicitModalOpen && (
+                <ContentExplicitModal
+                    imageName={explicitImageName}
+                    onClose={closeExplicitModal}
+                    onRetry={handleRetryExplicitUpload}
+                />
             )}
         </>
     );

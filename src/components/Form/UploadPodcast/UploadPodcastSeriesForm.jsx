@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 /*[--- THIRD PARTY LIBRARIES ---]*/
@@ -30,15 +30,13 @@ import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
 import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
 import ContentExplicitModal from "@/components/Modal/ContentExplicitModal";
+import useExplicitContentHandler from "@/hooks/helper/useExplicitContentHandler";
 
 export default function UploadPodcastSeriesForm() {
     const router = useRouter();
     const coverPodcastInputRef = useRef(null);
     const searchParams = useSearchParams();
     const fromEducation = searchParams.get("education") || null;
-    const [isExplicitModalOpen, setIsExplicitModalOpen] = useState(false);
-    const [explicitImageName, setExplicitImageName] = useState("");
-    const [explicitField, setExplicitField] = useState("");
     const {
         register,
         handleSubmit,
@@ -60,26 +58,18 @@ export default function UploadPodcastSeriesForm() {
 
     const [createPodcast, { isLoading, error }] = useCreatePodcastMutation();
     const { data: genresData } = useGetAllGenresQuery();
-
-    const findExplicitField = (fileName) => {
-        if (!fileName) return "";
-        const { coverPodcast } = getValues();
-        const candidates = [{ name: "coverPodcast", files: coverPodcast }];
-        const match = candidates.find((item) =>
-            Array.isArray(item.files)
-            && item.files[0]
-            && typeof item.files[0] !== "string"
-            && item.files[0].name === fileName
-        );
-        return match?.name || "";
-    };
-
-    const handleRetryExplicitUpload = () => {
-        setIsExplicitModalOpen(false);
-        if (explicitField === "coverPodcast") {
-            coverPodcastInputRef.current?.click();
-        }
-    };
+    const {
+        isExplicitModalOpen,
+        explicitImageName,
+        handleExplicitError,
+        handleRetryExplicitUpload,
+        closeExplicitModal,
+    } = useExplicitContentHandler({
+        getValues,
+        fieldInputRefs: {
+            coverPodcast: coverPodcastInputRef,
+        },
+    });
 
     const onSubmit = async (data) => {
         const formData = new FormData();
@@ -100,11 +90,7 @@ export default function UploadPodcastSeriesForm() {
             }
             router.push(`/podcasts/upload/episode?series=${result.data.id}`);
         } catch (err) {
-            if (err.status == 403) {
-                const fileName = err.data?.fileName || "Gambar";
-                setExplicitField(findExplicitField(fileName));
-                setIsExplicitModalOpen(true);
-                setExplicitImageName(fileName);
+            if (handleExplicitError(err)) {
                 return;
             }
             console.error("Error creating podcast:", err);
@@ -231,7 +217,7 @@ export default function UploadPodcastSeriesForm() {
             {isExplicitModalOpen && (
                 <ContentExplicitModal
                     imageName={explicitImageName}
-                    onClose={() => setIsExplicitModalOpen(false)}
+                    onClose={closeExplicitModal}
                     onRetry={handleRetryExplicitUpload}
                 />
             )}

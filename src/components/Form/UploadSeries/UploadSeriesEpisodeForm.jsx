@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import RichTextEditor from '@/components/RichTextEditor/page';
 
@@ -26,6 +26,7 @@ import ButtonSubmit from '@/components/UploadForm/ButtonSubmit';
 import TermsCheckbox from '@/components/UploadForm/TermsCheckbox';
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import ContentExplicitModal from "@/components/Modal/ContentExplicitModal";
+import useExplicitContentHandler from "@/hooks/helper/useExplicitContentHandler";
 
 /* Assets */
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
@@ -41,9 +42,6 @@ export default function UploadSeriesEpisodeForm() {
     const creatorId = useGetCreatorId();
     const userId = useGetUserId();
     const coverEpisodeInputRef = useRef(null);
-    const [isExplicitModalOpen, setIsExplicitModalOpen] = useState(false);
-    const [explicitImageName, setExplicitImageName] = useState("");
-    const [explicitField, setExplicitField] = useState("");
 
     const {
         register,
@@ -69,26 +67,18 @@ export default function UploadSeriesEpisodeForm() {
     const [createEpisodeSeries, { isLoading, error }] = useCreateEpisodeSeriesMutation();
     const skip = !creatorId;
     const creatorDetailQuery = useGetCreatorDetailQuery({ id: creatorId, userId }, { skip });
-
-    const findExplicitField = (fileName) => {
-        if (!fileName) return "";
-        const { coverEpisode } = getValues();
-        const candidates = [{ name: "coverEpisode", files: coverEpisode }];
-        const match = candidates.find((item) =>
-            Array.isArray(item.files)
-            && item.files[0]
-            && typeof item.files[0] !== "string"
-            && item.files[0].name === fileName
-        );
-        return match?.name || "";
-    };
-
-    const handleRetryExplicitUpload = () => {
-        setIsExplicitModalOpen(false);
-        if (explicitField === "coverEpisode") {
-            coverEpisodeInputRef.current?.click();
-        }
-    };
+    const {
+        isExplicitModalOpen,
+        explicitImageName,
+        handleExplicitError,
+        handleRetryExplicitUpload,
+        closeExplicitModal,
+    } = useExplicitContentHandler({
+        getValues,
+        fieldInputRefs: {
+            coverEpisode: coverEpisodeInputRef,
+        },
+    });
 
     const onSubmit = async (data) => {
         const formData = new FormData();
@@ -109,11 +99,7 @@ export default function UploadSeriesEpisodeForm() {
             }
             router.push(`/series/detail/${data.seriesId}`);
         } catch (err) {
-            if (err.status == 403) {
-                const fileName = err.data?.fileName || "Gambar";
-                setExplicitField(findExplicitField(fileName));
-                setIsExplicitModalOpen(true);
-                setExplicitImageName(fileName);
+            if (handleExplicitError(err)) {
                 return;
             }
             console.error("Error creating episode of series:", err);
@@ -253,7 +239,7 @@ export default function UploadSeriesEpisodeForm() {
             {isExplicitModalOpen && (
                 <ContentExplicitModal
                     imageName={explicitImageName}
-                    onClose={() => setIsExplicitModalOpen(false)}
+                    onClose={closeExplicitModal}
                     onRetry={handleRetryExplicitUpload}
                 />
             )}

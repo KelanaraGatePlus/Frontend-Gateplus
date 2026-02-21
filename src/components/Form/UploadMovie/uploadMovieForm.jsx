@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import RichTextEditor from '@/components/RichTextEditor/page';
 
@@ -34,6 +34,7 @@ import PriceSelector from "@/components/UploadForm/PriceSelector";
 import { priceOption } from "@/lib/constants/priceOptions";
 import TermsCheckbox from "@/components/UploadForm/TermsCheckbox";
 import ContentExplicitModal from "@/components/Modal/ContentExplicitModal";
+import useExplicitContentHandler from "@/hooks/helper/useExplicitContentHandler";
 
 
 export default function UploadMovieForm() {
@@ -43,9 +44,6 @@ export default function UploadMovieForm() {
     const posterBannerInputRef = useRef(null);
     const coverBookInputRef = useRef(null);
     const thumbnailInputRef = useRef(null);
-    const [isExplicitModalOpen, setIsExplicitModalOpen] = useState(false);
-    const [explicitImageName, setExplicitImageName] = useState("");
-    const [explicitField, setExplicitField] = useState("");
 
     const {
         register,
@@ -81,38 +79,20 @@ export default function UploadMovieForm() {
 
     const [createMovie, { isLoading, error }] = useCreateMovieMutation();
     const { data: genresData } = useGetAllGenresQuery();
-
-    const findExplicitField = (fileName) => {
-        if (!fileName) return "";
-        const { posterBanner, coverBook, thumbnail } = getValues();
-        const candidates = [
-            { name: "posterBanner", files: posterBanner },
-            { name: "coverBook", files: coverBook },
-            { name: "thumbnail", files: thumbnail },
-        ];
-        const match = candidates.find((item) =>
-            Array.isArray(item.files)
-            && item.files[0]
-            && typeof item.files[0] !== "string"
-            && item.files[0].name === fileName
-        );
-        return match?.name || "";
-    };
-
-    const handleRetryExplicitUpload = () => {
-        setIsExplicitModalOpen(false);
-        if (explicitField === "posterBanner") {
-            posterBannerInputRef.current?.click();
-            return;
-        }
-        if (explicitField === "coverBook") {
-            coverBookInputRef.current?.click();
-            return;
-        }
-        if (explicitField === "thumbnail") {
-            thumbnailInputRef.current?.click();
-        }
-    };
+    const {
+        isExplicitModalOpen,
+        explicitImageName,
+        handleExplicitError,
+        handleRetryExplicitUpload,
+        closeExplicitModal,
+    } = useExplicitContentHandler({
+        getValues,
+        fieldInputRefs: {
+            posterBanner: posterBannerInputRef,
+            coverBook: coverBookInputRef,
+            thumbnail: thumbnailInputRef,
+        },
+    });
 
     const onSubmit = async (data) => {
         console.log("Form Data:", data);
@@ -149,11 +129,7 @@ export default function UploadMovieForm() {
                     router.push(`/movies/detail/${result.data.data.id}`);
                 }
             } catch (err) {
-                if (err.status == 403) {
-                    const fileName = err.data?.fileName || "Gambar";
-                    setExplicitField(findExplicitField(fileName));
-                    setIsExplicitModalOpen(true);
-                    setExplicitImageName(fileName);
+                if (handleExplicitError(err)) {
                     return;
                 }
                 console.error("Error creating movie:", err);
@@ -486,7 +462,7 @@ export default function UploadMovieForm() {
             {isExplicitModalOpen && (
                 <ContentExplicitModal
                     imageName={explicitImageName}
-                    onClose={() => setIsExplicitModalOpen(false)}
+                    onClose={closeExplicitModal}
                     onRetry={handleRetryExplicitUpload}
                 />
             )}

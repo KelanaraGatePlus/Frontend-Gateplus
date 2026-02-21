@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 /*[--- THIRD PARTY LIBRARIES ---]*/
@@ -31,6 +31,7 @@ import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
 import PriceSelector from "@/components/UploadForm/PriceSelector";
 import RichTextEditor from '@/components/RichTextEditor/page';
 import ContentExplicitModal from "@/components/Modal/ContentExplicitModal";
+import useExplicitContentHandler from "@/hooks/helper/useExplicitContentHandler";
 
 export default function UploadComicSeriesForm() {
     const router = useRouter();
@@ -38,9 +39,6 @@ export default function UploadComicSeriesForm() {
     const searchParams = useSearchParams();
     const fromEducation = searchParams.get("education") || null;
     const coverBookInputRef = useRef(null);
-    const [isExplicitModalOpen, setIsExplicitModalOpen] = useState(false);
-    const [explicitImageName, setExplicitImageName] = useState("");
-    const [explicitField, setExplicitField] = useState("");
     const {
         register,
         handleSubmit,
@@ -67,33 +65,19 @@ export default function UploadComicSeriesForm() {
     const [createComic, { isLoading, error }] = useCreateComicMutation();
     const { data: genresData } = useGetAllGenresQuery();
     const canSubscribeValue = watch("canSubscribe");
-
-    const findExplicitField = (fileName) => {
-        if (!fileName) return "";
-        const { posterBanner, coverBook } = getValues();
-        const candidates = [
-            { name: "posterBanner", files: posterBanner },
-            { name: "coverBook", files: coverBook },
-        ];
-        const match = candidates.find((item) =>
-            Array.isArray(item.files)
-            && item.files[0]
-            && typeof item.files[0] !== "string"
-            && item.files[0].name === fileName
-        );
-        return match?.name || "";
-    };
-
-    const handleRetryExplicitUpload = () => {
-        setIsExplicitModalOpen(false);
-        if (explicitField === "posterBanner") {
-            posterBannerInputRef.current?.click();
-            return;
-        }
-        if (explicitField === "coverBook") {
-            coverBookInputRef.current?.click();
-        }
-    };
+    const {
+        isExplicitModalOpen,
+        explicitImageName,
+        handleExplicitError,
+        handleRetryExplicitUpload,
+        closeExplicitModal,
+    } = useExplicitContentHandler({
+        getValues,
+        fieldInputRefs: {
+            posterBanner: posterBannerInputRef,
+            coverBook: coverBookInputRef,
+        },
+    });
 
     const onSubmit = async (data) => {
         const formData = new FormData();
@@ -117,11 +101,7 @@ export default function UploadComicSeriesForm() {
             }
             router.push(`/comics/upload/episode?series=${result.data.id}`);
         } catch (err) {
-            if (err.status == 403) {
-                const fileName = err.data?.fileName || "Gambar";
-                setExplicitField(findExplicitField(fileName));
-                setIsExplicitModalOpen(true);
-                setExplicitImageName(fileName);
+            if (handleExplicitError(err)) {
                 return;
             }
             console.error("Error creating comic:", err);
@@ -318,7 +298,7 @@ export default function UploadComicSeriesForm() {
             {isExplicitModalOpen && (
                 <ContentExplicitModal
                     imageName={explicitImageName}
-                    onClose={() => setIsExplicitModalOpen(false)}
+                    onClose={closeExplicitModal}
                     onRetry={handleRetryExplicitUpload}
                 />
             )}
