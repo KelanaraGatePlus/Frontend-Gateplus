@@ -47,11 +47,16 @@ export default function CarouselTemplate({
   const resolvePodcastSize = (label, fixedType) => {
     const isPopularPodcast =
       label === "Popular Podcasts" && fixedType === "podcast";
-    if (isPopularPodcast)
+
+    if (isPopularPodcast) {
       return "h-[200px] w-[120px] md:h-[250px] md:w-[150px] lg:h-[300px] lg:w-[180px]";
-    if (isTopTen)
+    }
+
+    if (isTopTen) {
       return "h-[200px] w-[220px] md:h-[230px] md:w-[240px] lg:w-[240px]";
-    return "h-[200px] w-[112px] md:h-[240px] md:w-[149px]";
+    }
+
+    return "h-[160px] w-[112px] md:h-[212px] md:w-[149px]";
   };
 
   return (
@@ -75,9 +80,8 @@ export default function CarouselTemplate({
 
                 <div className="relative">
                   <CarouselContent
-                    className={`flex ${
-                      isTopTen ? "gap-x-5" : "gap-x-2"
-                    } ${label === "Terakhir Anda Lihat" ? "pr-4 pl-4 md:pr-6 md:pl-6" : ""}`}
+                    className={`flex ${isTopTen ? "gap-x-5" : "gap-x-2"
+                      }`}
                   >
                     {contents.map((item, index) => {
                       const fixedType = resolveType(item);
@@ -91,7 +95,7 @@ export default function CarouselTemplate({
                           className={`
                             group relative
                             ${index === 0 ? "pl-4 md:pl-0" : ""}
-                            flex cursor-pointer items-center overflow-visible
+                            flex ${label === "Terakhir Anda Lihat" ? " flex-col" : ""} cursor-pointer items-center overflow-visible
                             ${podcastSize}
                             transition-all duration-300 ease-out
                             hover:scale-105
@@ -242,7 +246,19 @@ export default function CarouselTemplate({
                                   releaseDate={item.createdAt}
                                 />
                               )}
+                              {/* progress bar */}
+                              {label === "Terakhir Anda Lihat" && item.progress > 0 && (
+                                <div className="mt-2 w-full">
+                                  <div className="h-2 w-full overflow-hidden rounded-lg border border-white/30 bg-white/10">
+                                    <div
+                                      className="h-full bg-blue-500 transition-all duration-300"
+                                      style={{ width: `${item.progress}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              )}
                             </div>
+
                           )}
                         </CarouselItem>
                       );

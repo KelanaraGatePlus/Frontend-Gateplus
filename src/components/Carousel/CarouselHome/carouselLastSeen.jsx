@@ -57,12 +57,15 @@ export default function CarouselLastSeen() {
   if (!isLoading && lastSeenData.length === 0) return null;
 
   return (
-    <CarouselTemplate
-      label={"Terakhir Anda Lihat"}
-      contents={lastSeenData}
-      isLoading={isLoading}
-      isHomepage={true}
-      updateProgress={updateProgress}
-    />
+    <div className="mb-10">
+      <CarouselTemplate
+        label={"Terakhir Anda Lihat"}
+        contents={lastSeenData}
+        isLoading={isLoading}
+        isHomepage={true}
+        updateProgress={updateProgress}
+        withTopTag={false}
+      />
+    </div>
   );
 }
