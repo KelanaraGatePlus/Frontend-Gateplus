@@ -196,6 +196,7 @@ export default function CarouselTemplate({
                                   withNewestTag={withNewestTag}
                                   progress={item.progress}
                                   customHref={item.customHref}
+                                  trailerFileUrl={item.trailerFileUrl}
                                 />
                               )}
 

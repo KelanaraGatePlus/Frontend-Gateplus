@@ -13,6 +13,7 @@ import { formatDateTime } from "@/lib/timeFormatter";
 import logoLonceng from "@@/logo/logoSosmed/lonceng_fix.svg";
 import { BACKEND_URL } from "@/lib/constants/backendUrl";
 import { useGetAllNotificationsQuery } from "@/hooks/api/notificationSliceAPI";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 export default function NotificationMenu() {
   const notificationRef = useRef(null);
@@ -21,7 +22,34 @@ export default function NotificationMenu() {
   const [visibleCount, setVisibleCount] = useState(5);
   const [isNotificationOpen, setNotificationOpen] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
   const { data: notificationData } = useGetAllNotificationsQuery();
+
+  const notificationDropdownVariants = {
+    hidden: {
+      opacity: 0,
+      y: -8,
+      scale: 0.98,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: shouldReduceMotion ? 0 : 0.2,
+        ease: [0.16, 1, 0.3, 1],
+      },
+    },
+    exit: {
+      opacity: 0,
+      y: -6,
+      scale: 0.98,
+      transition: {
+        duration: shouldReduceMotion ? 0 : 0.14,
+        ease: "easeInOut",
+      },
+    },
+  };
 
   useEffect(() => {
     const token = Cookies.get("token");
@@ -114,8 +142,16 @@ export default function NotificationMenu() {
         <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-red-500 md:top-0" />
       )}
 
-      {isNotificationOpen && (
-        <div className="absolute top-8 right-0 z-50 mt-3.5 max-h-[1100px] w-3xs overflow-y-auto rounded-lg bg-[#2a6475] p-3.5 shadow-lg md:top-11 md:right-0 lg:w-md">
+      <AnimatePresence initial={false}>
+        {isNotificationOpen && (
+          <motion.div
+            className="absolute top-8 right-0 z-50 mt-3.5 max-h-275 w-3xs overflow-y-auto rounded-lg bg-[#2a6475] p-3.5 shadow-lg md:top-11 md:right-0 lg:w-md"
+            variants={notificationDropdownVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            style={{ originX: 1, originY: 0 }}
+          >
           <div className="flex items-start justify-between">
             <h2 className="mb-2 text-lg font-bold text-white">Notifications</h2>
             <div
@@ -163,7 +199,7 @@ export default function NotificationMenu() {
                     </span>
 
                     {!notification.isRead && (
-                      <div className="absolute top-1/2 right-0 flex w-1/3 -translate-y-1/2 items-center justify-end bg-gradient-to-l from-[#28a4cc] via-[#28a4cc] to-transparent">
+                      <div className="absolute top-1/2 right-0 flex w-1/3 -translate-y-1/2 items-center justify-end bg-linear-to-l from-[#28a4cc] via-[#28a4cc] to-transparent">
                         <div
                           className="mr-3 cursor-pointer rounded-md bg-[#156EB780] px-2 py-1 text-sm text-white transition duration-200 hover:scale-105 hover:bg-[#156EB7]"
                           onClick={() =>
@@ -195,8 +231,9 @@ export default function NotificationMenu() {
                 : "Muat Lebih Banyak"}
             </button>
           )}
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
