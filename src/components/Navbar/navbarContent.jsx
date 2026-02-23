@@ -70,7 +70,7 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
       <nav
         className={`${isMenuBarsOpen ? "rounded-b-xl" : ""} fixed z-30 w-full bg-white/5 backdrop-blur`}
       >
-        <section className={`${isSearchActive ? "hidden md:flex" : "flex"} items-center justify-between p-1 2xl:p-4 md:flex md:justify-between md:bg-fixed`}>
+        <section className={`${isSearchActive ? "hidden md:flex" : "flex"} items-center justify-between p-1 2xl:p-4 lg:px-10 md:flex md:justify-between md:bg-fixed`}>
           <div className="">
             <Link href="/"><div className="flex aspect-auto justify-center"><Image className="w-20 mb-1.5 md:h-auto md:w-auto" src={logoHome} alt="logo-gate+" priority /></div></Link>
           </div>
@@ -147,17 +147,17 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
                 {/* FIXED: tampilkan juga di mobile */}
                 <div className="flex md:flex md:flex-col md:py-3">
                   <Link href="/login">
-                    <div className="flex justify-center rounded-full bg-linear-to-t from-[#0E5BA8] to-[#0395BC] py-2 font-semibold px-4 lg:px-6 xl:px-8">
+                    <div className="flex justify-center rounded-full bg-linear-to-t from-[#0E5BA8] to-[#0395BC] py-2 font-semibold px-4 lg:px-6 xl:px-8 transition-transform duration-200 hover:scale-105">
                       <span className="zeinFont mt-0.5 text-center text-lg leading-tight drop-shadow-[0_0_2px_rgba(255,255,255,0.4)]">Log In</span>
                     </div>
                   </Link>
                 </div>
 
                 {/* FIXED: tampilkan juga di mobile */}
-                <div className="block md:block md:py-3">
+                <div className="flex md:flex md:flex-col md:py-3">
                   <Link href="/register">
-                    <div className="flex justify-center rounded-full bg-[#0881AB] py-2 font-semibold px-4 lg:px-6 xl:px-8">
-                      <span className="zeinFont mt-0.5 text-center text-base leading-tight drop-shadow-[0_0_2px_rgba(255,255,255,0.4)]">Sign Up</span>
+                    <div className="flex justify-center rounded-full bg-linear-to-t from-[#0E5BA8] to-[#0395BC] py-2 font-semibold px-4 lg:px-6 xl:px-8 transition-transform duration-200 hover:scale-105">
+                      <span className="zeinFont mt-0.5 text-center text-lg leading-tight drop-shadow-[0_0_2px_rgba(255,255,255,0.4)]">Sign Up</span>
                     </div>
                   </Link>
                 </div>
