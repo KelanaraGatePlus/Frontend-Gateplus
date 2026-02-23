@@ -16,6 +16,7 @@ import Link from "next/link";
 import getMinAge from "@/lib/helper/minAge";
 import useSyncUserData from "@/hooks/api/useSyncUserData";
 import { useCallback } from "react";
+import { DEFAULT_AVATAR } from "@/lib/defaults";
 
 export default function SearchPage() {
   const { userAge, isReady } = useSyncUserData();
@@ -281,7 +282,7 @@ function SearchResultsContent({ searchResults, loading, isBlurred }) {
                 <div className="flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-transparent bg-white/5 p-4 transition-all hover:border-blue-500 hover:bg-white/10">
                   <div className="relative h-20 w-20 overflow-hidden rounded-full">
                     <Image
-                      src={creator.imageUrl || "/default-avatar.png"}
+                      src={creator.imageUrl || DEFAULT_AVATAR.src}
                       alt={creator.profileName || creator.username}
                       fill
                       className="object-cover"
