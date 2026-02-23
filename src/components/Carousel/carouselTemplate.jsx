@@ -42,9 +42,7 @@ export default function CarouselTemplate({
     return getMinAge(item.ageRestriction);
   };
 
-  const resolveType = (item) => {
-    return item.type || type;
-  };
+  const resolveType = (item) => item.type || type;
 
   const resolvePodcastSize = (label, fixedType) => {
     const isPopularPodcast =
@@ -73,25 +71,22 @@ export default function CarouselTemplate({
         ) : (
           contents.length > 0 && (
             <section
-              className={`flex flex-col ${isOnCreatorProfile ? "my-3 md:my-0" : "my-3 md:my-5"
-                }`}
+              className={`flex flex-col ${isOnCreatorProfile ? "my-3 md:my-0" : "my-3 md:my-5"}`}
             >
               <Carousel>
-                <p className="zeinFont px-4 md:px-0 mb-1 text-2xl font-extrabold text-white md:mb-2 md:text-3xl lg:text-4xl xl:text-[40px]">
+                <p className="zeinFont mb-1 px-4 text-2xl font-extrabold text-white md:mb-2 md:px-0 md:text-3xl lg:text-4xl xl:text-[40px]">
                   {label}
                 </p>
 
                 <div className="relative">
                   <CarouselContent
-                    className={isTopTen ? "flex gap-x-5" : "flex gap-x-2"}
+                    className={`flex ${isTopTen ? "gap-x-5" : "gap-x-2"
+                      }`}
                   >
                     {contents.map((item, index) => {
                       const fixedType = resolveType(item);
-
                       const minAge = resolveMinAge(item);
-
                       const isUniquePodcast = fixedType === "podcast" && type;
-
                       const podcastSize = resolvePodcastSize(label, fixedType);
 
                       return (
@@ -100,7 +95,7 @@ export default function CarouselTemplate({
                           className={`
                             group relative
                             ${index === 0 ? "pl-4 md:pl-0" : ""}
-                            flex cursor-pointer items-center overflow-visible
+                            flex ${label === "Terakhir Anda Lihat" ? " flex-col" : ""} cursor-pointer items-center overflow-visible
                             ${podcastSize}
                             transition-all duration-300 ease-out
                             hover:scale-105
@@ -113,7 +108,7 @@ export default function CarouselTemplate({
                             <div className="flex h-full w-full overflow-y-hidden items-end gap-y-5 md:w-[500px] lg:w-[600px]">
                               <div className="flex h-full w-1/3 items-end justify-end overflow-visible">
                                 <p
-                                  className="zeinFont translate-x-[30%] md:translate-x-[40%] translate-y-[10%] text-[220px] leading-[0.7] font-extrabold text-[#1297DC] sm:text-[230px] md:text-[240px] lg:text-[250px]"
+                                  className="zeinFont translate-x-[30%] translate-y-[10%] text-[220px] leading-[0.7] font-extrabold text-[#1297DC] sm:text-[230px] md:translate-x-[40%] md:text-[240px] lg:text-[250px]"
                                   style={{
                                     filter:
                                       "drop-shadow(6px 6px 4px rgba(0,0,0,0.3))",
@@ -148,7 +143,6 @@ export default function CarouselTemplate({
                                   <PodcastCard
                                     {...item}
                                     coverUrl={item.coverPodcastImage}
-                                    className="h-full w-full"
                                   />
                                 )}
                                 {fixedType === "comic" && (
@@ -170,6 +164,8 @@ export default function CarouselTemplate({
                                   coverUrl={item.posterImageUrl}
                                   hasNewEpisode={item.hasNewEpisodes}
                                   withNewestTag={withNewestTag}
+                                  progress={item.progress}
+                                  customHref={item.customHref}
                                 />
                               )}
 
@@ -182,6 +178,8 @@ export default function CarouselTemplate({
                                   coverUrl={item.posterImageUrl}
                                   hasNewEpisode={item.hasNewEpisodes}
                                   withNewestTag={withNewestTag}
+                                  progress={item.progress}
+                                  customHref={item.customHref}
                                 />
                               )}
 
@@ -194,6 +192,8 @@ export default function CarouselTemplate({
                                   coverUrl={item.thumbnailImageUrl}
                                   hasNewEpisode={item.hasNewEpisodes}
                                   withNewestTag={withNewestTag}
+                                  progress={item.progress}
+                                  customHref={item.customHref}
                                 />
                               )}
 
@@ -206,6 +206,8 @@ export default function CarouselTemplate({
                                   coverUrl={item.thumbnailImageUrl}
                                   hasNewEpisode={item.hasNewEpisodes}
                                   withNewestTag={withNewestTag}
+                                  progress={item.progress}
+                                  customHref={item.customHref}
                                 />
                               )}
 
@@ -218,6 +220,8 @@ export default function CarouselTemplate({
                                   coverUrl={item.coverPodcastImage}
                                   hasNewEpisode={item.hasNewEpisodes}
                                   withNewestTag={withNewestTag}
+                                  progress={item.progress}
+                                  customHref={item.customHref}
                                 />
                               )}
 
@@ -229,7 +233,6 @@ export default function CarouselTemplate({
                                   creatorName={item.Creator?.profileName}
                                   releaseDate={item.createdAt}
                                   hasNewEpisode={item.hasNewEpisodes}
-
                                   minAge={minAge}
                                 />
                               )}
@@ -243,7 +246,19 @@ export default function CarouselTemplate({
                                   releaseDate={item.createdAt}
                                 />
                               )}
+                              {/* progress bar */}
+                              {label === "Terakhir Anda Lihat" && item.progress > 0 && (
+                                <div className="mt-2 w-full">
+                                  <div className="h-2 w-full overflow-hidden rounded-lg border border-white/30 bg-white/10">
+                                    <div
+                                      className="h-full bg-blue-500 transition-all duration-300"
+                                      style={{ width: `${item.progress}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              )}
                             </div>
+
                           )}
                         </CarouselItem>
                       );

@@ -23,6 +23,9 @@ import InputImageBanner from "@/components/UploadForm/InputImageBanner";
 import InputSelect from "@/components/UploadForm/InputSelect";
 import InputText from "@/components/UploadForm/InputText";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
+import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
+import ContentExplicitModal from "@/components/Modal/ContentExplicitModal";
+import useExplicitContentHandler from "@/hooks/helper/useExplicitContentHandler";
 
 /*[--- ASSETS PUBLIC ---]*/
 import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
@@ -41,6 +44,7 @@ export default function EditComicForm({ id }) {
         handleSubmit,
         control,
         formState: { errors },
+        getValues,
         reset,
     } = useForm({
         resolver: zodResolver(editComicSchema),
@@ -48,7 +52,7 @@ export default function EditComicForm({ id }) {
         defaultValues: {
             title: comicData?.data.title || "",
             description: comicData?.data.description || "",
-            genre: comicData?.data.categoriesId || "",
+            genre: comicData?.data.allCategories?.map(cat => cat.id) || [],
             language: comicData?.data.language || "",
             posterBanner: null,
             coverBook: null,
@@ -61,7 +65,7 @@ export default function EditComicForm({ id }) {
             reset({
                 title: comicData.data.title || "",
                 description: comicData.data.description || "",
-                genre: comicData.data.categoriesId || "",
+                genre: comicData.data.allCategories?.map(cat => cat.id) || [],
                 language: comicData.data.language || "",
                 posterBanner: comicData.data.posterImageUrl ? [comicData.data.posterImageUrl] : null,
                 coverBook: comicData.data.coverImageUrl ? [comicData.data.coverImageUrl] : null,
@@ -70,12 +74,29 @@ export default function EditComicForm({ id }) {
     }, [comicData, reset]);
 
     const { data: genresData } = useGetAllGenresQuery();
+    const {
+        isExplicitModalOpen,
+        explicitImageName,
+        handleExplicitError,
+        handleRetryExplicitUpload,
+        closeExplicitModal,
+    } = useExplicitContentHandler({
+        getValues,
+        fieldInputRefs: {
+            posterBanner: posterBannerInputRef,
+            coverBook: coverBookInputRef,
+        },
+    });
 
     const onSubmit = async (data) => {
         const formData = new FormData();
         formData.append("title", data.title);
         formData.append("description", data.description);
-        formData.append("categoriesId", data.genre);
+
+        // Handle genre as array and convert to JSON string
+        const selectedGenres = Array.isArray(data.genre) ? data.genre : [data.genre].filter(Boolean);
+        formData.append("categoriesId", JSON.stringify(selectedGenres));
+
         formData.append("language", data.language);
 
         if (data.coverBook && data.coverBook[0] && data.coverBook[0] instanceof File) {
@@ -89,6 +110,9 @@ export default function EditComicForm({ id }) {
             await updateComic({ id, formData }).unwrap();
             router.push(`/creator/dashboard/content`);
         } catch (err) {
+            if (handleExplicitError(err)) {
+                return;
+            }
             console.error("Error editing comic:", err);
         }
     };
@@ -120,20 +144,22 @@ export default function EditComicForm({ id }) {
                         )}
                     />
 
-
+                    {/* Genre */}
                     <Controller
                         name="genre"
                         control={control}
                         rules={{ required: "Genre wajib dipilih" }}
                         render={({ field, fieldState }) => (
-                            <InputSelect
+                            <GenreMultiSelect
                                 label="Genre"
                                 name="genre"
                                 options={genresData?.data.data || []}
-                                placeholder="Pilih Genre"
-                                value={field.value}
-                                onChange={field.onChange}
-                                onBlur={field.onBlur}
+                                placeholder="Pilih satu atau lebih genre yang paling menggambarkan film ini (Misal: Aksi, Horor, Drama Komedi, Sci-Fi)."
+                                value={field.value || []}
+                                onChange={(val) => {
+                                    field.onChange(val);
+                                    field.onBlur();
+                                }}
                                 error={fieldState.error?.message}
                             />
                         )}
@@ -212,6 +238,13 @@ export default function EditComicForm({ id }) {
             </form>
             {isLoading && (
                 <LoadingOverlay message="Tunggu Sebentar... <br/> Sedang mengubah comic" />
+            )}
+            {isExplicitModalOpen && (
+                <ContentExplicitModal
+                    imageName={explicitImageName}
+                    onClose={closeExplicitModal}
+                    onRetry={handleRetryExplicitUpload}
+                />
             )}
         </>
     );

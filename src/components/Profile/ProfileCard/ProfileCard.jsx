@@ -27,6 +27,13 @@ export default function ProfileCard({
   const [isSubscribing, setIsSubscribing] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
+  const bio =
+    data?.bio && data.bio !== "null"
+      ? data.bio
+      : data?.user?.bio && data.user.bio !== "null"
+        ? data.user.bio
+        : "";
+
   // Sinkronisasi state dengan prop isFollowed
   useEffect(() => {
     setIsSubscribed(isFollowed);
@@ -62,7 +69,7 @@ export default function ProfileCard({
   // console.log(data); muncul di console browser bang data user
   return (
     <>
-      <div className="relative mt-1 flex h-fit w-full flex-col items-center justify-center overflow-hidden rounded-xl border border-gray-500 bg-[#FFFFFF1A] p-4 backdrop-blur-lg transition-all duration-300 ease-out md:max-w-[300px] md:min-w-[300px]">
+      <div className="relative mt-1 z-20 flex h-fit w-full flex-col items-center justify-center overflow-hidden rounded-xl border border-gray-500 bg-[#FFFFFF1A] p-4 backdrop-blur-lg transition-all duration-300 ease-out md:max-w-[300px] md:min-w-[300px]">
         {profileFor === "creator" && (
           <section className="absolute top-0 mb-2 h-36 w-full overflow-hidden md:hidden md:h-32 lg:w-full">
             {data?.bannerImageUrl && data?.bannerImageUrl !== "null" ? (
@@ -111,7 +118,7 @@ export default function ProfileCard({
         {/* personal information */}
         {data && (
           <PersonalInformationSection
-            data={data}
+            data={{ ...data, bio }}
             totalSubsribers={totalSubs}
             profileFor={profileFor}
             isOwnProfile={isOwnProfile}

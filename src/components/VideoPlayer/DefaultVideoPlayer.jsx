@@ -8,8 +8,8 @@ import { useDeviceType } from "@/hooks/helper/deviceType";
 import Link from "next/link";
 import Image from "next/image";
 
-import IconsArrowLeft from "@@/icons/icons-dashboard/icons-arrow-left.svg";
 import iconFlag from "@@/icons/icon-flag.svg";
+import BackButton from "../BackButton/page";
 
 export default function DefaultVideoPlayer({
   src,
@@ -144,13 +144,11 @@ export default function DefaultVideoPlayer({
       <div
         // Gunakan z-50 agar pasti muncul di atas kontrol MuxPlayer dalam fullscreen
         onClick={(e) => e.stopPropagation()}
-        className={`absolute top-0 left-0 right-0 transition-opacity duration-300 z-50 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"
+        className={`absolute top-0 left-0 right-0 transition-opacity duration-300 z-20 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"
           } bg-gradient-to-b from-black/70 to-transparent py-4 px-4 sm:px-16 flex items-center gap-4 justify-between`}
       >
         <div className="flex flex-row gap-4 items-center justify-center">
-          <Link href="/">
-            <Image src={IconsArrowLeft} alt="icons-arrow-left" width={32} height={32} />
-          </Link>
+          <BackButton />
           <div className="flex flex-col gap-1">
             <span className="text-md text-white font-black">{title}</span>
             <span className="text-xs text-gray-400">

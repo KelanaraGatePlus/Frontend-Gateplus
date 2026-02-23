@@ -30,6 +30,8 @@ import IconsButtonSubmit from "@@/IconsButton/buttonSubmit.svg";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
 import GenreMultiSelect from "@/components/UploadForm/GenreMultiSelect";
 import PriceSelector from "@/components/UploadForm/PriceSelector";
+import ContentExplicitModal from "@/components/Modal/ContentExplicitModal";
+import useExplicitContentHandler from "@/hooks/helper/useExplicitContentHandler";
 
 export default function UploadEbookSeriesForm() {
     const router = useRouter();
@@ -43,6 +45,7 @@ export default function UploadEbookSeriesForm() {
         control,
         watch,
         formState: { errors },
+        getValues,
     } = useForm({
         resolver: zodResolver(createEbookSchema),
         mode: "onChange",
@@ -62,6 +65,19 @@ export default function UploadEbookSeriesForm() {
     const [createEbook, { isLoading, error }] = useCreateEbookMutation();
     const { data: genresData } = useGetAllGenresQuery();
     const canSubscribeValue = watch("canSubscribe");
+    const {
+        isExplicitModalOpen,
+        explicitImageName,
+        handleExplicitError,
+        handleRetryExplicitUpload,
+        closeExplicitModal,
+    } = useExplicitContentHandler({
+        getValues,
+        fieldInputRefs: {
+            posterBanner: posterBannerInputRef,
+            coverBook: coverBookInputRef,
+        },
+    });
 
     const onSubmit = async (data) => {
         const formData = new FormData();
@@ -90,6 +106,9 @@ export default function UploadEbookSeriesForm() {
             }
             router.push(`/ebooks/upload/episode?series=${result.data.id}`);
         } catch (err) {
+            if (handleExplicitError(err)) {
+                return;
+            }
             console.error("Error creating ebook:", err);
         }
     };
@@ -277,6 +296,13 @@ export default function UploadEbookSeriesForm() {
             </form>
             {isLoading && (
                 <LoadingOverlay message="Tunggu Sebentar... <br/> Sedang membuat series" />
+            )}
+            {isExplicitModalOpen && (
+                <ContentExplicitModal
+                    imageName={explicitImageName}
+                    onClose={closeExplicitModal}
+                    onRetry={handleRetryExplicitUpload}
+                />
             )}
         </>
     )

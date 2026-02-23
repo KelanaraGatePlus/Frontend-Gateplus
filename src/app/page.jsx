@@ -99,7 +99,7 @@ export default function HomePage() {
                 key={idx}
                 data-group-index={idx}
                 ref={(el) => (refs.current[idx] = el)}
-                className="relative min-h-[14rem] md:min-h-[16rem]"
+                className={`relative ${!loadedGroups[idx] ? "min-h-[14rem] md:min-h-[16rem]" : ""}`}
               >
                 {loadedGroups[idx] ? (
                   <>
