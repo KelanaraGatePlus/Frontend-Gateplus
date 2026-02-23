@@ -178,7 +178,7 @@ export default function ProductDetailSection({
         <BackButton />
 
         {/* container content */}
-        <div className="flex w-screen flex-col items-start gap-4 px-4 py-8 md:px-15 lg:flex-row">
+        <div className="flex w-screen flex-col items-center md:items-start gap-4 px-4 py-8 md:px-15 lg:flex-row">
           {/* cover buku */}
           <div
             className={`relative h-[300px] w-[200px] overflow-hidden rounded-lg md:h-[500px] md:w-[337px] md:rounded`}
