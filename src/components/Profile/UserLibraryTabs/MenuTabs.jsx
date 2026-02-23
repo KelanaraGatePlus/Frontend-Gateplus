@@ -23,7 +23,7 @@ export default function MenuTabs({ switchTab, handleSwitchTab }) {
                                 src={tab.icon}
                             />
                         </div>
-                        <p className="font-bold">{tab.name}</p>
+                        <p className="font-bold text-xs md:text-sm">{tab.name}</p>
                     </div>
                     <div className={`
                         h-2 w-full bg-gradient-to-b from-[#0395BC]/30 to-[#0E5BA8]/30 lg:h-3 relative

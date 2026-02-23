@@ -133,8 +133,8 @@ export default function WithdrawalPage() {
                     </div>
                 </div>
                 {/* Form Penarikan Saldo */}
-                <div className="grid grid-cols-3 gap-8">
-                    <div className="flex flex-col gap-6 col-span-2">
+                <div className="flex flex-col lg:grid lg:grid-cols-4 gap-8">
+                    <div className="flex flex-col gap-6 lg:col-span-2">
                         <h1 className="zeinFont font-black text-4xl">Penarikan Saldo</h1>
                         <form onSubmit={handleSubmit(onSubmit)}>
                             {/* Payment Methods */}
@@ -208,7 +208,7 @@ export default function WithdrawalPage() {
                         </form>
                     </div>
                     {/* Form Mendaftarkan Rekening */}
-                    <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-6 lg:col-span-2">
                         <div>
                             <h1 className="zeinFont font-black text-4xl">Tambah Metode Pembayaran Baru</h1>
                             <p className="text-[#AFAFAF] text-[16px]">
@@ -263,7 +263,7 @@ export default function WithdrawalPage() {
                     <p className="text-[#AFAFAF] text-[16px] mb-2">
                         Kelola dan analisis riwayat penarikan dana Anda
                     </p>
-                    <div className="grid grid-cols-4 gap-4">
+                    <div className="grid grid-cols-3 gap-4">
                         <div className="border border-[#1FC16BB2] bg-gradient-to-r from-[#1FC16BB2] to-[#0F5B32B2] p-4 rounded-lg flex flex-col gap-2 items-center justify-center">
                             <h2 className="font-bold text-[16px]">Total Ditarik</h2>
                             <div className="flex flex-row items-end">
@@ -282,13 +282,13 @@ export default function WithdrawalPage() {
                                 <p className="text-3xl font-bold">{earnedData?.data?.data?.successFee.toLocaleString()}</p>
                             </div>
                         </div>
-                        <div className="border border-white bg-[#393939] p-4 rounded-lg flex flex-col gap-2 items-center justify-center">
+                        {/* <div className="border border-white bg-[#393939] p-4 rounded-lg flex flex-col gap-2 items-center justify-center">
                             <h2 className="font-bold text-[16px]">Rata Rata Penarikan</h2>
                             <div className="flex flex-row items-end">
                                 <p className="text-[16px] font-bold">Rp</p>
                                 <p className="text-3xl font-bold">10.000.000</p>
                             </div>
-                        </div>
+                        </div> */}
                     </div>
                     <div className="mt-4">
                         <TransactionTable data={withdrawalData?.data.map((item) => ({

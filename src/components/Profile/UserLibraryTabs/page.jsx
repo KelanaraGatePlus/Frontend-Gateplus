@@ -18,7 +18,7 @@ import ContentList from "../ContentList";
 export default function UserLibraryTabs() {
   const [switchTab, setSwitchTab] = useState("Disimpan");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 4;
   const [totalItems, setTotalItems] = useState(0);
   const [activeContent, setActiveContent] = useState([]);
   const [isLoadingContent, setIsLoadingContent] = useState(false);
@@ -100,13 +100,31 @@ export default function UserLibraryTabs() {
         isBlurred={isBlurred}
       />
 
-      <section className="mx-5 mt-10 flex justify-center">
+      <section className="mt-2 flex justify-center w-full">
         {totalItems > itemsPerPage && (
           <Pagination
             currentPage={currentPage}
             totalPages={Math.max(1, Math.ceil(totalItems / itemsPerPage))}
             onPageChange={(page) => setCurrentPage(page)}
             showIcons
+            theme={{
+              pages: {
+                base: "inline-flex items-center -space-x-px",
+                showIcon: "inline-flex",
+                previous: {
+                  base: "ml-0 rounded-l-lg border border-[#0E5BA8] bg-[#E7F0FF] px-3 py-2 leading-tight text-[#0E5BA8] hover:bg-[#0E5BA8] hover:text-white",
+                  icon: "h-5 w-5",
+                },
+                next: {
+                  base: "rounded-r-lg border border-[#0E5BA8] bg-[#E7F0FF] px-3 py-2 leading-tight text-[#0E5BA8] hover:bg-[#0E5BA8] hover:text-white",
+                  icon: "h-5 w-5",
+                },
+                selector: {
+                  base: "w-10 border border-[#0E5BA8] bg-[#E7F0FF] py-2 leading-tight text-[#0E5BA8] hover:bg-[#0E5BA8] hover:text-white",
+                  active: "bg-[#0E5BA8] text-white hover:bg-[#0b4a86]",
+                },
+              },
+            }}
           />
         )}
       </section>

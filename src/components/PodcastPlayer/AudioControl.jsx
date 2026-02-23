@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import PropTypes from "prop-types";
 
@@ -16,18 +15,19 @@ import iconCollapse from "@@/icons/icons-collapse.svg";
 import iconComment from "@@/icons/icons-comment.svg";
 import iconVolumeUp from "@@/icons/icons-volume-up.svg";
 import iconVolumeDown from "@@/icons/icons-volume-down.svg";
+import Link from "next/link";
 
 export default function AudioControl({
     coverEpisodeUrl,
     title,
-    description,
+    creatorName,
+    creatorId,
     currentTime,
     duration,
     volume,
     isPlay,
     isExpand,
     isCommentVisible,
-    isOpenDetailPodcast,
     isMobile,
     handleSeekBackward,
     handleSeekForward,
@@ -40,20 +40,14 @@ export default function AudioControl({
     handleVolumeChange,
     handleIncreaseVolume,
     handleSeek,
-    handleClosePodcast,
+    hasPrevEpisodeAvailable,
+    hasNextEpisodeAvailable,
 }) {
-    const router = useRouter();
     const [isVolumeVisible, setIsVolumeVisible] = useState(false);
     const volumeSliderRef = useRef(null);
 
     const toggleVolumeSlider = () => setIsVolumeVisible(!isVolumeVisible);
-    const handleOpenPodcast = () => {
-        if (isOpenDetailPodcast) {
-            handleClosePodcast();
-        } else {
-            router.push(`?podcast_detail=${true}`);
-        }
-    };
+
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (
@@ -101,7 +95,7 @@ export default function AudioControl({
                     className={`flex w-full flex-col justify-between ${isExpand && isCommentVisible ? "lg:flex-col" : "lg:flex-row lg:grid lg:grid-cols-3"}`}
                 >
                     {/* detail */}
-                    <div className={`flex w-full items-center justify-center gap-3 lg:mt-0 lg:max-w-md hover:bg-blue-600/60 rounded-xl transition-all duration-300 ease-in-out cursor-pointer`} onClick={() => { handleOpenPodcast() }}>
+                    <div className={`flex w-full pt-6 items-center justify-center gap-3 lg:mt-0 lg:max-w-md rounded-xl transition-all duration-300 ease-in-out cursor-pointer`}>
                         {!isExpand && (
                             <div className="relative h-16 w-20">
                                 <Image
@@ -123,9 +117,9 @@ export default function AudioControl({
                                 <h3 className="zeinFont text-2xl font-extrabold text-white">
                                     {title ? title : "No Playing Podcast"}
                                 </h3>
-                                <p className="montserratFont line-clamp-2 text-xs text-white/50">
-                                    {description}
-                                </p>
+                                <Link href={`/creator/${creatorId}`} className="montserratFont hover:underline line-clamp-2 text-xs text-white/50">
+                                    {creatorName ? creatorName : "Unknown Creator"}
+                                </Link>
                             </div>
                         </div>
                     </div>
@@ -160,15 +154,17 @@ export default function AudioControl({
                             </button>
                         </div>
                         <div className={`${isMobile ? "max-h-[70px]" : "h-fit"} flex items-center justify-center overflow-hidden`}>
-                            <button className="relative h-16 w-10 transition-transform duration-150 active:scale-90 lg:w-16" onClick={handlePrevEpisode}>
-                                <Image
-                                    src={iconBackward}
-                                    alt="icon-backward"
-                                    priority
-                                    fill
-                                    className="h-full w-full object-cover"
-                                />
-                            </button>
+                            {hasPrevEpisodeAvailable && (
+                                <button className="relative h-16 w-10 transition-transform duration-150 active:scale-90 lg:w-16" onClick={handlePrevEpisode}>
+                                    <Image
+                                        src={iconBackward}
+                                        alt="icon-backward"
+                                        priority
+                                        fill
+                                        className="h-full w-full object-cover"
+                                    />
+                                </button>
+                            )}
                             <button
                                 className="relative h-16 w-10 cursor-pointer transition-transform duration-150 active:scale-90 lg:w-16"
                                 onClick={handleSeekBackward}
@@ -215,15 +211,17 @@ export default function AudioControl({
                                     className="h-full w-full object-cover"
                                 />
                             </button>
-                            <button className="relative h-16 w-10 transition-transform duration-150 active:scale-90 lg:w-16" onClick={handleNextEpisode}>
-                                <Image
-                                    src={iconForward}
-                                    alt="icon-backward"
-                                    priority
-                                    fill
-                                    className="h-full w-full object-cover"
-                                />
-                            </button>
+                            {hasNextEpisodeAvailable && (
+                                <button className="relative h-16 w-10 transition-transform duration-150 active:scale-90 lg:w-16" onClick={handleNextEpisode}>
+                                    <Image
+                                        src={iconForward}
+                                        alt="icon-backward"
+                                        priority
+                                        fill
+                                        className="h-full w-full object-cover"
+                                    />
+                                </button>
+                            )}
                         </div>
                         <div
                             className={`lg:hidden relative flex items-center justify-center gap-2`}
@@ -367,7 +365,8 @@ export default function AudioControl({
 AudioControl.propTypes = {
     coverEpisodeUrl: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
+    creatorName: PropTypes.string.isRequired,
+    creatorId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     currentTime: PropTypes.number.isRequired,
     duration: PropTypes.number.isRequired,
     volume: PropTypes.number.isRequired,
@@ -388,4 +387,6 @@ AudioControl.propTypes = {
     handleIncreaseVolume: PropTypes.func.isRequired,
     handleSeek: PropTypes.func.isRequired,
     handleClosePodcast: PropTypes.func.isRequired,
+    hasPrevEpisodeAvailable: PropTypes.bool,
+    hasNextEpisodeAvailable: PropTypes.bool,
 };
