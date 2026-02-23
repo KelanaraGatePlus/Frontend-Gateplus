@@ -31,7 +31,10 @@ function Footer() {
       icon: "tiktok",
     },
     { href: "https://x.com/Gateplusid", icon: "twitter" },
-    // { href: "#", icon: "facebook" },
+    {
+      href: "https://www.facebook.com/profile.php?id=61587037851309",
+      icon: "facebook",
+    },
   ];
 
   const renderSocialIcon = (icon) => {
