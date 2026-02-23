@@ -19,6 +19,7 @@ export default function PodcastPlayback({
   isOpen,
   setIsOpen,
   currentlyPlaying,
+  podcast,
 }) {
   const searchParams = useSearchParams();
   const [isMobile, setIsMobile] = useState(false);
@@ -29,7 +30,7 @@ export default function PodcastPlayback({
   const [duration, setDuration] = useState(0);
   const [blobUrl, setBlobUrl] = useState("");
   const [volume, setVolume] = useState(1);
-  const { audioRef, isPlaying, togglePlay, play, seek, seekBy, setPlayerVolume, setCurrentlyPlaying, playNextEpisode, playPrevEpisode, isExpand, setIsExpand, handleExpand, stopPlayback } = usePodcastPlayer();
+  const { audioRef, isPlaying, togglePlay, play, seek, seekBy, setPlayerVolume, setCurrentlyPlaying, playNextEpisode, playPrevEpisode, isExpand, setIsExpand, handleExpand, stopPlayback, hasNextEpisodeAvailable, hasPrevEpisodeAvailable } = usePodcastPlayer();
   const [episodePodcastData, setEpisodePodcastData] = useState({});
   const [createLog] = useCreateLogMutation();
   const [createProgressWatch] = useCreateProgressWatchMutation();
@@ -374,6 +375,8 @@ export default function PodcastPlayback({
           coverEpisodeUrl={episodePodcastData.coverPodcastEpisodeURL}
           title={episodePodcastData.title}
           description={episodePodcastData.description}
+          creatorName={podcast?.Creator?.profileName || 'Loading...'}
+          creatorId={podcast?.Creator?.id || null}
           currentTime={currentTime}
           duration={duration}
           volume={volume}
@@ -393,6 +396,8 @@ export default function PodcastPlayback({
           handleIncreaseVolume={handleIncreaseVolume}
           handleSeek={handleSeek}
           handleClosePodcast={handleClosePodcast}
+          hasPrevEpisodeAvailable={hasPrevEpisodeAvailable()}
+          hasNextEpisodeAvailable={hasNextEpisodeAvailable()}
         />
       </div>
 

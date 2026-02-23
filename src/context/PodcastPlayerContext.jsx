@@ -137,12 +137,24 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
         }
     };
 
+    const hasNextEpisodeAvailable = () => {
+        if (!episodeList || !currentlyPlaying) return false;
+        const idx = episodeList.findIndex((e) => e.id === currentlyPlaying.id);
+        return idx > 0; // next episode is idx - 1 (going backward in list)
+    };
+
+    const hasPrevEpisodeAvailable = () => {
+        if (!episodeList || !currentlyPlaying) return false;
+        const idx = episodeList.findIndex((e) => e.id === currentlyPlaying.id);
+        return idx >= 0 && idx < episodeList.length - 1; // previous episode is idx + 1 (going forward in list)
+    };
+
     const playPrevEpisode = () => {
         if (!episodeList || !currentlyPlaying) return;
         const idx = episodeList.findIndex((e) => e.id === currentlyPlaying.id);
         if (idx >= 0 && idx < episodeList.length - 1) {
             const next = episodeList[idx + 1];
-            if (next?.isPurchased || hasPodcastAccess(podcastMeta)) {
+            if (next?.isPurchased || next?.price == 'Free' || hasPodcastAccess(podcastMeta)) {
                 playEpisode(next, podcastMeta, episodeList);
             } else {
                 window.location.href = `/checkout/purchase/podcasts/${podcastMeta.id}/${next.id}`;
@@ -309,6 +321,8 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
             playEpisode,
             playNextEpisode,
             playPrevEpisode,
+            hasNextEpisodeAvailable,
+            hasPrevEpisodeAvailable,
             isDetailPage,
             setIsDetailPage,
             audioRef,

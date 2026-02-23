@@ -172,14 +172,12 @@ export default function DetailPodcastPage({ params }) {
     }
   }, [id, isHydrated, createLog]);
 
-  const handleBuy = async (episodeId, selectedPrice) => {
+  const handleBuy = async (episodeId) => {
     window.location.href = `/checkout/purchase/podcasts/${id}/${episodeId}`;
-    setIsModalOpen(false);
   };
 
   const handleSubscribe = async () => {
-    window.location.href = `/checkout/subscribe/podcasts/${selectedContentId}`;
-    setIsModalSubscribeOpen(false);
+    window.location.href = `/checkout/subscribe/podcasts/${id}`;
   };
 
   if (!isHydrated || isLoading || !data || !isReady) {
