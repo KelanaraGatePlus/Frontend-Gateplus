@@ -189,6 +189,7 @@ function CarouselPrevious({ className, ...props }) {
   const { orientation, scrollPrev, canScrollPrev, isMobile, freeScrollOnMobile } = useCarousel();
 
   if (freeScrollOnMobile && isMobile) return null;
+  if (!canScrollPrev) return null;
 
   return (
     <button
@@ -222,6 +223,7 @@ function CarouselNext({ className, ...props }) {
   const { orientation, scrollNext, canScrollNext, isMobile, freeScrollOnMobile } = useCarousel();
 
   if (freeScrollOnMobile && isMobile) return null;
+  if (!canScrollNext) return null;
 
   return (
     <button
