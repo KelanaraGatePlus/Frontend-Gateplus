@@ -1,6 +1,7 @@
 const routeWithoutFooter = [
-    /^\/comics\/read\/[^/]+$/,
-    /^\/ebooks\/read\/[^/]+$/,
+  /^\/comics\/read\/[^/]+$/,
+  /^\/ebooks\/read\/[^/]+$/,
+  /^\/education(\/.*)?$/,
 ];
 
 export default routeWithoutFooter;

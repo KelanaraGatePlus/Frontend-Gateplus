@@ -7,7 +7,7 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { Provider } from "react-redux";
 import "./globals.css";
 import Navbar from "@/components/Navbar/page";
-import Footer from "@/components/Footer/MainFooter";
+import Footer from "@/components/Footer/MainFooterEntertaint";
 import { useState } from "react";
 import FlexModal from "@/components/Modal/FlexModal";
 import Image from "next/image";
@@ -27,7 +27,7 @@ export default function RootLayout({ children }) {
 
   const redirect = (type, objective) => {
     setIsModalOpen(false);
-    const url = objective == 'upload' ? 'upload' : 'upload/episode';
+    const url = objective == "upload" ? "upload" : "upload/episode";
     switch (type) {
       case "movies":
         return `/movies/${url}`;
@@ -49,8 +49,12 @@ export default function RootLayout({ children }) {
   const pathname = usePathname();
 
   // true kalau salah satu pattern cocok
-  const hideNavbar = routeWithoutNavbar.some((pattern) => pattern.test(pathname));
-  const hideFooter = routeWithoutFooter.some((pattern) => pattern.test(pathname));
+  const hideNavbar = routeWithoutNavbar.some((pattern) =>
+    pattern.test(pathname),
+  );
+  const hideFooter = routeWithoutFooter.some((pattern) =>
+    pattern.test(pathname),
+  );
 
   const hidePlayerRoutes = [/^\/login$/, /^\/register$/];
   const hidePlayer = hidePlayerRoutes.some((pattern) => pattern.test(pathname));
@@ -73,21 +77,28 @@ export default function RootLayout({ children }) {
           `}
           </Script>
         </head>
-        <body className={`antialiased overflow-x-hidden`}>
+        <body className={`overflow-x-hidden antialiased`}>
           <AuthProvider>
             <PodcastPlayerProvider disablePlayer={hidePlayer}>
-              {!hideNavbar && <Navbar openCreateContentModal={(objective) => {
-                setObjective(objective);
-                setIsModalOpen(true);
-              }}
-                openRedeemVoucherModal={() => {
-                  setIsModalRedeemOpen(true);
+              {!hideNavbar && (
+                <Navbar
+                  openCreateContentModal={(objective) => {
+                    setObjective(objective);
+                    setIsModalOpen(true);
+                  }}
+                  openRedeemVoucherModal={() => {
+                    setIsModalRedeemOpen(true);
+                  }}
+                />
+              )}
+              <FlexModal
+                isOpen={isModalOpen}
+                onClose={() => {
+                  setIsModalOpen(false);
                 }}
-              />}
-              <FlexModal isOpen={isModalOpen} onClose={() => {
-                setIsModalOpen(false);
-              }} title={"Kategori Upload Karya"}>
-                <div className="flex flex-row items-center text-white text-xs md:text-sm xl:text-md xl:px-52">
+                title={"Kategori Upload Karya"}
+              >
+                <div className="xl:text-md flex flex-row items-center text-xs text-white md:text-sm xl:px-52">
                   {Object.values(contentType)
                     .filter((content) => {
                       if (objective === "episode") {
@@ -99,30 +110,33 @@ export default function RootLayout({ children }) {
                       <button
                         onClick={() => {
                           setIsModalOpen(false);
-                          window.location.href = redirect(content.pluralName, objective);
+                          window.location.href = redirect(
+                            content.pluralName,
+                            objective,
+                          );
                         }}
                         key={content.singleName}
-                        className="flex flex-col items-center justify-center mr-4 hover:cursor-pointer w-12 md:w-28 xl:w-[148px]"
+                        className="mr-4 flex w-12 flex-col items-center justify-center hover:cursor-pointer md:w-28 xl:w-[148px]"
                       >
-                        <Image
-                          src={content.icon}
-                          alt={content.singleName}
-                        />
+                        <Image src={content.icon} alt={content.singleName} />
                         <p>{content.pluralName.toUpperCase()}</p>
                       </button>
                     ))}
                 </div>
               </FlexModal>
-              <RedeemVoucherModal isModalRedeemOpen={isModalRedeemOpen} setIsModalRedeemOpen={setIsModalRedeemOpen} />
+              <RedeemVoucherModal
+                isModalRedeemOpen={isModalRedeemOpen}
+                setIsModalRedeemOpen={setIsModalRedeemOpen}
+              />
               <AppRouterCacheProvider>
-                {!hideNavbar && <div className="pt-12.5 md:pt-18.5 2xl:pt-[100px]">
-                  {children}
-                </div>}
+                {!hideNavbar && (
+                  <div className="pt-12.5 md:pt-18.5 2xl:pt-[100px]">
+                    {children}
+                  </div>
+                )}
                 {hideNavbar && children}
               </AppRouterCacheProvider>
-              {
-                !hideFooter && <Footer />
-              }
+              {!hideFooter && <Footer />}
             </PodcastPlayerProvider>
           </AuthProvider>
         </body>
