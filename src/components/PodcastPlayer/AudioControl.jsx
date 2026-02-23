@@ -95,7 +95,7 @@ export default function AudioControl({
                     className={`flex w-full flex-col justify-between ${isExpand && isCommentVisible ? "lg:flex-col" : "lg:flex-row lg:grid lg:grid-cols-3"}`}
                 >
                     {/* detail */}
-                    <div className={`flex w-full items-center justify-center gap-3 lg:mt-0 lg:max-w-md rounded-xl transition-all duration-300 ease-in-out cursor-pointer`}>
+                    <div className={`flex w-full pt-6 items-center justify-center gap-3 lg:mt-0 lg:max-w-md rounded-xl transition-all duration-300 ease-in-out cursor-pointer`}>
                         {!isExpand && (
                             <div className="relative h-16 w-20">
                                 <Image
