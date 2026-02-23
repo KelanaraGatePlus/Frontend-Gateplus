@@ -1,4 +1,4 @@
-import Footer from "@/components/Footer/MainFooter";
+import Footer from "@/components/Footer/MainFooterEntertaint";
 import FormUploadContentPage from "@/components/FormUploadContent/page";
 import NavbarLogin from "@/components/NavbarLogin/page";
 

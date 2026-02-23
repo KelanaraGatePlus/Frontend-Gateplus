@@ -1,7 +1,7 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
 
-import Footer from "@/components/Footer/MainFooter";
+import Footer from "@/components/Footer/MainFooterEntertaint";
 import NavbarLogin from "@/components/NavbarLogin/page";
 import IconsArrowLeft from "@@/icons/icons-dashboard/icons-arrow-left.svg";
 import PosterDiambangKematian from "@@/poster/poster-film-diambang-kematian.svg";

@@ -1,7 +1,7 @@
 /* eslint-disable react/react-in-jsx-scope */
 "use client";
 
-import Footer from "@/components/Footer/MainFooter";
+import Footer from "@/components/Footer/MainFooterEntertaint";
 import NavbarLogin from "@/components/NavbarLogin/page";
 import buttonFacebook from "@@/icons/facebook.svg";
 import iconsDibeli from "@@/icons/icons-buy.svg";
