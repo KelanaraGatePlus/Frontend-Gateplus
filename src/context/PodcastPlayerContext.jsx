@@ -33,6 +33,15 @@ function saveState(state) {
     }
 }
 
+function hasPodcastAccess(podcast) {
+    if (!podcast) return false;
+    return Boolean(
+        podcast.isOwner ||
+        podcast.isSubscribed ||
+        podcast.hasSubscription
+    );
+}
+
 export function PodcastPlayerProvider({ children, disablePlayer = false }) {
     const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
@@ -84,6 +93,12 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
         const podcastData = fetchedPodcastResp.data || fetchedPodcastResp;
         const derived =
             podcastData?.episode_podcasts?.episodes || podcastData?.episodePodcasts || podcastData?.episodes || [];
+
+        setPodcastMeta((prev) => ({
+            ...(prev || {}),
+            ...(podcastData || {}),
+        }));
+
         if (derived && derived.length) {
             setEpisodeList(derived);
         }
@@ -127,7 +142,7 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
         const idx = episodeList.findIndex((e) => e.id === currentlyPlaying.id);
         if (idx >= 0 && idx < episodeList.length - 1) {
             const next = episodeList[idx + 1];
-            if (next.isPurchased || podcastMeta.isOwner || podcastMeta.isSubscribed) {
+            if (next?.isPurchased || hasPodcastAccess(podcastMeta)) {
                 playEpisode(next, podcastMeta, episodeList);
             } else {
                 window.location.href = `/checkout/purchase/podcasts/${podcastMeta.id}/${next.id}`;
@@ -140,7 +155,7 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
         const idx = episodeList.findIndex((e) => e.id === currentlyPlaying.id);
         if (idx > 0) {
             const prev = episodeList[idx - 1];
-            if (prev.isPurchased || podcastMeta.isOwner || podcastMeta.isSubscribed) {
+            if (prev?.isPurchased || prev?.price == 'Free' || hasPodcastAccess(podcastMeta)) {
                 playEpisode(prev, podcastMeta, episodeList);
             } else {
                 window.location.href = `/checkout/purchase/podcasts/${podcastMeta.id}/${prev.id}`;

@@ -172,6 +172,16 @@ export default function DetailPodcastPage({ params }) {
     }
   }, [id, isHydrated, createLog]);
 
+  const handleBuy = async (episodeId, selectedPrice) => {
+    window.location.href = `/checkout/purchase/podcasts/${id}/${episodeId}`;
+    setIsModalOpen(false);
+  };
+
+  const handleSubscribe = async () => {
+    window.location.href = `/checkout/subscribe/podcasts/${selectedContentId}`;
+    setIsModalSubscribeOpen(false);
+  };
+
   if (!isHydrated || isLoading || !data || !isReady) {
     return <LoadingOverlay />;
   }
@@ -185,8 +195,8 @@ export default function DetailPodcastPage({ params }) {
         isLoading={isLoading}
         currentlyPlaying={currentlyPlaying}
         handlePlayPodcast={handlePlayPodcast}
-        handlePayment={() => {}}
-        handleSubscribe={() => {}}
+        handlePayment={handleBuy}
+        handleSubscribe={handleSubscribe}
         topContentData={data?.topContent || []}
         recomendationData={data?.recommendation || []}
         isBlurred={isBlurred}
