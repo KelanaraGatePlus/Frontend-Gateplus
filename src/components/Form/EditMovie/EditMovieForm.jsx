@@ -299,13 +299,41 @@ export default function EditMovieForm({ id }) {
                         error={errors.duration?.message}
                     />
 
+                    {/* Thumbnail */}
+                    <Controller
+                        name="thumbnail"
+                        control={control}
+                        rules={{ required: "Thumbnail wajib diunggah" }}
+                        render={({ field, fieldState }) => (
+                            <InputImageBanner
+                                type="cover"
+                                label="Poster Utama Film (Key Visual / Cover Art)"
+                                description="Gunakan rasio 1,6:2 (1600x2560), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten."
+                                name="thumbnail"
+                                icon={IconsGalery}
+                                inputRef={thumbnailInputRef}
+                                files={field.value || []}
+                                onUpload={(e) => {
+                                    const files = [...e.target.files];
+                                    field.onChange(files);
+                                }}
+                                onRemove={() => {
+                                    field.onChange([]);
+                                }}
+                                error={fieldState.error?.message}
+                            />
+                        )}
+                    />
+
+                    {/* Poster Banner */}
                     <Controller
                         name="posterBanner"
                         control={control}
+                        rules={{ required: "Poster banner wajib diunggah" }}
                         render={({ field, fieldState }) => (
                             <InputImageBanner
                                 type="banner"
-                                label="Poster Banner"
+                                label="Poster Input"
                                 description="Gunakan rasio 16:9 (1920x1080 px), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten."
                                 name="posterBanner"
                                 icon={IconsGalery}
@@ -322,42 +350,19 @@ export default function EditMovieForm({ id }) {
                             />
                         )}
                     />
-
+                    {/* Cover Book */}
                     <Controller
                         name="coverBook"
                         control={control}
+                        rules={{ required: "Cover book wajib diunggah" }}
                         render={({ field, fieldState }) => (
                             <InputImageBanner
                                 type="cover"
-                                label="Cover Film"
+                                label="Banner Input"
                                 description="Gunakan rasio 1,6:2 (1600x2560), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten."
                                 name="coverBook"
                                 icon={IconsGalery}
                                 inputRef={coverBookInputRef}
-                                files={field.value || []}
-                                onUpload={(e) => {
-                                    const files = [...e.target.files];
-                                    field.onChange(files);
-                                }}
-                                onRemove={() => {
-                                    field.onChange([]);
-                                }}
-                                error={fieldState.error?.message}
-                            />
-                        )}
-                    />
-
-                    <Controller
-                        name="thumbnail"
-                        control={control}
-                        render={({ field, fieldState }) => (
-                            <InputImageBanner
-                                type="thumbnail"
-                                label="Thumbnail"
-                                description="Gunakan format JPG/PNG, ukuran maksimal 500KB. Thumbnail harus jelas dan mewakili isi konten."
-                                name="thumbnail"
-                                icon={IconsGalery}
-                                inputRef={thumbnailInputRef}
                                 files={field.value || []}
                                 onUpload={(e) => {
                                     const files = [...e.target.files];

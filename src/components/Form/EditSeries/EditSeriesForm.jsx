@@ -187,20 +187,20 @@ export default function EditSeriesForm({ id }) {
                         error={errors.title?.message}
                     />
 
-<Controller
-    name="description"
-    control={control}
-    render={({ field, fieldState }) => (
-        <RichTextEditor
-            label="Sinopsis Lengkap Seri"
-            name="description"
-            placeholder="Jelaskan premis utama dunia cerita, konflik sentral, karakter utama, dan tema yang diangkat. Mesin pencari menggunakan teks ini untuk mempertemukan karyamu dengan pembaca yang tepat."
-            value={field.value}
-            onChange={field.onChange}
-            error={fieldState.error?.message}
-        />
-    )}
-/>
+                    <Controller
+                        name="description"
+                        control={control}
+                        render={({ field, fieldState }) => (
+                            <RichTextEditor
+                                label="Sinopsis Lengkap Seri"
+                                name="description"
+                                placeholder="Jelaskan premis utama dunia cerita, konflik sentral, karakter utama, dan tema yang diangkat. Mesin pencari menggunakan teks ini untuk mempertemukan karyamu dengan pembaca yang tepat."
+                                value={field.value}
+                                onChange={field.onChange}
+                                error={fieldState.error?.message}
+                            />
+                        )}
+                    />
 
                     <Controller
                         name="genre"
@@ -289,13 +289,41 @@ export default function EditSeriesForm({ id }) {
                         error={errors.productionHouse?.message}
                     />
 
+                    {/* Thumbnail */}
+                    <Controller
+                        name="thumbnail"
+                        control={control}
+                        rules={{ required: "Thumbnail wajib diunggah" }}
+                        render={({ field, fieldState }) => (
+                            <InputImageBanner
+                                type="cover"
+                                label="Poster Utama Film (Key Visual / Cover Art)"
+                                description='Gunakan rasio 1,6:2 (1600x2560), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten. Gunakan gambar beresolusi tinggi (format vertikal/portrait biasanya standar industri film). Ini adalah "wajah" film Anda di seluruh platform dan hasil pencarian Google. Pastikan gambarnya profesional, memuat judul yang jelas, dan sangat memancing klik (High CTR).'
+                                name="thumbnail"
+                                icon={IconsGalery}
+                                inputRef={thumbnailInputRef}
+                                files={field.value || []}
+                                onUpload={(e) => {
+                                    const files = [...e.target.files];
+                                    field.onChange(files);
+                                }}
+                                onRemove={() => {
+                                    field.onChange([]);
+                                }}
+                                error={fieldState.error?.message}
+                            />
+                        )}
+                    />
+
+                    {/* Poster Banner */}
                     <Controller
                         name="posterBanner"
                         control={control}
+                        rules={{ required: "Poster banner wajib diunggah" }}
                         render={({ field, fieldState }) => (
                             <InputImageBanner
                                 type="banner"
-                                label="Poster Banner"
+                                label="Poster Input"
                                 description="Gunakan rasio 16:9 (1920x1080 px), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten."
                                 name="posterBanner"
                                 icon={IconsGalery}
@@ -312,42 +340,19 @@ export default function EditSeriesForm({ id }) {
                             />
                         )}
                     />
-
+                    {/* Cover Book */}
                     <Controller
                         name="coverBook"
                         control={control}
+                        rules={{ required: "Cover book wajib diunggah" }}
                         render={({ field, fieldState }) => (
                             <InputImageBanner
                                 type="cover"
-                                label="Cover Series"
+                                label="Banner Input"
                                 description="Gunakan rasio 1,6:2 (1600x2560), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten."
                                 name="coverBook"
                                 icon={IconsGalery}
                                 inputRef={coverBookInputRef}
-                                files={field.value || []}
-                                onUpload={(e) => {
-                                    const files = [...e.target.files];
-                                    field.onChange(files);
-                                }}
-                                onRemove={() => {
-                                    field.onChange([]);
-                                }}
-                                error={fieldState.error?.message}
-                            />
-                        )}
-                    />
-
-                    <Controller
-                        name="thumbnail"
-                        control={control}
-                        render={({ field, fieldState }) => (
-                            <InputImageBanner
-                                type="thumbnail"
-                                label="Thumbnail"
-                                description="Gunakan format JPG/PNG, ukuran maksimal 500KB. Thumbnail harus jelas dan mewakili isi konten."
-                                name="thumbnail"
-                                icon={IconsGalery}
-                                inputRef={thumbnailInputRef}
                                 files={field.value || []}
                                 onUpload={(e) => {
                                     const files = [...e.target.files];
@@ -380,5 +385,5 @@ export default function EditSeriesForm({ id }) {
 }
 
 EditSeriesForm.propTypes = {
-  id: PropTypes.string.isRequired,
+    id: PropTypes.string.isRequired,
 }

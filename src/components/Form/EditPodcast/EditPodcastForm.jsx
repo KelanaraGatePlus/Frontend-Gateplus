@@ -209,14 +209,16 @@ export default function EditPodcastForm({ id }) {
                         )}
                     />
 
+                    {/* Cover Podcast */}
                     <Controller
                         name="coverPodcast"
                         control={control}
+                        rules={{ required: "Cover podcast wajib diunggah" }}
                         render={({ field, fieldState }) => (
                             <InputImageBanner
-                                type="cover"
-                                label="Cover Podcast"
-                                description="Gunakan rasio 1,6:2 (1600x2560), format JPG/PNG, ukuran maksimal 500KB. Cover harus jelas dan mewakili isi konten."
+                                type="thumbnail"
+                                label="Sampul Seri Utama (Cover Art)"
+                                description="Rasio: 1:1 Format: JPG/PNG Ukuran Maksimal: 500 KB"
                                 name="coverPodcast"
                                 icon={IconsGalery}
                                 inputRef={coverPodcastInputRef}

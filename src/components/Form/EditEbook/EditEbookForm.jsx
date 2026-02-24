@@ -193,12 +193,12 @@ export default function EditEbookForm({ id }) {
                     <Controller
                         name="posterBanner"
                         control={control}
-                        rules={{ required: "Poster banner wajib diunggah" }}
+                        rules={{ required: "Cover book wajib diunggah" }}
                         render={({ field, fieldState }) => (
                             <InputImageBanner
-                                type="banner"
-                                label="Poster Banner"
-                                description="Gunakan rasio 16:9 (1920x1080 px), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten."
+                                type="cover"
+                                label="Sampul Utama Seri"
+                                description="Gunakan rasio 1,6:2 (1600x2560), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten. Poster ini krusial untuk tampilan di aplikasi seluler (portrait view). Pastikan judul dan visual utama langsung menarik perhatian."
                                 name="posterBanner"
                                 icon={IconsGalery}
                                 inputRef={posterBannerInputRef}
@@ -214,16 +214,17 @@ export default function EditEbookForm({ id }) {
                             />
                         )}
                     />
-                    {/* Cover Book */}
+
+                    {/* Poster Banner */}
                     <Controller
                         name="coverBook"
                         control={control}
-                        rules={{ required: "Cover book wajib diunggah" }}
+                        rules={{ required: "Poster banner wajib diunggah" }}
                         render={({ field, fieldState }) => (
                             <InputImageBanner
-                                type="cover"
-                                label="Cover Book"
-                                description="Gunakan rasio 1,6:2 (1600x2560), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten."
+                                type="banner"
+                                label="Poster Banner"
+                                description="Gunakan rasio 16:9 (1920x1080 px), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten. Poster ini akan digunakan pada tampilan desktop dan landscape (web view). Pastikan detail visual utama terlihat jelas."
                                 name="coverBook"
                                 icon={IconsGalery}
                                 inputRef={coverBookInputRef}
