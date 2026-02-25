@@ -437,14 +437,14 @@ export default function CreatorSettingsPage() {
                         let value = e.target.value;
                         // cuma huruf dan spasi
                         value = value.replace(/[^a-zA-Z\s]/g, "");
-                        // maksimal 20 karakter
-                        value = value.slice(0, 20);
+                        // maksimal 40 karakter
+                        value = value.slice(0, 40);
 
                         setProfileName(value);
                       }}
                       value={profileName}
                       placeholder="Masukan Profile Name"
-                      maxLength={20}
+                      maxLength={40}
                       required
                     />
                   </div>
@@ -468,13 +468,17 @@ export default function CreatorSettingsPage() {
 
                         // Hanya izinkan huruf a-z (besar & kecil)
                         value = value.replace(/[^a-zA-Z]/g, "");
-
+                        
+                        // maksimal 40 karakter
+                        value = value.slice(0, 40);
+                        
                         // Update state
                         setUsername(value);
                       }}
                       value={username}
                       placeholder="Masukan username"
                       disabled={!canChangeUsername}
+                      maxLength={40}
                       required
                     />
                   </div>
