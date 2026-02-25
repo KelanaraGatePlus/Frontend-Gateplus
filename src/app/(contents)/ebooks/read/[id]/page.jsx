@@ -42,7 +42,7 @@ export default function ReadEbookPage({ params }) {
   const [lineHeight, setLineHeight] = useState("normal");
   const [textAlign, setTextAlign] = useState("justify");
   const [fontFamily, setFontFamily] = useState("inter");
-  const [readingMode, setReadingMode] = useState("page");
+  const [readingMode, setReadingMode] = useState("scroll");
   const [progress, setProgress] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [cfiString, setCfiString] = useState(null);
@@ -225,6 +225,21 @@ export default function ReadEbookPage({ params }) {
     setReadingMode(mode);
   }, []);
 
+  const handleToggleMobileMenu = useCallback(() => {
+    setMobileMenuOpen((prev) => {
+      const next = !prev;
+      if (next) {
+        setIsCommentVisible(false);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleOpenCommentModal = useCallback(() => {
+    setMobileMenuOpen(false);
+    setIsCommentVisible(true);
+  }, []);
+
   // Tambahkan ref di bagian atas ReadEbookPage
   const lastCfiRef = useRef(null);
 
@@ -360,6 +375,25 @@ export default function ReadEbookPage({ params }) {
     setShowSkeleton(isLoading);
   }, [isLoading]);
 
+  useEffect(() => {
+    if (mobileMenuOpen && isCommentVisible) {
+      setMobileMenuOpen(false);
+    }
+  }, [mobileMenuOpen, isCommentVisible]);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const previousOverflow = document.body.style.overflow;
+
+    if (isCommentVisible) {
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isCommentVisible]);
+
   // Global protection: block copy, right-click, and common inspect shortcuts
   useEffect(() => {
     const preventDefault = (e) => {
@@ -440,7 +474,7 @@ export default function ReadEbookPage({ params }) {
           <Icon
             icon={"solar:menu-dots-bold-duotone"}
             className={`z-10 h-10 w-10 text-3xl ${colorTheme === "dark" ? "text-white" : "text-black"}`}
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            onClick={handleToggleMobileMenu}
           />
         </div>
 
@@ -454,7 +488,7 @@ export default function ReadEbookPage({ params }) {
               <Icon
                 icon={"solar:close-circle-bold-duotone"}
                 className={`h-8 w-8 self-end text-3xl ${colorTheme === "dark" ? "text-white" : "text-black"}`}
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                onClick={handleToggleMobileMenu}
               />
 
               {/* Font Size Controller */}
@@ -711,6 +745,7 @@ export default function ReadEbookPage({ params }) {
                   episodeEbookId={id}
                   currentPage={currentPage}
                   cfiPosition={cfiString}
+                  topBarHeight={64}
                   bottomBarHeight={isBottomBarOpen ? 176 : 56}
                   onLoadingChange={setIsReaderLoading}
                 />
@@ -791,7 +826,7 @@ export default function ReadEbookPage({ params }) {
                     <img
                       src={iconCommentComic.src}
                       className={`h-6 w-6 cursor-pointer transition-opacity hover:opacity-70 md:h-8 md:w-8`}
-                      onClick={() => setIsCommentVisible(true)}
+                      onClick={handleOpenCommentModal}
                     />
                   </div>
                   <div className="grid w-full grid-cols-2 gap-2 pb-2 md:gap-4">
@@ -849,7 +884,7 @@ export default function ReadEbookPage({ params }) {
                 <img
                   src={iconCommentComic.src}
                   className={`h-6 w-6 cursor-pointer transition-opacity hover:opacity-70 md:h-8 md:w-8`}
-                  onClick={() => setIsCommentVisible(true)}
+                  onClick={handleOpenCommentModal}
                 />
               </div>
             )}
