@@ -107,6 +107,7 @@ export default function CommentForm({
           {
             snapToken: result.data.snapToken,
             snapUrl: result.data.snapUrl,
+            orderId: result.data.orderId || null,
             provider: result.data.provider || "midtrans",
             paymentMethod: result.data.paymentMethod || null,
             qrisImageUrl:
