@@ -8,27 +8,29 @@ export default function PaymentMethodSelector({
   showError = false,
   basePrice = 0,
 }) {
-  // Find the cheapest payment method
-  const activePaymentMethods = Object.entries(paymentMethods).filter(
-    ([, method]) => method.isActive
+  const activePaymentMethods = Object.entries(paymentMethods)
+    .filter(([, method]) => method.isActive)
+    .map(([key, method], index) => ({
+      key,
+      method,
+      fee: countAdminFee(basePrice, method.midtrans_code),
+      index,
+    }));
+
+  const sortedPaymentMethods = [...activePaymentMethods].sort((a, b) => {
+    if (a.fee !== b.fee) return a.fee - b.fee;
+    return a.index - b.index;
+  });
+
+  const cheapestMethodKey = sortedPaymentMethods[0]?.key || null;
+  const topThreeCheapestKeys = new Set(
+    sortedPaymentMethods.slice(0, 3).map((item) => item.key)
   );
 
-  const getCheapestKey = () => {
-    let cheapestKey = null;
-    let lowestFee = Infinity;
-
-    activePaymentMethods.forEach(([key, method]) => {
-      const fee = countAdminFee(basePrice, method.midtrans_code);
-      if (fee < lowestFee) {
-        lowestFee = fee;
-        cheapestKey = key;
-      }
-    });
-
-    return cheapestKey;
-  };
-
-  const cheapestMethodKey = getCheapestKey();
+  const prioritizedPaymentMethods = [
+    ...sortedPaymentMethods.slice(0, 3),
+    ...activePaymentMethods.filter((item) => !topThreeCheapestKeys.has(item.key)),
+  ];
 
   // Auto-select the cheapest method on mount or when basePrice changes
   useEffect(() => {
@@ -43,8 +45,8 @@ export default function PaymentMethodSelector({
         <p className="font-bold">Pilih Metode Pembayaran</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-        {activePaymentMethods
-          .map(([key, method]) => {
+        {prioritizedPaymentMethods
+          .map(({ key, method, fee }) => {
             const isSelected = selectedPaymentMethod === key;
             const isCheapest = key === cheapestMethodKey;
             return (
@@ -75,7 +77,7 @@ export default function PaymentMethodSelector({
                 </span>
                 <div className="flex flex-col items-end gap-1 text-xs w-full">
                   <p className="text-[#C6C6C6]">Biaya Admin</p>
-                  <p>+{countAdminFee(basePrice, method.midtrans_code)}</p>
+                  <p>+{fee}</p>
                 </div>
               </button>
             );
