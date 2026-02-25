@@ -366,18 +366,20 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
             {/* Mount playback UI only when player is not disabled */}
             {!disablePlayer && !disablePlayerOnRoute && (
                 <>
-                    <div className={`${isDetailPage || isExpand ? "" : "hidden"}`}>
-                        <Suspense fallback={null}>
-                            <PodcastPlayback
-                                isOpen={isOpen}
-                                setIsOpen={setIsOpen}
-                                currentlyPlaying={currentlyPlaying}
-                                handlePlayPodcast={(episode) => playEpisode(episode, podcastMeta, episodeList)}
-                                podcast={podcastMeta}
-                                episodePodcasts={episodeList}
-                            />
-                        </Suspense>
-                    </div>
+                    {currentlyPlaying && (
+                        <div className={`${isDetailPage || isExpand ? "" : "hidden"}`}>
+                            <Suspense fallback={null}>
+                                <PodcastPlayback
+                                    isOpen={isOpen}
+                                    setIsOpen={setIsOpen}
+                                    currentlyPlaying={currentlyPlaying}
+                                    handlePlayPodcast={(episode) => playEpisode(episode, podcastMeta, episodeList)}
+                                    podcast={podcastMeta}
+                                    episodePodcasts={episodeList}
+                                />
+                            </Suspense>
+                        </div>
+                    )}
 
                     {/* Render mini player on non-detail pages */}
                     {!isDetailPage && !isExpand && !hideMiniPlayerOnRoute && (

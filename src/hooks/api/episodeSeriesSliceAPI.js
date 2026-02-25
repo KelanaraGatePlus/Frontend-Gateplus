@@ -73,6 +73,9 @@ export const episodeSeriesSliceAPI = createApi({
                 { type: "EpisodeSeries", id: "LIST" },
             ],
         }),
+        getEpisodeSeriesToken: builder.query({
+            query: (id) => `/episodeSeries/${id}/stream`,
+        }),
     }),
 });
 
@@ -82,4 +85,5 @@ export const {
     useCreateEpisodeSeriesMutation,
     useUpdateEpisodeSeriesMutation,
     useDeleteEpisodeSeriesMutation,
+    useGetEpisodeSeriesTokenQuery
 } = episodeSeriesSliceAPI;

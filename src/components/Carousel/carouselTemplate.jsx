@@ -44,7 +44,7 @@ export default function CarouselTemplate({
 
   const resolveType = (item) => item.type || type;
 
-  const resolvePodcastSize = (label, fixedType) => {
+  const resolvePodcastSize = (label, fixedType, isTen) => {
     const isPopularPodcast =
       label === "Popular Podcasts" && fixedType === "podcast";
 
@@ -52,8 +52,12 @@ export default function CarouselTemplate({
       return "h-[200px] w-[120px] md:h-[250px] md:w-[150px] lg:h-[300px] lg:w-[180px]";
     }
 
-    if (isTopTen) {
+    if (isTopTen && !isTen) {
       return "h-[200px] w-[220px] md:h-[230px] md:w-[240px] lg:w-[240px]";
+    }
+
+    if (isTopTen && isTen) {
+      return "h-[200px] w-[220px] md:h-[230px] md:w-[470px] lg:w-[470px]";
     }
 
     return "h-[160px] w-[112px] md:h-[212px] md:w-[149px]";
@@ -84,10 +88,11 @@ export default function CarouselTemplate({
                       }`}
                   >
                     {contents.map((item, index) => {
+                      const rank = index + 1;
                       const fixedType = resolveType(item);
                       const minAge = resolveMinAge(item);
                       const isUniquePodcast = fixedType === "podcast" && type;
-                      const podcastSize = resolvePodcastSize(label, fixedType);
+                      const podcastSize = resolvePodcastSize(label, fixedType, rank >= 10);
 
                       return (
                         <CarouselItem
@@ -105,10 +110,13 @@ export default function CarouselTemplate({
                           style={{ flex: "0 0 auto" }}
                         >
                           {isTopTen ? (
-                            <div className="flex h-full w-full overflow-y-hidden items-end gap-y-5 md:w-[500px] lg:w-[600px]">
+                            <div className={`flex h-full w-full overflow-y-hidden items-end gap-y-5  ${rank >= 10 ? "md:w-[500px] lg:w-[600px]" : "md:w-[500px] lg:w-[600px]"}`}>
                               <div className="flex h-full w-1/3 items-end justify-end overflow-visible">
                                 <p
-                                  className="zeinFont translate-x-[30%] translate-y-[10%] text-[220px] leading-[0.7] font-extrabold text-[#1297DC] sm:text-[230px] md:translate-x-[40%] md:text-[240px] lg:text-[250px]"
+                                  className={`zeinFont translate-y-[10%] leading-[0.7] font-extrabold text-[#1297DC] ${rank >= 10
+                                    ? "translate-x-[12%] text-[170px] sm:text-[180px] md:translate-x-[16%] md:text-[190px] lg:text-[200px]"
+                                    : "translate-x-[30%] text-[220px] sm:text-[230px] md:translate-x-[40%] md:text-[240px] lg:text-[250px]"
+                                    }`}
                                   style={{
                                     filter:
                                       "drop-shadow(6px 6px 4px rgba(0,0,0,0.3))",
@@ -116,7 +124,7 @@ export default function CarouselTemplate({
                                       "1px 10px 3px #0D7AB3, 2px 2px 8px rgba(0,0,0,0.5)",
                                   }}
                                 >
-                                  {index + 1}
+                                  {rank}
                                 </p>
                               </div>
 
