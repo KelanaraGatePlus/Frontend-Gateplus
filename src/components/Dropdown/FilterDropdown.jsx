@@ -11,7 +11,8 @@ export default function FilterDropdown({
     queryParameterName,
     options,
     label,
-    multiSelect = true
+    multiSelect = true,
+    conflictRules = {}
 }) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
@@ -43,6 +44,13 @@ export default function FilterDropdown({
                     // Hapus nilai ini
                     existingValues = existingValues.filter(val => val !== optionValue);
                 } else {
+                    const conflictingValues = conflictRules[optionValue] || [];
+                    if (conflictingValues.length > 0) {
+                        existingValues = existingValues.filter(
+                            val => !conflictingValues.includes(val)
+                        );
+                    }
+
                     // Tambahkan nilai baru
                     existingValues.push(optionValue);
                 }
@@ -99,7 +107,9 @@ export default function FilterDropdown({
             {/* Dropdown List */}
             {isOpen && (
                 <div className="absolute left-0 mt-2 w-48 rounded-md border border-white/20 bg-white/10 backdrop-blur-md shadow-lg text-white z-50">
-                    <ul className="py-2 text-sm">
+                    <ul
+                        className={`py-2 text-sm ${options.length > 5 ? "max-h-52 overflow-y-auto" : ""}`}
+                    >
                         {options.map((option) => {
                             const isSelected = currentValues.includes(option.value);
 
@@ -156,5 +166,6 @@ FilterDropdown.propTypes = {
         })
     ).isRequired,
     label: PropTypes.string.isRequired,
-    multiSelect: PropTypes.bool
+    multiSelect: PropTypes.bool,
+    conflictRules: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.string))
 };

@@ -1,6 +1,9 @@
 import React, { useRef, useState, useCallback, useEffect } from "react";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { useCreateProgressWatchMutation } from "@/hooks/api/progressWatchAPI";
+import { useGetMovieTokenQuery } from "@/hooks/api/movieSliceAPI";
+import { useGetEpisodeSeriesTokenQuery } from "@/hooks/api/episodeSeriesSliceAPI";
+import { useGetEducationEpisodeTokenQuery } from "@/hooks/api/educationEpisodeSliceAPI";
 import PropTypes from "prop-types";
 import MuxPlayer from "@mux/mux-player-react";
 import throttle from "lodash.throttle";
@@ -34,6 +37,39 @@ export default function DefaultVideoPlayer({
   const [createProgressWatch] = useCreateProgressWatchMutation();
   const [showControls, setShowControls] = useState(true);
   const [duration, setDuration] = useState(0);
+
+  const isMovieContent = contentType === "MOVIE" || contentType === "FILM";
+  const isSeriesContent = contentType === "SERIES" || contentType === "EPISODE_SERIES";
+  const isEducationEpisodeContent = contentType === "EDUCATION_EPISODE";
+  const shouldFetchMovieToken = Boolean(isMovieContent && contentId && playbackId);
+  const shouldFetchSeriesToken = Boolean(isSeriesContent && contentId && playbackId);
+  const shouldFetchEducationEpisodeToken = Boolean(isEducationEpisodeContent && contentId && playbackId);
+
+  const { data: movieTokenResponse } = useGetMovieTokenQuery(contentId, {
+    skip: !shouldFetchMovieToken,
+  });
+
+  const { data: seriesTokenResponse } = useGetEpisodeSeriesTokenQuery(contentId, {
+    skip: !shouldFetchSeriesToken,
+  });
+
+  const { data: educationEpisodeTokenResponse } = useGetEducationEpisodeTokenQuery(contentId, {
+    skip: !shouldFetchEducationEpisodeToken,
+  });
+
+  const getPlaybackToken = (tokenResponse) =>
+    tokenResponse?.token ||
+    tokenResponse?.playbackToken ||
+    tokenResponse?.data?.data?.token ||
+    tokenResponse?.data?.token ||
+    tokenResponse?.data?.data?.playbackToken ||
+    tokenResponse?.data?.playbackToken ||
+    null;
+
+  const moviePlaybackToken = getPlaybackToken(movieTokenResponse);
+  const seriesPlaybackToken = getPlaybackToken(seriesTokenResponse);
+  const educationEpisodePlaybackToken = getPlaybackToken(educationEpisodeTokenResponse);
+  const playbackToken = moviePlaybackToken || seriesPlaybackToken || educationEpisodePlaybackToken;
 
   // Format duration H:MM:SS (Didefinisikan secara lokal agar kode mandiri jika import gagal)
   const formatDuration = (d) => {
@@ -138,6 +174,7 @@ export default function DefaultVideoPlayer({
 
   return (
     <div
+      onContextMenu={(e) => e.preventDefault()}
       ref={containerRef} // Pasang ref untuk menangkap event interaksi
       className={`relative w-screen max-w-full h-[500px] 2xl:h-[800px] overflow-hidden bg-black ${className || ""}`}
     >
@@ -164,13 +201,12 @@ export default function DefaultVideoPlayer({
           <Image src={iconFlag} alt="icons-flag" width={32} height={32} />
         </Link>
       </div>
-      {console.log(playbackId, src)}
       <MuxPlayer
         ref={videoRef}
         {...(playbackId ? { playbackId } : src ? { src } : {})}
+        {...(playbackToken ? { playbackToken } : {})}
         poster={poster}
         streamType="on-demand"
-        // Atur z-index MuxPlayer agar lebih rendah dari header overlay
         className="w-full h-full z-10"
         accent-color="#175ba6"
         playsInline
@@ -204,7 +240,6 @@ export default function DefaultVideoPlayer({
             throttledSaveProgress();
           }
         }}
-        // MuxPlayer akan memiliki kontrol bawaan di bawah, Header kita di atas
         controls
       />
     </div>
@@ -215,7 +250,7 @@ DefaultVideoPlayer.propTypes = {
   src: PropTypes.string,
   poster: PropTypes.string,
   className: PropTypes.string,
-  contentType: PropTypes.oneOf(["MOVIE", "SERIES_EPISODE"]).isRequired,
+  contentType: PropTypes.oneOf(["MOVIE", "FILM", "SERIES", "EPISODE_SERIES", "EDUCATION_EPISODE", "EDUCATION"]).isRequired,
   logType: PropTypes.string,
   contentId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   startFrom: PropTypes.number,

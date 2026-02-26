@@ -70,6 +70,13 @@ function SearchPageComponent({ isBlurred }) {
     { label: "Z-A", value: "z-a" },
   ];
 
+  const relevanceConflictRules = {
+    latest: ["oldest"],
+    oldest: ["latest"],
+    "a-z": ["z-a"],
+    "z-a": ["a-z"],
+  };
+
   const genreOptions = categoryData?.data?.data?.map((category) => ({
     label: category.tittle,
     value: category.id,
@@ -158,6 +165,7 @@ function SearchPageComponent({ isBlurred }) {
                       queryParameterName="relevance"
                       options={relevanceOptions || []}
                       label="Relevansi"
+                      conflictRules={relevanceConflictRules}
                     />
                   </>
                 }

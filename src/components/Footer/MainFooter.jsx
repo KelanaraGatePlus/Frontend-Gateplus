@@ -2,8 +2,13 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { Icon } from "@iconify/react";
 
 function Footer() {
+  const pathname = usePathname();
+  const isEducationPath = pathname?.startsWith("/education");
+
   const footerMenus = [
     {
       title: "Gate+",
@@ -25,12 +30,13 @@ function Footer() {
   ];
 
   const socialLinks = [
-    { href: "https://www.instagram.com/kelanarastudios/", icon: "instagram" },
+    { href: "https://www.instagram.com/gateplus.id", icon: "instagram" },
     {
-      href: "https://www.tiktok.com/@kelanara.studios?is_from_webapp=1&sender_device=pc",
+      href: "https://www.tiktok.com/@gateplus.id",
       icon: "tiktok",
     },
-    { href: "https://x.com/KelanaraStudio?s=20", icon: "twitter" },
+    // { href: "https://x.com/KelanaraStudio?s=20", icon: "twitter" },
+    { href: "https://www.linkedin.com/in/gateplusid ", icon: "linkedin" },
     // { href: "#", icon: "facebook" },
   ];
 
@@ -72,6 +78,15 @@ function Footer() {
             />
           </svg>
         );
+      case "linkedin":
+        return (
+          <Icon 
+            icon={'mdi:linkedin'}
+            width={24}
+            height={24}
+            color="currentColor"
+          />
+        )
       default:
         return null;
     }
@@ -94,9 +109,11 @@ function Footer() {
                 height={40}
                 priority
               />
-              <span className="mt-[35px] text-[20px] font-bold text-white">
-                Edu
-              </span>
+              {isEducationPath && (
+                <span className="mt-[35px] text-[20px] font-bold text-white">
+                  Edu
+                </span>
+              )}
             </Link>
 
             <div className="flex flex-col">

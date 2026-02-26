@@ -90,7 +90,7 @@ export default function CommentComponent({
                 className={`${isMobile ? "" : "sticky top-0"} ${isPodcast ? "bg-[#171717]" : "bg-transparent"} flex w-full flex-col`}
             >
                 <div className={`relative flex w-full justify-start py-2 ${isMobile ? "px-0" : isPodcast ? "" : "p-0"}`}>
-                    <h3 className={`${isMobile ? "m-0 p-0" : isPodcast ? "ml-4" : "m-0"} zeinFont text-3xl font-extrabold ${isDark ? "text-white" : "text-[#1A1A1A]"}`}>
+                    <h3 className={`${isMobile ? "m-0 p-0" : isPodcast ? "ml-4" : "m-0"} zeinFont text-xl md:text-2xl lg:text-3xl font-extrabold ${isDark ? "text-white" : "text-[#1A1A1A]"}`}>
                         {isCommentFieldHide ? "Balas Komentar" : "Komentar"}
                     </h3>
                     {isPodcast && (

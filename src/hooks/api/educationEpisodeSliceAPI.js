@@ -57,6 +57,12 @@ export const educationEpisodeAPI = createApi({
             }),
             invalidatesTags: ["educationEpisode"],
         }),
+        getEducationEpisodeToken: builder.query({
+            query: (id) => ({
+                url: `/educationEpisode/${id}/stream`,
+                method: "GET",
+            }),
+        }),
     }),
 });
 
@@ -66,4 +72,5 @@ export const {
     useDeleteEducationEpisodeByIdMutation,
     useGetEducationEpisodeByIdQuery,
     useUpdateEducationEpisodeByIdMutation,
+    useGetEducationEpisodeTokenQuery,
 } = educationEpisodeAPI;

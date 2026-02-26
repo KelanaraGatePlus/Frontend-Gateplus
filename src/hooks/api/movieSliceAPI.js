@@ -68,7 +68,10 @@ export const movieAPI = createApi({
       }),
       invalidatesTags: (result, error, { id }) => [{ type: 'movie', id }],
     }),
+    getMovieToken: builder.query({
+      query: (id) => `/movies/${id}/stream`,
+    }),
   }),
 });
 
-export const { useGetMovieQuery, useCreateMovieMutation, useGetMovieByIdQuery, useGetMoviesHomeDataQuery, useDeleteMovieMutation, useEditMovieMutation, useGetMoviePerContentAnalyticsQuery, useChangeVisibilityMutation } = movieAPI;
+export const { useGetMovieQuery, useCreateMovieMutation, useGetMovieByIdQuery, useGetMoviesHomeDataQuery, useDeleteMovieMutation, useEditMovieMutation, useGetMoviePerContentAnalyticsQuery, useChangeVisibilityMutation, useGetMovieTokenQuery } = movieAPI;
