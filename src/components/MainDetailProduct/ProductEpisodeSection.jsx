@@ -255,7 +255,7 @@ export default function ProductEpisodeSection({
 
                       {!isOwner &&
                         !item.isPurchased &&
-                        !(item.price == "Free") && (
+                        !(item.price == "Free") && !isSubscribe && (
                           <div className="absolute top-0 left-0 flex h-full w-full items-center justify-center bg-[#F5F5F533] backdrop-blur-xs transition-all duration-300 ease-in-out">
                             <Icon
                               icon={"solar:lock-keyhole-minimalistic-linear"}
@@ -290,7 +290,7 @@ export default function ProductEpisodeSection({
                       {/* Lock */}
                       {!isOwner &&
                         !item.isPurchased &&
-                        !(item.price == "Free") && (
+                        !(item.price == "Free") && !isSubscribe && (
                           <div className="zeinFont flex h-full w-max flex-col items-end justify-between">
                             <div className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-[#967074] bg-[#63282e] p-1 md:p-2">
                               <Icon
