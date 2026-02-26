@@ -5,6 +5,7 @@ import PropTypes from "prop-types";
 /* --- API HOOKS --- */
 import { useGetComicByIdQuery } from "@/hooks/api/comicSliceAPI";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
+import { useAddLastSeenMutation } from "@/hooks/api/lastSeenSliceAPI"; // <-- baru
 import useSyncUserData from "@/hooks/api/useSyncUserData";
 
 /* --- UI COMPONENTS --- */
@@ -20,20 +21,13 @@ export default function DetailComicPage({ params }) {
   const { id } = params;
 
   const [loading, setLoading] = useState(false);
-  const [userId, setUserId] = useState(null);
   const [isHydrated, setIsHydrated] = useState(false); // 🔥 hydration guard
-  const [createLog] = useCreateLogMutation();
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedUserId = localStorage.getItem("users_id");
-      setUserId(storedUserId);
-      setIsHydrated(true); // tandai sudah siap
-    }
-  }, []);
+  const [createLog] = useCreateLogMutation();
+  const [addLastSeen] = useAddLastSeenMutation(); // <-- baru
 
   const { data, isLoading } = useGetComicByIdQuery(
-    { id, userId },
+    { id },
     { skip: !id || !isHydrated },
   );
 
@@ -57,23 +51,27 @@ export default function DetailComicPage({ params }) {
 
   useEffect(() => {
     if (id && isHydrated) {
+      // log klik
       createLog({
         contentType: "COMIC",
         logType: "CLICK",
         contentId: id,
       });
+
+      // simpan ke DB lastSeen
+      addLastSeen({
+        contentType: "COMIC",
+        contentId: id,
+      });
     }
-  }, [id, isHydrated, createLog]);
+  }, [id, isHydrated, createLog, addLastSeen]);
 
   const isBlurred = useCallback(
     (content) => {
       if (!isReady) return true;
-
       const minAge = getMinAge(content?.ageRestriction);
-
       if (minAge === null) return false;
       if (userAge == null) return true;
-
       return userAge < minAge;
     },
     [userAge, isReady],
@@ -88,6 +86,10 @@ export default function DetailComicPage({ params }) {
     setLoading(true);
     window.location.href = `/checkout/subscribe/comics/${contentId}`;
   };
+
+  useEffect(() => {
+    setIsHydrated(true); 
+  }, []);
 
   if (!isHydrated || isLoading || !data || !isReady) {
     return <LoadingOverlay />;

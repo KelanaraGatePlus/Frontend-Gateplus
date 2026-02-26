@@ -9,6 +9,7 @@ import { useGetPodcastByIdQuery } from "@/hooks/api/podcastSliceAPI";
 import { useGetCommentByPodcastQuery } from "@/hooks/api/commentSliceAPI";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import getMinAge from "@/lib/helper/minAge";
+import { useAddLastSeenMutation } from "@/hooks/api/lastSeenSliceAPI";
 
 /* COMPONENT */
 import MainTemplateLayout from "@/components/MainDetailProduct/page";
@@ -25,6 +26,7 @@ export default function DetailPodcastPage({ params }) {
 
   const [isHydrated, setIsHydrated] = useState(false); // 🔥 hydration guard
   const [createLog] = useCreateLogMutation();
+  const [createLastSeen] = useAddLastSeenMutation();
 
   const { currentTime, duration } = usePodcastController();
   const { playEpisode, currentlyPlaying, setIsDetailPage } = usePodcastPlayer();
@@ -80,10 +82,18 @@ export default function DetailPodcastPage({ params }) {
   }, [podcastData]);
 
   useEffect(() => {
-    if (podcastData?.id) {
-      pushPodcastToLastSeen();
-    }
-  }, [podcastData?.id, pushPodcastToLastSeen]);
+    if (!podcastData || !podcastData.id) return;
+    pushPodcastToLastSeen();
+  }, [podcastData]);
+
+  useEffect(() => {
+    if (!podcastData?.id) return;
+
+    createLastSeen({
+      contentType: "PODCAST",
+      contentId: podcastData.id,
+    });
+  }, [podcastData?.id]);
 
   // save progress bar
   useEffect(() => {

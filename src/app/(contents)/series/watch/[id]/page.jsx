@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import PropTypes from "prop-types";
 
 import DefaultVideoPlayer from "@/components/VideoPlayer/DefaultVideoPlayer";
@@ -10,19 +10,21 @@ import { useGetCommentByEpisodeSeriesQuery } from "@/hooks/api/commentSliceAPI";
 import EpisodeController from "@/components/EpisodeController/EpisodeController";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 
+import { useAddLastSeenMutation } from "@/hooks/api/lastSeenSliceAPI";
+
 /* ===========================
    Halaman: DetailSeriesPage (JSX)
    =========================== */
 export default function DetailSeriesPage({ params }) {
   const { id } = params;
-  const { data, error, isLoading } = useGetEpisodeSeriesByIdQuery(id);
+  const { data, error, isLoading, refetch } = useGetEpisodeSeriesByIdQuery(id);
 
   const episodeData = data?.data?.data || {};
   const seriesData = data?.data?.data?.series || {};
   const { data: commentData, isLoading: isLoadingGetComment } =
-    useGetCommentByEpisodeSeriesQuery(id, {
-      skip: !id,
-    });
+    useGetCommentByEpisodeSeriesQuery(id, { skip: !id });
+
+  const [addLastSeen] = useAddLastSeenMutation();
 
   useEffect(() => {
     if (error && error.status === 403) {
@@ -30,79 +32,34 @@ export default function DetailSeriesPage({ params }) {
     }
   }, [error, id]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!seriesData?.id) return;
+  // simpan detik
+  const progressRef = useRef(0);
 
-    try {
-      const raw = localStorage.getItem("last_seen_content");
-      let existing = raw ? JSON.parse(raw) : [];
+  // Push episode ke DB saat pause
+  const handleProgressUpdate = useCallback(
+    async (seconds) => {
+      if (seconds == null) return;
+      progressRef.current = seconds;
 
-      const updatedContent = {
-        ...seriesData,
-        type: "series",
-        progress: 0,
-        progressSeconds: 0,
-        updatedAt: new Date().toISOString(),
-        episodeId: null,
-        thumbnailImageUrl:
-          seriesData.thumbnailImageUrl || seriesData.posterImageUrl || null,
-      };
+      // save progress ketika pause
+      if (episodeData?.id) {
+        try {
+          await addLastSeen({
+            contentType: "EPISODE_SERIES",
+            contentId: episodeData.id,
+            progressSeconds: seconds,
+          }).unwrap();
 
-      const exists = existing.some((item) => item.id === seriesData.id);
-      if (!exists) {
-        existing = [updatedContent, ...existing].slice(0, 10);
-        localStorage.setItem("last_seen_content", JSON.stringify(existing));
+          console.log("episode progress saved on pause", seconds);
+
+          refetch();
+        } catch (err) {
+          console.error("save episode progress gagal", err);
+        }
       }
-    } catch (err) {
-      console.error("Failed push series:", err);
-    }
-  }, [seriesData]);
-
-  // simpan progress ke localstorage
-  const handleProgressUpdate = (updatedContent) => {
-    try {
-      const raw = localStorage.getItem("last_seen_content");
-      let existing = raw ? JSON.parse(raw) : [];
-
-      // memastikan episode
-      if (!updatedContent.episodeId) {
-        console.warn("Not an episode, skipping progress save");
-        return;
-      }
-
-      const key = `${updatedContent.id}-${updatedContent.episodeId}`;
-
-      const contentToSave = {
-        id: updatedContent.id,
-        episodeId: updatedContent.episodeId,
-        title: updatedContent.title,
-        type: "series",
-        isEpisode: true,
-        progress: updatedContent.progress,
-        progressSeconds: updatedContent.progressSeconds,
-        updatedAt: new Date().toISOString(),
-        thumbnailImageUrl: updatedContent.thumbnailImageUrl,
-        posterImageUrl: updatedContent.posterImageUrl,
-        coverUrl: updatedContent.coverUrl,
-      };
-
-      const index = existing.findIndex(
-        (item) => `${item.id}-${item.episodeId || 0}` === key,
-      );
-
-      if (index >= 0) {
-        existing[index] = contentToSave;
-      } else {
-        existing = [contentToSave, ...existing].slice(0, 10);
-      }
-
-      localStorage.setItem("last_seen_content", JSON.stringify(existing));
-      console.log("✅ Progress saved for episode:", key);
-    } catch (err) {
-      console.error("Failed save series progress:", err);
-    }
-  };
+    },
+    [episodeData.id, addLastSeen, refetch],
+  );
 
   // ===== Render Loading jika masih load =====
   if (isLoading) return <LoadingOverlay />;
@@ -119,7 +76,7 @@ export default function DetailSeriesPage({ params }) {
               src={episodeData?.episodeFileUrl}
               poster={episodeData?.thumbnailUrl}
               startFrom={episodeData?.WatchProgress?.[0]?.progressSeconds || 0}
-              contentType={"SERIES"}
+              contentType={"EPISODE_SERIES"}
               contentId={episodeData?.id}
               logType={"WATCH_CONTENT"}
               title={seriesData?.title}

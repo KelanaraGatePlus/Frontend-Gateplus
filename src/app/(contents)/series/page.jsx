@@ -11,6 +11,7 @@ import getMinAge from "@/lib/helper/minAge";
 import useSyncUserData from "@/hooks/api/useSyncUserData";
 import { useCallback } from "react";
 import PropTypes from "prop-types";
+import BackToTop from "@/components/ui/buttonBackToTop";
 
 export default function SeriesPage() {
   const { userAge, isReady } = useSyncUserData();
@@ -63,6 +64,7 @@ export default function SeriesPage() {
       <Suspense fallback={<LoadingOverlay />}>
         <SeriesContent isBlurred={isBlurred} />
       </Suspense>
+      <BackToTop />
     </div>
   );
 }

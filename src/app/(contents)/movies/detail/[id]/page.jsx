@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
 import Image from "next/image";
 import Link from "next/link";
@@ -23,6 +23,7 @@ import UnderAgeModal from "@/components/Modal/UnderAgeModal";
 
 import { useGetMovieByIdQuery } from "@/hooks/api/movieSliceAPI";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
+import { useAddLastSeenMutation } from "@/hooks/api/lastSeenSliceAPI";
 import { useGetCommentByMovieQuery } from "@/hooks/api/commentSliceAPI";
 import { useLikeContent } from "@/lib/features/useLikeContent";
 import { useDislikeContent } from "@/lib/features/useDislikeContent";
@@ -39,13 +40,11 @@ function PlayingMoviePage({ params }) {
   const { id } = params;
   const userId = useGetUserId();
   const [isHydrated, setIsHydrated] = useState(false);
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setIsHydrated(true);
-    }
-  }, []);
 
-  const { data, isLoading } = useGetMovieByIdQuery(id, {
+  const [createLog] = useCreateLogMutation();
+  const [addLastSeen] = useAddLastSeenMutation();
+
+  const { data, isLoading, refetch } = useGetMovieByIdQuery(id, {
     skip: !id || !isHydrated,
   });
 
@@ -60,7 +59,6 @@ function PlayingMoviePage({ params }) {
     isReady,
   } = useSyncUserData(movieData?.ageRestriction);
 
-  const [createLog] = useCreateLogMutation();
   const { toggleLike } = useLikeContent();
   const { toggleDislike } = useDislikeContent();
   const { toggleSave } = useSaveContent();
@@ -75,9 +73,15 @@ function PlayingMoviePage({ params }) {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState("success");
+  const progressRef = useRef(0);
+  const [resumeSeconds, setResumeSeconds] = useState(0);
 
   const { data: commentData, isLoading: isLoadingGetComment } =
     useGetCommentByMovieQuery(id, { skip: !id });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") setIsHydrated(true);
+  }, []);
 
   const isBlurred = useCallback(
     (content) => {
@@ -103,6 +107,21 @@ function PlayingMoviePage({ params }) {
   }, [movieData?.ageRestriction, userAge, isReady]);
 
   useEffect(() => {
+    if (id) {
+      createLog({
+        contentType: "film",
+        logType: "CLICK",
+        contentId: id,
+      });
+
+      addLastSeen({
+        contentType: "FILM",
+        contentId: id,
+      });
+    }
+  }, [id, createLog, addLastSeen]);
+
+  useEffect(() => {
     if (movieData?.id) {
       setIsLiked(movieData.isLiked || false);
       setIdLiked(movieData?.isLiked?.id || null);
@@ -114,15 +133,84 @@ function PlayingMoviePage({ params }) {
     }
   }, [movieData]);
 
-  useEffect(() => {
-    if (id) {
-      createLog({
+  const handleProgressUpdate = useCallback(
+    async (seconds) => {
+      if (seconds == null) return;
+      progressRef.current = seconds;
+      // Update UI state immediately when progress changes
+      setResumeSeconds(seconds);
+
+      // save ke db ketika pause
+      if (!movieData?.id) return;
+      if (seconds <= 0) return;
+
+      try {
+        await addLastSeen({
+          contentType: "FILM",
+          contentId: movieData.id,
+          progressSeconds: seconds,
+        }).unwrap();
+
+        console.log("progress saved on pause", seconds);
+
+        refetch();
+      } catch (err) {
+        console.error("save progress on pause gagal", err);
+      }
+    },
+    [movieData?.id, addLastSeen, refetch],
+  );
+
+  const saveMovieProgress = useCallback(async () => {
+    if (!movieData?.id) return;
+    if (!progressRef.current || progressRef.current <= 0) return;
+
+    const seconds = progressRef.current;
+
+    try {
+      await addLastSeen({
         contentType: "FILM",
-        logType: "CLICK",
-        contentId: id,
-      });
+        contentId: movieData.id,
+        progressSeconds: seconds,
+      }).unwrap();
+
+      console.log("progress saved", seconds);
+    } catch (err) {
+      console.error("save progress gagal", err);
     }
-  }, [id, createLog]);
+  }, [movieData?.id, addLastSeen]);
+
+  useEffect(() => {
+    if (!movieData?.id) return;
+
+    const interval = setInterval(saveMovieProgress, 10000);
+
+    return () => clearInterval(interval);
+  }, [movieData?.id, saveMovieProgress]);
+
+  useEffect(() => {
+    const handleLeave = () => saveMovieProgress();
+    window.addEventListener("beforeunload", handleLeave);
+    return () => window.removeEventListener("beforeunload", handleLeave);
+  }, [saveMovieProgress]);
+
+  const { data: progressData } = useGetMovieByIdQuery(
+    {
+      contentId: movieData?.id,
+      contentType: "FILM",
+    },
+    { skip: !movieData?.id },
+  );
+
+  const lastProgress = progressData?.data?.progressSeconds || 0;
+  console.log("START FROM API", lastProgress);
+
+  useEffect(() => {
+    const seconds = movieData?.WatchProgress?.[0]?.progressSeconds;
+    if (seconds != null) {
+      setResumeSeconds(seconds);
+    }
+  }, [movieData?.WatchProgress]);
 
   const handleToggleLike = () => {
     if (!movieData.id) return;
@@ -201,9 +289,7 @@ function PlayingMoviePage({ params }) {
     window.location.href = `/checkout/subscribe/movie/${movieData.id}`;
   };
 
-  if (!isHydrated || isLoading || !data || !isReady) {
-    return <LoadingOverlay />;
-  }
+  if (!isHydrated || isLoading || !data || !isReady) return <LoadingOverlay />;
 
   const hasAccess =
     movieData?.isOwner ||
@@ -234,9 +320,10 @@ function PlayingMoviePage({ params }) {
                   canPlay ? movieData?.movieFileUrl : movieData?.trailerFileUrl
                 }
                 poster={movieData?.posterImageUrl}
-                startFrom={movieData?.WatchProgress?.[0]?.progressSeconds || 0}
+                startFrom={resumeSeconds}
                 title={movieData?.title}
                 ageRestriction={movieData?.ageRestriction}
+                onProgressUpdate={handleProgressUpdate}
               />
             </>
           )}
@@ -309,10 +396,10 @@ function PlayingMoviePage({ params }) {
             <img
               width={60}
               height={60}
-              className="rounded-full overflow-hidden"
+              className="overflow-hidden rounded-full"
               src={
                 movieData?.creator?.imageUrl &&
-                  movieData?.creator?.imageUrl !== "null"
+                movieData?.creator?.imageUrl !== "null"
                   ? movieData.creator.imageUrl
                   : DEFAULT_AVATAR.src
               }
@@ -326,26 +413,26 @@ function PlayingMoviePage({ params }) {
           </div>
         </div>
 
-        <section className="flex flex-row gap-3 items-stretch mt-5">
+        <section className="mt-5 flex flex-row items-stretch gap-3">
           {/* Poster 3:2 */}
-          <div className="relative aspect-[2/3] w-[220px] sm:w-[160px] lg:w-[250px] flex-shrink-0">
-            {movieData.thumbnailImageUrl && <img
-              src={movieData.thumbnailImageUrl}
-              alt="logo-racunsangga-movie"
-              className="rounded-md object-cover"
-            />}
+          <div className="relative aspect-[2/3] w-[220px] flex-shrink-0 sm:w-[160px] lg:w-[250px]">
+            {movieData.thumbnailImageUrl && (
+              <img
+                src={movieData.thumbnailImageUrl}
+                alt={movieData.title}
+                className="rounded-md object-cover"
+              />
+            )}
           </div>
-
           {/* Deskripsi */}
-          <div className="rounded-md bg-[#393939] flex-1">
-            <div className="mx-4 my-4 text-white h-full flex flex-col">
+          <div className="flex-1 rounded-md bg-[#393939]">
+            <div className="mx-4 my-4 flex h-full flex-col text-white">
               <div
                 className="prose prose-invert max-w-none"
                 dangerouslySetInnerHTML={{
                   __html: DOMPurify.sanitize(movieData?.description || ""),
                 }}
               />
-
 
               <div className="mt-10">
                 <p>Judul: {movieData.title}</p>
@@ -355,7 +442,18 @@ function PlayingMoviePage({ params }) {
                 <p>Penulis Cerita : {movieData.writer}</p>
                 <p>Pemeran : {movieData.talent}</p>
                 <p>Durasi : {formatDuration(movieData.duration)}</p>
-                <p>Genre : {Array.isArray(movieData?.categories) ? movieData.categories.map(cat => cat.category?.tittle || cat.category?.title).filter(Boolean).join(', ') : movieData?.categories?.tittle || movieData?.categories?.title}</p>
+                <p>
+                  Genre :{" "}
+                  {Array.isArray(movieData?.categories)
+                    ? movieData.categories
+                        .map(
+                          (cat) => cat.category?.tittle || cat.category?.title,
+                        )
+                        .filter(Boolean)
+                        .join(", ")
+                    : movieData?.categories?.tittle ||
+                      movieData?.categories?.title}
+                </p>
                 <p>Tahun Rilis : {movieData.releaseYear}</p>
                 <p>Bahasa : {movieData.language}</p>
               </div>
@@ -392,36 +490,30 @@ function PlayingMoviePage({ params }) {
           />
         </div>
       )}
-      {
-        showCompleteProfileModal && (
-          <CompleteProfileModal
-            onConfirm={goToProfile}
-            title={movieData?.title}
-            minAge={getMinAge(movieData?.ageRestriction)}
-          />
-        )
-      }
+      {showCompleteProfileModal && (
+        <CompleteProfileModal
+          onConfirm={goToProfile}
+          title={movieData?.title}
+          minAge={getMinAge(movieData?.ageRestriction)}
+        />
+      )}
 
-      {
-        showUnderAgeModal && (
-          <UnderAgeModal
-            open={showUnderAgeModal}
-            ageRestriction={movieData?.ageRestriction}
-            title={movieData?.title}
-            onContinue={continueDespiteUnderAge}
-          />
-        )
-      }
-      {
-        showToast && (
-          <Toast
-            message={toastMessage}
-            type={toastType}
-            onClose={() => setShowToast(false)}
-          />
-        )
-      }
-    </div >
+      {showUnderAgeModal && (
+        <UnderAgeModal
+          open={showUnderAgeModal}
+          ageRestriction={movieData?.ageRestriction}
+          title={movieData?.title}
+          onContinue={continueDespiteUnderAge}
+        />
+      )}
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+        />
+      )}
+    </div>
   );
 }
 

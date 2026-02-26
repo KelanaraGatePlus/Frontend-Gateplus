@@ -69,6 +69,7 @@
     "react-google-recaptcha": "^3.1.0",
     "react-h5-audio-player": "^3.10.0",
     "react-hook-form": "^7.60.0",
+    "react-hot-toast": "^2.6.0",
     "react-icons": "^5.5.0",
     "react-loading-skeleton": "^3.5.0",
     "react-native-screenshot-prevent": "^1.2.1",

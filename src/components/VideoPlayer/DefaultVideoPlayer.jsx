@@ -22,7 +22,8 @@ export default function DefaultVideoPlayer({
   title,
   genre,
   ageRestriction,
-  playbackId
+  playbackId,
+  onProgressUpdate,
 }) {
   const videoRef = useRef(null);
   const containerRef = useRef(null); // Ref baru untuk container utama
@@ -96,63 +97,107 @@ export default function DefaultVideoPlayer({
     };
   }, []);
 
-  const handleStartFrom = () => {
-    if (startFrom > 0 && !hasSeekedRef.current && videoRef.current) {
-      videoRef.current.currentTime = startFrom;
-      hasSeekedRef.current = true;
-    }
-  };
-
   const handleSaveProgress = useCallback(() => {
-    if (!contentId || progressRef.current.playedSeconds === 0) return;
-    if (logType !== "WATCH_CONTENT") return;
+    console.log("TRY SAVE", progressRef.current);
 
-    const percentage = progressRef.current.percentage;
+    if (!contentId) {
+      console.log("SKIP: no contentId");
+      return;
+    }
+
+    if (progressRef.current.playedSeconds === 0) {
+      console.log("SKIP: progress 0");
+      return;
+    }
+
+    if (logType !== "WATCH_CONTENT") {
+      console.log("SKIP: not watch content");
+      return;
+    }
 
     const payload = {
       contentId,
       contentType: contentType === "FILM" ? "MOVIE" : contentType,
       progressSeconds: progressRef.current.playedSeconds,
-      progressPercentage: percentage,
-      isCompleted: percentage >= 80,
+      progressPercentage: progressRef.current.percentage,
+      isCompleted: progressRef.current.percentage >= 80,
       device,
     };
+
+    console.log("SEND PAYLOAD", payload);
 
     createProgressWatch(payload);
   }, [contentId, contentType, createProgressWatch, logType, device]);
 
   const throttledSaveProgress = useCallback(
     throttle(handleSaveProgress, 5000, { leading: false, trailing: true }),
-    [handleSaveProgress]
+    [handleSaveProgress],
   );
 
   useEffect(() => {
-    const handleBeforeUnload = () => handleSaveProgress();
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => {
+    const handleBeforeUnload = () => {
       handleSaveProgress();
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      handleBeforeUnload();
       window.removeEventListener("beforeunload", handleBeforeUnload);
       throttledSaveProgress.cancel();
     };
   }, [handleSaveProgress, throttledSaveProgress]);
 
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (!startFrom || startFrom <= 0) return;
+
+    console.log("FORCE SEEK TO", startFrom);
+
+    const seekToProgress = () => {
+      if (!video.duration || isNaN(video.duration)) return;
+
+      video.currentTime = startFrom;
+      hasSeekedRef.current = true;
+    };
+
+    // reset flag supaya bisa seek ulang
+    hasSeekedRef.current = false;
+
+    if (video.readyState >= 1) {
+      seekToProgress();
+    } else {
+      video.addEventListener("loadedmetadata", seekToProgress, { once: true });
+    }
+
+    return () => {
+      video.removeEventListener("loadedmetadata", seekToProgress);
+    };
+  }, [startFrom]);
+
   return (
     <div
       ref={containerRef} // Pasang ref untuk menangkap event interaksi
-      className={`relative w-screen max-w-full h-[500px] 2xl:h-[800px] overflow-hidden bg-black ${className || ""}`}
+      className={`relative h-[500px] w-screen max-w-full overflow-hidden bg-black 2xl:h-[800px] ${className || ""}`}
     >
       <div
         // Gunakan z-50 agar pasti muncul di atas kontrol MuxPlayer dalam fullscreen
         onClick={(e) => e.stopPropagation()}
-        className={`absolute top-0 left-0 right-0 transition-opacity duration-300 z-50 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"
-          } bg-gradient-to-b from-black/70 to-transparent py-4 px-4 sm:px-16 flex items-center gap-4 justify-between`}
+        className={`absolute top-0 right-0 left-0 z-50 transition-opacity duration-300 ${
+          showControls ? "opacity-100" : "pointer-events-none opacity-0"
+        } flex items-center justify-between gap-4 bg-gradient-to-b from-black/70 to-transparent px-4 py-4 sm:px-16`}
       >
-        <div className="flex flex-row gap-4 items-center justify-center">
+        <div className="flex flex-row items-center justify-center gap-4">
           <Link href="/">
-            <Image src={IconsArrowLeft} alt="icons-arrow-left" width={32} height={32} />
+            <Image
+              src={IconsArrowLeft}
+              alt="icons-arrow-left"
+              width={32}
+              height={32}
+            />
           </Link>
           <div className="flex flex-col gap-1">
-            <span className="text-md text-white font-black">{title}</span>
+            <span className="text-md font-black text-white">{title}</span>
             <span className="text-xs text-gray-400">
               {formatDuration(duration)} | {ageRestriction} | {genre}
             </span>
@@ -161,7 +206,7 @@ export default function DefaultVideoPlayer({
 
         <Link
           href={`/report/${contentType === "FILM" ? "movie" : "episode_series"}/${contentId}`}
-          className="p-2 bg-white/20 rounded-full hover:bg-white/40 transition"
+          className="rounded-full bg-white/20 p-2 transition hover:bg-white/40"
         >
           <Image src={iconFlag} alt="icons-flag" width={32} height={32} />
         </Link>
@@ -173,38 +218,57 @@ export default function DefaultVideoPlayer({
         poster={poster}
         streamType="on-demand"
         // Atur z-index MuxPlayer agar lebih rendah dari header overlay
-        className="w-full h-full z-10"
+        className="z-10 h-full w-full"
         accent-color="#175ba6"
         playsInline
         preload="metadata"
         metadata={{
           video_title: title || "Video Player",
         }}
-        onLoadedMetadata={(e) => {
-          const video = e.target;
-          if (video.duration) setDuration(video.duration);
+        onLoadedMetadata={() => {
+          const video = videoRef.current;
+          if (!video) return;
+
+          if (video.duration && !isNaN(video.duration)) {
+            setDuration(video.duration);
+          }
+
+          if (startFrom > 0 && !hasSeekedRef.current) {
+            console.log("RESUME FROM", startFrom);
+            video.currentTime = startFrom;
+            hasSeekedRef.current = true;
+          }
         }}
         onPlay={() => {
-          handleStartFrom();
           if (logType === "WATCH_TRAILER") {
             createLog({ logType, contentId, contentType });
           }
         }}
         onPause={() => {
           throttledSaveProgress.flush();
+          handleSaveProgress();
+
+          // Notify parent about progress for state update
+          onProgressUpdate?.(progressRef.current.playedSeconds);
         }}
-        onTimeUpdate={(e) => {
-          const video = e.target;
-          if (video.duration && !isNaN(video.duration)) {
-            const played = video.currentTime / video.duration;
+        onTimeUpdate={() => {
+          const video = videoRef.current;
+          if (!video) return;
 
-            progressRef.current = {
-              playedSeconds: video.currentTime,
-              percentage: Math.round(played * 100),
-            };
+          const current = video.currentTime;
+          const duration = video.duration;
 
-            throttledSaveProgress();
-          }
+          if (!duration || isNaN(duration)) return;
+
+          const played = current / duration;
+
+          progressRef.current = {
+            playedSeconds: current,
+            percentage: Math.round(played * 100),
+          };
+
+          console.log("Progress", progressRef.current);
+          throttledSaveProgress();
         }}
         // MuxPlayer akan memiliki kontrol bawaan di bawah, Header kita di atas
         controls
@@ -225,4 +289,5 @@ DefaultVideoPlayer.propTypes = {
   genre: PropTypes.string,
   ageRestriction: PropTypes.string,
   playbackId: PropTypes.string,
+  onProgressUpdate: PropTypes.func,
 };

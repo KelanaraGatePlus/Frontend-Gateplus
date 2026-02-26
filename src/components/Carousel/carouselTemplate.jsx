@@ -20,6 +20,59 @@ import PodcastUniqueCard from "../Card/PodcastUniqueCard";
 import EducationCard from "../Card/EducationCard";
 import getMinAge from "@/lib/helper/minAge";
 
+function resolveLastSeenHref(item) {
+  if (!item) return null;
+
+  if (item.contentType === "EPISODE_SERIES") {
+    return `/series/watch/${item.contentId}`;
+  }
+  if (item.contentType === "SERIES") {
+    return `/series/detail/${item.contentId}`;
+  }
+  if (item.contentType === "MOVIE") {
+    return `/film/watch/${item.contentId}`;
+  }
+  if (item.contentType === "EPISODE_MOVIE") {
+    return `/film/watch/${item.contentId}`;
+  }
+  if (item.contentType === "EBOOK") {
+    return `/ebook/detail/${item.contentId}`;
+  }
+  if (item.contentType === "COMIC") {
+    return `/comic/detail/${item.contentId}`;
+  }
+  if (item.contentType === "PODCAST") {
+    return `/podcast/detail/${item.contentId}`;
+  }
+
+  // fallback ke customHref dari item jika ada
+  return item.customHref || null;
+}
+
+/* ===========================
+   Helper: deduplikasi last seen
+   Jika ada EPISODE_SERIES dan SERIES dengan seriesId yang sama,
+   prioritaskan EPISODE_SERIES (lebih spesifik) dan buang SERIES-nya.
+   =========================== */
+export function deduplicateLastSeen(contents) {
+  if (!Array.isArray(contents)) return contents;
+
+  const episodeSeriesIds = new Set(
+    contents
+      .filter((item) => item.contentType === "EPISODE_SERIES")
+      .map((item) => item.seriesId || item.series?.id)
+      .filter(Boolean),
+  );
+
+  return contents.filter((item) => {
+    // Buang entry SERIES jika seriesId-nya sudah ada di episodeSeriesIds
+    if (item.contentType === "SERIES" && episodeSeriesIds.has(item.contentId)) {
+      return false;
+    }
+    return true;
+  });
+}
+
 export default function CarouselTemplate({
   label,
   type,
@@ -31,6 +84,8 @@ export default function CarouselTemplate({
   withNewestTag = false,
   // isBlurred,
   isHomepage = false,
+  showProgress = false,
+  isLastSeen = false,
 }) {
   // const resolveBlur = (item) => {
   //   if (typeof isBlurred !== "function") return false;
@@ -59,6 +114,11 @@ export default function CarouselTemplate({
     return "h-[160px] w-[112px] md:h-[212px] md:w-[149px]";
   };
 
+  // Deduplikasi jika mode last seen aktif
+  const resolvedContents = isLastSeen
+    ? deduplicateLastSeen(contents)
+    : contents;
+
   return (
     <div className="relative h-full w-full overflow-visible rounded-md">
       <section
@@ -69,7 +129,7 @@ export default function CarouselTemplate({
             <CarouselLoading />
           </div>
         ) : (
-          contents.length > 0 && (
+          resolvedContents.length > 0 && (
             <section
               className={`flex flex-col ${isOnCreatorProfile ? "my-3 md:my-0" : "my-3 md:my-5"}`}
             >
@@ -80,32 +140,28 @@ export default function CarouselTemplate({
 
                 <div className="relative">
                   <CarouselContent
-                    className={`flex ${isTopTen ? "gap-x-5" : "gap-x-2"
-                      }`}
+                    className={`flex ${isTopTen ? "gap-x-5" : "gap-x-2"}`}
                   >
-                    {contents.map((item, index) => {
+                    {resolvedContents.map((item, index) => {
                       const fixedType = resolveType(item);
                       const minAge = resolveMinAge(item);
                       const isUniquePodcast = fixedType === "podcast" && type;
                       const podcastSize = resolvePodcastSize(label, fixedType);
 
+                      // Resolve customHref: jika last seen, pakai helper;
+                      // jika tidak, pakai customHref dari item (existing behavior)
+                      const customHref = isLastSeen
+                        ? resolveLastSeenHref(item)
+                        : item.customHref;
+
                       return (
                         <CarouselItem
                           key={index}
-                          className={`
-                            group relative
-                            ${index === 0 ? "pl-4 md:pl-0" : ""}
-                            flex ${label === "Terakhir Anda Lihat" ? " flex-col" : ""} cursor-pointer items-center overflow-visible
-                            ${podcastSize}
-                            transition-all duration-300 ease-out
-                            hover:scale-105
-                            hover:-translate-y-1
-                            origin-bottom
-                          `}
+                          className={`group relative ${index === 0 ? "pl-4 md:pl-0" : ""} flex ${label === "Terakhir Anda Lihat" ? "flex-col" : ""} cursor-pointer items-center overflow-visible ${podcastSize} origin-bottom transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-105`}
                           style={{ flex: "0 0 auto" }}
                         >
                           {isTopTen ? (
-                            <div className="flex h-full w-full overflow-y-hidden items-end gap-y-5 md:w-[500px] lg:w-[600px]">
+                            <div className="flex h-full w-full items-end gap-y-5 overflow-y-hidden md:w-[500px] lg:w-[600px]">
                               <div className="flex h-full w-1/3 items-end justify-end overflow-visible">
                                 <p
                                   className="zeinFont translate-x-[30%] translate-y-[10%] text-[220px] leading-[0.7] font-extrabold text-[#1297DC] sm:text-[230px] md:translate-x-[40%] md:text-[240px] lg:text-[250px]"
@@ -120,7 +176,9 @@ export default function CarouselTemplate({
                                 </p>
                               </div>
 
-                              <div className={`relative h-full w-full md:h-[220px] md:w-[149px] overflow-visible rounded-[6px]`}>
+                              <div
+                                className={`relative h-full w-full overflow-visible rounded-[6px] md:h-[220px] md:w-[149px]`}
+                              >
                                 {fixedType === "ebook" && (
                                   <EbookCard
                                     {...item}
@@ -164,8 +222,8 @@ export default function CarouselTemplate({
                                   coverUrl={item.posterImageUrl}
                                   hasNewEpisode={item.hasNewEpisodes}
                                   withNewestTag={withNewestTag}
+                                  customHref={customHref}
                                   progress={item.progress}
-                                  customHref={item.customHref}
                                 />
                               )}
 
@@ -179,7 +237,7 @@ export default function CarouselTemplate({
                                   hasNewEpisode={item.hasNewEpisodes}
                                   withNewestTag={withNewestTag}
                                   progress={item.progress}
-                                  customHref={item.customHref}
+                                  customHref={customHref}
                                 />
                               )}
 
@@ -193,7 +251,7 @@ export default function CarouselTemplate({
                                   hasNewEpisode={item.hasNewEpisodes}
                                   withNewestTag={withNewestTag}
                                   progress={item.progress}
-                                  customHref={item.customHref}
+                                  customHref={customHref}
                                 />
                               )}
 
@@ -207,7 +265,7 @@ export default function CarouselTemplate({
                                   hasNewEpisode={item.hasNewEpisodes}
                                   withNewestTag={withNewestTag}
                                   progress={item.progress}
-                                  customHref={item.customHref}
+                                  customHref={customHref}
                                 />
                               )}
 
@@ -221,7 +279,7 @@ export default function CarouselTemplate({
                                   hasNewEpisode={item.hasNewEpisodes}
                                   withNewestTag={withNewestTag}
                                   progress={item.progress}
-                                  customHref={item.customHref}
+                                  customHref={customHref}
                                 />
                               )}
 
@@ -246,19 +304,16 @@ export default function CarouselTemplate({
                                   releaseDate={item.createdAt}
                                 />
                               )}
-                              {/* progress bar */}
-                              {label === "Terakhir Anda Lihat" && item.progress > 0 && (
-                                <div className="mt-2 w-full">
-                                  <div className="h-2 w-full overflow-hidden rounded-lg border border-white/30 bg-white/10">
-                                    <div
-                                      className="h-full bg-blue-500 transition-all duration-300"
-                                      style={{ width: `${item.progress}%` }}
-                                    />
-                                  </div>
+
+                              {showProgress && item.progress !== undefined && (
+                                <div className="mt-2 h-2 w-full rounded bg-gray-300">
+                                  <div
+                                    className="h-2 rounded bg-blue-600"
+                                    style={{ width: `${item.progress}%` }}
+                                  />
                                 </div>
                               )}
                             </div>
-
                           )}
                         </CarouselItem>
                       );
@@ -291,4 +346,6 @@ CarouselTemplate.propTypes = {
   withNewestTag: PropTypes.bool,
   isBlurred: PropTypes.func,
   isHomepage: PropTypes.bool,
+  showProgress: PropTypes.bool,
+  isLastSeen: PropTypes.bool,
 };

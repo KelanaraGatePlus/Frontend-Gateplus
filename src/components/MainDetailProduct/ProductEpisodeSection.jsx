@@ -114,10 +114,8 @@ export default function ProductEpisodeSection({
   const handlePlayWithPodcast = (item) => {
     if (!handlePlayPodcast) return;
 
-    const progressKey = `podcast_progress_${item.id}`;
-    const savedProgress = localStorage.getItem(progressKey);
-
-    const progressValue = savedProgress ? Number(savedProgress) : 0;
+    const progressValue =
+      item.watchProgress?.progressSeconds || item.progressSeconds || 0;
 
     handlePlayPodcast({
       ...item,
@@ -423,7 +421,10 @@ export default function ProductEpisodeSection({
                             </h1>
                             <div className="hidden text-start md:block">
                               <RichTextDisplay
-                                content={item.description?.substring(0, 30) + (item.description?.length > 30 ? '...' : '')}
+                                content={
+                                  item.description?.substring(0, 30) +
+                                  (item.description?.length > 30 ? "..." : "")
+                                }
                               />
                             </div>
                           </div>

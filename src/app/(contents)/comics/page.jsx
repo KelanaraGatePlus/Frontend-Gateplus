@@ -10,6 +10,7 @@ import LoadingOverlay from "@/components/LoadingOverlay/page";
 import getMinAge from "@/lib/helper/minAge";
 import useSyncUserData from "@/hooks/api/useSyncUserData";
 import PropTypes from "prop-types";
+import BackToTop from "@/components/ui/buttonBackToTop";
 
 export default function ComicsPage() {
   const { userAge, isReady } = useSyncUserData(null);
@@ -67,6 +68,7 @@ export default function ComicsPage() {
           </Suspense>
         </div>
       </div>
+      <BackToTop />
     </main>
   );
 }

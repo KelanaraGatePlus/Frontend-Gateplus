@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import PropTypes from "prop-types";
 
 /* --- COMPONENT IMPORT --- */
@@ -13,27 +13,16 @@ import useSyncUserData from "@/hooks/api/useSyncUserData";
 import getMinAge from "@/lib/helper/minAge";
 import { useGetEbookByIdQuery } from "@/hooks/api/ebookSliceAPI";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
+import { useAddLastSeenMutation } from "@/hooks/api/lastSeenSliceAPI";
 
 export default function DetailEbookPage({ params }) {
   const { id } = React.use(params);
 
-  const [userId, setUserId] = useState(null);
-  const [isHydrated, setIsHydrated] = useState(false); // 🔥 hydration guard
   const [loading, setLoading] = useState(false);
   const [createLog] = useCreateLogMutation();
+  const [addLastSeen] = useAddLastSeenMutation();
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedUserId = localStorage.getItem("users_id");
-      setUserId(storedUserId);
-      setIsHydrated(true); // tandain sudah siap render
-    }
-  }, []);
-
-  const { data, isLoading } = useGetEbookByIdQuery(
-    { id, userId },
-    { skip: !id || !isHydrated },
-  );
+  const { data, isLoading } = useGetEbookByIdQuery({ id }, { skip: !id });
 
   const ebookData = data?.data || {};
 
@@ -51,21 +40,25 @@ export default function DetailEbookPage({ params }) {
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
   useEffect(() => {
-    if (id && isHydrated) {
-      createLog({
-        contentType: "EBOOK",
-        logType: "CLICK",
-        contentId: id,
-      });
-    }
-  }, [id, isHydrated, createLog]);
+    if (!id) return;
+
+    createLog({
+      contentType: "EBOOK",
+      logType: "CLICK",
+      contentId: id,
+    });
+
+    addLastSeen({
+      contentType: "EBOOK",
+      contentId: id,
+    });
+  }, [id, createLog, addLastSeen]);
 
   const isBlurred = useCallback(
     (content) => {
       if (!isReady) return true;
 
       const minAge = getMinAge(content?.ageRestriction);
-
       if (minAge === null) return false;
       if (userAge == null) return true;
 
@@ -84,7 +77,7 @@ export default function DetailEbookPage({ params }) {
     window.location.href = `/checkout/subscribe/ebooks/${contentId}`;
   };
 
-  if (!isHydrated || isLoading || !data || !isReady) {
+  if (isLoading || !data || !isReady) {
     return <LoadingOverlay />;
   }
 
