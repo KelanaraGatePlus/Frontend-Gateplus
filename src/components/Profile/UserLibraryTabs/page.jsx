@@ -64,7 +64,7 @@ export default function UserLibraryTabs() {
     } else if (switchTab === "Dibeli") {
       content = userPurchasedContentData;
       isLoading = isLoadingPurchased;
-    } else if (switchTab === "Riwayat Tonton") {
+    } else if (switchTab === "Riwayat") {
       content = userLastWatchedContentData;
       isLoading = isLoadingLastWatched;
     }
