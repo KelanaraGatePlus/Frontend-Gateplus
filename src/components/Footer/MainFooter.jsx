@@ -93,7 +93,7 @@ function Footer() {
   };
 
   return (
-    <footer className="flex min-h-75 mt-20 md:mt-40 flex-col border-t border-gray-700 text-white">
+    <footer className="flex min-h-75 flex-col border-t border-gray-700 text-white">
       <div className="container mx-auto flex flex-col px-4 py-12">
         <div className="grid grid-cols-1 gap-x-6 sm:grid-cols-2 md:grid-cols-5">
           <div className="flex flex-col">
