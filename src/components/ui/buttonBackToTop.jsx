@@ -11,11 +11,8 @@ export default function BackToTop() {
 
   return (
     <div
-      className="relative flex items-center justify-center overflow-hidden"
+      className="relative flex h-[120px] w-full items-center justify-center overflow-hidden"
       style={{
-        width: "1440px",
-        maxWidth: "100%",
-        height: "120px",
         background:
           "linear-gradient(to bottom, transparent 0%, #0d2144 60%, #0f2a58 100%)",
       }}
@@ -30,11 +27,12 @@ export default function BackToTop() {
         }}
       />
 
+      {/* Button full width responsive */}
       <button
         onClick={scrollToTop}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        className="flex cursor-pointer flex-col items-center gap-1 border-none bg-transparent px-4 transition-colors duration-200 outline-none"
+        className="flex w-full max-w-screen-sm cursor-pointer flex-col items-center gap-2 border-none bg-transparent px-4 transition-colors duration-200 outline-none md:max-w-md lg:max-w-lg xl:max-w-xl 2xl:max-w-2xl"
         style={{ color: hovered ? "#ffffff" : "#c8d8e8" }}
         aria-label="Kembali ke atas"
       >
@@ -55,8 +53,9 @@ export default function BackToTop() {
           />
         </svg>
 
+        {/* Teks */}
         <span
-          className="text-sm tracking-wider"
+          className="text-center text-sm tracking-wider"
           style={{ fontFamily: "'Segoe UI', 'Helvetica Neue', sans-serif" }}
         >
           Kembali ke atas
