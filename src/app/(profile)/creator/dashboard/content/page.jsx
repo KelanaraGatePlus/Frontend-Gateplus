@@ -320,7 +320,7 @@ export default function DashboardContentPage() {
                         {contentData ? <ContentTable data={
                             contentData ? contentData.data?.[dataType]?.map(item => ({
                                 title: item.title,
-                                posterImageUrl: item.posterImageUrl || item.coverPodcastImage,
+                                posterImageUrl: item.thumbnailImageUrl || item.posterImageUrl || item.coverPodcastImage,
                                 description: <RichTextDisplay content={item.description} className="line-clamp-2" />,
                                 visibility: item.isPrivate == true ? 'Private' : 'Publik',
                                 restriction: item.ageRestriction,
@@ -533,6 +533,7 @@ export default function DashboardContentPage() {
                             ) : analyticsData ? (
                                 <PreviewContentHeader
                                     posterImageUrl={
+                                        analyticsData.contentData?.thumbnailImageUrl ||
                                         analyticsData.contentData?.posterImageUrl ||
                                         analyticsData.contentData?.coverPodcastImage ||
                                         analyticsData.posterImageUrl ||

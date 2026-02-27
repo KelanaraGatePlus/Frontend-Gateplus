@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { createPortal } from "react-dom";
 import PaymentMethodSelector from "@/components/Payment/PaymentMethodSelector";
 import PaymentSummary from "@/components/Payment/PaymentSummary";
 
@@ -11,6 +12,12 @@ export default function TipPaymentModal({
   isLoading,
 }) {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = React.useState(null);
+  const [isMounted, setIsMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+    return () => setIsMounted(false);
+  }, []);
 
   const subtotal = Number(tipAmount) || 0;
 
@@ -27,10 +34,10 @@ export default function TipPaymentModal({
     onClose();
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !isMounted) return null;
 
-  return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+  return createPortal(
+    <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="relative bg-[#515151] shadow-2xl shadow-black/80 w-[95%] md:w-auto md:min-w-2xl xl:min-w-3xl max-h-[90vh] overflow-y-auto text-xs md:text-[16px] rounded-lg montserratFont text-white">
         {/* Close Button */}
         <button
@@ -63,6 +70,7 @@ export default function TipPaymentModal({
           {/* Pemilihan metode pembayaran */}
           <div className="flex flex-col gap-2 md:px-8">
             <PaymentMethodSelector
+              basePrice={tipAmount}
               selectedPaymentMethod={selectedPaymentMethod}
               onMethodChange={setSelectedPaymentMethod}
               showError={!selectedPaymentMethod}
@@ -99,7 +107,8 @@ export default function TipPaymentModal({
             </button>
           </div>
         </div>
-      </div>
+    </div>,
+    document.body
   );
 }
 

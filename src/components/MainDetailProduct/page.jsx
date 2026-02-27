@@ -42,7 +42,7 @@ export default function MainTemplateLayout({
       <ProductDetailSection
         productType={productType}
         productID={productDetail?.id}
-        productBanner={productDetail?.posterImageUrl}
+        productBanner={productDetail?.coverImageUrl}
         productCover={
           productType === "podcast"
             ? productDetail?.coverPodcastImage

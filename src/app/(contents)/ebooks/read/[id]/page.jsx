@@ -43,7 +43,7 @@ export default function ReadEbookPage({ params }) {
   const [lineHeight, setLineHeight] = useState("normal");
   const [textAlign, setTextAlign] = useState("justify");
   const [fontFamily, setFontFamily] = useState("inter");
-  const [readingMode, setReadingMode] = useState("page");
+  const [readingMode, setReadingMode] = useState("scroll");
   const [progress, setProgress] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [cfiString, setCfiString] = useState(null);
@@ -338,6 +338,21 @@ export default function ReadEbookPage({ params }) {
     }
   }, [currentPage, sendLogToServer, saveProgress]);
 
+  const handleToggleMobileMenu = useCallback(() => {
+    setMobileMenuOpen((prev) => {
+      const next = !prev;
+      if (next) {
+        setIsCommentVisible(false);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleOpenCommentModal = useCallback(() => {
+    setMobileMenuOpen(false);
+    setIsCommentVisible(true);
+  }, []);
+
   const handleProgressChange = useCallback(
     (progressData) => {
       // memastikan progress 0-1
@@ -496,6 +511,25 @@ export default function ReadEbookPage({ params }) {
     setShowSkeleton(isLoading);
   }, [isLoading]);
 
+  useEffect(() => {
+    if (mobileMenuOpen && isCommentVisible) {
+      setMobileMenuOpen(false);
+    }
+  }, [mobileMenuOpen, isCommentVisible]);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const previousOverflow = document.body.style.overflow;
+
+    if (isCommentVisible) {
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isCommentVisible]);
+
   // Global protection: block copy, right-click, and common inspect shortcuts
   useEffect(() => {
     const preventDefault = (e) => {
@@ -593,6 +627,7 @@ export default function ReadEbookPage({ params }) {
             onClick={() => {
               setMobileMenuOpen(!mobileMenuOpen);
               sendLogToServer("OPEN_MENU", currentPage);
+              handleToggleMobileMenu();
             }}
           />
         </div>
@@ -610,6 +645,7 @@ export default function ReadEbookPage({ params }) {
                 onClick={() => {
                   setMobileMenuOpen(!mobileMenuOpen);
                   sendLogToServer("CLOSE_MENU", currentPage);
+                  handleToggleMobileMenu();
                 }}
               />
 
@@ -870,6 +906,7 @@ export default function ReadEbookPage({ params }) {
                   episodeEbookId={id}
                   currentPage={currentPage}
                   cfiPosition={cfiString}
+                  topBarHeight={64}
                   bottomBarHeight={isBottomBarOpen ? 176 : 56}
                   onLoadingChange={setIsReaderLoading}
                 />
@@ -956,6 +993,7 @@ export default function ReadEbookPage({ params }) {
                       onClick={() => {
                         setIsCommentVisible(true);
                         sendLogToServer("OPEN_COMMENT", currentPage);
+                        handleOpenCommentModal();
                       }}
                     />
                   </div>
@@ -1030,6 +1068,7 @@ export default function ReadEbookPage({ params }) {
                   onClick={() => {
                     setIsCommentVisible(true);
                     sendLogToServer("OPEN_COMMENT", currentPage);
+                    handleOpenCommentModal();
                   }}
                 />
               </div>

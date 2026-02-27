@@ -10,7 +10,7 @@ export const registerCreatorSchema = z.object({
     username: z
         .string()
         .min(5, "Username must be at least 5 characters")
-        .max(30, "Username must be less than 30 characters")
+        .max(40, "Username must be less than 40 characters")
         .regex(/^[a-zA-Z0-9]+$/, "Username must contain only letters and numbers"),
 
     phone: z

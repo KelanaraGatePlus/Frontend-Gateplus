@@ -22,12 +22,12 @@ export const searchAPI = createApi({
             query: (rawParams) => {
                 // Buat URLSearchParams untuk handle array
                 const params = new URLSearchParams();
-                
+
                 // Tambahkan query search
                 if (rawParams.q) {
                     params.append('q', rawParams.q);
                 }
-                
+
                 // Tambahkan category (bisa multiple)
                 if (rawParams.category) {
                     if (Array.isArray(rawParams.category)) {
@@ -39,7 +39,7 @@ export const searchAPI = createApi({
                         params.append('category', rawParams.category);
                     }
                 }
-                
+
                 // Tambahkan genre (bisa multiple)
                 if (rawParams.genre) {
                     if (Array.isArray(rawParams.genre)) {
@@ -51,7 +51,7 @@ export const searchAPI = createApi({
                         params.append('genre', rawParams.genre);
                     }
                 }
-                
+
                 // Tambahkan relevance (bisa multiple)
                 if (rawParams.relevance) {
                     if (Array.isArray(rawParams.relevance)) {
@@ -79,9 +79,18 @@ export const searchAPI = createApi({
             }),
             providesTags: ["searchAPI"],
         }),
+
         getPopularSearches: builder.query({
             query: () => ({
                 url: "search/popular",
+                method: "GET",
+            }),
+            providesTags: ["searchAPI"],
+        }),
+
+        getSearchSuggestions: builder.query({
+            query: (query) => ({
+                url: `search/suggestions?q=${encodeURIComponent(query)}`,
                 method: "GET",
             }),
             providesTags: ["searchAPI"],
@@ -93,4 +102,5 @@ export const {
     useGetSearchResultsMutation,
     useGetSearchHistoryByUserQuery,
     useGetPopularSearchesQuery,
+    useGetSearchSuggestionsQuery,
 } = searchAPI;

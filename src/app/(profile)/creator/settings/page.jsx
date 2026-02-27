@@ -54,6 +54,15 @@ export default function CreatorSettingsPage() {
     useUpdateCreatorMutation();
   const { refreshUser } = useAuth();
 
+  const validateSocialUrl = (value, allowedPrefixes, label) => {
+    if (!value?.trim()) return null;
+
+    const isValid = allowedPrefixes.some((prefix) => value.startsWith(prefix));
+    if (isValid) return null;
+
+    return `${label} harus diawali dengan: ${allowedPrefixes.join(" atau ")}`;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -68,6 +77,34 @@ export default function CreatorSettingsPage() {
     if (canChangeUsername && !username?.trim()) {
       setShowToast(true);
       setToastMessage("Username wajib diisi");
+      setToastType("failed");
+      return;
+    }
+
+    const socialErrors = [
+      validateSocialUrl(instagramUrl, [
+        "https://www.instagram.com/",
+        "https://instagram.com/",
+      ], "Instagram"),
+      validateSocialUrl(tiktokUrl, [
+        "https://www.tiktok.com/",
+        "https://tiktok.com/",
+      ], "Tiktok"),
+      validateSocialUrl(twitterUrl, [
+        "https://www.x.com/",
+        "https://x.com/",
+        "https://twitter.com/",
+        "https://www.twitter.com/",
+      ], "Twitter/X"),
+      validateSocialUrl(facebookUrl, [
+        "https://www.facebook.com/",
+        "https://facebook.com/",
+      ], "Facebook"),
+    ].filter(Boolean);
+
+    if (socialErrors.length > 0) {
+      setShowToast(true);
+      setToastMessage(socialErrors[0]);
       setToastType("failed");
       return;
     }
@@ -306,9 +343,9 @@ export default function CreatorSettingsPage() {
                   >
                     <div className="group relative h-16 w-16 cursor-pointer overflow-hidden rounded-full lg:h-24 lg:w-24">
                       {profilePictureUrl &&
-                      profilePictureUrl !== "null" &&
-                      profilePictureUrl !== "" &&
-                      profilePicturePreview === null ? (
+                        profilePictureUrl !== "null" &&
+                        profilePictureUrl !== "" &&
+                        profilePicturePreview === null ? (
                         <Image
                           src={profilePictureUrl}
                           alt="profile"
@@ -342,9 +379,9 @@ export default function CreatorSettingsPage() {
                   <div className="relative flex-1 overflow-hidden rounded-xl">
                     <label className="relative block h-full w-full cursor-pointer lg:max-h-42 lg:max-w-[70%]">
                       {bannerProfileUrl &&
-                      bannerProfileUrl !== "null" &&
-                      bannerProfileUrl !== "" &&
-                      bannerProfilePicturePreview === null ? (
+                        bannerProfileUrl !== "null" &&
+                        bannerProfileUrl !== "" &&
+                        bannerProfilePicturePreview === null ? (
                         <Image
                           src={bannerProfileUrl}
                           alt="profile"
@@ -400,14 +437,14 @@ export default function CreatorSettingsPage() {
                         let value = e.target.value;
                         // cuma huruf dan spasi
                         value = value.replace(/[^a-zA-Z\s]/g, "");
-                        // maksimal 20 karakter
-                        value = value.slice(0, 20);
+                        // maksimal 40 karakter
+                        value = value.slice(0, 40);
 
                         setProfileName(value);
                       }}
                       value={profileName}
                       placeholder="Masukan Profile Name"
-                      maxLength={20}
+                      maxLength={40}
                       required
                     />
                   </div>
@@ -431,13 +468,17 @@ export default function CreatorSettingsPage() {
 
                         // Hanya izinkan huruf a-z (besar & kecil)
                         value = value.replace(/[^a-zA-Z]/g, "");
-
+                        
+                        // maksimal 40 karakter
+                        value = value.slice(0, 40);
+                        
                         // Update state
                         setUsername(value);
                       }}
                       value={username}
                       placeholder="Masukan username"
                       disabled={!canChangeUsername}
+                      maxLength={40}
                       required
                     />
                   </div>

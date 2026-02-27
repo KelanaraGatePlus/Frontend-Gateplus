@@ -1,6 +1,9 @@
 import React, { useRef, useState, useCallback, useEffect } from "react";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { useCreateProgressWatchMutation } from "@/hooks/api/progressWatchAPI";
+import { useGetMovieTokenQuery } from "@/hooks/api/movieSliceAPI";
+import { useGetEpisodeSeriesTokenQuery } from "@/hooks/api/episodeSeriesSliceAPI";
+import { useGetEducationEpisodeTokenQuery } from "@/hooks/api/educationEpisodeSliceAPI";
 import PropTypes from "prop-types";
 import MuxPlayer from "@mux/mux-player-react";
 import throttle from "lodash.throttle";
@@ -8,8 +11,8 @@ import { useDeviceType } from "@/hooks/helper/deviceType";
 import Link from "next/link";
 import Image from "next/image";
 
-import IconsArrowLeft from "@@/icons/icons-dashboard/icons-arrow-left.svg";
 import iconFlag from "@@/icons/icon-flag.svg";
+import BackButton from "../BackButton/page";
 
 export default function DefaultVideoPlayer({
   src,
@@ -35,6 +38,39 @@ export default function DefaultVideoPlayer({
   const [createProgressWatch] = useCreateProgressWatchMutation();
   const [showControls, setShowControls] = useState(true);
   const [duration, setDuration] = useState(0);
+
+  const isMovieContent = contentType === "MOVIE" || contentType === "FILM";
+  const isSeriesContent = contentType === "SERIES" || contentType === "EPISODE_SERIES";
+  const isEducationEpisodeContent = contentType === "EDUCATION_EPISODE";
+  const shouldFetchMovieToken = Boolean(isMovieContent && contentId && playbackId);
+  const shouldFetchSeriesToken = Boolean(isSeriesContent && contentId && playbackId);
+  const shouldFetchEducationEpisodeToken = Boolean(isEducationEpisodeContent && contentId && playbackId);
+
+  const { data: movieTokenResponse } = useGetMovieTokenQuery(contentId, {
+    skip: !shouldFetchMovieToken,
+  });
+
+  const { data: seriesTokenResponse } = useGetEpisodeSeriesTokenQuery(contentId, {
+    skip: !shouldFetchSeriesToken,
+  });
+
+  const { data: educationEpisodeTokenResponse } = useGetEducationEpisodeTokenQuery(contentId, {
+    skip: !shouldFetchEducationEpisodeToken,
+  });
+
+  const getPlaybackToken = (tokenResponse) =>
+    tokenResponse?.token ||
+    tokenResponse?.playbackToken ||
+    tokenResponse?.data?.data?.token ||
+    tokenResponse?.data?.token ||
+    tokenResponse?.data?.data?.playbackToken ||
+    tokenResponse?.data?.playbackToken ||
+    null;
+
+  const moviePlaybackToken = getPlaybackToken(movieTokenResponse);
+  const seriesPlaybackToken = getPlaybackToken(seriesTokenResponse);
+  const educationEpisodePlaybackToken = getPlaybackToken(educationEpisodeTokenResponse);
+  const playbackToken = moviePlaybackToken || seriesPlaybackToken || educationEpisodePlaybackToken;
 
   // Format duration H:MM:SS (Didefinisikan secara lokal agar kode mandiri jika import gagal)
   const formatDuration = (d) => {
@@ -177,25 +213,18 @@ export default function DefaultVideoPlayer({
 
   return (
     <div
+      onContextMenu={(e) => e.preventDefault()}
       ref={containerRef} // Pasang ref untuk menangkap event interaksi
       className={`relative h-[500px] w-screen max-w-full overflow-hidden bg-black 2xl:h-[800px] ${className || ""}`}
     >
       <div
         // Gunakan z-50 agar pasti muncul di atas kontrol MuxPlayer dalam fullscreen
         onClick={(e) => e.stopPropagation()}
-        className={`absolute top-0 right-0 left-0 z-50 transition-opacity duration-300 ${
-          showControls ? "opacity-100" : "pointer-events-none opacity-0"
-        } flex items-center justify-between gap-4 bg-gradient-to-b from-black/70 to-transparent px-4 py-4 sm:px-16`}
+        className={`absolute top-0 left-0 right-0 transition-opacity duration-300 z-20 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"
+          } bg-gradient-to-b from-black/70 to-transparent py-4 px-4 sm:px-16 flex items-center gap-4 justify-between`}
       >
-        <div className="flex flex-row items-center justify-center gap-4">
-          <Link href="/">
-            <Image
-              src={IconsArrowLeft}
-              alt="icons-arrow-left"
-              width={32}
-              height={32}
-            />
-          </Link>
+        <div className="flex flex-row gap-4 items-center justify-center">
+          <BackButton />
           <div className="flex flex-col gap-1">
             <span className="text-md font-black text-white">{title}</span>
             <span className="text-xs text-gray-400">
@@ -211,14 +240,13 @@ export default function DefaultVideoPlayer({
           <Image src={iconFlag} alt="icons-flag" width={32} height={32} />
         </Link>
       </div>
-      {console.log(playbackId, src)}
       <MuxPlayer
         ref={videoRef}
         {...(playbackId ? { playbackId } : src ? { src } : {})}
+        {...(playbackToken ? { playbackToken } : {})}
         poster={poster}
         streamType="on-demand"
-        // Atur z-index MuxPlayer agar lebih rendah dari header overlay
-        className="z-10 h-full w-full"
+        className="w-full h-full z-10"
         accent-color="#175ba6"
         playsInline
         preload="metadata"
@@ -270,7 +298,6 @@ export default function DefaultVideoPlayer({
           console.log("Progress", progressRef.current);
           throttledSaveProgress();
         }}
-        // MuxPlayer akan memiliki kontrol bawaan di bawah, Header kita di atas
         controls
       />
     </div>
@@ -281,7 +308,7 @@ DefaultVideoPlayer.propTypes = {
   src: PropTypes.string,
   poster: PropTypes.string,
   className: PropTypes.string,
-  contentType: PropTypes.oneOf(["MOVIE", "SERIES_EPISODE"]).isRequired,
+  contentType: PropTypes.oneOf(["MOVIE", "FILM", "SERIES", "EPISODE_SERIES", "EDUCATION_EPISODE", "EDUCATION"]).isRequired,
   logType: PropTypes.string,
   contentId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   startFrom: PropTypes.number,

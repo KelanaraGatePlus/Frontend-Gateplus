@@ -17,6 +17,7 @@ import getMinAge from "@/lib/helper/minAge";
 import useSyncUserData from "@/hooks/api/useSyncUserData";
 import { useCallback } from "react";
 import BackToTop from "@/components/ui/buttonBackToTop";
+import { DEFAULT_AVATAR } from "@/lib/defaults";
 
 export default function SearchPage() {
   const { userAge, isReady } = useSyncUserData();
@@ -69,6 +70,13 @@ function SearchPageComponent({ isBlurred }) {
     { label: "A-Z", value: "a-z" },
     { label: "Z-A", value: "z-a" },
   ];
+
+  const relevanceConflictRules = {
+    latest: ["oldest"],
+    oldest: ["latest"],
+    "a-z": ["z-a"],
+    "z-a": ["a-z"],
+  };
 
   const genreOptions = categoryData?.data?.data?.map((category) => ({
     label: category.tittle,
@@ -158,6 +166,7 @@ function SearchPageComponent({ isBlurred }) {
                       queryParameterName="relevance"
                       options={relevanceOptions || []}
                       label="Relevansi"
+                      conflictRules={relevanceConflictRules}
                     />
                   </>
                 }
@@ -283,7 +292,7 @@ function SearchResultsContent({ searchResults, loading, isBlurred }) {
                 <div className="flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-transparent bg-white/5 p-4 transition-all hover:border-blue-500 hover:bg-white/10">
                   <div className="relative h-20 w-20 overflow-hidden rounded-full">
                     <Image
-                      src={creator.imageUrl || "/default-avatar.png"}
+                      src={creator.imageUrl || DEFAULT_AVATAR.src}
                       alt={creator.profileName || creator.username}
                       fill
                       className="object-cover"

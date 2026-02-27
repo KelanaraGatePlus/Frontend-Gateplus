@@ -42,6 +42,15 @@ function saveState(state) {
   }
 }
 
+function hasPodcastAccess(podcast) {
+  if (!podcast) return false;
+  return Boolean(
+    podcast.isOwner ||
+    podcast.isSubscribed ||
+    podcast.hasSubscription
+  );
+}
+
 export function PodcastPlayerProvider({ children, disablePlayer = false }) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -164,6 +173,18 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
         }
       }, 200);
     }
+  };
+
+  const hasNextEpisodeAvailable = () => {
+    if (!episodeList || !currentlyPlaying) return false;
+    const idx = episodeList.findIndex((e) => e.id === currentlyPlaying.id);
+    return idx > 0; // next episode is idx - 1 (going backward in list)
+  };
+
+  const hasPrevEpisodeAvailable = () => {
+    if (!episodeList || !currentlyPlaying) return false;
+    const idx = episodeList.findIndex((e) => e.id === currentlyPlaying.id);
+    return idx >= 0 && idx < episodeList.length - 1; // previous episode is idx + 1 (going forward in list)
   };
 
   useEffect(() => {
@@ -374,6 +395,8 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
       setIsPlaying,
       play,
       pause,
+      hasNextEpisodeAvailable,
+      hasPrevEpisodeAvailable,
       togglePlay,
       seek,
       seekBy,

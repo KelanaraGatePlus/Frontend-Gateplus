@@ -14,6 +14,15 @@ import ProfileModal from "@/components/Modal/ProfileModal";
 import { useAuth } from "@/components/Context/AuthContext";
 
 export default function UserSettingsPage() {
+  const todayDate = new Date().toISOString().split("T")[0];
+  const today = new Date();
+  const minAgeDate = new Date(
+    today.getFullYear() - 13,
+    today.getMonth(),
+    today.getDate()
+  )
+    .toISOString()
+    .split("T")[0];
   const [isLoading, setIsLoading] = useState(false);
   const [imageFile, setImageFile] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
@@ -32,6 +41,7 @@ export default function UserSettingsPage() {
   const [toastType, setToastType] = useState("");
   const [token, setToken] = useState("");
   const [canChangeUsername, setCanChangeUsername] = useState(true);
+  const [canChangeDateOfBirth, setCanChangeDateOfBirth] = useState(true);
   const [updateUser] = useUpdateUserMutation();
   const { refreshUser } = useAuth();
   const [isShowProfileModal, setIsShowProfileModal] = useState(false);
@@ -136,6 +146,18 @@ export default function UserSettingsPage() {
     setIsShowProfileModal(false);
   };
 
+  const handleDateOfBirthChange = (event) => {
+    const value = event.target.value;
+    const year = value?.split("-")?.[0] || "";
+
+    if (year.length > 4) {
+      event.target.value = dateOfBirth || "";
+      return;
+    }
+
+    setdateOfBirth(value);
+  };
+
   const getData = async () => {
     try {
       const response = await axios.get(`${BACKEND_URL}/users/${userId}`, {
@@ -156,6 +178,7 @@ export default function UserSettingsPage() {
         : "";
 
       setdateOfBirth(dob);
+      setCanChangeDateOfBirth(!usersData.dateOfBirth);
       setRegion(usersData.region || "");
       setCanChangeUsername(usersData.canChangeUsername || false);
       setImageUrl(usersData.imageUrl || null);
@@ -202,8 +225,8 @@ export default function UserSettingsPage() {
                 >
                   <div className="group relative h-16 w-16 overflow-hidden rounded-full bg-amber-600 lg:h-24 lg:w-24">
                     {imageUrl &&
-                    imageUrl !== "null" &&
-                    !uploadedPhotoProfile ? (
+                      imageUrl !== "null" &&
+                      !uploadedPhotoProfile ? (
                       <Image
                         src={imageUrl}
                         alt="profile"
@@ -248,13 +271,13 @@ export default function UserSettingsPage() {
                         // cuma huruf dan spasi
                         value = value.replace(/[^a-zA-Z\s]/g, "");
                         // maksimal 20 karakter
-                        value = value.slice(0, 20);
+                        value = value.slice(0, 40);
 
                         setProfileName(value);
                       }}
                       value={profileName}
                       placeholder="Masukan Profile Name"
-                      maxLength={20}
+                      maxLength={40}
                       required
                     />
                   </div>
@@ -264,9 +287,9 @@ export default function UserSettingsPage() {
                   <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 lg:text-xl">
                     Username<span className="text-red-700"> *</span>
                   </h3>
-                  <div className="flex-1">
+                  <div className="relative flex-1">
                     {!canChangeUsername && (
-                      <span className="absolute -top-12 left-1/2 -translate-x-1/2 rounded-md bg-black px-3 py-1.5 text-sm whitespace-nowrap text-white opacity-0 transition-opacity group-hover:opacity-100">
+                      <span className="pointer-events-none absolute -top-11 left-1/2 z-20 hidden w-max max-w-60 -translate-x-1/2 rounded-md bg-black px-3 py-1.5 text-center text-sm whitespace-normal text-white opacity-0 transition-opacity md:block md:group-hover:opacity-100 md:group-focus-within:opacity-100">
                         Username hanya bisa diubah 3 bulan sekali
                       </span>
                     )}
@@ -277,13 +300,24 @@ export default function UserSettingsPage() {
                         let value = e.target.value;
                         // cuma abjad
                         value = value.replace(/[^a-zA-Z]/g, "");
+
+                        // maksimal 40 karakter
+                        value = value.slice(0, 40);
+
+                        // Update state
                         setUsername(value);
                       }}
                       value={username}
                       placeholder="Masukan username"
                       disabled={!canChangeUsername}
+                      maxLength={40}
                       required
                     />
+                    {!canChangeUsername && (
+                      <p className="mt-1 text-xs text-[#979797] md:hidden">
+                        Username hanya bisa diubah 3 bulan sekali
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -370,20 +404,32 @@ export default function UserSettingsPage() {
               </div>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {/* dob */}
-                <div className="flex flex-col gap-2">
+                <div className="group relative flex flex-col gap-2">
                   <div className="flex items-center gap-4">
                     <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 lg:text-xl">
                       Date Of Birth
                     </h3>
-                    <div className="flex-1">
+                    <div className="relative flex-1">
+                      {!canChangeDateOfBirth && (
+                        <span className="pointer-events-none absolute -top-11 left-1/2 z-20 hidden w-max max-w-60 -translate-x-1/2 rounded-md bg-black px-3 py-1.5 text-center text-sm whitespace-normal text-white opacity-0 transition-opacity md:block md:group-hover:opacity-100 md:group-focus-within:opacity-100">
+                          Date of birth hanya bisa diisi sekali
+                        </span>
+                      )}
                       <input
                         type="date"
-                        className="w-full appearance-none rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1 text-white"
-                        onChange={(e) => setdateOfBirth(e.target.value)}
-                        value={dateOfBirth || ""}
-                        // maksimal tanggal lahir
-                        max="2025-12-31"
+                        className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-gray-400"
+                        onChange={handleDateOfBirthChange}
+                        value={dateOfBirth}
+                        placeholder="Masukan Tanggal Lahir"
+                        max={todayDate}
+                        min={minAgeDate}
+                        disabled={!canChangeDateOfBirth}
                       />
+                      {!canChangeDateOfBirth && (
+                        <p className="mt-1 text-xs text-[#979797] md:hidden">
+                          Date of birth hanya bisa diisi sekali
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -184,17 +184,19 @@ export default function EditComicForm({ id }) {
                         )}
                     />
 
+                    {/* Poster Banner */}
                     <Controller
-                        name="posterBanner"
+                        name="coverBook"
                         control={control}
+                        rules={{ required: "Poster banner wajib diunggah" }}
                         render={({ field, fieldState }) => (
                             <InputImageBanner
                                 type="banner"
-                                label="Poster Banner"
-                                description="Gunakan rasio 16:9 (1920x1080 px), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten."
-                                name="posterBanner"
+                                label="Banner Promosi Seri (Wide Banner)"
+                                description="Gunakan rasio 16:9 (1920x1080 px), format JPG/PNG, maks 500KB. Banner ini digunakan untuk fitur promosi di halaman utama. Pastikan visualnya menarik dan memuat judul."
+                                name="coverBook"
                                 icon={IconsGalery}
-                                inputRef={posterBannerInputRef}
+                                inputRef={coverBookInputRef}
                                 files={field.value || []}
                                 onUpload={(e) => {
                                     const files = [...e.target.files];
@@ -207,18 +209,19 @@ export default function EditComicForm({ id }) {
                             />
                         )}
                     />
-
+                    {/* Cover Book */}
                     <Controller
-                        name="coverBook"
+                        name="posterBanner"
                         control={control}
+                        rules={{ required: "Cover book wajib diunggah" }}
                         render={({ field, fieldState }) => (
                             <InputImageBanner
                                 type="cover"
-                                label="Cover Book"
-                                description="Gunakan rasio 1,6:2 (1600x2560), format JPG/PNG, ukuran maksimal 500KB. Poster harus jelas dan mewakili isi konten."
-                                name="coverBook"
+                                label="Sampul Seri Utama (Cover Art)"
+                                description="Gunakan rasio 1:1.6 (1600x2560 px), format JPG/PNG, maks 500KB. Cover harus menarik secara visual, memuat judul dengan jelas, dan memancing klik (High CTR) di hasil pencarian dan rak buku digital."
+                                name="posterBanner"
                                 icon={IconsGalery}
-                                inputRef={coverBookInputRef}
+                                inputRef={posterBannerInputRef}
                                 files={field.value || []}
                                 onUpload={(e) => {
                                     const files = [...e.target.files];
