@@ -216,7 +216,7 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
     const idx = episodeList.findIndex((e) => e.id === currentlyPlaying.id);
     if (idx >= 0 && idx < episodeList.length - 1) {
       const next = episodeList[idx + 1];
-      if (next.isPurchased || podcastMeta.isOwner || podcastMeta.isSubscribed) {
+      if (next?.isPurchased || next?.price == 'Free' || hasPodcastAccess(podcastMeta)) {
         playEpisode(next, podcastMeta, episodeList);
       } else {
         window.location.href = `/checkout/purchase/podcasts/${podcastMeta.id}/${next.id}`;
@@ -229,7 +229,7 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
     const idx = episodeList.findIndex((e) => e.id === currentlyPlaying.id);
     if (idx > 0) {
       const prev = episodeList[idx - 1];
-      if (prev.isPurchased || podcastMeta.isOwner || podcastMeta.isSubscribed) {
+      if (prev?.isPurchased || prev?.price == 'Free' || hasPodcastAccess(podcastMeta)) {
         playEpisode(prev, podcastMeta, episodeList);
       } else {
         window.location.href = `/checkout/purchase/podcasts/${podcastMeta.id}/${prev.id}`;
@@ -434,20 +434,21 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
       {/* Mount playback UI only when player is not disabled */}
       {!disablePlayer && !disablePlayerOnRoute && (
         <>
-          <div className={`${isDetailPage || isExpand ? "" : "hidden"}`}>
-            <Suspense fallback={null}>
-              <PodcastPlayback
-                isOpen={isOpen}
-                setIsOpen={setIsOpen}
-                currentlyPlaying={currentlyPlaying}
-                handlePlayPodcast={(episode) =>
-                  playEpisode(episode, podcastMeta, episodeList)
-                }
-                podcast={podcastMeta}
-                episodePodcasts={episodeList}
-              />
-            </Suspense>
-          </div>
+          {currentlyPlaying && (
+            <div className={`${isDetailPage || isExpand ? "" : "hidden"}`}>
+              <Suspense fallback={null}>
+                <PodcastPlayback
+                  isOpen={isOpen}
+                  setIsOpen={setIsOpen}
+                  currentlyPlaying={currentlyPlaying}
+                  handlePlayPodcast={(episode) =>
+                    playEpisode(episode, podcastMeta, episodeList)
+                  }
+                  podcast={podcastMeta}
+                  episodePodcasts={episodeList}
+                />
+              </Suspense>
+            </div>)}
 
           {/* Render mini player on non-detail pages */}
           {!isDetailPage && !isExpand && !hideMiniPlayerOnRoute && (
