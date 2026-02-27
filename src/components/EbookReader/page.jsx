@@ -47,7 +47,6 @@ const EpubReader = forwardRef(
       currentPage = 1,
       cfiPosition = null,
       bottomBarHeight = 176,
-      topBarHeight = 64,
     },
     ref
   ) => {
@@ -66,13 +65,6 @@ const EpubReader = forwardRef(
     const pageStatsRef = useRef({ current: 1, total: 1 });
     const pageNumbersInjectedRef = useRef(false);
     const injectPageNumbersTimeoutRef = useRef(null);
-
-    const getUsablePageHeight = useCallback(() => {
-      if (typeof window === "undefined") return 560;
-      const top = Number(topBarHeight || 0);
-      const bottom = Number(bottomBarHeight || 176);
-      return Math.max(0, window.innerHeight - top - bottom);
-    }, [topBarHeight, bottomBarHeight]);
 
     const injectPageNumbers = useCallback(() => {
       // Hanya jalankan di mode scroll dan pastikan rendition sudah siap
@@ -391,7 +383,7 @@ const EpubReader = forwardRef(
       const isPageMode = readingMode === "page";
       const vh = typeof window !== "undefined" ? window.innerHeight : 800;
       const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
-      const usableHeightInit = isPageMode ? getUsablePageHeight() : Math.max(0, vh - (bottomBarHeight || 176));
+      const usableHeightInit = Math.max(0, vh - (bottomBarHeight || 176));
       const widthPxInit = Math.min(Math.round(usableHeightInit * 210 / 297), vw);
 
       const rendition = book.renderTo(viewerRef.current, {
@@ -616,7 +608,7 @@ const EpubReader = forwardRef(
           console.warn("onLoadingChange gagal dipanggil.");
         }
       };
-    }, [epubUrl, readingMode, updateScrollProgress, onProgressChange, getUsablePageHeight, bottomBarHeight]);
+    }, [epubUrl, readingMode, updateScrollProgress, onProgressChange]);
 
     // Resize rendition when bottom bar visibility/height changes
     useEffect(() => {
@@ -626,7 +618,7 @@ const EpubReader = forwardRef(
       if (!rendition || !container) return;
 
       if (readingMode === "page") {
-        const usableHeight = getUsablePageHeight();
+        const usableHeight = Math.max(0, window.innerHeight - (bottomBarHeight || 176));
         const widthPx = Math.min(Math.round(usableHeight * 210 / 297), window.innerWidth);
         // Sync container style to avoid width mismatch
         container.style.height = `${usableHeight}px`;
@@ -639,7 +631,7 @@ const EpubReader = forwardRef(
           console.warn("rendition.resize gagal dipanggil:", e);
         }
       }
-    }, [bottomBarHeight, topBarHeight, readingMode, getUsablePageHeight]);
+    }, [bottomBarHeight, readingMode]);
 
     useEffect(() => {
       if (!renditionRef.current) return;
@@ -688,10 +680,10 @@ const EpubReader = forwardRef(
               ref={viewerRef}
               className="mx-auto epub-viewport shadow-2xl"
               style={{
-                height: readingMode === "page" ? `calc(100dvh - ${topBarHeight + bottomBarHeight}px)` : "auto",
-                minHeight: readingMode === "page" ? `calc(100dvh - ${topBarHeight + bottomBarHeight}px)` : "100vh",
+                height: readingMode === "page" ? `calc(100vh - ${bottomBarHeight}px)` : "auto",
+                minHeight: readingMode === "page" ? `calc(100vh - ${bottomBarHeight}px)` : "100vh",
                 width: readingMode === "page"
-                  ? `min(calc((100dvh - ${topBarHeight + bottomBarHeight}px) * 210 / 297), 100vw)`
+                  ? `min(calc((100vh - ${bottomBarHeight}px) * 210 / 297), 100vw)`
                   : "100%",
                 maxWidth: readingMode === "page" ? "100vw" : "800px",
                 backgroundColor: COLOR_THEMES[colorTheme]?.bg,
