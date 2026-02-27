@@ -309,7 +309,7 @@ export default function ProductEpisodeSection({
                         )}
 
                       {/* Open */}
-                      {(isOwner || item.isPurchased || item.price == "Free") &&
+                      {(isOwner || item.isPurchased || item.price == "Free" || item.price == 0 || isSubscribe) &&
                         !item.isWatched && (
                           <div className="flex w-max items-center justify-center gap-2 rounded-lg border-2 border-[#F5F5F559] bg-[#1FC16B4D] p-1 md:p-2">
                             <Icon
