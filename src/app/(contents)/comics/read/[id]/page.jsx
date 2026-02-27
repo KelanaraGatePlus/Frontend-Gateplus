@@ -1,28 +1,40 @@
-/* eslint-disable no-unused-vars */
 "use client";
-import BackButton from "@/components/BackButton/page";
+
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import PropTypes from "prop-types";
 import Link from "next/link";
-import iconCommentComic from "@@/icons/icon-comment-comic.svg";
 import Image from "next/image";
-import React, { useEffect, useRef, useState } from "react";
+import BackButton from "@/components/BackButton/page";
+import CommentModalComic from "@/components/CommentModalComic/page";
+import EpisodeController from "@/components/EpisodeController/EpisodeController";
+import iconFlag from "@@/icons/icon-flag.svg";
+import iconCommentComic from "@@/icons/icon-comment-comic.svg";
+import { useDeviceType } from "@/hooks/helper/deviceType";
 import { useGetEpisodeComicsByIdQuery } from "@/hooks/api/contentSliceAPI";
 import { useGetCommentByEpisodeComicQuery } from "@/hooks/api/commentSliceAPI";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
-import PropTypes from "prop-types";
-import { useDeviceType } from "@/hooks/helper/deviceType";
-import iconFlag from "@@/icons/icon-flag.svg";
-import CommentModalComic from "@/components/CommentModalComic/page";
-import EpisodeController from "@/components/EpisodeController/EpisodeController";
+import { useApplyReadProgressMutation } from "@/hooks/api/readProgressAPI";
+import { BACKEND_URL } from "@/lib/constants/backendUrl";
 
 export default function ReadComicPage({ params }) {
   const { id } = params;
-  const [currentPage, setCurrentPage] = useState(0);
-  const [isDesktop, setIsDesktop] = useState(false);
-  const [viewMode, setViewMode] = useState("auto");
   const device = useDeviceType();
-  const [isCommentVisible, setIsCommentVisible] = useState(false);
-  const [createLog] = useCreateLogMutation();
 
+  const [currentPage, setCurrentPage] = useState(0);
+  const [viewMode, setViewMode] = useState("auto");
+  const [isCommentVisible, setIsCommentVisible] = useState(false);
+  const [visibleImages, setVisibleImages] = useState({});
+  const imageAreaRef = useRef(null);
+  const observer = useRef(null);
+
+  const [progressLoaded, setProgressLoaded] = useState(false);
+  const [lastProgress, setLastProgress] = useState(0); // 1-based logical page
+  const skipNextSave = useRef(false);
+
+  const [createLog] = useCreateLogMutation();
+  const [applyReadProgress] = useApplyReadProgressMutation();
+
+  // --- FETCH COMIC DATA ---
   const { data, isLoading, error } = useGetEpisodeComicsByIdQuery(id);
   const comicSingleData = data?.data?.data;
   const comicData = comicSingleData?.fileImageComics || [];
@@ -30,6 +42,7 @@ export default function ReadComicPage({ params }) {
   const episodeComicNextId = data?.data?.nextEpisode?.id || null;
   const episodeComicPrevId = data?.data?.previousEpisode?.id || null;
 
+  // --- FETCH COMMENTS ---
   const { data: commentData, isLoading: isLoadingGetComment } =
     useGetCommentByEpisodeComicQuery(id, { skip: !id });
 
@@ -39,12 +52,31 @@ export default function ReadComicPage({ params }) {
   const logicalCurrentPage = Math.floor(currentPage / itemsPerPage) + 1;
   const maxCurrentPageIndex = Math.max(0, comicData.length - itemsPerPage);
 
+  const progressPercent =
+    totalPages > 0
+      ? Math.min(100, Math.round((lastProgress / totalPages) * 100))
+      : 0;
+
+  console.log(
+    "[RENDER] currentPage:",
+    currentPage,
+    "| logicalCurrentPage:",
+    logicalCurrentPage,
+    "| totalPages:",
+    totalPages,
+    "| lastProgress:",
+    lastProgress,
+    "| progressPercent:",
+    progressPercent,
+  );
+
+  // Redirect to purchase if 403
   useEffect(() => {
-    if (error && error.status === 403) {
+    if (error && error.status === 403 && comicSingleData?.comics?.id) {
       window.location.href =
         "/payment/purchase/comics/x/" + comicSingleData.comics.id;
     }
-  }, [data, isLoading]);
+  }, [error, comicSingleData]);
 
   useEffect(() => {
     if (!id) return;
@@ -69,7 +101,6 @@ export default function ReadComicPage({ params }) {
   useEffect(() => {
     const updateScreenSize = () => {
       const isWide = window.innerWidth >= 768;
-      setIsDesktop(isWide);
       if (viewMode === "auto") setViewMode(isWide ? "2" : "1");
     };
     updateScreenSize();
@@ -81,120 +112,174 @@ export default function ReadComicPage({ params }) {
     const newItemsPerPage = viewMode === "2" ? 2 : 1;
     const newCurrentPage =
       Math.floor(currentPage / newItemsPerPage) * newItemsPerPage;
-    if (newCurrentPage !== currentPage) {
-      setCurrentPage(newCurrentPage);
-    }
-  }, [viewMode, currentPage]);
+    if (newCurrentPage !== currentPage) setCurrentPage(newCurrentPage);
+  }, [viewMode]);
 
   useEffect(() => {
-    if (comicSingleData?.comics) {
-      const existing =
-        JSON.parse(localStorage.getItem("last_seen_content")) || [];
-      const already = existing.find(
-        (item) => item.id === comicSingleData.comics.id,
-      );
-      let updated = existing;
-      if (!already) {
-        updated = [
-          { ...comicSingleData.comics, type: "comic" },
-          ...existing,
-        ].slice(0, 10);
-      }
-      localStorage.setItem("last_seen_content", JSON.stringify(updated));
-    }
-  }, [comicSingleData]);
-
-  const imageAreaRef = useRef(null);
-
-  const handleClickArea = (e) => {
-    if (!imageAreaRef.current) return;
-    // Calculate click position relative to the image area
-    const rect = imageAreaRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const isLeft = x < rect.width / 2;
-
-    if (isLeft) {
-      if (currentPage === 0) return;
-      handlePrev();
-    } else {
-      if (logicalCurrentPage === totalPages) return;
-      handleNext();
-    }
-  };
-
-  const handleNext = () => {
-    setCurrentPage((prev) =>
-      Math.min(prev + itemsPerPage, maxCurrentPageIndex),
-    );
-  };
-
-  const handlePrev = () => {
-    setCurrentPage((prev) => Math.max(prev - itemsPerPage, 0));
-  };
-
-  const visiblePages = comicData.slice(currentPage, currentPage + itemsPerPage);
-
-  const progressPercentage =
-    totalPages > 0 ? (logicalCurrentPage / totalPages) * 100 : 0;
-
-  const [visibleImages, setVisibleImages] = useState({});
-  const observer = useRef(null);
-
-  useEffect(() => {
-    if (!comicSingleData?.comics) return;
-
-    try {
-      const raw = localStorage.getItem("last_seen_content");
-      let existing = raw ? JSON.parse(raw) : [];
-
-      const comicInfo = comicSingleData.comics;
-
-      const updatedContent = {
-        ...comicInfo, // ambil struktur backend → penting
-        type: "comic",
-        progress: progressPercentage,
-        currentPage: logicalCurrentPage,
-        totalPages: totalPages,
-        posterImageUrl:
-          comicInfo.posterImageUrl || comicInfo.coverImageUrl || null,
-        updatedAt: new Date().toISOString(),
-      };
-
-      const index = existing.findIndex((item) => item.id === comicInfo.id);
-
-      if (index >= 0) {
-        existing[index] = updatedContent;
-      } else {
-        existing = [updatedContent, ...existing].slice(0, 10);
-      }
-
-      localStorage.setItem("last_seen_content", JSON.stringify(existing));
-    } catch (err) {
-      console.error("Failed to save comic progress:", err);
-    }
-  }, [logicalCurrentPage, totalPages, progressPercentage, comicSingleData]);
-
-  useEffect(() => {
-    const observerInstance = new IntersectionObserver(
-      (entries) => {
+    const obs = new IntersectionObserver(
+      (entries, obsInst) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            const index = entry.target.getAttribute("data-index");
-            setVisibleImages((prev) => ({ ...prev, [index]: true }));
-            observerInstance.unobserve(entry.target);
+            const idx = entry.target.getAttribute("data-index");
+            setVisibleImages((p) => ({ ...p, [idx]: true }));
+            obsInst.unobserve(entry.target);
           }
         });
       },
       { rootMargin: "100px", threshold: 0.1 },
     );
-    observer.current = observerInstance;
-    return () => observerInstance.disconnect();
+    observer.current = obs;
+    return () => obs.disconnect();
   }, []);
 
   useEffect(() => {
     const lazyElements = document.querySelectorAll(".lazy-image");
-    lazyElements.forEach((el) => observer.current.observe(el));
+    lazyElements.forEach((el) => observer.current?.observe(el));
   }, [comicData, currentPage]);
+
+  const visiblePages = comicData.slice(currentPage, currentPage + itemsPerPage);
+
+  const saveProgressToDB = useCallback(
+    async (logicalPage, pages) => {
+      if (!id || pages <= 0) {
+        console.warn("[SAVE] Skipped - id:", id, "totalPages:", pages);
+        return;
+      }
+
+      const pageZeroBased = Math.min(Math.max(0, logicalPage - 1), pages - 1);
+      const isFinish = logicalPage >= pages;
+
+      const payload = {
+        page: pageZeroBased,
+        totalPages: pages,
+        isFinish,
+        episodeComicId: id,
+      };
+
+      console.log("[SAVE] Sending payload:", payload);
+
+      try {
+        const result = await applyReadProgress(payload).unwrap();
+        console.log("[SAVE] Success:", result);
+        setLastProgress(logicalPage);
+      } catch (err) {
+        console.error("[SAVE] Failed:", err);
+      }
+    },
+    [id, applyReadProgress],
+  );
+
+  // fetch data last progress
+  useEffect(() => {
+    if (!id || comicData.length === 0) return;
+
+    const fetchProgress = async () => {
+      const url = `${BACKEND_URL}/readProgress?episodeComicId=${id}`;
+      const token = localStorage.getItem("token");
+
+      try {
+        const res = await fetch(url, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const json = await res.json();
+
+        if (json.items?.length) {
+          const savedPage = json.items[0].page;
+          const rawIndex = savedPage * itemsPerPage;
+          const clampedIndex = Math.min(rawIndex, maxCurrentPageIndex);
+
+          skipNextSave.current = true;
+          setCurrentPage(clampedIndex);
+          setLastProgress(savedPage + 1);
+        } else {
+          setLastProgress(0);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setProgressLoaded(true);
+      }
+    };
+
+    fetchProgress();
+  }, [id, comicData.length, itemsPerPage, maxCurrentPageIndex]);
+
+  // save progress pindah halaman
+  useEffect(() => {
+    console.log(
+      "[SAVE EFFECT] Triggered | logicalCurrentPage:",
+      logicalCurrentPage,
+      "| totalPages:",
+      totalPages,
+      "| progressLoaded:",
+      progressLoaded,
+      "| skipNextSave:",
+      skipNextSave.current,
+    );
+
+    if (!id || totalPages <= 0 || !progressLoaded) {
+      console.log("[SAVE EFFECT] Skipped - conditions not met");
+      return;
+    }
+
+    if (skipNextSave.current) {
+      console.log("[SAVE EFFECT] Skipped - skipNextSave flag active");
+      skipNextSave.current = false;
+      return;
+    }
+
+    const t = setTimeout(() => {
+      console.log(
+        "[SAVE EFFECT] Debounce fired, saving logicalPage:",
+        logicalCurrentPage,
+        "totalPages:",
+        totalPages,
+      );
+      saveProgressToDB(logicalCurrentPage, totalPages);
+    }, 700);
+
+    return () => clearTimeout(t);
+  }, [logicalCurrentPage, totalPages, progressLoaded, id, saveProgressToDB]);
+
+  useEffect(() => {
+    return () => {
+      if (!id || totalPages <= 0) return;
+      const pageZeroBased = Math.min(
+        Math.max(0, logicalCurrentPage - 1),
+        totalPages - 1,
+      );
+      console.log(
+        "[UNMOUNT] Saving final progress, pageZeroBased:",
+        pageZeroBased,
+      );
+      applyReadProgress?.({
+        page: pageZeroBased,
+        totalPages,
+        isFinish: logicalCurrentPage >= totalPages,
+        episodeComicId: id,
+      });
+    };
+  }, [id, logicalCurrentPage, totalPages]);
+
+  // next & prev
+  const handleNext = () => {
+    const next = Math.min(currentPage + itemsPerPage, maxCurrentPageIndex);
+    console.log("[NAV] Next -> currentPage:", currentPage, "->", next);
+    setCurrentPage(next);
+  };
+  const handlePrev = () => {
+    const prev = Math.max(currentPage - itemsPerPage, 0);
+    console.log("[NAV] Prev -> currentPage:", currentPage, "->", prev);
+    setCurrentPage(prev);
+  };
+
+  const handleClickArea = (e) => {
+    if (!imageAreaRef.current) return;
+    const rect = imageAreaRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    if (x < rect.width / 2) handlePrev();
+    else handleNext();
+  };
 
   if (isLoading)
     return (
@@ -213,7 +298,7 @@ export default function ReadComicPage({ params }) {
         </h4>
 
         <Link
-          href={`/report/episode_comic/${comicSingleData.id}`}
+          href={`/report/episode_comic/${comicSingleData?.id}`}
           className="rounded-full bg-white/20 p-2 transition hover:bg-white/40"
         >
           <Image src={iconFlag} alt="flag" width={32} height={32} />
@@ -222,7 +307,6 @@ export default function ReadComicPage({ params }) {
 
       {/* MAIN WRAPPER */}
       <div className="flex min-h-screen flex-col pt-[60px]">
-        {/* 🔵 AREA GAMBAR + OVERLAY KIRI/KANAN */}
         <div
           className="relative flex min-h-0 flex-1 items-center justify-center overflow-auto"
           onClick={handleClickArea}
@@ -234,7 +318,6 @@ export default function ReadComicPage({ params }) {
             aria-label="previous-page-area"
             onClick={(e) => {
               e.stopPropagation();
-              if (currentPage === 0) return;
               handlePrev();
             }}
             className="absolute top-0 left-0 h-full w-1/2"
@@ -249,7 +332,6 @@ export default function ReadComicPage({ params }) {
             aria-label="next-page-area"
             onClick={(e) => {
               e.stopPropagation();
-              if (logicalCurrentPage === totalPages) return;
               handleNext();
             }}
             className="absolute top-0 right-0 h-full w-1/2"
@@ -266,12 +348,17 @@ export default function ReadComicPage({ params }) {
             {visiblePages.map((page, idx) => {
               const globalIndex = currentPage + idx;
               const isPriority = globalIndex === 0;
-
               return (
                 <div
                   key={globalIndex}
                   data-index={globalIndex}
-                  className={`lazy-image flex items-center justify-center ${viewMode === "2" ? (idx % 2 === 0 ? "pr-1" : "pl-1") : "mb-2"} transition-all`}
+                  className={`lazy-image flex items-center justify-center ${
+                    viewMode === "2"
+                      ? idx % 2 === 0
+                        ? "pr-1"
+                        : "pl-1"
+                      : "mb-2"
+                  } transition-all`}
                   style={{
                     maxHeight: "100%",
                     height: "89vh",
@@ -317,9 +404,9 @@ export default function ReadComicPage({ params }) {
 
           <div className="relative h-2 w-[160px] overflow-hidden rounded-full bg-[#013544] md:w-[300px]">
             <div
-              className="absolute top-0 left-0 h-full bg-[#0395BC] transition-all"
-              style={{ width: `${progressPercentage}%` }}
-            ></div>
+              className="absolute top-0 left-0 h-full rounded-full bg-[#0395BC] transition-all duration-500 ease-out"
+              style={{ width: `${progressPercent}%` }}
+            />
           </div>
 
           <button

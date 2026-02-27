@@ -10,6 +10,7 @@ import LoadingOverlay from "@/components/LoadingOverlay/page";
 import getMinAge from "@/lib/helper/minAge";
 import useSyncUserData from "@/hooks/api/useSyncUserData";
 import PropTypes from "prop-types";
+import BackToTop from "@/components/ui/buttonBackToTop";
 
 export default function EbooksPage() {
   const { userAge, isReady } = useSyncUserData();
@@ -64,6 +65,7 @@ export default function EbooksPage() {
           <EbookContent isBlurred={isBlurred} />
         </Suspense>
       </div>
+      <BackToTop />
     </main>
   );
 }

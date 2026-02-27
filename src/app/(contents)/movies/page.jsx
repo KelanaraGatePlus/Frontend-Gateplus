@@ -11,6 +11,7 @@ import getMinAge from "@/lib/helper/minAge";
 import useSyncUserData from "@/hooks/api/useSyncUserData";
 import { useCallback } from "react";
 import PropTypes from "prop-types";
+import BackToTop from "@/components/ui/buttonBackToTop";
 
 export default function MoviesPage() {
   const { userAge, isReady } = useSyncUserData();
@@ -55,6 +56,7 @@ export default function MoviesPage() {
       <Suspense fallback={<LoadingOverlay />}>
         <MovieContent isBlurred={isBlurred} />
       </Suspense>
+      <BackToTop />
     </div>
   );
 }

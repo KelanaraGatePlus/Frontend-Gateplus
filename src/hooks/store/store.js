@@ -39,6 +39,7 @@ import { episodeEbookSliceAPI } from "../api/episodeEbookSliceAPI";
 import { episodeComicSliceAPI } from "../api/episodeComicSliceAPI";
 import { notificationAPI } from "../api/notificationSliceAPI";
 import { reportCommentAPI } from "../api/reportCommentAPI";
+import { lastSeenSliceAPI } from "../api/lastSeenSliceAPI";
 
 const rootReducer = combineReducers({
   [ebookApi.reducerPath]: ebookApi.reducer,
@@ -78,6 +79,7 @@ const rootReducer = combineReducers({
   [episodeComicSliceAPI.reducerPath]: episodeComicSliceAPI.reducer,
   [notificationAPI.reducerPath]: notificationAPI.reducer,
   [reportCommentAPI.reducerPath]: reportCommentAPI.reducer,
+  [lastSeenSliceAPI.reducerPath]: lastSeenSliceAPI.reducer,
 });
 
 export const store = configureStore({
@@ -87,7 +89,7 @@ export const store = configureStore({
       // ✅ TAMBAHKAN INI - Prevent unnecessary re-renders
       serializableCheck: {
         // Ignore these action types
-        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+        ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
       },
       immutableCheck: {
         // Reduce checks for better performance
@@ -131,6 +133,7 @@ export const store = configureStore({
       episodeComicSliceAPI.middleware,
       notificationAPI.middleware,
       reportCommentAPI.middleware,
+      lastSeenSliceAPI.middleware,
     ),
 });
 

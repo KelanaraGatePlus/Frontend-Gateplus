@@ -10,6 +10,7 @@ import CarouselHighlight from "@/components/Carousel/CarouselHome/carouselHighli
 import CarouselTopTen from "@/components/Carousel/CarouselHome/carouselTopTen";
 import "@splidejs/react-splide/css";
 import CarouselLoading from "@/components/Carousel/CarouselLoading";
+import BackToTop from "@/components/ui/buttonBackToTop";
 
 // Dynamic imports tetap sama...
 const CarouselLastSeen = dynamic(
@@ -84,13 +85,11 @@ export default function HomePage() {
       <div className="flex flex-col">
         <SliderBannerPage isBlurred={false} />
 
-        <main className="flex flex-col md:mx-5 md:px-0">
+        <main className="flex flex-col pb-0 md:mx-5 md:px-0">
           <CategoryMenu />
-
           <CarouselNewest isBlurred={false} />
           <CarouselHighlight isBlurred={false} />
           <CarouselTopTen isBlurred={false} />
-
           {groups.map((group, idx) => {
             const CompA = group[0];
             const CompB = group[1];
@@ -123,6 +122,7 @@ export default function HomePage() {
             );
           })}
         </main>
+        <BackToTop />
       </div>
     </div>
   );

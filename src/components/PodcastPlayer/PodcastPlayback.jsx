@@ -14,6 +14,7 @@ import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { useCreateProgressWatchMutation } from "@/hooks/api/progressWatchAPI";
 import { useGetCommentByEpisodePodcastQuery } from "@/hooks/api/commentSliceAPI";
 import CommentModalPodcast from "../CommentModalPodcast/CommentModalPodcast";
+import { useGetProgressWatchQuery } from "@/hooks/api/progressWatchAPI";
 
 export default function PodcastPlayback({
   isOpen,
@@ -25,12 +26,30 @@ export default function PodcastPlayback({
   const [isMobile, setIsMobile] = useState(false);
   const podcastId = searchParams.get("podcast_detail");
   const [isCommentVisible, setIsCommentVisible] = useState(false);
-
+  const hasResumedRef = useRef(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [blobUrl, setBlobUrl] = useState("");
   const [volume, setVolume] = useState(1);
-  const { audioRef, isPlaying, togglePlay, play, seek, seekBy, setPlayerVolume, setCurrentlyPlaying, playNextEpisode, playPrevEpisode, isExpand, setIsExpand, handleExpand, stopPlayback, hasNextEpisodeAvailable, hasPrevEpisodeAvailable } = usePodcastPlayer();
+  const {
+    audioRef,
+    isPlaying,
+    togglePlay,
+    play,
+    seek,
+    seekBy,
+    setPlayerVolume,
+    setCurrentlyPlaying,
+    playNextEpisode,
+    playPrevEpisode,
+    isExpand,
+    setIsExpand,
+    handleExpand,
+    stopPlayback,
+    hasNextEpisodeAvailable,
+    hasPrevEpisodeAvailable
+  } = usePodcastPlayer();
+  
   const [episodePodcastData, setEpisodePodcastData] = useState({});
   const [createLog] = useCreateLogMutation();
   const [createProgressWatch] = useCreateProgressWatchMutation();
@@ -44,9 +63,10 @@ export default function PodcastPlayback({
   useEffect(() => {
     createProgressWatchRef.current = createProgressWatch;
   }, [createProgressWatch]);
-  const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByEpisodePodcastQuery(episodePodcastData?.id, {
-    skip: !episodePodcastData?.id
-  });
+  const { data: commentData, isLoading: isLoadingGetComment } =
+    useGetCommentByEpisodePodcastQuery(episodePodcastData?.id, {
+      skip: !episodePodcastData?.id,
+    });
 
   // Refs untuk melacak apakah log sudah dikirim untuk episode saat ini
   const clickLogSentRef = useRef(false);
@@ -56,6 +76,22 @@ export default function PodcastPlayback({
   // ref untuk menyimpan progress terakhir yang akan dikirim
   const progressRef = useRef({ playedSeconds: 0, percentage: 0 });
   const shouldAutoPlayRef = useRef(false);
+
+  const { data: progressData } = useGetProgressWatchQuery(
+    {
+      contentId: episodePodcastData?.id,
+      contentType: "EPISODE_PODCAST",
+    },
+    { skip: !episodePodcastData?.id },
+  );
+
+  const lastProgressRef = useRef(0);
+
+  useEffect(() => {
+    console.log("progress dari server:", progressData);
+    console.log("resume time:", progressData?.data?.progressSeconds);
+    lastProgressRef.current = progressData?.data?.progressSeconds || 0;
+  }, [progressData]);
 
   // Efek untuk update data episode & reset status log saat episode berganti
   useEffect(() => {
@@ -97,7 +133,8 @@ export default function PodcastPlayback({
         // record before sending to avoid races
         sentLogsRef.current.add(key);
         clickLogSentRef.current = true;
-        createLogRef.current?.(payload)
+        createLogRef
+          .current?.(payload)
           .unwrap?.()
           .then(() => {
             // ok
@@ -125,7 +162,8 @@ export default function PodcastPlayback({
       setDuration(total_Duration);
 
       // update playbackProgress in context so mini player can show progress
-      const playbackProgress = total_Duration > 0 ? current_Time / total_Duration : 0;
+      const playbackProgress =
+        total_Duration > 0 ? current_Time / total_Duration : 0;
       if (episodePodcastData.id && typeof setCurrentlyPlaying === "function") {
         setCurrentlyPlaying((prev) => {
           if (!prev || prev.id !== episodePodcastData.id) return prev;
@@ -141,12 +179,19 @@ export default function PodcastPlayback({
       };
 
       // Cek jika durasi valid, log 'WATCH_CONTENT' belum dikirim, dan ada episode ID
-      if (total_Duration > 0 && !watchLogSentRef.current && episodePodcastData.id) {
+      if (
+        total_Duration > 0 &&
+        !watchLogSentRef.current &&
+        episodePodcastData.id
+      ) {
         // Jika total durasi < 20 menit -> butuh 50% durasi
         // Jika total durasi >= 20 menit -> butuh 12 menit (720 detik)
         const twentyMinutesSec = 20 * 60;
         const twelveMinutesSec = 12 * 60;
-        const requiredSeconds = total_Duration < twentyMinutesSec ? total_Duration * 0.5 : twelveMinutesSec;
+        const requiredSeconds =
+          total_Duration < twentyMinutesSec
+            ? total_Duration * 0.5
+            : twelveMinutesSec;
 
         // jika current time melewati ambang waktu yang dibutuhkan
         if (current_Time >= requiredSeconds) {
@@ -165,8 +210,12 @@ export default function PodcastPlayback({
               // thresholdSeconds: requiredSeconds,
             };
 
-            console.log(`Sending WATCH_CONTENT log (threshold ${Math.round(requiredSeconds)}s reached):`, payload);
-            createLogRef.current?.(payload)
+            console.log(
+              `Sending WATCH_CONTENT log (threshold ${Math.round(requiredSeconds)}s reached):`,
+              payload,
+            );
+            createLogRef
+              .current?.(payload)
               .unwrap?.()
               .then(() => {
                 // already marked
@@ -182,13 +231,23 @@ export default function PodcastPlayback({
       }
 
       // If media just loaded metadata (or became ready), try to autoplay if requested
-      if (e?.type === "loadedmetadata" && shouldAutoPlayRef.current) {
-        try {
-          play();
-        } catch (err) {
-          console.error("Autoplay failed:", err);
+      if (e?.type === "loadedmetadata" && !hasResumedRef.current) {
+        const resumeTime = lastProgressRef.current || 0;
+
+        if (resumeTime > 0 && audio.duration > resumeTime) {
+          audio.currentTime = resumeTime;
         }
-        shouldAutoPlayRef.current = false;
+
+        hasResumedRef.current = true;
+
+        if (shouldAutoPlayRef.current) {
+          try {
+            play();
+          } catch (err) {
+            console.error("Autoplay failed:", err);
+          }
+          shouldAutoPlayRef.current = false;
+        }
       }
     };
 
@@ -209,6 +268,32 @@ export default function PodcastPlayback({
       audio.removeEventListener("ended", onEnded);
     };
   }, [episodePodcastData.id, isMobile, playNextEpisode, play]);
+
+  useEffect(() => {
+    hasResumedRef.current = false;
+  }, [episodePodcastData?.id]);
+
+  useEffect(() => {
+    const audio = audioRef.current?.audio?.current;
+    if (!audio) return;
+    if (!episodePodcastData?.id) return;
+    if (!progressData) return;
+    if (!audio.duration) return;
+    if (hasResumedRef.current) return;
+
+    const resumeTime = progressData?.data?.progressSeconds || 0;
+
+    if (resumeTime > 0 && audio.duration > resumeTime) {
+      audio.currentTime = resumeTime;
+    }
+
+    hasResumedRef.current = true;
+
+    if (shouldAutoPlayRef.current) {
+      play();
+      shouldAutoPlayRef.current = false;
+    }
+  }, [progressData, episodePodcastData?.id]);
 
   // Periodically save watch progress every 10 seconds
   useEffect(() => {
@@ -242,7 +327,6 @@ export default function PodcastPlayback({
       sendProgress();
     };
   }, [episodePodcastData.id, isMobile]);
-
 
   const handleClosePodcast = () => {
     const updatedParams = new URLSearchParams(searchParams);
@@ -349,7 +433,7 @@ export default function PodcastPlayback({
 
   return (
     <div
-      className={`fixed h-max w-screen inset-0 z-40 transition-all duration-150 ease-linear ${isOpen ? "pointer-events-auto" : "pointer-events-none"} ${isExpand ? "bg-[#786151] overflow-hidden" : ""}`}
+      className={`fixed inset-0 z-40 h-max w-screen transition-all duration-150 ease-linear ${isOpen ? "pointer-events-auto" : "pointer-events-none"} ${isExpand ? "overflow-hidden bg-[#786151]" : ""}`}
       tabIndex={0}
       onKeyUp={keyUp}
     >
@@ -370,7 +454,7 @@ export default function PodcastPlayback({
       )}
 
       {/* Kontrol dan Detail (selalu muncul, termasuk saat expand) */}
-      <div className="fixed bottom-0 w-full z-30 pointer-events-auto">
+      <div className="pointer-events-auto fixed bottom-0 z-30 w-full">
         <AudioControl
           coverEpisodeUrl={episodePodcastData.coverPodcastEpisodeURL}
           title={episodePodcastData.title}

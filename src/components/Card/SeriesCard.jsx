@@ -2,10 +2,8 @@ import React from "react";
 import { contentType } from "@/lib/constants/contentType";
 import Image from "next/image";
 import Link from "next/link";
-// import logoSave from "@@/logo/logoDetailFilm/save-icons.svg";
 import logoGateplusWhite from "@@/logo/logoGate+/logo-gateplus-white.svg";
 import blur from "@@/poster/blur.svg";
-// import iconMore from "@@/icons/icon_more.svg";
 import PropTypes from "prop-types";
 
 export default function SeriesCard({
@@ -17,12 +15,13 @@ export default function SeriesCard({
   hasNewEpisode = false,
   withTopTag = true,
   withNewestTag = false,
+  customHref = null,
 }) {
+  // Gunakan customHref jika ada, fallback ke default
+  const href = customHref ?? `/${contentType.series.pluralName}/detail/${id}`;
+
   return (
-    <Link
-      href={`/${contentType.series.pluralName}/detail/${id}`}
-      className="h-full w-full"
-    >
+    <Link href={href} className="h-full w-full">
       <div className="group relative h-full w-full overflow-hidden rounded-[6px]">
         {/* Banner Atas */}
         <div className="absolute inset-x-0 top-0 z-20 flex items-start justify-between rounded-t-[6px] px-2 py-1">
@@ -118,4 +117,5 @@ SeriesCard.propTypes = {
   hasNewEpisode: PropTypes.bool,
   withTopTag: PropTypes.bool,
   withNewestTag: PropTypes.bool,
+  customHref: PropTypes.string, // ← tambah propTypes
 };

@@ -11,6 +11,7 @@ import getMinAge from "@/lib/helper/minAge";
 import useSyncUserData from "@/hooks/api/useSyncUserData";
 import { useCallback } from "react";
 import PropTypes from "prop-types";
+import BackToTop from "@/components/ui/buttonBackToTop";
 
 export default function PodcastsPage() {
   const { userAge, isReady } = useSyncUserData();
@@ -64,6 +65,7 @@ export default function PodcastsPage() {
           <PodcastContent isBlurred={isBlurred} />
         </Suspense>
       </div>
+      <BackToTop />
     </main>
   );
 }

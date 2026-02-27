@@ -16,6 +16,7 @@ import Link from "next/link";
 import getMinAge from "@/lib/helper/minAge";
 import useSyncUserData from "@/hooks/api/useSyncUserData";
 import { useCallback } from "react";
+import BackToTop from "@/components/ui/buttonBackToTop";
 import { DEFAULT_AVATAR } from "@/lib/defaults";
 
 export default function SearchPage() {
@@ -178,58 +179,58 @@ function SearchPageComponent({ isBlurred }) {
         {(searchParams.get("category") ||
           searchParams.get("genre") ||
           searchParams.get("relevance")) && (
-            <div className="mx-2 mb-4 flex flex-col gap-4 rounded-md border border-white/20 bg-[#DEDEDE1A] p-8 text-white md:mx-[60px] md:flex-row md:items-center md:justify-between">
-              <h2>Filter Aktif:</h2>
+          <div className="mx-2 mb-4 flex flex-col gap-4 rounded-md border border-white/20 bg-[#DEDEDE1A] p-8 text-white md:mx-[60px] md:flex-row md:items-center md:justify-between">
+            <h2>Filter Aktif:</h2>
 
-              <div className="grid grid-cols-4 gap-2 lg:grid-cols-6">
-                {searchParams.getAll("category").map((val, index) => (
-                  <FilterCard
-                    key={`cat-${index}`}
-                    label={getLabelFromValue(contentCategories, val)}
-                    onRemove={() =>
-                      removeParam("category", val, query, fetchSearchResults)
-                    }
-                  />
-                ))}
-                {searchParams.getAll("genre").map((val, index) => (
-                  <FilterCard
-                    key={`gen-${index}`}
-                    label={getLabelFromValue(genreOptions, val)}
-                    onRemove={() =>
-                      removeParam("genre", val, query, fetchSearchResults)
-                    }
-                  />
-                ))}
-                {searchParams.getAll("relevance").map((val, index) => (
-                  <FilterCard
-                    key={`rel-${index}`}
-                    label={getLabelFromValue(relevanceOptions, val)}
-                    onRemove={() =>
-                      removeParam("relevance", val, query, fetchSearchResults)
-                    }
-                  />
-                ))}
-              </div>
-
-              <button
-                className="text-end text-white underline md:text-center"
-                onClick={() => {
-                  const params = new URLSearchParams(window.location.search);
-                  params.delete("category");
-                  params.delete("genre");
-                  params.delete("relevance");
-                  window.history.replaceState(
-                    {},
-                    "",
-                    `${window.location.pathname}?${params.toString()}`,
-                  );
-                  fetchSearchResults(query);
-                }}
-              >
-                Hapus Filter
-              </button>
+            <div className="grid grid-cols-4 gap-2 lg:grid-cols-6">
+              {searchParams.getAll("category").map((val, index) => (
+                <FilterCard
+                  key={`cat-${index}`}
+                  label={getLabelFromValue(contentCategories, val)}
+                  onRemove={() =>
+                    removeParam("category", val, query, fetchSearchResults)
+                  }
+                />
+              ))}
+              {searchParams.getAll("genre").map((val, index) => (
+                <FilterCard
+                  key={`gen-${index}`}
+                  label={getLabelFromValue(genreOptions, val)}
+                  onRemove={() =>
+                    removeParam("genre", val, query, fetchSearchResults)
+                  }
+                />
+              ))}
+              {searchParams.getAll("relevance").map((val, index) => (
+                <FilterCard
+                  key={`rel-${index}`}
+                  label={getLabelFromValue(relevanceOptions, val)}
+                  onRemove={() =>
+                    removeParam("relevance", val, query, fetchSearchResults)
+                  }
+                />
+              ))}
             </div>
-          )}
+
+            <button
+              className="text-end text-white underline md:text-center"
+              onClick={() => {
+                const params = new URLSearchParams(window.location.search);
+                params.delete("category");
+                params.delete("genre");
+                params.delete("relevance");
+                window.history.replaceState(
+                  {},
+                  "",
+                  `${window.location.pathname}?${params.toString()}`,
+                );
+                fetchSearchResults(query);
+              }}
+            >
+              Hapus Filter
+            </button>
+          </div>
+        )}
 
         <div>
           {/* Hasil Pencarian */}
@@ -250,6 +251,7 @@ function SearchPageComponent({ isBlurred }) {
           </Suspense>
         </div>
       </div>
+      <BackToTop />
     </main>
   );
 }

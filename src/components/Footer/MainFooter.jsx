@@ -80,7 +80,7 @@ function Footer() {
         );
       case "linkedin":
         return (
-          <Icon 
+          <Icon
             icon={'mdi:linkedin'}
             width={24}
             height={24}

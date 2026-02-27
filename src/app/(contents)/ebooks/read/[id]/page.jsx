@@ -29,6 +29,7 @@ import AudioEbookButton from "@/components/AudioEbookButton/page";
 import EbookModal from "@/components/Modal/EbookModal";
 import CommentModalEbook from "@/components/CommentModalEbook/CommentModalEbook";
 import iconCommentComic from "@@/icons/icon-comment-comic.svg";
+import { useApplyReadProgressMutation } from "@/hooks/api/readProgressAPI";
 
 export default function ReadEbookPage({ params }) {
   const { id } = params;
@@ -53,6 +54,7 @@ export default function ReadEbookPage({ params }) {
     useGetCommentByEpisodeEbookQuery(id);
   const [isCommentVisible, setIsCommentVisible] = useState(false);
   const [createLog] = useCreateLogMutation();
+  const [applyReadProgress] = useApplyReadProgressMutation();
   const [fontSizeFactor, setFontSizeFactor] = useState(1.0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [audioEbookUrl, setAudioEbookUrl] = useState(null);
@@ -63,6 +65,11 @@ export default function ReadEbookPage({ params }) {
   const readingModeBeforeChangeRef = useRef("page");
   const scrollPositionRef = useRef(0);
   const isReadingModeChangeRef = useRef(false);
+  const lastCfiRef = useRef(null);
+  const lastSavedPageRef = useRef(0);
+  const progressRestoredRef = useRef(false);
+
+  const LAST_SEEN_CONTENT_KEY = "last_seen_content";
 
   // Memoize computed values to prevent stale closure issues
   const episodeEbookData = useMemo(() => data?.data?.data || {}, [data]);
@@ -96,20 +103,86 @@ export default function ReadEbookPage({ params }) {
     return 14; // laptop
   };
 
+  // save progress
+  const saveProgress = useCallback(
+    (page) => {
+      const pageZeroBased = Math.max(0, page - 1);
+      applyReadProgress({
+        page: pageZeroBased,
+        episodeEbookId: id,
+        cfiString: lastCfiRef.current || undefined,
+      });
+    },
+    [id, applyReadProgress],
+  );
+
+  const mapLogTypeForBackend = (action) => {
+    switch (action) {
+      case "RESUME_READING":
+      case "NEXT_PAGE":
+      case "PREVIOUS_PAGE":
+      case "PROGRESS_UPDATE":
+        return "CLICK"; // backend hanya menerima CLICK/WATCH_CONTENT/WATCH_TRAILER
+      case "VIEW_CONTENT":
+      case "WATCH_CONTENT_2MIN":
+        return "WATCH_CONTENT"; // log membaca/menonton
+      case "WATCH_TRAILER":
+        return "WATCH_TRAILER"; // jika ada trailer
+      default:
+        return "CLICK"; // klik lainnya
+    }
+  };
+
+  const sendLogToServer = useCallback(
+    async (action) => {
+      try {
+        const payload = {
+          contentId: id,
+          logType: mapLogTypeForBackend(action),
+          contentType: "EPISODE_EBOOK",
+          deviceType: getDeviceType(),
+        };
+        await createLog(payload).unwrap();
+        console.log(`✅ Log sent: ${action} (${payload.logType})`);
+      } catch (err) {
+        console.warn("Failed to send log:", err?.data || err);
+      }
+    },
+    [id, createLog],
+  );
+  // load progress
+  useEffect(() => {
+    if (!id || isLoading || !data) return;
+    if (progressRestoredRef.current) return;
+
+    const rp = episodeEbookData?.readProgress;
+
+    if (!rp || rp.page === 0) {
+      setIsModalTutorialOpen(true);
+    }
+
+    if (rp && typeof rp.page === "number") {
+      setCurrentPage(rp.page + 1);
+      setCfiString(rp.cfiString || null);
+      console.log(`📖 Restored progress from API: page ${rp.page + 1}`);
+    }
+
+    // set progress untuk progress bar
+    const restoredProgress =
+      rp.progress ?? (rp.page + 1) / (episodeEbookData.totalPages || 1);
+    setProgress(restoredProgress);
+
+    progressRestoredRef.current = true;
+    sendLogToServer("RESUME_READING");
+  }, [id, isLoading, data]);
+
   useEffect(() => {
     if (!id) return;
 
     const timer = setTimeout(
       async () => {
         try {
-          await createLog({
-            contentId: id,
-            logType: "WATCH_CONTENT", // misalnya tipe konten
-            contentType: "EPISODE_EBOOK", // misalnya log aksi
-            deviceType: getDeviceType(),
-          }).unwrap();
-
-          console.log("✅ Log berhasil dibuat setelah 2 menit");
+          await sendLogToServer("WATCH_CONTENT_2MIN");
         } catch (err) {
           console.error("❌ Gagal membuat log:", err);
         }
@@ -117,16 +190,18 @@ export default function ReadEbookPage({ params }) {
       2 * 60 * 1000,
     );
 
-    return () => clearTimeout(timer); // clear kalau user keluar sebelum 1 menit
-  }, [id, createLog]);
+    return () => clearTimeout(timer);
+  }, [id, sendLogToServer]);
 
   const getData = useCallback(async () => {
     try {
-      // Update views only once, regardless of reading mode changes
+      // Update views only once
       if (!hasUpdatedViewsRef.current && id) {
         try {
           await axios.patch(`${BACKEND_URL}/episode/${id}/views`);
           hasUpdatedViewsRef.current = true;
+
+          await sendLogToServer("VIEW_CONTENT");
         } catch (viewErr) {
           console.warn("Warning: View count update failed", viewErr);
         }
@@ -135,7 +210,7 @@ export default function ReadEbookPage({ params }) {
       // Preserve current page/CFI if switching reading mode
       if (isReadingModeChangeRef.current) {
         isReadingModeChangeRef.current = false;
-        return; // Don't reinit data when just changing mode
+        return;
       }
 
       setEbookTitle(ebookData.title);
@@ -147,24 +222,18 @@ export default function ReadEbookPage({ params }) {
       // Buka modal tutorial jika belum ada progress membaca
       if (episodeEbookData?.readProgress == null) {
         setIsModalTutorialOpen(true);
+        sendLogToServer("TUTORIAL_SHOWN");
       }
 
-      // Inisialisasi currentPage dari readProgress (zero-based -> 1-based)
-      const rpPage = episodeEbookData?.readProgress?.page;
-      if (typeof rpPage === "number" && rpPage >= 0) {
-        setCurrentPage(rpPage + 1);
-        setCfiString(episodeEbookData.readProgress.cfiString || null);
-      }
-
+      // Update last_seen_content untuk history bukan progress
       let existing = [];
       try {
-        const raw = localStorage.getItem("last_seen_content");
+        const raw = localStorage.getItem(LAST_SEEN_CONTENT_KEY);
         existing = raw ? JSON.parse(raw) : [];
       } catch {
         existing = [];
       }
       const isAlreadyExist = existing.find((item) => item.id === ebookData.id);
-      let updated = existing;
       if (!isAlreadyExist) {
         const newContent = {
           id: ebookData?.id,
@@ -184,46 +253,90 @@ export default function ReadEbookPage({ params }) {
             null,
         };
 
-        updated = [newContent, ...existing].slice(0, 10);
+        existing = [newContent, ...existing].slice(0, 10);
+        localStorage.setItem(LAST_SEEN_CONTENT_KEY, JSON.stringify(existing));
       }
-
-      localStorage.setItem("last_seen_content", JSON.stringify(updated));
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  }, [id, ebookData, episodeEbookData]);
+  }, [id, ebookData, episodeEbookData, sendLogToServer]);
 
   // Fungsi untuk mengubah ukuran font
   const handleFontSizeChange = (delta) => {
     if (epubReaderRef.current) {
       epubReaderRef.current.changeFontSize(delta);
+      sendLogToServer("FONT_SIZE_CHANGE", currentPage, {
+        fontSizeDelta: delta,
+      });
     }
   };
 
   // Handler untuk mengubah tema (Memoized - tidak re-create setiap render)
-  const handleThemeChange = useCallback((theme) => {
-    setColorTheme(theme);
-  }, []);
+  const handleThemeChange = useCallback(
+    (theme) => {
+      setColorTheme(theme);
+      sendLogToServer("THEME_CHANGE", currentPage, { newTheme: theme });
+    },
+    [currentPage, sendLogToServer],
+  );
 
   // Handler untuk mengubah line height (Memoized - tidak re-create setiap render)
-  const handleLineHeightChange = useCallback((height) => {
-    setLineHeight(height);
-  }, []);
+  const handleLineHeightChange = useCallback(
+    (height) => {
+      setLineHeight(height);
+      sendLogToServer("LINE_HEIGHT_CHANGE", currentPage, {
+        newLineHeight: height,
+      });
+    },
+    [currentPage, sendLogToServer],
+  );
 
   // Handler untuk mengubah alignment (Memoized - tidak re-create setiap render)
-  const handleAlignmentChange = useCallback((align) => {
-    setTextAlign(align);
-  }, []);
+  const handleAlignmentChange = useCallback(
+    (align) => {
+      setTextAlign(align);
+      sendLogToServer("ALIGNMENT_CHANGE", currentPage, { newAlignment: align });
+    },
+    [currentPage, sendLogToServer],
+  );
 
   // Handler untuk mengubah font family (Memoized - tidak re-create setiap render)
-  const handleFontFamilyChange = useCallback((family) => {
-    setFontFamily(family);
-  }, []);
+  const handleFontFamilyChange = useCallback(
+    (family) => {
+      setFontFamily(family);
+      sendLogToServer("FONT_FAMILY_CHANGE", currentPage, {
+        newFontFamily: family,
+      });
+    },
+    [currentPage, sendLogToServer],
+  );
 
   // Handler untuk mengubah reading mode (Memoized - tidak re-create setiap render)
-  const handleReadingModeChange = useCallback((mode) => {
-    setReadingMode(mode);
-  }, []);
+  const handleReadingModeChange = useCallback(
+    (mode) => {
+      setReadingMode(mode);
+      sendLogToServer("READING_MODE_CHANGE", currentPage, { newMode: mode });
+    },
+    [currentPage, sendLogToServer],
+  );
+
+  // update prev
+  const handlePreviousPage = useCallback(() => {
+    if (epubReaderRef.current) {
+      epubReaderRef.current.goToPreviousPage();
+      sendLogToServer("PREVIOUS_PAGE", currentPage - 1);
+      saveProgress(currentPage - 1);
+    }
+  }, [currentPage, sendLogToServer, saveProgress]);
+
+  // Update update next
+  const handleNextPage = useCallback(() => {
+    if (epubReaderRef.current) {
+      epubReaderRef.current.goToNextPage();
+      sendLogToServer("NEXT_PAGE", currentPage + 1);
+      saveProgress(currentPage + 1);
+    }
+  }, [currentPage, sendLogToServer, saveProgress]);
 
   const handleToggleMobileMenu = useCallback(() => {
     setMobileMenuOpen((prev) => {
@@ -240,12 +353,15 @@ export default function ReadEbookPage({ params }) {
     setIsCommentVisible(true);
   }, []);
 
-  // Tambahkan ref di bagian atas ReadEbookPage
-  const lastCfiRef = useRef(null);
-
   const handleProgressChange = useCallback(
     (progressData) => {
-      setProgress(progressData.progress);
+      // memastikan progress 0-1
+      const progress =
+        progressData.progress ??
+        (progressData.totalPages
+          ? progressData.currentPage / progressData.totalPages
+          : 0);
+      setProgress(progress); // untuk progress bar
       setCurrentPage(progressData.currentPage);
       setTotalPages(progressData.totalPages);
 
@@ -261,52 +377,72 @@ export default function ReadEbookPage({ params }) {
         scrollPositionRef.current = window.scrollY;
       }
 
-      try {
-        const raw = localStorage.getItem("last_seen_content");
-        let existing = raw ? JSON.parse(raw) : [];
+      // kirim log ketika pindah halaman
+      if (lastSavedPageRef.current !== progressData.currentPage) {
+        lastSavedPageRef.current = progressData.currentPage;
 
-        const index = existing.findIndex((item) => item.id === ebookId);
+        // simpan ke db
+        saveProgress(progressData.currentPage);
 
-        // ambil poster
-        const posterFromBackend =
-          ebookData?.posterImageUrl ||
-          ebookData?.coverImageUrl ||
-          episodeEbookData?.posterImageUrl ||
-          episodeEbookData?.coverImageUrl ||
-          null;
-
-        const posterFromStorage =
-          index >= 0 ? existing[index]?.posterImageUrl : null;
-
-        const updatedContent = {
-          id: ebookId,
-          title: ebookTitle,
-          type: "ebook",
-
+        // send progress update
+        sendLogToServer("PROGRESS_UPDATE", progressData.currentPage, {
           progress: progressData.progress,
-          currentPage: progressData.currentPage,
           totalPages: progressData.totalPages,
-          cfiString: progressData.cfi || null,
-          updatedAt: new Date().toISOString(),
+          cfi: progressData.cfi,
+        });
 
-          posterImageUrl: posterFromBackend || posterFromStorage || null,
-        };
+        // Update local storage
+        try {
+          const raw = localStorage.getItem(LAST_SEEN_CONTENT_KEY);
+          let existing = raw ? JSON.parse(raw) : [];
 
-        if (index >= 0) {
-          existing[index] = {
-            ...existing[index], // pertahan kan field lain
-            ...updatedContent,
+          const index = existing.findIndex((item) => item.id === ebookId);
+          // ambil poster
+          const posterFromBackend =
+            ebookData?.posterImageUrl ||
+            ebookData?.coverImageUrl ||
+            episodeEbookData?.posterImageUrl ||
+            episodeEbookData?.coverImageUrl ||
+            null;
+
+          const posterFromStorage =
+            index >= 0 ? existing[index]?.posterImageUrl : null;
+
+          const updatedContent = {
+            id: ebookId,
+            title: ebookTitle,
+            type: "ebook",
+            progress: progressData.progress,
+            currentPage: progressData.currentPage,
+            totalPages: progressData.totalPages,
+            cfiString: progressData.cfi || null,
+            updatedAt: new Date().toISOString(),
+            posterImageUrl: posterFromBackend || posterFromStorage || null,
           };
-        } else {
-          existing = [updatedContent, ...existing].slice(0, 10);
-        }
 
-        localStorage.setItem("last_seen_content", JSON.stringify(existing));
-      } catch (err) {
-        console.error("Failed to update last_seen_content:", err);
+          if (index >= 0) {
+            existing[index] = {
+              ...existing[index],
+              ...updatedContent,
+            };
+          } else {
+            existing = [updatedContent, ...existing].slice(0, 10);
+          }
+
+          localStorage.setItem(LAST_SEEN_CONTENT_KEY, JSON.stringify(existing));
+        } catch (err) {
+          console.error("Failed to update last_seen_content:", err);
+        }
       }
     },
-    [readingMode, ebookId, ebookTitle, ebookData, episodeEbookData],
+    [
+      readingMode,
+      ebookId,
+      ebookTitle,
+      ebookData,
+      episodeEbookData,
+      sendLogToServer,
+    ],
   );
 
   // Fungsi helper untuk mendapatkan kelas button aktif
@@ -431,6 +567,20 @@ export default function ReadEbookPage({ params }) {
     };
   }, []);
 
+  // save progress ketika keluar halaman
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      sendLogToServer("PAGE_EXIT", currentPage);
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      sendLogToServer("COMPONENT_UNMOUNT", currentPage);
+    };
+  }, [currentPage, sendLogToServer]);
+
   if (showSkeleton) {
     return <DetailPageLoadingSkeleton />;
   }
@@ -474,7 +624,11 @@ export default function ReadEbookPage({ params }) {
           <Icon
             icon={"solar:menu-dots-bold-duotone"}
             className={`z-10 h-10 w-10 text-3xl ${colorTheme === "dark" ? "text-white" : "text-black"}`}
-            onClick={handleToggleMobileMenu}
+            onClick={() => {
+              setMobileMenuOpen(!mobileMenuOpen);
+              sendLogToServer("OPEN_MENU", currentPage);
+              handleToggleMobileMenu();
+            }}
           />
         </div>
 
@@ -488,7 +642,11 @@ export default function ReadEbookPage({ params }) {
               <Icon
                 icon={"solar:close-circle-bold-duotone"}
                 className={`h-8 w-8 self-end text-3xl ${colorTheme === "dark" ? "text-white" : "text-black"}`}
-                onClick={handleToggleMobileMenu}
+                onClick={() => {
+                  setMobileMenuOpen(!mobileMenuOpen);
+                  sendLogToServer("CLOSE_MENU", currentPage);
+                  handleToggleMobileMenu();
+                }}
               />
 
               {/* Font Size Controller */}
@@ -699,7 +857,10 @@ export default function ReadEbookPage({ params }) {
               <Link
                 href={`/report/episode_ebook/${id}`}
                 className={`flex flex-row items-center gap-2 transition-opacity hover:opacity-70 ${colorTheme === "dark" ? "text-white" : "text-black"}`}
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  sendLogToServer("REPORT_CLICK", currentPage);
+                }}
               >
                 <Icon icon={"solar:flag-2-linear"} className="h-6 w-6" />
                 <p className="text-sm font-medium">Laporkan Konten</p>
@@ -790,12 +951,12 @@ export default function ReadEbookPage({ params }) {
               {/* Left Half - Previous Page */}
               <div
                 className="pointer-events-auto h-full w-1/2 cursor-pointer"
-                onClick={() => epubReaderRef.current?.goToPreviousPage()}
+                onClick={handlePreviousPage}
               />
               {/* Right Half - Next Page */}
               <div
                 className="pointer-events-auto h-full w-1/2 cursor-pointer"
-                onClick={() => epubReaderRef.current?.goToNextPage()}
+                onClick={handleNextPage}
               />
             </div>
           )}
@@ -811,7 +972,10 @@ export default function ReadEbookPage({ params }) {
                   <div className="mb-2 flex items-center justify-between font-medium text-white">
                     <button
                       className="h-6 w-6 hover:opacity-80"
-                      onClick={() => setIsBottomBarOpen(false)}
+                      onClick={() => {
+                        setIsBottomBarOpen(false);
+                        sendLogToServer("COLLAPSE_BAR", currentPage);
+                      }}
                       aria-label="Tutup panel navigasi"
                       aria-expanded={isBottomBarOpen}
                     >
@@ -826,7 +990,11 @@ export default function ReadEbookPage({ params }) {
                     <img
                       src={iconCommentComic.src}
                       className={`h-6 w-6 cursor-pointer transition-opacity hover:opacity-70 md:h-8 md:w-8`}
-                      onClick={handleOpenCommentModal}
+                      onClick={() => {
+                        setIsCommentVisible(true);
+                        sendLogToServer("OPEN_COMMENT", currentPage);
+                        handleOpenCommentModal();
+                      }}
                     />
                   </div>
                   <div className="grid w-full grid-cols-2 gap-2 pb-2 md:gap-4">
@@ -836,6 +1004,11 @@ export default function ReadEbookPage({ params }) {
                           ? `/ebooks/read/${episodeEbookPrevId}`
                           : "#"
                       }
+                      onClick={() => {
+                        if (episodeEbookPrevId) {
+                          sendLogToServer("PREV_EPISODE_CLICK", currentPage);
+                        }
+                      }}
                       className={`flex h-10 w-full items-center justify-center rounded-lg bg-black/50 text-white shadow-xl backdrop-blur-sm transition-all md:h-12 ${episodeEbookPrevId ? "cursor-pointer hover:bg-black/80" : "pointer-events-none cursor-not-allowed opacity-50"}`}
                       aria-disabled={!episodeEbookPrevId}
                       tabIndex={episodeEbookPrevId ? 0 : -1}
@@ -852,6 +1025,11 @@ export default function ReadEbookPage({ params }) {
                           ? `/ebooks/read/${episodeEbookNextId}`
                           : "#"
                       }
+                      onClick={() => {
+                        if (episodeEbookNextId) {
+                          sendLogToServer("NEXT_EPISODE_CLICK", currentPage);
+                        }
+                      }}
                       className={`flex h-10 w-full items-center justify-center rounded-lg bg-black/50 text-white shadow-xl backdrop-blur-sm transition-all md:h-12 ${episodeEbookNextId ? "cursor-pointer hover:bg-black/80" : "pointer-events-none cursor-not-allowed opacity-50"}`}
                       aria-disabled={!episodeEbookNextId}
                       tabIndex={episodeEbookNextId ? 0 : -1}
@@ -869,7 +1047,10 @@ export default function ReadEbookPage({ params }) {
               <div className="flex w-full flex-row items-center justify-between px-4 py-2 text-white">
                 <button
                   className="h-6 w-6 hover:opacity-80"
-                  onClick={() => setIsBottomBarOpen(true)}
+                  onClick={() => {
+                    setIsBottomBarOpen(true);
+                    sendLogToServer("EXPAND_BAR", currentPage);
+                  }}
                   aria-label="Buka panel navigasi"
                   aria-expanded={isBottomBarOpen}
                 >
@@ -884,7 +1065,11 @@ export default function ReadEbookPage({ params }) {
                 <img
                   src={iconCommentComic.src}
                   className={`h-6 w-6 cursor-pointer transition-opacity hover:opacity-70 md:h-8 md:w-8`}
-                  onClick={handleOpenCommentModal}
+                  onClick={() => {
+                    setIsCommentVisible(true);
+                    sendLogToServer("OPEN_COMMENT", currentPage);
+                    handleOpenCommentModal();
+                  }}
                 />
               </div>
             )}
@@ -893,7 +1078,10 @@ export default function ReadEbookPage({ params }) {
 
         <EbookModal
           isOpen={isModalTutorialOpen}
-          onClose={() => setIsModalTutorialOpen(false)}
+          onClose={() => {
+            setIsModalTutorialOpen(false);
+            sendLogToServer("CLOSE_TUTORIAL", currentPage);
+          }}
         >
           <div className="flex w-[290px] flex-col gap-4 px-4 md:w-[500px] md:px-8">
             <h2 className="zeinFont text-xl font-bold text-white md:text-3xl">
@@ -944,7 +1132,10 @@ export default function ReadEbookPage({ params }) {
 
             <div className="flex flex-col items-center justify-center gap-1">
               <button
-                onClick={() => setIsModalTutorialOpen(false)}
+                onClick={() => {
+                  setIsModalTutorialOpen(false);
+                  sendLogToServer("START_READING", currentPage);
+                }}
                 className="montserratFont w-full rounded-xl bg-[#1297DC] px-4 py-2 font-bold text-white"
               >
                 Start Reading
