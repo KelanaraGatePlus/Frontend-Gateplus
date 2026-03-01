@@ -28,7 +28,7 @@ export const creatorAPI = createApi({
             keepUnusedDataFor: 60,
         }),
         getCreatorDetail: builder.query({
-            query: ({ id, userId }) => `/${id}?userId=${userId}`,
+            query: ({ id }) => `/${id}`,
             providesTags: ["creatorsAPI"],
             keepUnusedDataFor: 60,
         }),

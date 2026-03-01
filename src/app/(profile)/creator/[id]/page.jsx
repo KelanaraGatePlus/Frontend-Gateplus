@@ -43,19 +43,19 @@ export default function CreatorProfilePage({ params }) {
     }
   }, []);
 
-  const skip = !id || !userId;
-  const creatorDetailQuery = useGetCreatorDetailQuery({ id, userId }, { skip });
+  const skip = !id;
+  const creatorDetailQuery = useGetCreatorDetailQuery({ id }, { skip });
   const creatorContentNewestQuery = useGetNewestContentQuery(id);
   const creatorDetailRaw = creatorDetailQuery.data?.data?.data;
 
   const creatorDetailData = creatorDetailRaw
     ? {
-        ...creatorDetailRaw,
-        description:
-          creatorDetailRaw.description ??
-          creatorDetailRaw.user?.description ??
-          "",
-      }
+      ...creatorDetailRaw,
+      description:
+        creatorDetailRaw.description ??
+        creatorDetailRaw.user?.description ??
+        "",
+    }
     : null;
 
   const creatorContentNewestData =
