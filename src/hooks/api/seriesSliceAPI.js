@@ -75,10 +75,14 @@ export const seriesAPI = createApi({
       }),
       invalidatesTags: (result, error, { id }) => [{ type: 'series', id }],
     }),
+    getSeriesBySlug: builder.query({
+      query: (slug) => `/series/slug/${slug}/id`,
+      providesTags: ["series"],
+    }),
   }),
 });
 
 export const { useGetSeriesQuery, useCreateSeriesMutation, useGetSeriesByIdQuery, useCreateEpisodeSeriesMutation,
   useGetSeriesHomeDataQuery, useDeleteSeriesMutation, useEditSeriesMutation, useGetSeriesPerContentAnalyticsQuery,
-  useChangeVisibilityMutation
+  useChangeVisibilityMutation, useGetSeriesBySlugQuery
 } = seriesAPI;

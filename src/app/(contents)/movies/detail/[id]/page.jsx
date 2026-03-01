@@ -32,6 +32,7 @@ import { DEFAULT_AVATAR } from "@/lib/defaults";
 import { useGetUserId } from "@/lib/features/useGetUserId";
 import getMinAge from "@/lib/helper/minAge";
 import formatDuration from "@/lib/helper/formatDurationHelper";
+import slugifyTitle from "@/lib/helper/slugifyTitle";
 
 import Toast from "@/components/Toast/page";
 
@@ -50,6 +51,8 @@ function PlayingMoviePage({ params }) {
   });
 
   const movieData = data?.data?.data || {};
+  const movieSlug = slugifyTitle(movieData?.title);
+  const movieSharePath = movieSlug ? `/movies/${movieSlug}` : undefined;
 
   const {
     showCompleteProfileModal,
@@ -298,10 +301,12 @@ function PlayingMoviePage({ params }) {
                       alt="save"
                     />
                   </div>
-
-                  <DefaultShareButton contentType="MOVIE" />
                 </>
               )}
+              <DefaultShareButton
+                contentType="MOVIE"
+                sharePath={movieSharePath}
+              />
             </div>
           </div>
 
@@ -383,7 +388,7 @@ function PlayingMoviePage({ params }) {
       </section>
 
       {commentData && (
-        <div className="mt-5 px-4 md:px-11">
+        <div className="mt-5 md:px-11">
           <CommentComponent
             commentData={commentData?.data?.data || []}
             isLoadingGetComment={isLoadingGetComment}

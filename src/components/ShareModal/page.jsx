@@ -15,7 +15,7 @@ import {
 import Toast from "@/components/Toast/page";
 import Image from "next/image";
 
-export default function ShareModal({ isOpen, contentType }) {
+export default function ShareModal({ isOpen, contentType, sharePath }) {
   const [show, setShow] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -41,8 +41,15 @@ export default function ShareModal({ isOpen, contentType }) {
     }
   }, [contentType]);
 
+  const shareUrl =
+    typeof window !== "undefined"
+      ? sharePath
+        ? `${window.location.origin}${sharePath}`
+        : window.location.href
+      : "";
+
   const handleCopy = () => {
-    navigator.clipboard.writeText(window.location.href);
+    navigator.clipboard.writeText(shareUrl);
     setToastMessage("Tautan telah disalin ke clipboard.");
     setShowToast(true);
   };
@@ -85,14 +92,14 @@ export default function ShareModal({ isOpen, contentType }) {
     ${show ? "translate-x-0 opacity-100" : "-translate-x-10 opacity-0"}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex flex-col items-center" onClick={handleCopy}>
+        <button className="flex flex-col items-center" onClick={handleCopy}>
           <Image src={iconLink} width={32} height={32} alt="Salin Tautan" />
           <span className="text-white text-xs whitespace-nowrap mt-1">Salin Tautan</span>
-        </div>
+        </button>
 
         {/* Tombol share */}
         <WhatsappShareButton
-          url={window.location.href}
+          url={shareUrl}
           title={title}
           className="flex flex-col items-center justify-center"
         >
@@ -101,7 +108,7 @@ export default function ShareModal({ isOpen, contentType }) {
         </WhatsappShareButton>
 
         <TelegramShareButton
-          url={window.location.href}
+          url={shareUrl}
           title={title}
           className="flex flex-col items-center justify-center"
         >
@@ -110,7 +117,7 @@ export default function ShareModal({ isOpen, contentType }) {
         </TelegramShareButton>
 
         <TwitterShareButton
-          url={window.location.href}
+          url={shareUrl}
           title={title}
           className="flex flex-col items-center justify-center"
         >
@@ -119,7 +126,7 @@ export default function ShareModal({ isOpen, contentType }) {
         </TwitterShareButton>
 
         <FacebookShareButton
-          url={window.location.href}
+          url={shareUrl}
           quote={title}
           className="flex flex-col items-center justify-center"
         >

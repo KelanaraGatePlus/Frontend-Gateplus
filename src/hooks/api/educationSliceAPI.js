@@ -93,6 +93,13 @@ export const educationAPI = createApi({
             }),
             providesTags: ["education"],
         }),
+        getEducationBySlug: builder.query({
+            query: (slug) => ({
+                url: `/education/slug/${slug}/id`,
+                method: "GET",
+            }),
+            providesTags: ["education"],
+        }),
     }),
 });
 
@@ -107,4 +114,5 @@ export const {
     useGenerateEducationCertificateMutation,
     useGetRecomendationEducationQuery,
     useGetEducationBySearchQuery,
+    useGetEducationBySlugQuery,
 } = educationAPI;

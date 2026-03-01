@@ -81,6 +81,10 @@ export const ebookApi = createApi({
       }),
       invalidatesTags: ["ebook"],
     }),
+    getEbooksBySlug: builder.query({
+      query: (slug) => `ebooks/slug/${slug}/id`,
+      providesTags: ["ebook"],
+    }),
   }),
 });
 
@@ -95,4 +99,5 @@ export const {
   useEditEbookMutation,
   useGetEbookPerContentAnalyticsQuery,
   useChangeVisibilityMutation,
+  useGetEbooksBySlugQuery,
 } = ebookApi;

@@ -29,6 +29,7 @@ import { useGetUserId } from "@/lib/features/useGetUserId";
 import useSyncUserData from "@/hooks/api/useSyncUserData";
 import getMinAge from "@/lib/helper/minAge";
 import { DEFAULT_AVATAR } from "@/lib/defaults";
+import slugifyTitle from "@/lib/helper/slugifyTitle";
 
 import Toast from "@/components/Toast/page";
 
@@ -68,6 +69,8 @@ function DetailSeriesPage({ params }) {
   const [toastType, setToastType] = useState("success"); // success / failed
 
   const seriesData = data?.data?.data || {};
+  const seriesSlug = slugifyTitle(seriesData?.title);
+  const seriesSharePath = seriesSlug ? `/series/${seriesSlug}` : undefined;
   const episode_series = (seriesData?.episodes?.episodes || [])
     .slice()
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
@@ -224,10 +227,10 @@ function DetailSeriesPage({ params }) {
             genre={
               Array.isArray(seriesData?.categories)
                 ? seriesData.categories
-                    .map((cat) => cat.category.tittle || cat.category.title)
-                    .join(", ")
+                  .map((cat) => cat.category.tittle || cat.category.title)
+                  .join(", ")
                 : seriesData?.categories?.tittle ||
-                  seriesData?.categories?.title
+                seriesData?.categories?.title
             }
           />
         </div>
@@ -241,10 +244,10 @@ function DetailSeriesPage({ params }) {
               {seriesData?.ageRestriction} |{" "}
               {Array.isArray(seriesData?.categories)
                 ? seriesData.categories
-                    .map((cat) => cat.category.tittle || cat.category.title)
-                    .join(", ")
+                  .map((cat) => cat.category.tittle || cat.category.title)
+                  .join(", ")
                 : seriesData?.categories?.tittle ||
-                  seriesData?.categories?.title}
+                seriesData?.categories?.title}
             </p>
 
             <div className="flex gap-6">
@@ -257,7 +260,7 @@ function DetailSeriesPage({ params }) {
                       ? () => handleSubscribe(seriesData?.id)
                       : null
                 }
-                className="w-full rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white hover:cursor-pointer disabled:bg-[#9CA3AF]"
+                className="w-max rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white hover:cursor-pointer disabled:bg-[#9CA3AF]"
               >
                 {seriesData?.isOwner
                   ? "Series ini adalah karya mu"
@@ -267,52 +270,60 @@ function DetailSeriesPage({ params }) {
                       ? "Watch"
                       : "Subscribe"}
               </button>
+              <div className="flex gap-2">
+                {userId && (
 
-              {userId && (
-                <div className="flex gap-2">
-                  <div
-                    onClick={handleToggleLike}
-                    className="flex cursor-pointer items-center"
-                  >
-                    <Image
-                      width={35}
-                      src={isLiked ? iconLikeSolid : logoLike}
-                      alt="like"
-                    />
-                    <p className="pl-2 font-bold">{totalLike}</p>
-                  </div>
-                  <div
-                    onClick={handleToggleDislike}
-                    className="flex cursor-pointer items-center"
-                  >
-                    <Image
-                      width={35}
-                      src={isDisliked ? iconDislikeSolid : logoDislike}
-                      alt="dislike"
-                    />
-                  </div>
-                  <div
-                    onClick={handleToggleSave}
-                    className="flex cursor-pointer items-center"
-                  >
-                    <Image
-                      width={35}
-                      src={isSaved ? iconSaveSolid : logoSave}
-                      alt="save"
-                    />
-                  </div>
-                  <DefaultShareButton contentType="SERIES" />
-                </div>
-              )}
+                  <>
+                    <div
+                      onClick={handleToggleLike}
+                      className="flex cursor-pointer items-center"
+                    >
+                      <Image
+                        width={35}
+                        src={isLiked ? iconLikeSolid : logoLike}
+                        alt="like"
+                      />
+                      <p className="pl-2 font-bold">{totalLike}</p>
+                    </div>
+                    <div
+                      onClick={handleToggleDislike}
+                      className="flex cursor-pointer items-center"
+                    >
+                      <Image
+                        width={35}
+                        src={isDisliked ? iconDislikeSolid : logoDislike}
+                        alt="dislike"
+                      />
+                    </div>
+                    <div
+                      onClick={handleToggleSave}
+                      className="flex cursor-pointer items-center"
+                    >
+                      <Image
+                        width={35}
+                        src={isSaved ? iconSaveSolid : logoSave}
+                        alt="save"
+                      />
+                    </div>
+                  </>
+                )}
+                <DefaultShareButton
+                  contentType="SERIES"
+                  sharePath={seriesSharePath}
+                />
+              </div>
             </div>
           </div>
 
           <div className="flex w-full items-center gap-3 md:w-1/2 md:justify-end">
-            <img
-              width={60}
-              alt="creator-avatar"
-              src={seriesData?.creator?.imageUrl || DEFAULT_AVATAR.src}
-            />
+            <div className="rounded-full overflow-hidden h-15 w-15">
+              <img
+                width={60}
+                height={60}
+                alt="creator-avatar"
+                src={seriesData?.creator?.imageUrl || DEFAULT_AVATAR.src}
+              />
+            </div>
             <Link
               href={`/creator/${seriesData?.creator?.id}`}
               className="grid grid-rows-2"
@@ -357,10 +368,10 @@ function DetailSeriesPage({ params }) {
                   Genre:{" "}
                   {Array.isArray(seriesData?.categories)
                     ? seriesData.categories
-                        .map((cat) => cat.category.tittle || cat.category.title)
-                        .join(", ")
+                      .map((cat) => cat.category.tittle || cat.category.title)
+                      .join(", ")
                     : seriesData?.categories?.tittle ||
-                      seriesData?.categories?.title}
+                    seriesData?.categories?.title}
                 </p>
                 <p>Tahun Rilis: {seriesData.releaseYear}</p>
                 <p>Bahasa: {seriesData.language}</p>
