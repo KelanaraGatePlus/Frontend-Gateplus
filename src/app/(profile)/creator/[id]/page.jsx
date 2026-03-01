@@ -29,19 +29,11 @@ export default function CreatorProfilePage({ params }) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [totalItems, setTotalItems] = useState(0);
-  const [userId, setUserId] = useState(null);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [totalSubs, setTotalSubs] = useState(0);
   const [bannerImageUrl, setBannerImageUrl] = useState(null);
   const [isLinkedWithGoogle, setIsLinkedWithGoogle] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedUserId = localStorage.getItem("users_id");
-      setUserId(storedUserId);
-    }
-  }, []);
 
   const skip = !id;
   const creatorDetailQuery = useGetCreatorDetailQuery({ id }, { skip });
