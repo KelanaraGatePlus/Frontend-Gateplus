@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef, useCallback, useMemo } from "react"
 import axios from "axios";
 import Link from "next/link";
 import PropTypes from "prop-types";
+import DOMPurify from "dompurify";
 
 /*[--- HOOKS IMPORT ---]*/
 import { BACKEND_URL } from "@/lib/constants/backendUrl";
@@ -648,7 +649,12 @@ export default function ReadEbookPage({ params }) {
               Catatan Kreator
             </h4>
             <p className={`${colorTheme === "dark" ? "text-white" : "text-[#222222]"}`}>
-              {creatorNotes}
+              <div
+                className="prose prose-invert max-w-none"
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(creatorNotes || ""),
+                }}
+              />
             </p>
           </div>
         </section>
