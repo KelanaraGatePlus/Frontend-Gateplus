@@ -1,19 +1,24 @@
 "use client";
-import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import axios from "axios";
 import Link from "next/link";
 import PropTypes from "prop-types";
-import DOMPurify from "dompurify";
 
 /*[--- HOOKS IMPORT ---]*/
 import { BACKEND_URL } from "@/lib/constants/backendUrl";
 import { useGetEpisodeEbookByIdQuery } from "@/hooks/api/contentSliceAPI";
-import { useGetCommentByEpisodeEbookQuery } from "@/hooks/api/commentSliceAPI"
+import { useGetCommentByEpisodeEbookQuery } from "@/hooks/api/commentSliceAPI";
 
 /*[--- COMPONENT IMPORT ---]*/
 import BackButton from "@/components/BackButton/page";
 import EpubReader from "@/components/EbookReader/page";
-import DetailPageLoadingSkeleton from "@/components/MainDetailProduct/Loading/ProductReadLoading"
+import DetailPageLoadingSkeleton from "@/components/MainDetailProduct/Loading/ProductReadLoading";
 import DefaultProgressBar from "@/components/ProgressBar/DefaultProgressBar";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 
@@ -45,7 +50,8 @@ export default function ReadEbookPage({ params }) {
   const [totalPages, setTotalPages] = useState(1);
   const [baseFontSize, setBaseFontSize] = useState(14);
   const { data, isLoading, error } = useGetEpisodeEbookByIdQuery(id);
-  const { data: commentData, isLoading: isLoadingGetComment } = useGetCommentByEpisodeEbookQuery(id);
+  const { data: commentData, isLoading: isLoadingGetComment } =
+    useGetCommentByEpisodeEbookQuery(id);
   const [isCommentVisible, setIsCommentVisible] = useState(false);
   const [createLog] = useCreateLogMutation();
   const [applyReadProgress] = useApplyReadProgressMutation();
@@ -67,17 +73,26 @@ export default function ReadEbookPage({ params }) {
 
   // Memoize computed values to prevent stale closure issues
   const episodeEbookData = useMemo(() => data?.data?.data || {}, [data]);
-  const episodeEbookNextId = useMemo(() => data?.data?.nextEpisode?.id || null, [data]);
-  const episodeEbookPrevId = useMemo(() => data?.data?.previousEpisode?.id || null, [data]);
-  const ebookData = useMemo(() => episodeEbookData.ebooks || {}, [episodeEbookData]);
+  const episodeEbookNextId = useMemo(
+    () => data?.data?.nextEpisode?.id || null,
+    [data],
+  );
+  const episodeEbookPrevId = useMemo(
+    () => data?.data?.previousEpisode?.id || null,
+    [data],
+  );
+  const ebookData = useMemo(
+    () => episodeEbookData.ebooks || {},
+    [episodeEbookData],
+  );
 
   // Detect device type based on window width
   const getDeviceType = () => {
-    if (typeof window === 'undefined') return 'DESKTOP';
+    if (typeof window === "undefined") return "DESKTOP";
     const width = window.innerWidth;
-    if (width < 768) return 'MOBILE';
-    if (width < 1024) return 'TABLET';
-    return 'DESKTOP';
+    if (width < 768) return "MOBILE";
+    if (width < 1024) return "TABLET";
+    return "DESKTOP";
   };
 
   const getBaseFontSize = () => {
@@ -183,9 +198,7 @@ export default function ReadEbookPage({ params }) {
       // Update views only once
       if (!hasUpdatedViewsRef.current && id) {
         try {
-          await axios.patch(
-            `${BACKEND_URL}/episode/${id}/views`,
-          );
+          await axios.patch(`${BACKEND_URL}/episode/${id}/views`);
           hasUpdatedViewsRef.current = true;
 
           await sendLogToServer("VIEW_CONTENT");
@@ -220,12 +233,24 @@ export default function ReadEbookPage({ params }) {
       } catch {
         existing = [];
       }
-      const isAlreadyExist = existing.find(item => item.id === ebookData.id);
-      let updated = existing;
+      const isAlreadyExist = existing.find((item) => item.id === ebookData.id);
       if (!isAlreadyExist) {
         const newContent = {
-          ...episodeEbookData.ebooks,
+          id: ebookData?.id,
+          title: ebookData?.title,
           type: "ebook",
+          progress: episodeEbookData?.readProgress?.progress || 0,
+          currentPage: episodeEbookData?.readProgress?.page || 0,
+          totalPages: episodeEbookData?.totalPages || 0,
+          updatedAt: new Date().toISOString(),
+
+          // render gambar card
+          posterImageUrl:
+            ebookData?.posterImageUrl ||
+            ebookData?.coverImageUrl ||
+            episodeEbookData?.posterImageUrl ||
+            episodeEbookData?.coverImageUrl ||
+            null,
         };
 
         existing = [newContent, ...existing].slice(0, 10);
@@ -422,7 +447,11 @@ export default function ReadEbookPage({ params }) {
 
   // Fungsi helper untuk mendapatkan kelas button aktif
   const getActiveButtonClass = (isActive) => {
-    return isActive ? (colorTheme == 'dark' ? "bg-[#515151]" : "bg-[#333333] text-white") : "bg-[#626262]/50";
+    return isActive
+      ? colorTheme == "dark"
+        ? "bg-[#515151]"
+        : "bg-[#333333] text-white"
+      : "bg-[#626262]/50";
   };
 
   useEffect(() => {
@@ -445,7 +474,7 @@ export default function ReadEbookPage({ params }) {
       try {
         sessionStorage.setItem(
           `ebook_scroll_${id}_${readingModeBeforeChangeRef.current}`,
-          scrollPositionRef.current.toString()
+          scrollPositionRef.current.toString(),
         );
       } catch {
         // Silent fail for sessionStorage
@@ -458,7 +487,9 @@ export default function ReadEbookPage({ params }) {
     // Restore scroll position after mode change
     setTimeout(() => {
       try {
-        const savedScroll = sessionStorage.getItem(`ebook_scroll_${id}_${readingMode}`);
+        const savedScroll = sessionStorage.getItem(
+          `ebook_scroll_${id}_${readingMode}`,
+        );
         if (savedScroll && readingMode === "scroll") {
           window.scrollTo({ top: parseInt(savedScroll), behavior: "auto" });
         }
@@ -480,6 +511,25 @@ export default function ReadEbookPage({ params }) {
     setShowSkeleton(isLoading);
   }, [isLoading]);
 
+  useEffect(() => {
+    if (mobileMenuOpen && isCommentVisible) {
+      setMobileMenuOpen(false);
+    }
+  }, [mobileMenuOpen, isCommentVisible]);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const previousOverflow = document.body.style.overflow;
+
+    if (isCommentVisible) {
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isCommentVisible]);
+
   // Global protection: block copy, right-click, and common inspect shortcuts
   useEffect(() => {
     const preventDefault = (e) => {
@@ -492,11 +542,10 @@ export default function ReadEbookPage({ params }) {
       const ctrl = e.ctrlKey || e.metaKey; // meta for mac
       const shift = e.shiftKey;
 
-      const blockedCombos = (
+      const blockedCombos =
         key === "F12" ||
         (ctrl && shift && ["I", "J", "C"].includes(key)) || // DevTools shortcuts
-        (ctrl && ["U", "S", "P", "C", "A"].includes(key)) // View source/Save/Print/Copy/Select All
-      );
+        (ctrl && ["U", "S", "P", "C", "A"].includes(key)); // View source/Save/Print/Copy/Select All
 
       if (blockedCombos) {
         preventDefault(e);
@@ -533,23 +582,33 @@ export default function ReadEbookPage({ params }) {
   }, [currentPage, sendLogToServer]);
 
   if (showSkeleton) {
-    return (
-      <DetailPageLoadingSkeleton />
-    );
+    return <DetailPageLoadingSkeleton />;
   }
 
   return (
     <div
-      className={`flex flex-col overflow-hidden select-none ${colorTheme === "dark" ? "bg-[#121212]" : colorTheme == 'sepia' ? "bg-[#F4ECD8]" : "bg-[#FFFFFF]"}`}
-      onCopy={(e) => { e.preventDefault(); e.stopPropagation(); }}
-      onCut={(e) => { e.preventDefault(); e.stopPropagation(); }}
-      onPaste={(e) => { e.preventDefault(); e.stopPropagation(); }}
-      onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
-      style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
+      className={`flex flex-col overflow-hidden select-none ${colorTheme === "dark" ? "bg-[#121212]" : colorTheme == "sepia" ? "bg-[#F4ECD8]" : "bg-[#FFFFFF]"}`}
+      onCopy={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      onCut={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      onPaste={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      style={{ userSelect: "none", WebkitUserSelect: "none" }}
     >
       <main className="flex flex-col">
         <div
-          className={`${colorTheme == 'dark' ? "text-white" : "text-[#222222]"} fixed z-40 mt-0 w-full flex-row items-center justify-start gap-2 px-4 md:px-20 py-2 text-2xl font-semibold backdrop-blur flex`}
+          className={`${colorTheme == "dark" ? "text-white" : "text-[#222222]"} fixed z-40 mt-0 flex w-full flex-row items-center justify-start gap-2 px-4 py-2 text-2xl font-semibold backdrop-blur md:px-20`}
         >
           <BackButton isDark={colorTheme === "dark"} />
           <h4
@@ -577,7 +636,7 @@ export default function ReadEbookPage({ params }) {
         {mobileMenuOpen && (
           <div className="fixed top-2 right-4 z-50">
             <div
-              className={`flex flex-col gap-1 md:gap-3 rounded-2xl backdrop-blur-sm p-6 shadow-2xl border-1 min-w-[200px] ${colorTheme === "dark" ? 'bg-[#222222] text-white border-gray-600' : 'bg-white/20 text-black border-gray-400'} `}
+              className={`flex min-w-[200px] flex-col gap-1 rounded-2xl border-1 p-6 shadow-2xl backdrop-blur-sm md:gap-3 ${colorTheme === "dark" ? "border-gray-600 bg-[#222222] text-white" : "border-gray-400 bg-white/20 text-black"} `}
             >
               {/* Dot */}
               <Icon
@@ -593,64 +652,59 @@ export default function ReadEbookPage({ params }) {
               {/* Font Size Controller */}
               <div className="flex flex-col gap-4">
                 <div className="flex flex-row gap-2">
-                  <Icon
-                    icon={'solar:text-bold'}
-                    className="w-5 h-5"
-                  />
-                  <p className="text-sm montserratFont font-semibold">Ukuran Font</p>
+                  <Icon icon={"solar:text-bold"} className="h-5 w-5" />
+                  <p className="montserratFont text-sm font-semibold">
+                    Ukuran Font
+                  </p>
                 </div>
                 <div className="flex flex-row items-center justify-between gap-2">
                   <button
                     onClick={() => handleFontSizeChange(-0.1)}
-                    className={`${colorTheme == 'dark' ? "bg-[#333333]" : "bg-[#878787]"} rounded-lg hover:opacity-70 transition-opacity p-3`}
+                    className={`${colorTheme == "dark" ? "bg-[#333333]" : "bg-[#878787]"} rounded-lg p-3 transition-opacity hover:opacity-70`}
                     aria-label="Decrease font size"
                   >
-                    <Icon icon={'mynaui:minus'} className="w-6 h-6" />
+                    <Icon icon={"mynaui:minus"} className="h-6 w-6" />
                   </button>
-                  <div className={`${colorTheme == 'dark' ? "bg-[#333333]" : "bg-[#878787]"} flex flex-row gap-2 items-center montserratFont px-8 py-3 rounded-lg font-medium `}>
-                    <Icon
-                      icon={'solar:text-bold'}
-                      className="w-5 h-5"
-                    />
+                  <div
+                    className={`${colorTheme == "dark" ? "bg-[#333333]" : "bg-[#878787]"} montserratFont flex flex-row items-center gap-2 rounded-lg px-8 py-3 font-medium`}
+                  >
+                    <Icon icon={"solar:text-bold"} className="h-5 w-5" />
                     <p>{Math.round(baseFontSize * fontSizeFactor)}px</p>
                   </div>
                   <button
                     onClick={() => handleFontSizeChange(0.1)}
-                    className={`${colorTheme == 'dark' ? "bg-[#333333]" : "bg-[#878787]"} rounded-lg hover:opacity-70 transition-opacity p-3`}
+                    className={`${colorTheme == "dark" ? "bg-[#333333]" : "bg-[#878787]"} rounded-lg p-3 transition-opacity hover:opacity-70`}
                     aria-label="Increase font size"
                   >
-                    <Icon icon={'mynaui:plus'} className="w-6 h-6" />
+                    <Icon icon={"mynaui:plus"} className="h-6 w-6" />
                   </button>
                 </div>
               </div>
 
               {/* Theme Toggle */}
-              <div className="flex flex-col gap-4 ">
+              <div className="flex flex-col gap-4">
                 <div className="flex flex-row gap-2">
-                  <Icon
-                    icon={'solar:sun-bold'}
-                    className="w-5 h-5"
-                  />
-                  <p className="text-sm montserratFont font-semibold">Tema</p>
+                  <Icon icon={"solar:sun-bold"} className="h-5 w-5" />
+                  <p className="montserratFont text-sm font-semibold">Tema</p>
                 </div>
-                <div className="grid grid-cols-3 items-center justify-between gap-2 montserratFont text-sm">
+                <div className="montserratFont grid grid-cols-3 items-center justify-between gap-2 text-sm">
                   <button
-                    onClick={() => handleThemeChange('dark')}
-                    className={`${getActiveButtonClass(colorTheme === 'dark')} rounded-lg hover:opacity-70 transition-opacity py-2`}
+                    onClick={() => handleThemeChange("dark")}
+                    className={`${getActiveButtonClass(colorTheme === "dark")} rounded-lg py-2 transition-opacity hover:opacity-70`}
                     aria-label="Dark theme"
                   >
                     Dark
                   </button>
                   <button
-                    onClick={() => handleThemeChange('sepia')}
-                    className={`${getActiveButtonClass(colorTheme === 'sepia')} rounded-lg hover:opacity-70 transition-opacity py-2`}
+                    onClick={() => handleThemeChange("sepia")}
+                    className={`${getActiveButtonClass(colorTheme === "sepia")} rounded-lg py-2 transition-opacity hover:opacity-70`}
                     aria-label="Sepia theme"
                   >
                     Sepia
                   </button>
                   <button
-                    onClick={() => handleThemeChange('light')}
-                    className={`${getActiveButtonClass(colorTheme === 'light')} rounded-lg hover:opacity-70 transition-opacity py-2`}
+                    onClick={() => handleThemeChange("light")}
+                    className={`${getActiveButtonClass(colorTheme === "light")} rounded-lg py-2 transition-opacity hover:opacity-70`}
                     aria-label="Light theme"
                   >
                     Light
@@ -659,32 +713,31 @@ export default function ReadEbookPage({ params }) {
               </div>
 
               {/* Line Height Toggle */}
-              <div className="flex flex-col gap-4 ">
+              <div className="flex flex-col gap-4">
                 <div className="flex flex-row gap-2">
-                  <Icon
-                    icon={'solar:list-outline'}
-                    className="w-5 h-5"
-                  />
-                  <p className="text-sm montserratFont font-semibold">Line Height</p>
+                  <Icon icon={"solar:list-outline"} className="h-5 w-5" />
+                  <p className="montserratFont text-sm font-semibold">
+                    Line Height
+                  </p>
                 </div>
-                <div className="grid grid-cols-3 items-center justify-between gap-2 montserratFont text-sm">
+                <div className="montserratFont grid grid-cols-3 items-center justify-between gap-2 text-sm">
                   <button
-                    onClick={() => handleLineHeightChange('compact')}
-                    className={`${getActiveButtonClass(lineHeight === 'compact')} rounded-lg hover:opacity-70 transition-opacity py-2`}
+                    onClick={() => handleLineHeightChange("compact")}
+                    className={`${getActiveButtonClass(lineHeight === "compact")} rounded-lg py-2 transition-opacity hover:opacity-70`}
                     aria-label="Compact line height"
                   >
                     Compact
                   </button>
                   <button
-                    onClick={() => handleLineHeightChange('normal')}
-                    className={`${getActiveButtonClass(lineHeight === 'normal')} rounded-lg hover:opacity-70 transition-opacity py-2`}
+                    onClick={() => handleLineHeightChange("normal")}
+                    className={`${getActiveButtonClass(lineHeight === "normal")} rounded-lg py-2 transition-opacity hover:opacity-70`}
                     aria-label="Normal line height"
                   >
                     Normal
                   </button>
                   <button
-                    onClick={() => handleLineHeightChange('relaxed')}
-                    className={`${getActiveButtonClass(lineHeight === 'relaxed')} rounded-lg hover:opacity-70 transition-opacity py-2`}
+                    onClick={() => handleLineHeightChange("relaxed")}
+                    className={`${getActiveButtonClass(lineHeight === "relaxed")} rounded-lg py-2 transition-opacity hover:opacity-70`}
                     aria-label="Relaxed line height"
                   >
                     Relaxed
@@ -693,34 +746,33 @@ export default function ReadEbookPage({ params }) {
               </div>
 
               {/* Alignment Toggle */}
-              <div className="flex flex-col gap-4 ">
+              <div className="flex flex-col gap-4">
                 <div className="flex flex-row gap-2">
                   <Icon
-                    icon={'solar:hamburger-menu-outline'}
-                    className="w-5 h-5"
+                    icon={"solar:hamburger-menu-outline"}
+                    className="h-5 w-5"
                   />
-                  <p className="text-sm montserratFont font-semibold">Alignment</p>
+                  <p className="montserratFont text-sm font-semibold">
+                    Alignment
+                  </p>
                 </div>
-                <div className="grid grid-cols-2 items-center justify-between gap-2 montserratFont text-sm">
+                <div className="montserratFont grid grid-cols-2 items-center justify-between gap-2 text-sm">
                   <button
-                    onClick={() => handleAlignmentChange('left')}
-                    className={`${getActiveButtonClass(textAlign === 'left')} rounded-lg hover:opacity-70 transition-opacity py-2 flex items-center justify-center gap-2`}
+                    onClick={() => handleAlignmentChange("left")}
+                    className={`${getActiveButtonClass(textAlign === "left")} flex items-center justify-center gap-2 rounded-lg py-2 transition-opacity hover:opacity-70`}
                     aria-label="Left alignment"
                   >
-                    <Icon
-                      icon={'solar:list-outline'}
-                      className="w-5 h-5"
-                    />
+                    <Icon icon={"solar:list-outline"} className="h-5 w-5" />
                     Left
                   </button>
                   <button
-                    onClick={() => handleAlignmentChange('justify')}
-                    className={`${getActiveButtonClass(textAlign === 'justify')} rounded-lg hover:opacity-70 transition-opacity py-2 flex items-center justify-center gap-2`}
+                    onClick={() => handleAlignmentChange("justify")}
+                    className={`${getActiveButtonClass(textAlign === "justify")} flex items-center justify-center gap-2 rounded-lg py-2 transition-opacity hover:opacity-70`}
                     aria-label="Justified alignment"
                   >
                     <Icon
-                      icon={'solar:hamburger-menu-outline'}
-                      className="w-5 h-5"
+                      icon={"solar:hamburger-menu-outline"}
+                      className="h-5 w-5"
                     />
                     Justified
                   </button>
@@ -728,39 +780,38 @@ export default function ReadEbookPage({ params }) {
               </div>
 
               {/* Tipe Font */}
-              <div className="flex flex-col gap-4 ">
+              <div className="flex flex-col gap-4">
                 <div className="flex flex-row gap-2">
-                  <Icon
-                    icon={'solar:text-bold'}
-                    className="w-5 h-5"
-                  />
-                  <p className="text-sm montserratFont font-semibold">Tipe Font</p>
+                  <Icon icon={"solar:text-bold"} className="h-5 w-5" />
+                  <p className="montserratFont text-sm font-semibold">
+                    Tipe Font
+                  </p>
                 </div>
-                <div className="grid grid-cols-2 items-center justify-between gap-2 montserratFont text-sm">
+                <div className="montserratFont grid grid-cols-2 items-center justify-between gap-2 text-sm">
                   <button
-                    onClick={() => handleFontFamilyChange('inter')}
-                    className={`${getActiveButtonClass(fontFamily === 'inter')} rounded-lg interFont hover:opacity-70 transition-opacity py-2`}
+                    onClick={() => handleFontFamilyChange("inter")}
+                    className={`${getActiveButtonClass(fontFamily === "inter")} interFont rounded-lg py-2 transition-opacity hover:opacity-70`}
                     aria-label="Inter font"
                   >
                     Teks 1
                   </button>
                   <button
-                    onClick={() => handleFontFamilyChange('merriweather')}
-                    className={`${getActiveButtonClass(fontFamily === 'merriweather')} rounded-lg merriweatherFont hover:opacity-70 transition-opacity py-2`}
+                    onClick={() => handleFontFamilyChange("merriweather")}
+                    className={`${getActiveButtonClass(fontFamily === "merriweather")} merriweatherFont rounded-lg py-2 transition-opacity hover:opacity-70`}
                     aria-label="Merriweather font"
                   >
                     Teks 2
                   </button>
                   <button
-                    onClick={() => handleFontFamilyChange('montserrat')}
-                    className={`${getActiveButtonClass(fontFamily === 'montserrat')} rounded-lg montserratFont hover:opacity-70 transition-opacity py-2`}
+                    onClick={() => handleFontFamilyChange("montserrat")}
+                    className={`${getActiveButtonClass(fontFamily === "montserrat")} montserratFont rounded-lg py-2 transition-opacity hover:opacity-70`}
                     aria-label="Montserrat font"
                   >
                     Teks 3
                   </button>
                   <button
-                    onClick={() => handleFontFamilyChange('openDyslexic')}
-                    className={`${getActiveButtonClass(fontFamily === 'openDyslexic')} openDyslexicFont rounded-lg hover:opacity-70 transition-opacity py-2 openDyslexicFont`}
+                    onClick={() => handleFontFamilyChange("openDyslexic")}
+                    className={`${getActiveButtonClass(fontFamily === "openDyslexic")} openDyslexicFont openDyslexicFont rounded-lg py-2 transition-opacity hover:opacity-70`}
                     aria-label="Open Dyslexic font"
                   >
                     Teks 4
@@ -769,34 +820,33 @@ export default function ReadEbookPage({ params }) {
               </div>
 
               {/* Mode Baca */}
-              <div className="flex flex-col gap-4 ">
+              <div className="flex flex-col gap-4">
                 <div className="flex flex-row gap-2">
                   <Icon
-                    icon={'solar:notebook-minimalistic-linear'}
-                    className="w-5 h-5"
+                    icon={"solar:notebook-minimalistic-linear"}
+                    className="h-5 w-5"
                   />
-                  <p className="text-sm montserratFont font-semibold">Mode Baca</p>
+                  <p className="montserratFont text-sm font-semibold">
+                    Mode Baca
+                  </p>
                 </div>
-                <div className="grid grid-cols-2 items-center justify-between gap-2 montserratFont text-sm">
+                <div className="montserratFont grid grid-cols-2 items-center justify-between gap-2 text-sm">
                   <button
-                    onClick={() => handleReadingModeChange('scroll')}
-                    className={`${getActiveButtonClass(readingMode === 'scroll')} rounded-lg hover:opacity-70 transition-opacity py-2 flex items-center justify-center gap-2`}
+                    onClick={() => handleReadingModeChange("scroll")}
+                    className={`${getActiveButtonClass(readingMode === "scroll")} flex items-center justify-center gap-2 rounded-lg py-2 transition-opacity hover:opacity-70`}
                     aria-label="Scroll reading mode"
                   >
-                    <Icon
-                      icon={'lucide:scroll'}
-                      className="w-5 h-5"
-                    />
+                    <Icon icon={"lucide:scroll"} className="h-5 w-5" />
                     Scroll
                   </button>
                   <button
-                    onClick={() => handleReadingModeChange('page')}
-                    className={`${getActiveButtonClass(readingMode === 'page')} rounded-lg hover:opacity-70 transition-opacity py-2 flex items-center justify-center gap-2`}
+                    onClick={() => handleReadingModeChange("page")}
+                    className={`${getActiveButtonClass(readingMode === "page")} flex items-center justify-center gap-2 rounded-lg py-2 transition-opacity hover:opacity-70`}
                     aria-label="Page reading mode"
                   >
                     <Icon
-                      icon={'solar:notebook-minimalistic-linear'}
-                      className="w-5 h-5"
+                      icon={"solar:notebook-minimalistic-linear"}
+                      className="h-5 w-5"
                     />
                     Page
                   </button>
@@ -812,7 +862,7 @@ export default function ReadEbookPage({ params }) {
                   sendLogToServer("REPORT_CLICK", currentPage);
                 }}
               >
-                <Icon icon={'solar:flag-2-linear'} className="w-6 h-6" />
+                <Icon icon={"solar:flag-2-linear"} className="h-6 w-6" />
                 <p className="text-sm font-medium">Laporkan Konten</p>
               </Link>
             </div>
@@ -828,12 +878,14 @@ export default function ReadEbookPage({ params }) {
         )}
 
         {/* Pembungkus Utama EpubReader */}
-        <div className={`relative mt-16 shadow-md shadow-black flex ${readingMode === "scroll" ? "w-full" : "w-max"} max-w-[210mm] mx-auto flex-col ${colorTheme === "dark" ? "text-white" : "text-[#222222]"}`}>
+        <div
+          className={`relative mt-16 flex shadow-md shadow-black ${readingMode === "scroll" ? "w-full" : "w-max"} mx-auto max-w-[210mm] flex-col ${colorTheme === "dark" ? "text-white" : "text-[#222222]"}`}
+        >
           <div className="flex flex-col justify-center">
             {/* Pembungkus EpubReader */}
             <div
-              className={`flex h-fit w-full flex-col select-none touch-pan-y relative z-20 ${colorTheme === "dark" ? "text-white" : "text-[#222222]"}`}
-              style={{ isolation: 'isolate' }}
+              className={`relative z-20 flex h-fit w-full touch-pan-y flex-col select-none ${colorTheme === "dark" ? "text-white" : "text-[#222222]"}`}
+              style={{ isolation: "isolate" }}
               onContextMenu={(e) => e.preventDefault()}
               onDragStart={(e) => e.preventDefault()}
             >
@@ -854,6 +906,7 @@ export default function ReadEbookPage({ params }) {
                   episodeEbookId={id}
                   currentPage={currentPage}
                   cfiPosition={cfiString}
+                  topBarHeight={64}
                   bottomBarHeight={isBottomBarOpen ? 176 : 56}
                   onLoadingChange={setIsReaderLoading}
                 />
@@ -862,13 +915,11 @@ export default function ReadEbookPage({ params }) {
           </div>
         </div>
 
-        {isReaderLoading && (
-          <LoadingOverlay message="Rendering reader…" />
-        )}
+        {isReaderLoading && <LoadingOverlay message="Rendering reader…" />}
 
         {/* Catatan Kreator */}
         <section
-          className={`relative flex w-screen flex-col px-4 pb-40 pt-5 ${colorTheme === "dark" ? "text-white" : "text-[#222222]"} md:mt-4 md:px-15`}
+          className={`relative flex w-screen flex-col px-4 pt-5 pb-40 ${colorTheme === "dark" ? "text-white" : "text-[#222222]"} md:mt-4 md:px-15`}
         >
           <div
             className={`w-full rounded-xl p-4 ${colorTheme === "dark" ? "bg-[#2f2f2f] text-white" : "bg-[#DEDEDE] text-[#222222]"}`}
@@ -882,24 +933,21 @@ export default function ReadEbookPage({ params }) {
               className={`${colorTheme === "dark" ? "text-white" : "text-[#222222]"}`}
             >
               {creatorNotes}
-              <div
-                className="prose prose-invert max-w-none"
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(creatorNotes || ""),
-                }}
-              />
             </p>
           </div>
         </section>
 
         {/* Audio Book */}
         {audioEbookUrl && (
-          <AudioEbookButton audioUrl={audioEbookUrl} isDark={colorTheme === "dark"} />
+          <AudioEbookButton
+            audioUrl={audioEbookUrl}
+            isDark={colorTheme === "dark"}
+          />
         )}
 
         <div>
-          {readingMode === 'page' && (
-            <div className="fixed inset-0 w-screen h-screen flex z-30 pointer-events-none">
+          {readingMode === "page" && (
+            <div className="pointer-events-none fixed inset-0 z-30 flex h-screen w-screen">
               {/* Left Half - Previous Page */}
               <div
                 className="pointer-events-auto h-full w-1/2 cursor-pointer"
@@ -914,17 +962,14 @@ export default function ReadEbookPage({ params }) {
           )}
 
           {/* Navigation Bar with Progress (collapsible) */}
-          <div className="fixed bg-[#393939] bottom-0 left-0 right-0 flex flex-col gap-2 items-center justify-center z-40 pointer-events-auto transition-all">
+          <div className="pointer-events-auto fixed right-0 bottom-0 left-0 z-40 flex flex-col items-center justify-center gap-2 bg-[#393939] transition-all">
             {isBottomBarOpen ? (
               <>
                 <div className="w-full">
-                  <DefaultProgressBar
-                    progress={progress}
-                    barColor="#FFFFFF"
-                  />
+                  <DefaultProgressBar progress={progress} barColor="#FFFFFF" />
                 </div>
-                <div className="flex flex-col px-2 md:px-16 w-full gap-1">
-                  <div className="flex justify-between items-center text-white font-medium mb-2">
+                <div className="flex w-full flex-col gap-1 px-2 md:px-16">
+                  <div className="mb-2 flex items-center justify-between font-medium text-white">
                     <button
                       className="h-6 w-6 hover:opacity-80"
                       onClick={() => {
@@ -935,11 +980,13 @@ export default function ReadEbookPage({ params }) {
                       aria-expanded={isBottomBarOpen}
                     >
                       <Icon
-                        icon={'solar:alt-arrow-down-line-duotone'}
+                        icon={"solar:alt-arrow-down-line-duotone"}
                         className="h-6 w-6 md:h-8 md:w-8"
                       />
                     </button>
-                    <p className="text-sm md:text-base">Halaman {currentPage} dari {totalPages}</p>
+                    <p className="text-sm md:text-base">
+                      Halaman {currentPage} dari {totalPages}
+                    </p>
                     <img
                       src={iconCommentComic.src}
                       className={`h-6 w-6 cursor-pointer transition-opacity hover:opacity-70 md:h-8 md:w-8`}
@@ -950,7 +997,7 @@ export default function ReadEbookPage({ params }) {
                       }}
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-2 md:gap-4 w-full pb-2">
+                  <div className="grid w-full grid-cols-2 gap-2 pb-2 md:gap-4">
                     <Link
                       href={
                         episodeEbookPrevId
@@ -967,7 +1014,7 @@ export default function ReadEbookPage({ params }) {
                       tabIndex={episodeEbookPrevId ? 0 : -1}
                     >
                       <Icon
-                        icon={'solar:alt-arrow-left-linear'}
+                        icon={"solar:alt-arrow-left-linear"}
                         className="h-5 w-5 md:h-6 md:w-6"
                       />
                       <p className="text-sm md:text-base">Bagian Sebelumnya</p>
@@ -989,7 +1036,7 @@ export default function ReadEbookPage({ params }) {
                     >
                       <p className="text-sm md:text-base">Bagian Selanjutnya</p>
                       <Icon
-                        icon={'solar:alt-arrow-right-linear'}
+                        icon={"solar:alt-arrow-right-linear"}
                         className="h-5 w-5 md:h-6 md:w-6"
                       />
                     </Link>
@@ -997,7 +1044,7 @@ export default function ReadEbookPage({ params }) {
                 </div>
               </>
             ) : (
-              <div className="flex flex-row items-center justify-between w-full px-4 py-2 text-white">
+              <div className="flex w-full flex-row items-center justify-between px-4 py-2 text-white">
                 <button
                   className="h-6 w-6 hover:opacity-80"
                   onClick={() => {
@@ -1008,11 +1055,13 @@ export default function ReadEbookPage({ params }) {
                   aria-expanded={isBottomBarOpen}
                 >
                   <Icon
-                    icon={'solar:alt-arrow-up-line-duotone'}
+                    icon={"solar:alt-arrow-up-line-duotone"}
                     className="h-6 w-6 md:h-8 md:w-8"
                   />
                 </button>
-                <p className="text-sm md:text-base">Halaman {currentPage} dari {totalPages}</p>
+                <p className="text-sm md:text-base">
+                  Halaman {currentPage} dari {totalPages}
+                </p>
                 <img
                   src={iconCommentComic.src}
                   className={`h-6 w-6 cursor-pointer transition-opacity hover:opacity-70 md:h-8 md:w-8`}
@@ -1039,39 +1088,45 @@ export default function ReadEbookPage({ params }) {
               Welcome to Your Reader
             </h2>
             <div className="flex flex-row gap-3">
-              <div className="bg-[#515151] p-2 rounded-lg w-max h-max">
+              <div className="h-max w-max rounded-lg bg-[#515151] p-2">
                 <Icon
-                  icon={'solar:cursor-outline'}
-                  className="w-5 h-5 text-white"
+                  icon={"solar:cursor-outline"}
+                  className="h-5 w-5 text-white"
                 />
               </div>
-              <div className="flex flex-col gap-1 text-white montserratFont">
+              <div className="montserratFont flex flex-col gap-1 text-white">
                 <p className="text-lg md:text-2xl">Navigation</p>
-                <p className="text-xs text-[#979797]">Tap left or right edges to navigate pages.</p>
+                <p className="text-xs text-[#979797]">
+                  Tap left or right edges to navigate pages.
+                </p>
               </div>
             </div>
             <div className="flex flex-row gap-3">
-              <div className="bg-[#515151] p-2 rounded-lg w-max h-max">
+              <div className="h-max w-max rounded-lg bg-[#515151] p-2">
                 <Icon
-                  icon={'solar:menu-dots-bold'}
-                  className="w-5 h-5 text-white"
+                  icon={"solar:menu-dots-bold"}
+                  className="h-5 w-5 text-white"
                 />
               </div>
-              <div className="flex flex-col gap-1 text-white montserratFont">
+              <div className="montserratFont flex flex-col gap-1 text-white">
                 <p className="text-lg md:text-2xl">Change Style</p>
-                <p className="text-xs text-[#979797]">Tap three dot on the top right corner to change style.</p>
+                <p className="text-xs text-[#979797]">
+                  Tap three dot on the top right corner to change style.
+                </p>
               </div>
             </div>
             <div className="flex flex-row gap-3">
-              <div className="bg-[#515151] p-2 rounded-lg w-max h-max">
+              <div className="h-max w-max rounded-lg bg-[#515151] p-2">
                 <Icon
-                  icon={'solar:arrow-to-down-left-outline'}
-                  className="w-5 h-5 text-white"
+                  icon={"solar:arrow-to-down-left-outline"}
+                  className="h-5 w-5 text-white"
                 />
               </div>
-              <div className="flex flex-col gap-1 text-white montserratFont">
+              <div className="montserratFont flex flex-col gap-1 text-white">
                 <p className="text-lg md:text-2xl">Scroll</p>
-                <p className="text-xs text-[#979797]">Swipe up or down to scroll through the content.</p>
+                <p className="text-xs text-[#979797]">
+                  Swipe up or down to scroll through the content.
+                </p>
               </div>
             </div>
 
@@ -1085,7 +1140,9 @@ export default function ReadEbookPage({ params }) {
               >
                 Start Reading
               </button>
-              <p className="text-[#979797] text-xs md:text-base">This hint won&apos;t show again</p>
+              <p className="text-xs text-[#979797] md:text-base">
+                This hint won&apos;t show again
+              </p>
             </div>
           </div>
         </EbookModal>
@@ -1105,4 +1162,4 @@ ReadEbookPage.propTypes = {
   params: PropTypes.shape({
     id: PropTypes.string.isRequired,
   }).isRequired,
-}
+};
