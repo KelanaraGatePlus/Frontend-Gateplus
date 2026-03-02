@@ -5,6 +5,7 @@ import ProductDetailSection from "@/components/MainDetailProduct/ProductDetailSe
 import ProductEpisodeSection from "@/components/MainDetailProduct/ProductEpisodeSection";
 import CarouselTemplate from "../Carousel/carouselTemplate";
 import { cn } from "@/lib/utils";
+import slugifyTitle from "@/lib/helper/slugifyTitle";
 
 export default function MainTemplateLayout({
   productType,
@@ -36,6 +37,11 @@ export default function MainTemplateLayout({
   };
 
   const idSavedProduct = getSavedId();
+  const contentSlug = slugifyTitle(productDetail?.title);
+
+  const sharePath = contentSlug
+    ? `/${productType === "podcast" ? "podcasts" : `${productType}s`}/${contentSlug}`
+    : undefined;
 
   return (
     <main className="flex flex-col">
@@ -88,6 +94,7 @@ export default function MainTemplateLayout({
         isOwner={productDetail?.isOwner || false}
         refreshTrigger={refreshTrigger}
         setRefreshTrigger={setRefreshTrigger}
+        sharePath={sharePath}
         isBlurred
       />
 

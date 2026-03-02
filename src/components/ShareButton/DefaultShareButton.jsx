@@ -5,7 +5,7 @@ import Image from "next/image";
 import ShareModal from "../ShareModal/page";
 import PropTypes from "prop-types";
 
-export default function DefaultShareButton({ className, contentType }) {
+export default function DefaultShareButton({ className, contentType, sharePath }) {
     const [open, setOpen] = useState(false);
 
     const toggleShare = () => {
@@ -22,6 +22,7 @@ export default function DefaultShareButton({ className, contentType }) {
             <ShareModal
                 isOpen={open}
                 contentType={contentType}
+                sharePath={sharePath}
                 onClose={() => setOpen(false)}
             />
         </div>
@@ -31,4 +32,5 @@ export default function DefaultShareButton({ className, contentType }) {
 DefaultShareButton.propTypes = {
     className: PropTypes.string,
     contentType: PropTypes.string.isRequired,
+    sharePath: PropTypes.string,
 };

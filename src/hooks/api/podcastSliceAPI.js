@@ -79,6 +79,10 @@ export const podcastApi = createApi({
             }),
             invalidatesTags: ["podcast"],
         }),
+        getPodcastsBySlug: builder.query({
+            query: (slug) => `/podcast/slug/${slug}/id`,
+            providesTags: ["podcast"],
+        }),
     }),
 });
 
@@ -92,4 +96,5 @@ export const {
     useEditPodcastMutation,
     useGetPodcastPerContentAnalyticsQuery,
     useChangeVisibilityMutation,
+    useGetPodcastsBySlugQuery,
 } = podcastApi;

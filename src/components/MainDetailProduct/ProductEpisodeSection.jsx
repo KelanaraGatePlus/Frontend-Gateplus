@@ -200,15 +200,15 @@ export default function ProductEpisodeSection({
                   key={index}
                   onClick={
                     isOwner ||
-                    item.isPurchased ||
-                    item.price == "Free" ||
-                    isSubscribe
+                      item.isPurchased ||
+                      item.price == "Free" ||
+                      isSubscribe
                       ? () => {
-                          window.location.href = `${parentPath}/${item.id}`;
-                        }
+                        window.location.href = `${parentPath}/${item.id}`;
+                      }
                       : () => {
-                          handlePayment(item.id, item.price, "EBOOK");
-                        }
+                        handlePayment(item.id, item.price, "EBOOK");
+                      }
                   }
                 >
                   <div
@@ -253,7 +253,7 @@ export default function ProductEpisodeSection({
 
                       {!isOwner &&
                         !item.isPurchased &&
-                        !(item.price == "Free") || !isSubscribe && (
+                        !(item.price == "Free" && !isSubscribe && !item.price == 0) && (
                           <div className="absolute top-0 left-0 flex h-full w-full items-center justify-center bg-[#F5F5F533] backdrop-blur-xs transition-all duration-300 ease-in-out">
                             <Icon
                               icon={"solar:lock-keyhole-minimalistic-linear"}
@@ -288,7 +288,7 @@ export default function ProductEpisodeSection({
                       {/* Lock */}
                       {!isOwner &&
                         !item.isPurchased &&
-                        !(item.price == "Free") || !isSubscribe && (
+                        !(item.price == "Free" && !isSubscribe && !item.price == 0) && (
                           <div className="zeinFont flex h-full w-max flex-col items-end justify-between">
                             <div className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-[#967074] bg-[#63282e] p-1 md:p-2">
                               <Icon
@@ -307,7 +307,7 @@ export default function ProductEpisodeSection({
                         )}
 
                       {/* Open */}
-                      {(isOwner || item.isPurchased || item.price == "Free") &&
+                      {(isOwner || item.isPurchased || item.price == "Free" || item.price == 0 || isSubscribe) &&
                         !item.isWatched && (
                           <div className="flex w-max items-center justify-center gap-2 rounded-lg border-2 border-[#F5F5F559] bg-[#1FC16B4D] p-1 md:p-2">
                             <Icon
@@ -322,7 +322,7 @@ export default function ProductEpisodeSection({
                       {item.isWatched &&
                         (isOwner ||
                           item.isPurchased ||
-                          item.price == "Free") || isSubscribe && (
+                          item.price == "Free" || isSubscribe || item.price == 0) && (
                           <Link
                             href={`/report/${productType == "ebook" ? "episode_ebook" : productType == "comic" ? "episode_comic" : productType == "movie" ? "episode_movie" : "episode_series"}/${item.id}`}
                             onClick={(e) => e.stopPropagation()}
@@ -538,17 +538,17 @@ export default function ProductEpisodeSection({
 
             {isPodcastModalVisible &&
               (console.log(selectedPodcast),
-              (
-                <PodcastMoreDetail
-                  id={selectedPodcast.id}
-                  coverEpisodeUrl={selectedPodcast.coverPodcastEpisodeURL}
-                  title={selectedPodcast.title}
-                  description={selectedPodcast.description}
-                  collaborators={selectedPodcast.collaborators}
-                  createdAt={formatDateTime(selectedPodcast.createdAt, "short")}
-                  handlePodcastModal={handlePodcastModal}
-                />
-              ))}
+                (
+                  <PodcastMoreDetail
+                    id={selectedPodcast.id}
+                    coverEpisodeUrl={selectedPodcast.coverPodcastEpisodeURL}
+                    title={selectedPodcast.title}
+                    description={selectedPodcast.description}
+                    collaborators={selectedPodcast.collaborators}
+                    createdAt={formatDateTime(selectedPodcast.createdAt, "short")}
+                    handlePodcastModal={handlePodcastModal}
+                  />
+                ))}
 
             {isExpand && (
               <div className="fixed top-0 z-40 w-full">

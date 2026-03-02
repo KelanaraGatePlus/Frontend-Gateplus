@@ -79,6 +79,10 @@ export const comicApi = createApi({
             }),
             invalidatesTags: ["comic"],
         }),
+        getComicsBySlug: builder.query({
+            query: (slug) => `/comics/slug/${slug}/id`,
+            providesTags: ["comic"],
+        }),
     }),
 });
 
@@ -92,4 +96,5 @@ export const {
     useUpdateComicMutation,
     useGetComicPerContentAnalyticsQuery,
     useChangeVisibilityMutation,
+    useGetComicsBySlugQuery,
 } = comicApi;

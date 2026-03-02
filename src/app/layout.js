@@ -115,10 +115,11 @@ export default function RootLayout({ children }) {
               </FlexModal>
               <RedeemVoucherModal isModalRedeemOpen={isModalRedeemOpen} setIsModalRedeemOpen={setIsModalRedeemOpen} />
               <AppRouterCacheProvider>
-                {!hideNavbar && <div className="pt-12.5 md:pt-18.5 2xl:pt-[100px]">
-                  {children}
-                </div>}
-                {hideNavbar && children}
+                {hideNavbar ? children : (
+                  <div className="pt-12.5 md:pt-18.5 2xl:pt-[100px]">
+                    {children}
+                  </div>
+                )}
               </AppRouterCacheProvider>
               {
                 !hideFooter && <Footer />

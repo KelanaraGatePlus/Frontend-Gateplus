@@ -56,6 +56,7 @@ export default function ProductDetailSection({
   subscriptionPrice,
   isSubscribe = false,
   isOwner = false,
+  sharePath,
 }) {
   const userId = useGetUserId();
   const [showSkeleton, setShowSkeleton] = useState(true);
@@ -348,7 +349,10 @@ export default function ProductDetailSection({
                     )}
                   </div>
                 )}
-                <DefaultShareButton contentType={productType.toUpperCase()} />
+                <DefaultShareButton
+                  contentType={productType.toUpperCase()}
+                  sharePath={sharePath}
+                />
               </div>
 
               {/* uploader */}
@@ -381,6 +385,7 @@ export default function ProductDetailSection({
       <ShareModal
         isOpen={showShareModal}
         contentType={productType.toUpperCase()}
+        sharePath={sharePath}
         onClose={() => setShowShareModal(false)}
       />
 
@@ -423,4 +428,5 @@ ProductDetailSection.propTypes = {
   subscriptionPrice: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   isSubscribe: PropTypes.bool,
   isOwner: PropTypes.bool,
+  sharePath: PropTypes.string,
 };

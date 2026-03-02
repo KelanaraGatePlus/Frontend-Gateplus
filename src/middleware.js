@@ -47,7 +47,8 @@ export async function middleware(req) {
         "/podcasts/",
         "/movies/",
         "/series/",
-        "/search/"
+        "/search/",
+        "/creator/",
     ];
 
     /* =========================

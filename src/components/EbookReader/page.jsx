@@ -50,7 +50,6 @@ const EpubReader = forwardRef(
       currentPage = 1,
       cfiPosition = null,
       bottomBarHeight = 176,
-      topBarHeight = 64,
     },
     ref,
   ) => {
@@ -71,13 +70,6 @@ const EpubReader = forwardRef(
     const injectPageNumbersTimeoutRef = useRef(null);
     const initialPageRef = useRef(currentPage);
     const initialCfiRef = useRef(cfiPosition);
-
-    const getUsablePageHeight = useCallback(() => {
-      if (typeof window === "undefined") return 560;
-      const top = Number(topBarHeight || 0);
-      const bottom = Number(bottomBarHeight || 176);
-      return Math.max(0, window.innerHeight - top - bottom);
-    }, [topBarHeight, bottomBarHeight]);
 
     const injectPageNumbers = useCallback(() => {
       // Hanya jalankan di mode scroll dan pastikan rendition sudah siap
@@ -749,7 +741,7 @@ const EpubReader = forwardRef(
       if (!rendition || !container) return;
 
       if (readingMode === "page") {
-        const usableHeight = getUsablePageHeight();
+        const usableHeight = Math.max(0, window.innerHeight - (bottomBarHeight || 176));
         const widthPx = Math.min(Math.round(usableHeight * 210 / 297), window.innerWidth);
         // Sync container style to avoid width mismatch
         container.style.height = `${usableHeight}px`;
@@ -762,7 +754,7 @@ const EpubReader = forwardRef(
           console.warn("rendition.resize gagal dipanggil:", e);
         }
       }
-    }, [bottomBarHeight, topBarHeight, readingMode, getUsablePageHeight]);
+    }, [bottomBarHeight, readingMode]);
 
     useEffect(() => {
       if (!renditionRef.current) return;
@@ -821,10 +813,10 @@ const EpubReader = forwardRef(
               ref={viewerRef}
               className="epub-viewport mx-auto shadow-2xl"
               style={{
-                height: readingMode === "page" ? `calc(100dvh - ${topBarHeight + bottomBarHeight}px)` : "auto",
-                minHeight: readingMode === "page" ? `calc(100dvh - ${topBarHeight + bottomBarHeight}px)` : "100vh",
+                height: readingMode === "page" ? `calc(100vh - ${bottomBarHeight}px)` : "auto",
+                minHeight: readingMode === "page" ? `calc(100vh - ${bottomBarHeight}px)` : "100vh",
                 width: readingMode === "page"
-                  ? `min(calc((100dvh - ${topBarHeight + bottomBarHeight}px) * 210 / 297), 100vw)`
+                  ? `min(calc((100vh - ${bottomBarHeight}px) * 210 / 297), 100vw)`
                   : "100%",
                 maxWidth: readingMode === "page" ? "100vw" : "800px",
                 backgroundColor: COLOR_THEMES[colorTheme]?.bg,

@@ -104,9 +104,8 @@ export default function CreatorCard({
   return (
     <>
       <div
-        className={`flex items-center gap-2 ${
-          productType === "podcast" ? "flex-row-reverse" : ""
-        }`}
+        className={`flex items-center gap-2 ${productType === "podcast" ? "flex-row-reverse" : ""
+          }`}
       >
         <Link href={`/creator/${creatorDetail?.id}`}>
           <div className="h-15 w-15 rounded-full bg-white">
@@ -125,9 +124,9 @@ export default function CreatorCard({
           </div>
         </Link>
 
-        <div className="flex items-center gap-4">
+        <Link href={`/creator/${creatorDetail?.id}`} className="flex group items-center gap-4">
           <div>
-            <h3 className="zeinFont text-2xl font-extrabold">
+            <h3 className="zeinFont group-hover:underline text-2xl font-extrabold">
               {creatorDetail?.profileName || "Nama Channel belum diatur"}
             </h3>
             <p className="text-sm">
@@ -139,11 +138,10 @@ export default function CreatorCard({
             <button
               onClick={handleToggleSubscribe}
               disabled={isSubscribing}
-              className={`flex items-center justify-center gap-2 rounded-full px-5 py-2 text-white transition ${
-                isSubscribed
+              className={`flex items-center justify-center gap-2 rounded-full px-5 py-2 text-white transition ${isSubscribed
                   ? "bg-gray-600 hover:bg-gray-700"
                   : "bg-blue-800 hover:bg-blue-900"
-              }`}
+                }`}
             >
               {isSubscribing ? (
                 <>
@@ -176,7 +174,7 @@ export default function CreatorCard({
               )}
             </button>
           )}
-        </div>
+        </Link>
       </div>
 
       {showToast && (

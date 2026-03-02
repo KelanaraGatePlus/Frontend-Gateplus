@@ -57,6 +57,7 @@ export default function ProfileCard({
       setIsSubscribed(true);
     } catch (error) {
       console.error(error);
+      window.location.href = "/login";
     } finally {
       setIsSubscribing(false);
     }
