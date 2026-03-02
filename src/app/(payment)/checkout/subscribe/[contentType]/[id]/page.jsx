@@ -148,7 +148,7 @@ export default function PaymentCheckoutPage({ params }) {
 
     async function handleApplyVoucher(code, amount) {
         try {
-            const response = await getDiscount({ code, amount, contentType: contentTypeConst[contentType]['singleName'].toUpperCase(), contentId: id }).unwrap();
+            const response = await getDiscount({ code, amount, contentType: contentTypeConst[contentType]['singleName'].toUpperCase(), contentId: id, paymentType: "SUBSCRIPTION" }).unwrap();
             setTotalDiscount(response.data || 0);
         } catch (err) {
             console.error("Failed to get discount:", err);
@@ -240,8 +240,8 @@ export default function PaymentCheckoutPage({ params }) {
                             onClick={handlePayment}
                             disabled={!selectedPaymentMethod}
                             className={`rounded-4xl py-4 font-semibold ${selectedPaymentMethod
-                                    ? "bg-[#0076E9CC] hover:bg-[#005bb5] hover:cursor-pointer"
-                                    : "bg-[#686868] hover:cursor-not-allowed opacity-50"
+                                ? "bg-[#0076E9CC] hover:bg-[#005bb5] hover:cursor-pointer"
+                                : "bg-[#686868] hover:cursor-not-allowed opacity-50"
                                 }`}
                         >
                             Pay Now
