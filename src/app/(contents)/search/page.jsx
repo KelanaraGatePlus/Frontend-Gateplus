@@ -18,6 +18,7 @@ import useSyncUserData from "@/hooks/api/useSyncUserData";
 import { useCallback } from "react";
 import BackToTop from "@/components/ui/buttonBackToTop";
 import { DEFAULT_AVATAR } from "@/lib/defaults";
+import VerifiedCreator from "@/components/Profile/VerifiedCreator";
 
 export default function SearchPage() {
   const { userAge, isReady } = useSyncUserData();
@@ -286,7 +287,7 @@ function SearchResultsContent({ searchResults, loading, isBlurred }) {
           <h2 className="zeinFont mb-4 text-2xl font-extrabold text-white md:text-3xl lg:text-4xl xl:text-[40px]">
             Kreator ({searchResults.creators.length})
           </h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {searchResults.creators.map((creator, index) => (
               <Link href={`/creator/${creator.id}`} key={index}>
                 <div className="flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-transparent bg-white/5 p-4 transition-all hover:border-blue-500 hover:bg-white/10">
@@ -298,8 +299,9 @@ function SearchResultsContent({ searchResults, loading, isBlurred }) {
                       className="object-cover"
                     />
                   </div>
-                  <h3 className="line-clamp-2 text-center text-sm font-semibold text-white">
+                  <h3 className="line-clamp-2 min-h-6 text-center text-sm font-semibold text-white">
                     {creator.profileName || creator.username}
+                    <VerifiedCreator isVerified={creator.isVerified} width={24} height={24} />
                   </h3>
                   <p className="text-xs text-gray-400">
                     {creator._count?.subscriptions || 0} Followers

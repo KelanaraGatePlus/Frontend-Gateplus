@@ -8,7 +8,7 @@ import { Provider } from "react-redux";
 import "./globals.css";
 import Navbar from "@/components/Navbar/page";
 import Footer from "@/components/Footer/MainFooter";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import FlexModal from "@/components/Modal/FlexModal";
 import Image from "next/image";
 import { contentType } from "@/lib/constants/contentType";
@@ -47,6 +47,56 @@ export default function RootLayout({ children }) {
   };
 
   const pathname = usePathname();
+
+  useEffect(() => {
+    const RECOVERY_FLAG = "__gateplus_chunk_recovery_at";
+    const RECOVERY_COOLDOWN_MS = 30000;
+
+    const isChunkLoadError = (error) => {
+      if (!error) {
+        return false;
+      }
+
+      const name = String(error?.name || "");
+      const message = String(error?.message || error || "");
+
+      return /ChunkLoadError|Loading chunk\s+\d+\s+failed|CSS_CHUNK_LOAD_FAILED|Failed to fetch dynamically imported module/i.test(
+        `${name} ${message}`,
+      );
+    };
+
+    const recoverFromChunkError = () => {
+      const lastRecoveryAt = Number(sessionStorage.getItem(RECOVERY_FLAG) || "0");
+      if (Date.now() - lastRecoveryAt < RECOVERY_COOLDOWN_MS) {
+        return;
+      }
+
+      sessionStorage.setItem(RECOVERY_FLAG, Date.now().toString());
+      const nextUrl = new URL(window.location.href);
+      nextUrl.searchParams.set("_chunk_recovery", Date.now().toString());
+      window.location.replace(nextUrl.toString());
+    };
+
+    const handleWindowError = (event) => {
+      if (isChunkLoadError(event?.error || event?.message)) {
+        recoverFromChunkError();
+      }
+    };
+
+    const handleUnhandledRejection = (event) => {
+      if (isChunkLoadError(event?.reason)) {
+        recoverFromChunkError();
+      }
+    };
+
+    window.addEventListener("error", handleWindowError);
+    window.addEventListener("unhandledrejection", handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener("error", handleWindowError);
+      window.removeEventListener("unhandledrejection", handleUnhandledRejection);
+    };
+  }, []);
 
   // true kalau salah satu pattern cocok
   const hideNavbar = routeWithoutNavbar.some((pattern) => pattern.test(pathname));

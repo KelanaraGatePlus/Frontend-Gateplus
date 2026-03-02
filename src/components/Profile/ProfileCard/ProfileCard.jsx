@@ -70,7 +70,7 @@ export default function ProfileCard({
   // console.log(data); muncul di console browser bang data user
   return (
     <>
-      <div className="relative mt-1 z-20 flex h-fit w-full flex-col items-center justify-center overflow-hidden rounded-xl border border-gray-500 bg-[#FFFFFF1A] p-4 backdrop-blur-lg transition-all duration-300 ease-out md:max-w-[300px] md:min-w-[300px]">
+      <div className={`relative mt-1 z-20 flex h-fit w-full flex-col items-center justify-center overflow-hidden rounded-xl border ${data?.isVerified ? "border-[#EEC105] bg-[#0101011a]" : "border-gray-500 bg-[#FFFFFF1A]"} p-4 backdrop-blur-lg transition-all duration-300 ease-out md:max-w-[300px] md:min-w-[300px]`}>
         {profileFor === "creator" && (
           <section className="absolute top-0 mb-2 h-36 w-full overflow-hidden md:hidden md:h-32 lg:w-full">
             {data?.bannerImageUrl && data?.bannerImageUrl !== "null" ? (
