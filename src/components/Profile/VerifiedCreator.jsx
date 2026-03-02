@@ -1,5 +1,6 @@
+import React from 'react';
 import CreatorIsVerified from '@@/AdditionalImages/verifiedCreator2.png';
-
+import PropTypes from 'prop-types';
 export default function VerifiedCreator({ isVerified, width = 32, height = 32 }) {
     if (!isVerified) return null;
 
@@ -15,4 +16,10 @@ export default function VerifiedCreator({ isVerified, width = 32, height = 32 })
             </span>
         </span>
     );
+}
+
+VerifiedCreator.propTypes = {
+    isVerified: PropTypes.bool.isRequired,
+    width: PropTypes.number,
+    height: PropTypes.number,
 }

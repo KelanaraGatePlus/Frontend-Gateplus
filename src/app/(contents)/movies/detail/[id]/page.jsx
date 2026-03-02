@@ -3,7 +3,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import PropTypes from "prop-types";
 import Image from "next/image";
-import Link from "next/link";
 import DOMPurify from "dompurify";
 
 import logoDislike from "@@/logo/logoDetailFilm/dislike-icons.svg";

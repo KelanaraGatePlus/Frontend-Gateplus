@@ -3,7 +3,6 @@
 import PropTypes from "prop-types";
 import React, { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
-import Link from "next/link";
 
 import logoDislike from "@@/logo/logoDetailFilm/dislike-icons.svg";
 import logoLike from "@@/logo/logoDetailFilm/like-icons.svg";
@@ -28,7 +27,6 @@ import { useSaveContent } from "@/lib/features/useSaveContent";
 import { useGetUserId } from "@/lib/features/useGetUserId";
 import useSyncUserData from "@/hooks/api/useSyncUserData";
 import getMinAge from "@/lib/helper/minAge";
-import { DEFAULT_AVATAR } from "@/lib/defaults";
 import slugifyTitle from "@/lib/helper/slugifyTitle";
 
 import Toast from "@/components/Toast/page";
