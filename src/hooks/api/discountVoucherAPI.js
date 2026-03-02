@@ -18,8 +18,8 @@ export const discountVoucherAPI = createApi({
     tagTypes: ["discountVoucher"],
     endpoints: (builder) => ({
         getDiscountByVoucherDiscountCode: builder.mutation({
-            query: ({ code, amount }) => ({
-                url: `/discountVoucher/count-discount/${code}/${amount}`,
+            query: ({ code, amount, contentType = null, contentId = null }) => ({
+                url: `/discountVoucher/count-discount/${code}/${amount}${contentType ? `?contentType=${contentType}` : ''}${contentId ? `&contentId=${contentId}` : ''}`,
                 method: "GET",
             }),
             invalidatesTags: ["discountVoucher"],

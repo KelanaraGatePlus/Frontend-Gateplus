@@ -148,7 +148,7 @@ export default function PaymentCheckoutPage({ params }) {
 
     async function handleApplyVoucher(code, amount) {
         try {
-            const response = await getDiscount({ code, amount }).unwrap();
+            const response = await getDiscount({ code, amount, contentType: contentTypeConst[contentType]['singleName'].toUpperCase(), contentId: id }).unwrap();
             setTotalDiscount(response.data || 0);
         } catch (err) {
             console.error("Failed to get discount:", err);

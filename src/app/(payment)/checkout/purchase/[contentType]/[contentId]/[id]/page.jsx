@@ -23,7 +23,7 @@ import PaymentSummary from "@/components/Payment/PaymentSummary";
 
 export default function PurchaseContentPaymentPage({ params }) {
     const resolvedParams = React.use(params);
-    const { contentType, id } = resolvedParams;
+    const { contentType, id, contentId } = resolvedParams;
     const searchParams = useSearchParams();
     const isSuccessParams = searchParams.get("isSuccess");
     const isFailedParams = searchParams.get("isFailed");
@@ -132,7 +132,7 @@ export default function PurchaseContentPaymentPage({ params }) {
 
     async function handleApplyVoucher(code, amount) {
         try {
-            const response = await getDiscount({ code, amount }).unwrap();
+            const response = await getDiscount({ code, amount, contentType: contentTypeConst[contentType]['singleName'].toUpperCase(), contentId }).unwrap();
             setTotalDiscount(response.data || 0);
         } catch (err) {
             console.error("Failed to get discount:", err);
@@ -227,8 +227,8 @@ export default function PurchaseContentPaymentPage({ params }) {
                             onClick={handlePayment}
                             disabled={!selectedPaymentMethod}
                             className={`rounded-4xl py-4 font-semibold ${selectedPaymentMethod
-                                    ? "bg-[#0076E9CC] hover:bg-[#005bb5] hover:cursor-pointer"
-                                    : "bg-[#686868] hover:cursor-not-allowed opacity-50"
+                                ? "bg-[#0076E9CC] hover:bg-[#005bb5] hover:cursor-pointer"
+                                : "bg-[#686868] hover:cursor-not-allowed opacity-50"
                                 }`}
                         >
                             Pay Now
