@@ -28,13 +28,13 @@ import { useLikeContent } from "@/lib/features/useLikeContent";
 import { useDislikeContent } from "@/lib/features/useDislikeContent";
 import { useSaveContent } from "@/lib/features/useSaveContent";
 import useSyncUserData from "@/hooks/api/useSyncUserData";
-import { DEFAULT_AVATAR } from "@/lib/defaults";
 import { useGetUserId } from "@/lib/features/useGetUserId";
 import getMinAge from "@/lib/helper/minAge";
 import formatDuration from "@/lib/helper/formatDurationHelper";
 import slugifyTitle from "@/lib/helper/slugifyTitle";
 
 import Toast from "@/components/Toast/page";
+import CreatorCard from "@/components/MainDetailProduct/CreatorCard";
 
 function PlayingMoviePage({ params }) {
   const { id } = params;
@@ -310,24 +310,12 @@ function PlayingMoviePage({ params }) {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 md:justify-end">
-            <img
-              width={60}
-              height={60}
-              className="rounded-full overflow-hidden"
-              src={
-                movieData?.creator?.imageUrl &&
-                  movieData?.creator?.imageUrl !== "null"
-                  ? movieData.creator.imageUrl
-                  : DEFAULT_AVATAR.src
-              }
-              alt="creator"
+          <div className="flex md:self-end">
+            <CreatorCard
+              creatorDetail={movieData?.creator}
+              totalSubs={movieData?.creator?.totalSubscribers || 0}
+              initialIsSubscribed={movieData?.isSubscribed || false}
             />
-            <Link href={`/creator/${movieData?.creator?.id}`}>
-              <span className="text-2xl font-bold hover:underline">
-                {movieData?.creator?.profileName}
-              </span>
-            </Link>
           </div>
         </div>
 

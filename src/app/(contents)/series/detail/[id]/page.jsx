@@ -32,6 +32,7 @@ import { DEFAULT_AVATAR } from "@/lib/defaults";
 import slugifyTitle from "@/lib/helper/slugifyTitle";
 
 import Toast from "@/components/Toast/page";
+import CreatorCard from "@/components/MainDetailProduct/CreatorCard";
 
 function DetailSeriesPage({ params }) {
   const { id } = params;
@@ -315,26 +316,13 @@ function DetailSeriesPage({ params }) {
             </div>
           </div>
 
-          <div className="flex w-full items-center gap-3 md:w-1/2 md:justify-end">
-            <div className="rounded-full overflow-hidden h-15 w-15">
-              <img
-                width={60}
-                height={60}
-                alt="creator-avatar"
-                src={seriesData?.creator?.imageUrl || DEFAULT_AVATAR.src}
-              />
-            </div>
-            <Link
-              href={`/creator/${seriesData?.creator?.id}`}
-              className="grid grid-rows-2"
-            >
-              <span className="text-2xl font-bold hover:underline">
-                {seriesData?.creator?.profileName}
-              </span>
-              <span className="text-sm">
-                {seriesData?.creator?.totalSubscribers} followers
-              </span>
-            </Link>
+          <div className="flex w-full items-center gap-3 md:w-1/2 md:justify-end self-end">
+            <CreatorCard
+              creatorDetail={seriesData?.creator}
+              totalSubs={seriesData?.creator?.totalSubscribers || 0}
+              initialIsSubscribed={seriesData?.isSubscribed || false}
+              isLogin={!!userId}
+            />
           </div>
         </section>
 

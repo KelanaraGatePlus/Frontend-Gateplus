@@ -8,6 +8,7 @@ import { formatFollowersCount } from "@/lib/followersCount";
 import { DEFAULT_AVATAR } from "@/lib/defaults";
 import { subscribeCreator } from "./utils";
 import Toast from "@/components/Toast/page";
+import VerifiedCreator from "../Profile/VerifiedCreator";
 
 export default function CreatorCard({
   isLogin,
@@ -128,6 +129,7 @@ export default function CreatorCard({
           <div>
             <h3 className="zeinFont group-hover:underline text-2xl font-extrabold">
               {creatorDetail?.profileName || "Nama Channel belum diatur"}
+              <VerifiedCreator isVerified={creatorDetail?.isVerified} />
             </h3>
             <p className="text-sm">
               {formatFollowersCount(totalSubs)} Followers

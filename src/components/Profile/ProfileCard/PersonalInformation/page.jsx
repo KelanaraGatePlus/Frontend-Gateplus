@@ -20,7 +20,7 @@ export default function PersonalInformationSection({
 }) {
   return (
     <div className="flex w-full flex-col gap-3">
-      <NameSection profileName={data.profileName} username={data.username} />
+      <NameSection profileName={data.profileName} username={data.username} isVerified={data.isVerified} />
       {profileFor === "creator" && (
         <ViewAndSubSection
           totalViews={data.totalViews}

@@ -1,7 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-export default function NameSection({ profileName, username }) {
+import VerifiedCreator from '../../VerifiedCreator';
+
+export default function NameSection({ profileName, username, isVerified = false }) {
     return (
         <div className="w-full text-white">
             <h1
@@ -9,6 +11,9 @@ export default function NameSection({ profileName, username }) {
                     }`}
             >
                 {profileName || "Nama Profile Belum di atur"}
+                <VerifiedCreator
+                    isVerified={isVerified}
+                />
             </h1>
             <div className="mt-1 text-[12px] text-gray-300 lg:text-base">
                 <p className="whitespace-normal break-all">@{username}</p>
@@ -20,4 +25,5 @@ export default function NameSection({ profileName, username }) {
 NameSection.propTypes = {
     profileName: PropTypes.string.isRequired,
     username: PropTypes.string.isRequired,
+    isVerified: PropTypes.bool,
 }
