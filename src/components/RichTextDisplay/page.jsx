@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import PropTypes from 'prop-types';
-import DOMPurify from 'isomorphic-dompurify';
+import DOMPurify from 'dompurify';
 
 export default function RichTextDisplay({ content, className = "" }) {
   const sanitizeConfig = {
