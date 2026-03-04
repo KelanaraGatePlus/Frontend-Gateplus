@@ -1,8 +1,8 @@
 "use client";
 
 import React, { Suspense } from "react";
-import { useEffect, useRouter } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/Context/AuthContext";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 
