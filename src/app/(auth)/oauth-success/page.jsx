@@ -2,15 +2,15 @@
 
 import React, { Suspense } from "react";
 import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/components/Context/AuthContext";
-import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 function OAuthSuccessPageInner() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { login } = useAuth();
-    
+
+    console.log("OAuth Success Page Loaded");
     useEffect(() => {
         const token = searchParams.get("token");
         const id = searchParams.get("id");
@@ -35,16 +35,12 @@ function OAuthSuccessPageInner() {
         router.push("/"); // Ganti ke dashboard kalau perlu
     }, []);
 
-    return <LoadingOverlay
-        message="Login with google..."
-    />;
+    return <p>Logging in via Google...</p>;
 }
 
 export default function OAuthSuccessPage() {
     return (
-        <Suspense fallback={<LoadingOverlay
-            message="Loading..."
-        />}>
+        <Suspense fallback={<p>Loading...</p>}>
             <OAuthSuccessPageInner />
         </Suspense>
     );
