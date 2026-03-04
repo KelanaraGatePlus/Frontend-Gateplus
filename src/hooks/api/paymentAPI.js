@@ -533,7 +533,7 @@ export const useTipPayment = () => {
         document.body.appendChild(script);
     }, []);
 
-    const pay = async ({ creatorId, amount }) => {
+    const pay = async ({ creatorId, amount, paymentMethod = null }) => {
         if (isPaying) return;
         setIsPaying(true);
 
@@ -544,7 +544,7 @@ export const useTipPayment = () => {
                     Authorization: `Bearer ${user.token}`,
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ creatorId, amount }),
+                body: JSON.stringify({ creatorId, amount, paymentMethod }),
             });
 
             const data = await res.json();
@@ -693,6 +693,20 @@ export const useDisplayPayment = () => {
             // ================= MIDTRANS =================
             if (!snapReady || !window.snap) {
                 alert("Midtrans Snap belum siap.");
+                setIsPaying(false);
+                return;
+            }
+
+            if (!snapToken) {
+                if (snapUrl) {
+                    window.open(snapUrl, "_blank", "noopener,noreferrer");
+                    setIsPaying(false);
+                    callbacks.onPending?.({ message: "Redirect to payment page" });
+                    return;
+                }
+
+                const tokenError = new Error("Snap token tidak tersedia untuk metode pembayaran ini.");
+                callbacks.onError?.(tokenError);
                 setIsPaying(false);
                 return;
             }

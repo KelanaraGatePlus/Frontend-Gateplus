@@ -18,6 +18,8 @@ import TipPaymentModal from "./TipPaymentModal";
 import { useGetUserId } from "@/lib/features/useGetUserId";
 import Link from "next/link";
 
+const pickFirst = (...values) => values.find((value) => value !== undefined && value !== null && value !== "") ?? null;
+
 export default function CommentForm({
   contentType,
   episodeEbookId = null,
@@ -100,22 +102,34 @@ export default function CommentForm({
 
     try {
       const result = await createComment(payload).unwrap();
+      const paymentData = result?.data || {};
+      const snapToken = pickFirst(paymentData.snapToken, paymentData.token, paymentData.snap_token, paymentData?.snap?.token);
+      const snapUrl = pickFirst(
+        paymentData.snapUrl,
+        paymentData.redirectUrl,
+        paymentData.redirect_url,
+        paymentData?.actions?.[0]?.url
+      );
+      const paymentMethodResponse = String(
+        pickFirst(paymentData.paymentMethod, paymentData.payment_method, paymentMethod, "")
+      ).toLowerCase();
+      const qrisImageUrl = pickFirst(
+        paymentData.qrisImageUrl,
+        paymentData.qrisUrl,
+        paymentData.qrCodeUrl,
+        paymentData.qrUrl
+      );
 
       // Jika ada snapToken/snapUrl di response, tampilkan payment
-      if (result?.data?.snapToken || result?.data?.snapUrl) {
+      if (snapToken || snapUrl || (paymentMethodResponse === "qris" && qrisImageUrl)) {
         await display(
           {
-            snapToken: result.data.snapToken,
-            snapUrl: result.data.snapUrl,
-            orderId: result.data.orderId || null,
-            provider: result.data.provider || "midtrans",
-            paymentMethod: result.data.paymentMethod || null,
-            qrisImageUrl:
-              result.data.qrisImageUrl ||
-              result.data.qrisUrl ||
-              result.data.qrCodeUrl ||
-              result.data.qrUrl ||
-              null,
+            snapToken,
+            snapUrl,
+            orderId: paymentData.orderId || null,
+            provider: paymentData.provider || "midtrans",
+            paymentMethod: paymentMethodResponse || null,
+            qrisImageUrl,
           },
           {
             onSuccess: (paymentResult) => {
