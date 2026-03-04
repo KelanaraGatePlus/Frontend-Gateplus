@@ -2,17 +2,33 @@ import { NextResponse } from "next/server";
 import * as jose from "jose";
 
 const MAINTENANCE_MODE = false;
+const PUBLIC_FILE = /\.(.*)$/;
 
 export async function middleware(req) {
     const { pathname, searchParams } = req.nextUrl;
+    const normalizedPathname =
+        pathname !== "/" && pathname.endsWith("/")
+            ? pathname.slice(0, -1)
+            : pathname;
+
+    if (
+        normalizedPathname.startsWith("/_next")
+        || normalizedPathname.startsWith("/api")
+        || PUBLIC_FILE.test(normalizedPathname)
+        || normalizedPathname === "/favicon.ico"
+        || normalizedPathname === "/robots.txt"
+        || normalizedPathname === "/sitemap.xml"
+    ) {
+        return NextResponse.next();
+    }
 
     /* =========================
        🧩 1. Maintenance Mode
     ========================== */
-    if (MAINTENANCE_MODE && pathname !== "/maintenance") {
+    if (MAINTENANCE_MODE && normalizedPathname !== "/maintenance") {
         return NextResponse.redirect(new URL("/maintenance", req.url));
     }
-    if (!MAINTENANCE_MODE && pathname === "/maintenance") {
+    if (!MAINTENANCE_MODE && normalizedPathname === "/maintenance") {
         return NextResponse.redirect(new URL("/", req.url));
     }
 
@@ -61,8 +77,8 @@ export async function middleware(req) {
     /* =========================
        🧩 4. Public Path tanpa auth
     ========================== */
-    const isPublicPath = PUBLIC_PATHS.includes(pathname)
-        || PUBLIC_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+    const isPublicPath = PUBLIC_PATHS.includes(normalizedPathname)
+        || PUBLIC_PATH_PREFIXES.some((prefix) => normalizedPathname.startsWith(prefix));
 
     if (isPublicPath) {
         return NextResponse.next();
@@ -96,12 +112,12 @@ export async function middleware(req) {
         }
 
         // Jika user sudah verified tapi akses ke halaman otp
-        if (payload.isVerified && VERIFICATION_PATHS.includes(pathname)) {
+        if (payload.isVerified && VERIFICATION_PATHS.includes(normalizedPathname)) {
             return NextResponse.redirect(new URL("/", req.url));
         }
 
         // Jika user belum verified tapi akses ke halaman selain otp/verify-email
-        if (!payload.isVerified && !VERIFICATION_PATHS.includes(pathname)) {
+        if (!payload.isVerified && !VERIFICATION_PATHS.includes(normalizedPathname)) {
             // Bawa token di query supaya halaman OTP tahu
             const url = new URL("/otp", req.url);
             url.searchParams.set("token", token);
@@ -120,4 +136,4 @@ export async function middleware(req) {
 
 export const config = {
     matcher: ["/((?!_next|.*\\..*).*)"],
-};;
+};

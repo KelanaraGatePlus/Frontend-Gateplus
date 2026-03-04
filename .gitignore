@@ -49,3 +49,6 @@ public/videos/*
 !public/videos/*.js
 !public/videos/*.ts
 public/_next-video
+
+# Local Netlify folder
+.netlify
