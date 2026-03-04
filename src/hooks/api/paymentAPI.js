@@ -697,6 +697,20 @@ export const useDisplayPayment = () => {
                 return;
             }
 
+            if (!snapToken) {
+                if (snapUrl) {
+                    window.open(snapUrl, "_blank", "noopener,noreferrer");
+                    setIsPaying(false);
+                    callbacks.onPending?.({ message: "Redirect to payment page" });
+                    return;
+                }
+
+                const tokenError = new Error("Snap token tidak tersedia untuk metode pembayaran ini.");
+                callbacks.onError?.(tokenError);
+                setIsPaying(false);
+                return;
+            }
+
             window.snap.pay(snapToken, {
                 onSuccess: (result) => {
                     setIsPaying(false);
