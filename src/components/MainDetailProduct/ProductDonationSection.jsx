@@ -1,25 +1,26 @@
 import React, { useState } from "react";
 import { useTipPayment } from "@/hooks/api/paymentAPI";
-import SimpleModal from "../Modal/SimpleModal";
+import TipPaymentModal from "@/components/CommentForm/TipPaymentModal";
 import PropTypes from "prop-types";
 
 export default function ProductDonationSection({ creatorId }) {
-  const { pay } = useTipPayment();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { pay, isPaying } = useTipPayment();
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [amount, setAmount] = useState(0);
 
   const handleModalOpen = (amount) => {
     setAmount(amount);
-    setIsModalOpen(true);
+    setShowPaymentModal(true);
   };
 
-  const handleTip = async () => {
+  const handleTip = async (paymentMethod) => {
     await pay({
       creatorId: creatorId,
-      amount: amount
+      amount: amount,
+      paymentMethod,
     });
 
-    setIsModalOpen(false);
+    setShowPaymentModal(false);
   };
 
   return (
@@ -73,11 +74,12 @@ export default function ProductDonationSection({ creatorId }) {
         </button>
       </div>
 
-      <SimpleModal
-        title={"Berikan tip kepada creator sebanyak Rp. " + (amount?.toLocaleString() ?? 0) + ",- ?"}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+      <TipPaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        tipAmount={amount}
         onConfirm={handleTip}
+        isLoading={isPaying}
       />
     </section>
   );

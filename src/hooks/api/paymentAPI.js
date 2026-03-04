@@ -533,7 +533,7 @@ export const useTipPayment = () => {
         document.body.appendChild(script);
     }, []);
 
-    const pay = async ({ creatorId, amount }) => {
+    const pay = async ({ creatorId, amount, paymentMethod = null }) => {
         if (isPaying) return;
         setIsPaying(true);
 
@@ -544,7 +544,7 @@ export const useTipPayment = () => {
                     Authorization: `Bearer ${user.token}`,
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ creatorId, amount }),
+                body: JSON.stringify({ creatorId, amount, paymentMethod }),
             });
 
             const data = await res.json();
