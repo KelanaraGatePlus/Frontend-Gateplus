@@ -1,21 +1,7 @@
-import process from "node:process";
 import { withNextVideo } from "next-video/process";
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: false,
-  swcMinify: true,
-  poweredByHeader: false,
-  productionBrowserSourceMaps: false,
-
-  compiler: {
-    removeConsole: process.env.NODE_ENV === "production",
-  },
-
   images: {
-    unoptimized: false,
-    minimumCacheTTL: 31536000,
-    formats: ["image/avif", "image/webp"],
     domains: [
       "backend-gateplus-api.my.id",
       "gateplussistem.online",
@@ -34,6 +20,8 @@ const nextConfig = {
         port: "9000",
         pathname: "/**",
       },
+    ],
+    remotePatterns: [
       {
         protocol: "https",
         hostname: "minio.gateplus.id",
@@ -42,27 +30,6 @@ const nextConfig = {
       },
     ],
   },
-
-  experimental: {
-    legacyBrowsers: false,
-    optimizePackageImports: ["lodash", "date-fns", "lucide-react"],
-  },
-
-  webpack: (config) => {
-    config.resolve.alias.moment = false;
-
-    config.optimization.splitChunks = {
-      chunks: "all",
-      maxSize: 200000,
-    };
-
-    return config;
-  },
 };
 
-export default withNextVideo(nextConfig, {
-  folder: "public/videos",
-  optimize: true,
-  inline: false,
-  loader: "external",
-});
+export default withNextVideo(nextConfig, { folder: 'public/videos' });
