@@ -2,11 +2,11 @@
 
 import React, { Suspense } from "react";
 import { useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/Context/AuthContext";
+import LoadingOverlay from "@/components/LoadingOverlay/page";
 
 function OAuthSuccessPageInner() {
-    const router = useRouter();
     const searchParams = useSearchParams();
     const { login } = useAuth();
 
@@ -32,15 +32,19 @@ function OAuthSuccessPageInner() {
                 : null,
         };
         login(data);
-        router.push("/"); // Ganti ke dashboard kalau perlu
+        window.location.href = "/"; // Ganti ke dashboard kalau perlu
     }, []);
 
-    return <p>Logging in via Google...</p>;
+    return <LoadingOverlay
+        message="Login with google..."
+    />;
 }
 
 export default function OAuthSuccessPage() {
     return (
-        <Suspense fallback={<p>Loading...</p>}>
+        <Suspense fallback={<LoadingOverlay
+            message="Loading..."
+        />}>
             <OAuthSuccessPageInner />
         </Suspense>
     );
