@@ -8,12 +8,14 @@ import { BACKEND_URL } from "@/lib/constants/backendUrl";
 export default function CarouselLastSeen() {
   const [lastSeenData, setLastSeenData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+
     const fetchLastSeen = async () => {
       try {
-        const token = localStorage.getItem("token");
-
         const res = await axios.get(`${BACKEND_URL}/api/last-seen`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
@@ -70,6 +72,7 @@ export default function CarouselLastSeen() {
         isLoading={isLoading}
         isHomepage={true}
         withTopTag={false}
+        isLoggedIn={isLoggedIn}
         showProgress={true}
       />
     </div>

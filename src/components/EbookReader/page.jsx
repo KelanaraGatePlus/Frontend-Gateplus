@@ -197,11 +197,7 @@ const EpubReader = forwardRef(
               : undefined,
         };
         try {
-          // Trigger RTK Query mutation; ignore result for fire-and-forget
-          // Tambah sementara di EpubReader, ganti applyReadProgress(body) dengan:
-          console.log("Sending readProgress:", JSON.stringify(body));
-          const result = applyReadProgress(body);
-          console.log("readProgress result:", result);
+          applyReadProgress(body);
         } catch (e) {
           console.error("Gagal mengirim progress baca:", e);
         }
@@ -224,19 +220,14 @@ const EpubReader = forwardRef(
       return fam ? fam.value : FONT_FAMILIES.inter.value;
     }, [fontFamily]);
 
-    if (!initialNavDoneRef.current) {
-      initialPageRef.current = currentPage;
-      initialCfiRef.current = cfiPosition;
-    }
-
     const updateScrollProgress = useCallback(() => {
       if (readingMode !== "scroll" || !viewerRef.current) return;
 
-      const container = viewerRef.current;
       const scrollTop =
         window.scrollY || document.documentElement.scrollTop || 0;
       const scrollHeight = document.documentElement.scrollHeight || 0;
       const clientHeight = window.innerHeight || 0;
+      const container = viewerRef.current;
 
       const virtualPageHeight = container.offsetWidth * (297 / 210);
 
@@ -391,17 +382,11 @@ const EpubReader = forwardRef(
         "daftar isi",
         "content",
       ]);
-      const textNodesSelectors = ["h1", "h2", "h3", "h4", "p"];
-      doc.querySelectorAll(textNodesSelectors.join(",")).forEach((el) => {
+      doc.querySelectorAll("h1, h2, h3, h4, p").forEach((el) => {
         const text = (el.textContent || "").trim().toLowerCase();
-        if (labels.has(text)) {
-          el.remove();
-        }
+        if (labels.has(text)) el.remove();
       });
-
-      // Some EPUBs place TOC lists without explicit toc classes; try heuristic
-      const body = doc.body;
-      const topLists = Array.from(body.querySelectorAll("ol, ul")).filter(
+      const topLists = Array.from(doc.body.querySelectorAll("ol, ul")).filter(
         (lst) => {
           const rect = lst.getBoundingClientRect();
           return (
@@ -456,7 +441,25 @@ const EpubReader = forwardRef(
     useEffect(() => {
       if (!epubUrl || !viewerRef.current) return;
 
-      // Notify parent that rendering is starting
+      // ✅ FIX: Reset semua ref state saat epubUrl berubah (mount baru)
+      initialNavDoneRef.current = false;
+      readyToLogRef.current = false;
+      skippedInitialLogRef.current = false;
+      pageNumbersInjectedRef.current = false;
+      lastCfiRef.current = null;
+      pageStatsRef.current = { current: 1, total: 1 };
+
+      // ✅ FIX: Snapshot props saat mount (bukan saat render — ini yang kritis)
+      const initialPage = initialPageRef.current;
+      const initialCfi = initialCfiRef.current;
+
+      console.log(
+        "[EpubReader] Mount dengan initialPage:",
+        initialPage,
+        "| initialCfi:",
+        initialCfi,
+      );
+
       try {
         onLoadingChange?.(true);
       } catch {
@@ -486,29 +489,39 @@ const EpubReader = forwardRef(
       });
 
       renditionRef.current = rendition;
-      book.ready.then(() => {
-        const initialPage = initialPageRef.current;
 
+      book.ready.then(() => {
         const firstRealContent = book.spine.items.find(
           (item) => !/toc|nav|cover|contents/i.test(item.href),
         );
 
-        rendition.display(firstRealContent?.href);
+        if (isPageMode && initialCfi) {
+          rendition.display(initialCfi);
+          console.log(
+            "[EpubReader] Page mode: display langsung ke CFI:",
+            initialCfi,
+          );
+        } else {
+          rendition.display(firstRealContent?.href);
+        }
+
         rendition.themes.fontSize(`${initialFontSizeFactor}rem`);
 
         rendition.on("rendered", () => {
           const doc =
             viewerRef.current?.querySelector("iframe")?.contentDocument;
 
-          onLoadingChange?.(false);
+          try {
+            onLoadingChange?.(false);
+          } catch {
+            /* silent */
+          }
 
           if (injectPageNumbersTimeoutRef.current) {
             clearTimeout(injectPageNumbersTimeoutRef.current);
           }
           injectPageNumbersTimeoutRef.current = setTimeout(() => {
-            if (readingMode === "scroll") {
-              injectPageNumbers();
-            }
+            if (readingMode === "scroll") injectPageNumbers();
           }, 2000);
 
           protectIframeDocument(doc);
@@ -516,24 +529,25 @@ const EpubReader = forwardRef(
           injectOpenDyslexicFace(doc);
           stripTOCAndContentLabels(doc);
 
-          try {
-            onLoadingChange?.(false);
-          } catch {
-            console.warn("onLoadingChange gagal dipanggil.");
-          }
-          // Initial navigation for scroll mode: jump to provided currentPage
-          if (readingMode === "scroll") {
+          if (readingMode === "scroll" && !initialNavDoneRef.current) {
             const target = Math.max(1, Number(initialPage) || 1);
-            if (!initialNavDoneRef.current && target > 1) {
+            if (target > 1) {
               setTimeout(() => {
                 const container = viewerRef.current;
                 if (!container) return;
                 const virtualPageHeight = container.offsetWidth * (297 / 210);
                 const top = (target - 1) * virtualPageHeight;
+                console.log(
+                  "[EpubReader] Scroll mode: restore ke posisi",
+                  top,
+                  "px (page",
+                  target,
+                  ")",
+                );
                 window.scrollTo({ top, behavior: "auto" });
                 initialNavDoneRef.current = true;
                 readyToLogRef.current = true;
-              }, 400);
+              }, 600);
             } else {
               // Scroll mode without page jump - mark as ready immediately
               initialNavDoneRef.current = true;
@@ -547,50 +561,57 @@ const EpubReader = forwardRef(
           .generate(1000)
           .then(() => {
             locationsReadyRef.current = true;
-            console.log("✓ Locations generated successfully");
+            console.log("✓ Locations generated");
 
             // JANGAN akses currentLocation di sini - terlalu awal
             // Hanya set flag bahwa locations siap
 
             // Initial navigation untuk page mode - DELAY untuk beri waktu render
             if (isPageMode && !initialNavDoneRef.current) {
-              setTimeout(() => {
-                const target = Math.max(1, Number(initialPage) || 1);
+              const target = Math.max(1, Number(initialPage) || 1);
 
-                if (target > 1 && initialCfiRef.current) {
-                  // Coba gunakan CFI hanya jika ada
-                  try {
-                    if (isValidCfi(initialCfiRef.current, book)) {
-                      renditionRef.current?.display(initialCfiRef.current);
-                      console.log("✓ Navigated to CFI:", initialCfiRef.current);
-                    } else {
-                      // CFI invalid, gunakan percentage
-                      const totalPages = book.spine.length || 1;
+              setTimeout(() => {
+                if (target > 1) {
+                  if (initialCfi) {
+                    // CFI sudah di-display dari awal, tidak perlu navigasi lagi
+                    console.log(
+                      "[EpubReader] Page mode: sudah di CFI, skip navigasi",
+                    );
+                  } else {
+                    // Tidak ada CFI, gunakan percentage fallback
+                    try {
+                      const totalLoc =
+                        book.locations.total || book.spine.length || 1;
                       const targetPct = Math.min(
                         1,
-                        Math.max(0, (target - 1) / totalPages),
+                        Math.max(0, (target - 1) / totalLoc),
                       );
                       const targetCfi =
                         book.locations.cfiFromPercentage?.(targetPct);
                       if (targetCfi) {
                         renditionRef.current?.display(targetCfi);
-                        console.log("✓ Navigated to percentage:", targetPct);
+                        console.log(
+                          "[EpubReader] Page mode: navigasi via percentage",
+                          targetPct,
+                        );
                       }
+                    } catch (err) {
+                      console.warn(
+                        "[EpubReader] Percentage navigation gagal:",
+                        err,
+                      );
                     }
-                  } catch (err) {
-                    console.warn(
-                      "CFI navigation failed, staying at first page:",
-                      err,
-                    );
                   }
                 }
-
                 initialNavDoneRef.current = true;
                 readyToLogRef.current = true;
-              }, 800); // DELAY lebih lama agar page sudah fully rendered
-            } else {
-              initialNavDoneRef.current = true;
-              readyToLogRef.current = true;
+              }, 800);
+            } else if (!isPageMode) {
+              // Scroll mode sudah ditangani di rendered event
+              // Pastikan readyToLog aktif
+              if (initialNavDoneRef.current) {
+                readyToLogRef.current = true;
+              }
             }
           })
           .catch((err) => {
@@ -600,29 +621,17 @@ const EpubReader = forwardRef(
             // FALLBACK: Tetap bisa baca meski locations fail
             if (isPageMode && !initialNavDoneRef.current) {
               const target = Math.max(1, Number(initialPage) || 1);
-
-              if (target > 1) {
+              if (target > 1 && !initialCfi) {
+                // Stepping fallback
                 setTimeout(() => {
-                  try {
-                    if (
-                      initialCfiRef.current &&
-                      isValidCfi(initialCfiRef.current, book)
-                    ) {
-                      renditionRef.current?.display(initialCfiRef.current);
-                    } else {
-                      // Stepping fallback
-                      let count = 0;
-                      const step = () => {
-                        if (count >= target - 1) return;
-                        renditionRef.current?.next();
-                        count += 1;
-                        setTimeout(step, 100);
-                      };
-                      step();
-                    }
-                  } catch (err) {
-                    console.warn("Fallback navigation failed:", err);
-                  }
+                  let count = 0;
+                  const step = () => {
+                    if (count >= target - 1) return;
+                    renditionRef.current?.next();
+                    count++;
+                    setTimeout(step, 100);
+                  };
+                  step();
                   initialNavDoneRef.current = true;
                   readyToLogRef.current = true;
                 }, 500);
@@ -630,23 +639,12 @@ const EpubReader = forwardRef(
                 initialNavDoneRef.current = true;
                 readyToLogRef.current = true;
               }
-            } else {
-              initialNavDoneRef.current = true;
-              readyToLogRef.current = true;
             }
           });
 
         if (readingMode === "scroll") {
           window.addEventListener("scroll", updateScrollProgress);
           setTimeout(updateScrollProgress, 1000);
-          if (lastScrollPositionRef.current > 0) {
-            setTimeout(() => {
-              window.scrollTo({
-                top: lastScrollPositionRef.current,
-                behavior: "auto",
-              });
-            }, 500);
-          }
         }
 
         rendition.on("relocated", (location) => {
@@ -665,18 +663,15 @@ const EpubReader = forwardRef(
               setPageStats({ current: currentLocal, total: totalLocal });
             }
 
-            // Catat CFI saat pindah halaman
             let cfi = location.start?.cfi || location?.end?.cfi;
             if (cfi) {
               try {
                 lastCfiRef.current = cfi;
-                console.log("CFI saved:", cfi.substring(0, 50) + "...");
               } catch (err) {
                 console.warn("CFI save skipped:", err);
               }
             }
 
-            // hitung progress
             let progressPercent = 0;
             if (locationsReadyRef.current && cfi) {
               try {
@@ -684,7 +679,6 @@ const EpubReader = forwardRef(
                 if (typeof pct === "number")
                   progressPercent = Math.round(pct * 100);
               } catch {
-                console.warn("Percentage calculation skipped");
                 progressPercent =
                   totalLocal > 0
                     ? Math.round((currentLocal / totalLocal) * 100)
@@ -703,18 +697,14 @@ const EpubReader = forwardRef(
               totalPages: totalLocal,
             });
 
-            if (!readyToLogRef.current) {
-              readyToLogRef.current = true;
-            }
+            if (!readyToLogRef.current) readyToLogRef.current = true;
           } else {
             onProgressChange?.({
               progress: undefined,
               currentPage: pageStatsRef.current.current,
               totalPages: pageStatsRef.current.total,
             });
-            if (!readyToLogRef.current) {
-              readyToLogRef.current = true;
-            }
+            if (!readyToLogRef.current) readyToLogRef.current = true;
           }
         });
       });
@@ -728,7 +718,7 @@ const EpubReader = forwardRef(
         try {
           onLoadingChange?.(false);
         } catch {
-          console.warn("onLoadingChange gagal dipanggil.");
+          /* silent */
         }
       };
     }, [
@@ -738,7 +728,7 @@ const EpubReader = forwardRef(
       onProgressChange,
       isValidCfi,
       getUsablePageHeight,
-      bottomBarHeight
+      bottomBarHeight,
     ]);
 
     // Resize rendition when bottom bar visibility/height changes
@@ -750,25 +740,26 @@ const EpubReader = forwardRef(
 
       if (readingMode === "page") {
         const usableHeight = getUsablePageHeight();
-        const widthPx = Math.min(Math.round(usableHeight * 210 / 297), window.innerWidth);
-        // Sync container style to avoid width mismatch
+        const widthPx = Math.min(
+          Math.round((usableHeight * 210) / 297),
+          window.innerWidth,
+        );
         container.style.height = `${usableHeight}px`;
         container.style.minHeight = `${usableHeight}px`;
         container.style.width = `${widthPx}px`;
-        // Resize the rendition to match new viewport (reflow pages without re-display)
         try {
           rendition.resize(widthPx, usableHeight);
         } catch (e) {
-          console.warn("rendition.resize gagal dipanggil:", e);
+          console.warn("rendition.resize gagal:", e);
         }
       }
     }, [bottomBarHeight, topBarHeight, readingMode, getUsablePageHeight]);
 
+    // ─── Apply theme saat setting berubah ────────────────────────────────────────
     useEffect(() => {
       if (!renditionRef.current) return;
       applyTheme();
 
-      // Reset dan inject ulang page numbers jika theme berubah di scroll mode
       if (readingMode === "scroll" && pageNumbersInjectedRef.current) {
         pageNumbersInjectedRef.current = false;
         if (injectPageNumbersTimeoutRef.current)
@@ -793,12 +784,8 @@ const EpubReader = forwardRef(
       renditionRef.current?.themes.fontSize(`${next}rem`);
       onFontSizeChange?.(next);
 
-      // PENTING: Berikan jeda cukup lama (1.5 detik)
-      // agar rendition.resize internal epubjs selesai menghitung ulang layout
       if (readingMode === "scroll") {
-        // Reset flag agar bisa inject ulang dengan layout baru
         pageNumbersInjectedRef.current = false;
-
         if (injectPageNumbersTimeoutRef.current)
           clearTimeout(injectPageNumbersTimeoutRef.current);
         injectPageNumbersTimeoutRef.current = setTimeout(() => {
@@ -821,11 +808,18 @@ const EpubReader = forwardRef(
               ref={viewerRef}
               className="epub-viewport mx-auto shadow-2xl"
               style={{
-                height: readingMode === "page" ? `calc(100dvh - ${topBarHeight + bottomBarHeight}px)` : "auto",
-                minHeight: readingMode === "page" ? `calc(100dvh - ${topBarHeight + bottomBarHeight}px)` : "100vh",
-                width: readingMode === "page"
-                  ? `min(calc((100dvh - ${topBarHeight + bottomBarHeight}px) * 210 / 297), 100vw)`
-                  : "100%",
+                height:
+                  readingMode === "page"
+                    ? `calc(100dvh - ${topBarHeight + bottomBarHeight}px)`
+                    : "auto",
+                minHeight:
+                  readingMode === "page"
+                    ? `calc(100dvh - ${topBarHeight + bottomBarHeight}px)`
+                    : "100vh",
+                width:
+                  readingMode === "page"
+                    ? `min(calc((100dvh - ${topBarHeight + bottomBarHeight}px) * 210 / 297), 100vw)`
+                    : "100%",
                 maxWidth: readingMode === "page" ? "100vw" : "800px",
                 backgroundColor: COLOR_THEMES[colorTheme]?.bg,
               }}

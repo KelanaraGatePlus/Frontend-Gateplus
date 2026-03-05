@@ -86,6 +86,7 @@ export default function CarouselTemplate({
   isHomepage = false,
   showProgress = false,
   isLastSeen = false,
+  isLoggedIn = false,
 }) {
   // const resolveBlur = (item) => {
   //   if (typeof isBlurred !== "function") return false;
@@ -151,7 +152,11 @@ export default function CarouselTemplate({
                       const fixedType = resolveType(item);
                       const minAge = resolveMinAge(item);
                       const isUniquePodcast = fixedType === "podcast" && type;
-                      const podcastSize = resolvePodcastSize(label, fixedType, rank >= 10);
+                      const podcastSize = resolvePodcastSize(
+                        label,
+                        fixedType,
+                        rank >= 10,
+                      );
 
                       // Resolve customHref: jika last seen, pakai helper;
                       // jika tidak, pakai customHref dari item (existing behavior)
@@ -166,13 +171,16 @@ export default function CarouselTemplate({
                           style={{ flex: "0 0 auto" }}
                         >
                           {isTopTen ? (
-                            <div className={`flex h-full w-full overflow-y-hidden items-end gap-y-5  ${rank >= 10 ? "md:w-[500px] lg:w-[600px]" : "md:w-[500px] lg:w-[600px]"}`}>
+                            <div
+                              className={`flex h-full w-full items-end gap-y-5 overflow-y-hidden ${rank >= 10 ? "md:w-[500px] lg:w-[600px]" : "md:w-[500px] lg:w-[600px]"}`}
+                            >
                               <div className="flex h-full w-1/3 items-end justify-end overflow-visible">
                                 <p
-                                  className={`zeinFont translate-y-[10%] leading-[0.7] font-extrabold text-[#1297DC] ${rank >= 10
-                                    ? "translate-x-[12%] text-[170px] sm:text-[180px] md:translate-x-[16%] md:text-[190px] lg:text-[200px]"
-                                    : "translate-x-[30%] text-[220px] sm:text-[230px] md:translate-x-[40%] md:text-[240px] lg:text-[250px]"
-                                    }`}
+                                  className={`zeinFont translate-y-[10%] leading-[0.7] font-extrabold text-[#1297DC] ${
+                                    rank >= 10
+                                      ? "translate-x-[12%] text-[170px] sm:text-[180px] md:translate-x-[16%] md:text-[190px] lg:text-[200px]"
+                                      : "translate-x-[30%] text-[220px] sm:text-[230px] md:translate-x-[40%] md:text-[240px] lg:text-[250px]"
+                                  }`}
                                   style={{
                                     filter:
                                       "drop-shadow(6px 6px 4px rgba(0,0,0,0.3))",
@@ -313,14 +321,16 @@ export default function CarouselTemplate({
                                 />
                               )}
 
-                              {showProgress && item.progress !== undefined && (
-                                <div className="mt-2 h-2 w-full rounded bg-gray-300">
-                                  <div
-                                    className="h-2 rounded bg-blue-600"
-                                    style={{ width: `${item.progress}%` }}
-                                  />
-                                </div>
-                              )}
+                              {isLoggedIn &&
+                                showProgress &&
+                                item.progress !== undefined && (
+                                  <div className="mt-2 h-2 w-full rounded bg-gray-300">
+                                    <div
+                                      className="h-2 rounded bg-blue-600"
+                                      style={{ width: `${item.progress}%` }}
+                                    />
+                                  </div>
+                                )}
                             </div>
                           )}
                         </CarouselItem>
@@ -356,4 +366,5 @@ CarouselTemplate.propTypes = {
   isHomepage: PropTypes.bool,
   showProgress: PropTypes.bool,
   isLastSeen: PropTypes.bool,
+  isLoggedIn: PropTypes.bool,
 };

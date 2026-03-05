@@ -54,19 +54,33 @@ export default function CreatorSettingsPage() {
     useUpdateCreatorMutation();
   const { refreshUser } = useAuth();
 
-  const validateSocialUrl = (value, allowedPrefixes, label) => {
-    if (!value?.trim()) return null;
+  const validateSocialUrl = (value, pattern, label) => {
+    if (!value) return null;
 
-    const isValid = allowedPrefixes.some((prefix) => value.startsWith(prefix));
-    if (isValid) return null;
+    const trimmed = value.trim();
 
-    return `${label} harus diawali dengan: ${allowedPrefixes.join(" atau ")}`;
+    // Tolak jika ada spasi
+    if (/\s/.test(trimmed)) {
+      return `Format URL ${label} tidak valid`;
+    }
+
+    try {
+      new URL(trimmed); // validasi struktur URL
+
+      if (!pattern.test(trimmed)) {
+        return `Format URL ${label} tidak valid`;
+      }
+
+      return null;
+    } catch {
+      return `Format URL ${label} tidak valid`;
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // validasi
+    // 1. Validasi Input Wajib
     if (!profileName?.trim() || !email) {
       setShowToast(true);
       setToastMessage("Profile Name dan Email wajib diisi");
@@ -82,24 +96,26 @@ export default function CreatorSettingsPage() {
     }
 
     const socialErrors = [
-      validateSocialUrl(instagramUrl, [
-        "https://www.instagram.com/",
-        "https://instagram.com/",
-      ], "Instagram"),
-      validateSocialUrl(tiktokUrl, [
-        "https://www.tiktok.com/",
-        "https://tiktok.com/",
-      ], "Tiktok"),
-      validateSocialUrl(twitterUrl, [
-        "https://www.x.com/",
-        "https://x.com/",
-        "https://twitter.com/",
-        "https://www.twitter.com/",
-      ], "Twitter/X"),
-      validateSocialUrl(facebookUrl, [
-        "https://www.facebook.com/",
-        "https://facebook.com/",
-      ], "Facebook"),
+      validateSocialUrl(
+        instagramUrl,
+        /^https:\/\/(www\.)?instagram\.com\/[a-zA-Z0-9._]+\/?$/,
+        "Instagram",
+      ),
+      validateSocialUrl(
+        tiktokUrl,
+        /^https:\/\/(www\.)?tiktok\.com\/@?[a-zA-Z0-9._]+\/?$/,
+        "Tiktok",
+      ),
+      validateSocialUrl(
+        twitterUrl,
+        /^https:\/\/(www\.)?(x\.com|twitter\.com)\/[a-zA-Z0-9_]+\/?$/,
+        "Twitter/X",
+      ),
+      validateSocialUrl(
+        facebookUrl,
+        /^https:\/\/(www\.)?facebook\.com\/[a-zA-Z0-9.]+\/?$/,
+        "Facebook",
+      ),
     ].filter(Boolean);
 
     if (socialErrors.length > 0) {
@@ -113,83 +129,86 @@ export default function CreatorSettingsPage() {
       setIsLoading(true);
 
       const formData = new FormData();
+      const cleanValue = (v) =>
+        v === "" || v === null || v === undefined ? "" : v;
 
-      // helper kirim null ke backend kalau kosong
-      const toBackend = (v) => (v === "" || v === null ? "null" : v);
       formData.append("id", id);
       formData.append("profileName", profileName);
       formData.append("username", username);
-      formData.append("bio", bio);
-      if (gender !== "" && gender !== null) {
-        formData.append("gender", gender);
-      }
-
+      formData.append("bio", cleanValue(bio));
+      formData.append("gender", gender || "Male");
       formData.append("email", email);
-      formData.append("phone", toBackend(phone));
-      formData.append("dateOfBirth", toBackend(dateOfBirth));
-      formData.append("region", toBackend(region));
-      formData.append("instagramUrl", toBackend(instagramUrl));
-      formData.append("tiktokUrl", toBackend(tiktokUrl));
-      formData.append("twitterUrl", toBackend(twitterUrl));
-      formData.append("facebookUrl", toBackend(facebookUrl));
+      formData.append("phone", cleanValue(phone));
+      formData.append("dateOfBirth", cleanValue(dateOfBirth));
+      formData.append("region", cleanValue(region));
+      formData.append("instagramUrl", cleanValue(instagramUrl));
+      formData.append("tiktokUrl", cleanValue(tiktokUrl));
+      formData.append("twitterUrl", cleanValue(twitterUrl));
+      formData.append("facebookUrl", cleanValue(facebookUrl));
 
-      // upload profile
       if (profilePictureUrl instanceof File) {
         formData.append("imageUrl", profilePictureUrl);
+      } else if (selectedIconUrl) {
+        formData.append("iconUrl", selectedIconUrl);
       }
 
-      // upload banner
       if (bannerProfileUrl instanceof File) {
         formData.append("bannerImageUrl", bannerProfileUrl);
       }
 
-      // fallback icon jika ga ada upload file
-      if (selectedIconUrl && !(profilePictureUrl instanceof File)) {
-        formData.append("iconUrl", selectedIconUrl);
-      }
-
       const response = await updateCreator(formData).unwrap();
-      const updatedCreator = response.data || response;
+      const updatedCreator = response?.data?.data || response?.data || response;
 
-      // jika ada image simpan
       if (updatedCreator?.imageUrl) {
-        localStorage.setItem("image_users", updateCreator.imageUrl);
+        localStorage.setItem("image_users", updatedCreator.imageUrl);
+        localStorage.setItem("image_creators", updatedCreator.imageUrl);
       }
 
       setShowToast(true);
       setToastMessage("Profil berhasil diupdate!");
       setToastType("success");
 
-      if (response?.data?.imageUrl) {
-        localStorage.setItem("image_creators", response.data.imageUrl);
+      if (refreshUser) {
+        try {
+          await refreshUser();
+        } catch (err) {
+          console.warn("refreshUser failed:", err);
+        }
       }
 
-      try {
-        refreshUser();
-      } catch (err) {
-        console.warn("refreshUser failed:", err);
-      }
-
-      setIsLoading(false);
-      router.push(`/creator/${id}`);
+      setTimeout(() => {
+        setIsLoading(false);
+        router.push(`/creator/${id}`);
+      }, 1500);
     } catch (error) {
       setIsLoading(false);
       console.error("Error during patch request:", error);
 
+      const serverMessage =
+        error?.data?.message ||
+        error?.message ||
+        "Terjadi kesalahan saat update profil";
+
       setShowToast(true);
-      setToastMessage(
-        error?.data?.message || "Terjadi kesalahan saat update profil",
-      );
+      setToastMessage(serverMessage);
       setToastType("failed");
     }
   };
 
   const getData = async (id) => {
     try {
-      const response = await axios.get(`${BACKEND_URL}/creator/${id}`);
+      // Ambil token untuk menghindari error 500 di backend
+      const token = localStorage.getItem("token");
 
-      const creatorData = response.data.data.data;
-      // normalize values: backend sometimes returns string "null"; show empty in UI
+      const response = await axios.get(`${BACKEND_URL}/creator/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const creatorData = response.data.data.data.data;
+      if (!creatorData) return;
+
       const normalize = (v) => (v === null || v === "null" ? "" : v);
 
       setProfilePictureUrl(normalize(creatorData.imageUrl));
@@ -200,19 +219,20 @@ export default function CreatorSettingsPage() {
       setGender(normalize(creatorData.gender) || "Male");
       setEmail(normalize(creatorData.email));
       setPhone(normalize(creatorData.phone));
-
-      // konversi format tgl lahir
-      const dob = creatorData.dateOfBirth
-        ? new Date(creatorData.dateOfBirth).toISOString().split("T")[0]
-        : "";
-
-      setDateOfBirth(dob);
       setRegion(normalize(creatorData.region));
-      setCanChangeUsername(creatorData.canChangeUsername || false);
       setInstagramUrl(normalize(creatorData.instagramUrl));
       setTiktokUrl(normalize(creatorData.tiktokUrl));
       setTwitterUrl(normalize(creatorData.twitterUrl));
       setFacebookUrl(normalize(creatorData.facebookUrl));
+      setCanChangeUsername(creatorData.canChangeUsername || false);
+
+      // Konversi format tanggal lahir untuk input type="date"
+      if (creatorData.dateOfBirth) {
+        const dob = new Date(creatorData.dateOfBirth)
+          .toISOString()
+          .split("T")[0];
+        setDateOfBirth(dob);
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -343,9 +363,9 @@ export default function CreatorSettingsPage() {
                   >
                     <div className="group relative h-16 w-16 cursor-pointer overflow-hidden rounded-full lg:h-24 lg:w-24">
                       {profilePictureUrl &&
-                        profilePictureUrl !== "null" &&
-                        profilePictureUrl !== "" &&
-                        profilePicturePreview === null ? (
+                      profilePictureUrl !== "null" &&
+                      profilePictureUrl !== "" &&
+                      profilePicturePreview === null ? (
                         <Image
                           src={profilePictureUrl}
                           alt="profile"
@@ -379,9 +399,9 @@ export default function CreatorSettingsPage() {
                   <div className="relative flex-1 overflow-hidden rounded-xl">
                     <label className="relative block h-full w-full cursor-pointer lg:max-h-42 lg:max-w-[70%]">
                       {bannerProfileUrl &&
-                        bannerProfileUrl !== "null" &&
-                        bannerProfileUrl !== "" &&
-                        bannerProfilePicturePreview === null ? (
+                      bannerProfileUrl !== "null" &&
+                      bannerProfileUrl !== "" &&
+                      bannerProfilePicturePreview === null ? (
                         <Image
                           src={bannerProfileUrl}
                           alt="profile"
@@ -468,10 +488,10 @@ export default function CreatorSettingsPage() {
 
                         // Hanya izinkan huruf a-z (besar & kecil)
                         value = value.replace(/[^a-zA-Z]/g, "");
-                        
+
                         // maksimal 40 karakter
                         value = value.slice(0, 40);
-                        
+
                         // Update state
                         setUsername(value);
                       }}
@@ -578,6 +598,7 @@ export default function CreatorSettingsPage() {
                     <div className="flex-1">
                       <input
                         type="date"
+                        max={new Date().toISOString().split("T")[0]}
                         className="w-full appearance-none rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1 text-white"
                         onChange={(e) => setDateOfBirth(e.target.value)}
                         value={dateOfBirth || ""}
@@ -672,7 +693,7 @@ export default function CreatorSettingsPage() {
                     className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
                     placeholder="https://www.instagram.com/profilename"
                     value={instagramUrl || ""}
-                    onChange={(e) => setInstagramUrl(e.target.value)}
+                    onChange={(e) => setInstagramUrl(e.target.value.trim())}
                   />
                 </div>
               </div>
@@ -687,7 +708,7 @@ export default function CreatorSettingsPage() {
                     className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
                     placeholder="https://www.tiktok.com/@profilename"
                     value={tiktokUrl || ""}
-                    onChange={(e) => setTiktokUrl(e.target.value)}
+                    onChange={(e) => setTiktokUrl(e.target.value.trim())}
                   />
                 </div>
               </div>
@@ -702,7 +723,7 @@ export default function CreatorSettingsPage() {
                     className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
                     placeholder="https://www.x.com/profilename"
                     value={twitterUrl || ""}
-                    onChange={(e) => setTwitterUrl(e.target.value)}
+                    onChange={(e) => setTwitterUrl(e.target.value.trim())}
                   />
                 </div>
               </div>
@@ -717,7 +738,7 @@ export default function CreatorSettingsPage() {
                     className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
                     placeholder="https://www.facebook.com/profilename"
                     value={facebookUrl || ""}
-                    onChange={(e) => setFacebookUrl(e.target.value)}
+                    onChange={(e) => setFacebookUrl(e.target.value.trim())}
                   />
                 </div>
               </div>

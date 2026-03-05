@@ -45,9 +45,7 @@ function saveState(state) {
 function hasPodcastAccess(podcast) {
   if (!podcast) return false;
   return Boolean(
-    podcast.isOwner ||
-    podcast.isSubscribed ||
-    podcast.hasSubscription
+    podcast.isOwner || podcast.isSubscribed || podcast.hasSubscription,
   );
 }
 
@@ -116,9 +114,63 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
     if (derived && derived.length) {
       setEpisodeList(derived);
     }
-    // clear fetch id after populated
     setFetchPodcastId(null);
   }, [fetchedPodcastResp]);
+
+  // restart detik 0 sebelum play ulang
+  useEffect(() => {
+    const audio = audioRef.current?.audio?.current;
+    if (!audio) return;
+
+    const onEnded = () => {
+      setIsPlaying(false);
+    };
+
+    audio.addEventListener("ended", onEnded);
+    return () => audio.removeEventListener("ended", onEnded);
+  }, [audioRef.current?.audio?.current]);
+
+  // fix play/pause ga ngescroll
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.code !== "Space") return;
+
+      const tag = document.activeElement?.tagName?.toLowerCase();
+      if (
+        tag === "input" ||
+        tag === "textarea" ||
+        tag === "select" ||
+        document.activeElement?.isContentEditable
+      )
+        return;
+
+      if (!currentlyPlaying) return;
+
+      // Cegah scroll
+      e.preventDefault();
+
+      const audio = audioRef.current?.audio?.current;
+      if (!audio) return;
+
+      if (isPlaying) {
+        audio.pause();
+        setIsPlaying(false);
+      } else {
+        // kalo audio kelar, reset dari 0 (ga termasuk progress)
+        if (
+          audio.ended ||
+          (audio.duration && audio.currentTime >= audio.duration)
+        ) {
+          audio.currentTime = 0;
+        }
+        audio.play().catch((err) => console.warn("Autoplay blocked:", err));
+        setIsPlaying(true);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isPlaying, currentlyPlaying]);
 
   const playEpisode = async (episode, podcast, episodes) => {
     // if caller provides episodes, use them; otherwise attempt to derive or fetch
@@ -216,7 +268,11 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
     const idx = episodeList.findIndex((e) => e.id === currentlyPlaying.id);
     if (idx >= 0 && idx < episodeList.length - 1) {
       const next = episodeList[idx + 1];
-      if (next?.isPurchased || next?.price == 'Free' || hasPodcastAccess(podcastMeta)) {
+      if (
+        next?.isPurchased ||
+        next?.price == "Free" ||
+        hasPodcastAccess(podcastMeta)
+      ) {
         playEpisode(next, podcastMeta, episodeList);
       } else {
         window.location.href = `/checkout/purchase/podcasts/${podcastMeta.id}/${next.id}`;
@@ -229,7 +285,11 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
     const idx = episodeList.findIndex((e) => e.id === currentlyPlaying.id);
     if (idx > 0) {
       const prev = episodeList[idx - 1];
-      if (prev?.isPurchased || prev?.price == 'Free' || hasPodcastAccess(podcastMeta)) {
+      if (
+        prev?.isPurchased ||
+        prev?.price == "Free" ||
+        hasPodcastAccess(podcastMeta)
+      ) {
         playEpisode(prev, podcastMeta, episodeList);
       } else {
         window.location.href = `/checkout/purchase/podcasts/${podcastMeta.id}/${prev.id}`;
@@ -266,9 +326,7 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
       const audio = audioRef.current?.audio?.current;
       if (audio) {
         audio.pause();
-        // Clear the audio source to prevent background playback
         audio.src = "";
-        // Reset playback position
         audio.currentTime = 0;
       }
     } catch (err) {
@@ -280,8 +338,21 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
   };
 
   const togglePlay = () => {
-    if (isPlaying) pause();
-    else play();
+    const audio = audioRef.current?.audio?.current;
+    if (!audio) return;
+
+    if (isPlaying) {
+      pause();
+    } else {
+      // Restart dari 0 jika audio sudah selesai
+      if (
+        audio.ended ||
+        (audio.duration && audio.currentTime >= audio.duration)
+      ) {
+        audio.currentTime = 0;
+      }
+      play();
+    }
   };
 
   const seek = (time) => {
@@ -301,7 +372,6 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
   };
 
   const handleExpand = () => {
-    console.log("Toggling expand");
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch((err) => {
         console.error("Fullscreen error:", err);
@@ -431,7 +501,6 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
   return (
     <PodcastPlayerContext.Provider value={value}>
       {children}
-      {/* Mount playback UI only when player is not disabled */}
       {!disablePlayer && !disablePlayerOnRoute && (
         <>
           {currentlyPlaying && (
@@ -448,7 +517,8 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
                   episodePodcasts={episodeList}
                 />
               </Suspense>
-            </div>)}
+            </div>
+          )}
 
           {/* Render mini player on non-detail pages */}
           {!isDetailPage && !isExpand && !hideMiniPlayerOnRoute && (
