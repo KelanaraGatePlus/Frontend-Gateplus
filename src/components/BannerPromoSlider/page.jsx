@@ -7,7 +7,7 @@ import "@splidejs/react-splide/css/skyblue";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import Image from "next/image";
-import { BACKEND_URL } from "@/lib/constants/backendUrl";
+import { useGetHomeBannersQuery } from "@/hooks/api/bannerSliceAPI";
 
 const BLACK = "rgb(10, 10, 15)";
 const FADE_MS = 700;
@@ -50,7 +50,6 @@ function extractDominantColor(imageUrl) {
 }
 
 export default function BannerPromoSlider() {
-  const [isLoading, setIsLoading] = useState(true);
   const [banners, setBanners] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [showVideo, setShowVideo] = useState(false);
@@ -69,27 +68,19 @@ export default function BannerPromoSlider() {
 
   const applyColor = useCallback((color) => setPanelColor(color), []);
 
+  const { data, isLoading } = useGetHomeBannersQuery();
+
   useEffect(() => {
-    const fetchBanner = async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/banners/home`);
-        const data = await res.json();
-        if (data.success) {
-          const sortedBanners = (data.data.hero || [])
-            .slice()
-            .sort((a, b) => a.priority - b.priority);
-          bannersRef.current = sortedBanners;
-          videoRefs.current = sortedBanners.map(() => null);
-          setBanners(sortedBanners);
-        }
-      } catch (error) {
-        console.error("Gagal ambil banner:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchBanner();
-  }, []);
+    if (!data?.success) return;
+
+    const sortedBanners = (data.data.hero || [])
+      .slice()
+      .sort((a, b) => a.priority - b.priority);
+
+    bannersRef.current = sortedBanners;
+    videoRefs.current = sortedBanners.map(() => null);
+    setBanners(sortedBanners);
+  }, [data]);
 
   useEffect(() => {
     if (!banners.length) return;

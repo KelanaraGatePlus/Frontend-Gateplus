@@ -1,5 +1,5 @@
-/* eslint-disable react/react-in-jsx-scope */
 "use client";
+import React from "react";
 import Toast from "@/components/Toast/page";
 import IconsCameraAdd from "@@/icons/icons-camera-add.svg";
 import BackButton from "@/components/BackButton/page";
@@ -7,23 +7,76 @@ import IconsSaveChanges from "@@/icons/icons-save-changes.svg";
 import BannerCreator from "@@/icons/logo-banner-creator.svg";
 import IconsGalery from "@@/icons/logo-upload-banner.svg";
 import logoUsersComment from "@@/icons/logo-users-comment.svg";
-import axios from "axios";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { BACKEND_URL } from "@/lib/constants/backendUrl";
 import ProfileModal from "@/components/Modal/ProfileModal";
-import { useUpdateCreatorMutation } from "@/hooks/api/creatorSliceAPI";
+import {
+  useUpdateCreatorMutation,
+  useGetCreatorByIdQuery,
+} from "@/hooks/api/creatorSliceAPI";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import { useAuth } from "@/components/Context/AuthContext";
 import ImageCropperModal from "@/components/UploadForm/ImageCropperModal";
 
+/*[--- CONSTANTS ---]*/
+const SOCIAL_LINKS = [
+  {
+    key: "instagramUrl",
+    label: "Instagram",
+    pattern: /^https:\/\/(www\.)?instagram\.com\/[a-zA-Z0-9._]+\/?$/,
+    placeholder: "https://www.instagram.com/profilename",
+  },
+  {
+    key: "tiktokUrl",
+    label: "Tiktok",
+    pattern: /^https:\/\/(www\.)?tiktok\.com\/@?[a-zA-Z0-9._]+\/?$/,
+    placeholder: "https://www.tiktok.com/@profilename",
+  },
+  {
+    key: "twitterUrl",
+    label: "Twitter/X",
+    pattern: /^https:\/\/(www\.)?(x\.com|twitter\.com)\/[a-zA-Z0-9_]+\/?$/,
+    placeholder: "https://www.x.com/profilename",
+  },
+  {
+    key: "facebookUrl",
+    label: "Facebook",
+    pattern: /^https:\/\/(www\.)?facebook\.com\/[a-zA-Z0-9.]+\/?$/,
+    placeholder: "https://www.facebook.com/profilename",
+  },
+];
+
+const REGIONS = ["Indonesia", "Malaysia", "Thailand", "Vietnam", "Philippines"];
+
+const normalize = (v) => (v === null || v === "null" ? "" : (v ?? ""));
+
 export default function CreatorSettingsPage() {
   const router = useRouter();
+  const { refreshUser } = useAuth();
+
+  /*[--- UI STATE ---]*/
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState("");
+  const [showProfileModal, setShowProfileModal] = useState(false);
+
+  /*[--- CROP STATE ---]*/
+  const [showCropper, setShowCropper] = useState(false);
+  const [cropTarget, setCropTarget] = useState(null);
+  const [cropSource, setCropSource] = useState(null);
+  const [pendingFileName, setPendingFileName] = useState("");
+
+  /*[--- PREVIEW STATE ---]*/
+  const [profilePicturePreview, setProfilePicturePreview] = useState(null);
+  const [bannerProfilePicturePreview, setBannerProfilePicturePreview] =
+    useState(null);
+
+  /*[--- FORM STATE ---]*/
   const [id, setId] = useState(null);
   const [profilePictureUrl, setProfilePictureUrl] = useState(null);
   const [bannerProfileUrl, setBannerProfileUrl] = useState(null);
+  const [selectedIconUrl, setSelectedIconUrl] = useState(null);
   const [profileName, setProfileName] = useState("");
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
@@ -32,221 +85,92 @@ export default function CreatorSettingsPage() {
   const [phone, setPhone] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [region, setRegion] = useState("");
-  const [instagramUrl, setInstagramUrl] = useState("");
-  const [tiktokUrl, setTiktokUrl] = useState("");
-  const [twitterUrl, setTwitterUrl] = useState("");
-  const [facebookUrl, setFacebookUrl] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastType, setToastType] = useState("");
-  const [selectedIconUrl, setSelectedIconUrl] = useState(null);
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [showCropper, setShowCropper] = useState(false);
-  const [cropTarget, setCropTarget] = useState(null);
-  const [pendingFileName, setPendingFileName] = useState("");
-  const [cropSource, setCropSource] = useState(null);
-
   const [canChangeUsername, setCanChangeUsername] = useState(true);
-  const [profilePicturePreview, setProfilePicturePreview] = useState(null);
-  const [bannerProfilePicturePreview, setBannerProfilePicturePreview] =
-    useState(null);
-  const [updateCreator, { isLoading: isUpdateCreatorLoading }] =
-    useUpdateCreatorMutation();
-  const { refreshUser } = useAuth();
+  const [socialUrls, setSocialUrls] = useState({
+    instagramUrl: "",
+    tiktokUrl: "",
+    twitterUrl: "",
+    facebookUrl: "",
+  });
+
+  /*[--- API HOOKS ---]*/
+  // ⚠️ NOTE: getCreatorById di creatorSliceAPI ada bug URL
+  // `url: creator/${id}` → dengan baseUrl /creator, jadi /creator/creator/:id
+  // Harusnya `url: `/${id}`` — sesuaikan setelah API diperbaiki
+  const creatorId =
+    typeof window !== "undefined" ? localStorage.getItem("creators_id") : null;
+
+  const { data: creatorData, isLoading: isLoadingGet } = useGetCreatorByIdQuery(
+    creatorId,
+    { skip: !creatorId },
+  );
+
+  const [updateCreator, { isLoading: isUpdating }] = useUpdateCreatorMutation();
+
+  /*[--- HELPERS ---]*/
+  const showError = (message) => {
+    setToastMessage(message);
+    setToastType("failed");
+    setShowToast(true);
+  };
 
   const validateSocialUrl = (value, pattern, label) => {
     if (!value) return null;
-
     const trimmed = value.trim();
-
-    // Tolak jika ada spasi
-    if (/\s/.test(trimmed)) {
-      return `Format URL ${label} tidak valid`;
-    }
-
+    if (/\s/.test(trimmed)) return `Format URL ${label} tidak valid`;
     try {
-      new URL(trimmed); // validasi struktur URL
-
-      if (!pattern.test(trimmed)) {
-        return `Format URL ${label} tidak valid`;
-      }
-
+      new URL(trimmed);
+      if (!pattern.test(trimmed)) return `Format URL ${label} tidak valid`;
       return null;
     } catch {
       return `Format URL ${label} tidak valid`;
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    // 1. Validasi Input Wajib
-    if (!profileName?.trim() || !email) {
-      setShowToast(true);
-      setToastMessage("Profile Name dan Email wajib diisi");
-      setToastType("failed");
-      return;
-    }
-
-    if (canChangeUsername && !username?.trim()) {
-      setShowToast(true);
-      setToastMessage("Username wajib diisi");
-      setToastType("failed");
-      return;
-    }
-
-    const socialErrors = [
-      validateSocialUrl(
-        instagramUrl,
-        /^https:\/\/(www\.)?instagram\.com\/[a-zA-Z0-9._]+\/?$/,
-        "Instagram",
-      ),
-      validateSocialUrl(
-        tiktokUrl,
-        /^https:\/\/(www\.)?tiktok\.com\/@?[a-zA-Z0-9._]+\/?$/,
-        "Tiktok",
-      ),
-      validateSocialUrl(
-        twitterUrl,
-        /^https:\/\/(www\.)?(x\.com|twitter\.com)\/[a-zA-Z0-9_]+\/?$/,
-        "Twitter/X",
-      ),
-      validateSocialUrl(
-        facebookUrl,
-        /^https:\/\/(www\.)?facebook\.com\/[a-zA-Z0-9.]+\/?$/,
-        "Facebook",
-      ),
-    ].filter(Boolean);
-
-    if (socialErrors.length > 0) {
-      setShowToast(true);
-      setToastMessage(socialErrors[0]);
-      setToastType("failed");
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-
-      const formData = new FormData();
-      const cleanValue = (v) =>
-        v === "" || v === null || v === undefined ? "" : v;
-
-      formData.append("id", id);
-      formData.append("profileName", profileName);
-      formData.append("username", username);
-      formData.append("bio", cleanValue(bio));
-      formData.append("gender", gender || "Male");
-      formData.append("email", email);
-      formData.append("phone", cleanValue(phone));
-      formData.append("dateOfBirth", cleanValue(dateOfBirth));
-      formData.append("region", cleanValue(region));
-      formData.append("instagramUrl", cleanValue(instagramUrl));
-      formData.append("tiktokUrl", cleanValue(tiktokUrl));
-      formData.append("twitterUrl", cleanValue(twitterUrl));
-      formData.append("facebookUrl", cleanValue(facebookUrl));
-
-      if (profilePictureUrl instanceof File) {
-        formData.append("imageUrl", profilePictureUrl);
-      } else if (selectedIconUrl) {
-        formData.append("iconUrl", selectedIconUrl);
-      }
-
-      if (bannerProfileUrl instanceof File) {
-        formData.append("bannerImageUrl", bannerProfileUrl);
-      }
-
-      const response = await updateCreator(formData).unwrap();
-      const updatedCreator = response?.data?.data || response?.data || response;
-
-      if (updatedCreator?.imageUrl) {
-        localStorage.setItem("image_users", updatedCreator.imageUrl);
-        localStorage.setItem("image_creators", updatedCreator.imageUrl);
-      }
-
-      setShowToast(true);
-      setToastMessage("Profil berhasil diupdate!");
-      setToastType("success");
-
-      if (refreshUser) {
-        try {
-          await refreshUser();
-        } catch (err) {
-          console.warn("refreshUser failed:", err);
-        }
-      }
-
-      setTimeout(() => {
-        setIsLoading(false);
-        router.push(`/creator/${id}`);
-      }, 1500);
-    } catch (error) {
-      setIsLoading(false);
-      console.error("Error during patch request:", error);
-
-      const serverMessage =
-        error?.data?.message ||
-        error?.message ||
-        "Terjadi kesalahan saat update profil";
-
-      setShowToast(true);
-      setToastMessage(serverMessage);
-      setToastType("failed");
-    }
-  };
-
-  const getData = async (id) => {
-    try {
-      // Ambil token untuk menghindari error 500 di backend
-      const token = localStorage.getItem("token");
-
-      const response = await axios.get(`${BACKEND_URL}/creator/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const creatorData = response.data.data.data.data;
-      if (!creatorData) return;
-
-      const normalize = (v) => (v === null || v === "null" ? "" : v);
-
-      setProfilePictureUrl(normalize(creatorData.imageUrl));
-      setBannerProfileUrl(normalize(creatorData.bannerImageUrl));
-      setProfileName(normalize(creatorData.profileName));
-      setUsername(normalize(creatorData.username));
-      setBio(normalize(creatorData.bio));
-      setGender(normalize(creatorData.gender) || "Male");
-      setEmail(normalize(creatorData.email));
-      setPhone(normalize(creatorData.phone));
-      setRegion(normalize(creatorData.region));
-      setInstagramUrl(normalize(creatorData.instagramUrl));
-      setTiktokUrl(normalize(creatorData.tiktokUrl));
-      setTwitterUrl(normalize(creatorData.twitterUrl));
-      setFacebookUrl(normalize(creatorData.facebookUrl));
-      setCanChangeUsername(creatorData.canChangeUsername || false);
-
-      // Konversi format tanggal lahir untuk input type="date"
-      if (creatorData.dateOfBirth) {
-        const dob = new Date(creatorData.dateOfBirth)
-          .toISOString()
-          .split("T")[0];
-        setDateOfBirth(dob);
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
-
+  /*[--- EFFECT: set id from localStorage ---]*/
   useEffect(() => {
-    const creatorId = localStorage.getItem("creators_id");
-    console.log("Creator ID:", creatorId);
-    if (creatorId) {
-      setId(creatorId);
-      getData(creatorId);
-    }
+    const storedId = localStorage.getItem("creators_id");
+    if (storedId) setId(storedId);
   }, []);
 
+  /*[--- EFFECT: populate form from API ---]*/
+  useEffect(() => {
+    if (!creatorData) return;
+    const d = creatorData?.data?.data?.data;
+    if (!d) return;
+
+    setProfilePictureUrl(normalize(d.imageUrl));
+    setBannerProfileUrl(normalize(d.bannerImageUrl));
+    setProfileName(normalize(d.profileName));
+    setUsername(normalize(d.username));
+    setBio(normalize(d.bio));
+    setGender(normalize(d.gender) || "Male");
+    setEmail(normalize(d.email));
+    setPhone(normalize(d.phone));
+    setRegion(normalize(d.region));
+    setCanChangeUsername(d.canChangeUsername || false);
+    setSocialUrls({
+      instagramUrl: normalize(d.instagramUrl),
+      tiktokUrl: normalize(d.tiktokUrl),
+      twitterUrl: normalize(d.twitterUrl),
+      facebookUrl: normalize(d.facebookUrl),
+    });
+
+    if (d.dateOfBirth) {
+      setDateOfBirth(new Date(d.dateOfBirth).toISOString().split("T")[0]);
+    }
+  }, [creatorData]);
+
+  /*[--- EFFECT: cleanup object URLs on unmount ---]*/
+  useEffect(() => {
+    return () => {
+      if (profilePicturePreview) URL.revokeObjectURL(profilePicturePreview);
+      if (bannerProfilePicturePreview)
+        URL.revokeObjectURL(bannerProfilePicturePreview);
+    };
+  }, [profilePicturePreview, bannerProfilePicturePreview]);
+
+  /*[--- CROP HANDLERS ---]*/
   const openCropper = (file, target) => {
     if (!file) return;
     const reader = new FileReader();
@@ -259,14 +183,13 @@ export default function CreatorSettingsPage() {
     reader.readAsDataURL(file);
   };
 
-  const handleCropComplete = async (croppedBlob) => {
+  const handleCropComplete = (croppedBlob) => {
     if (!cropTarget) return;
-    const fileName = pendingFileName || `${cropTarget}-image.jpg`;
-    const croppedFile = new File([croppedBlob], fileName, {
-      type: "image/jpeg",
-      lastModified: Date.now(),
-    });
-
+    const croppedFile = new File(
+      [croppedBlob],
+      pendingFileName || `${cropTarget}-image.jpg`,
+      { type: "image/jpeg", lastModified: Date.now() },
+    );
     const nextObjectUrl = URL.createObjectURL(croppedFile);
 
     if (cropTarget === "profile") {
@@ -294,38 +217,106 @@ export default function CreatorSettingsPage() {
     setCropTarget(null);
   };
 
-  const getCropAspect = () => (cropTarget === "banner" ? 16 / 9 : 1);
+  const handleFileUpload = (e, target) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const resolvedTarget =
+      target === "profile"
+        ? "profile"
+        : e.target.id === "banner-profile-picture"
+          ? "banner"
+          : null;
+    if (resolvedTarget) openCropper(file, resolvedTarget);
+  };
 
-  const handleFileUpload = (event, type) => {
-    if (type === "profile") {
-      const file = event.target.files[0];
-      if (file) {
-        openCropper(file, "profile");
-      }
+  /*[--- SUBMIT ---]*/
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!profileName?.trim() || !email) {
+      showError("Profile Name dan Email wajib diisi");
+      return;
     }
 
-    if (event.target.id === "banner-profile-picture") {
-      const file = event.target.files[0];
-      if (file) {
-        openCropper(file, "banner");
+    if (canChangeUsername && !username?.trim()) {
+      showError("Username wajib diisi");
+      return;
+    }
+
+    const socialError = SOCIAL_LINKS.map(({ key, label, pattern }) =>
+      validateSocialUrl(socialUrls[key], pattern, label),
+    ).find(Boolean);
+
+    if (socialError) {
+      showError(socialError);
+      return;
+    }
+
+    try {
+      const cleanVal = (v) => v ?? "";
+      const formData = new FormData();
+
+      formData.append("id", id);
+      formData.append("profileName", profileName);
+      formData.append("username", username);
+      formData.append("bio", cleanVal(bio));
+      formData.append("gender", gender || "Male");
+      formData.append("email", email);
+      formData.append("phone", cleanVal(phone));
+      formData.append("dateOfBirth", cleanVal(dateOfBirth));
+      formData.append("region", cleanVal(region));
+
+      SOCIAL_LINKS.forEach(({ key }) => {
+        formData.append(key, cleanVal(socialUrls[key]));
+      });
+
+      if (profilePictureUrl instanceof File) {
+        formData.append("imageUrl", profilePictureUrl);
+      } else if (selectedIconUrl) {
+        formData.append("iconUrl", selectedIconUrl);
       }
+
+      if (bannerProfileUrl instanceof File) {
+        formData.append("bannerImageUrl", bannerProfileUrl);
+      }
+
+      const response = await updateCreator(formData).unwrap();
+      const updated = response?.data?.data || response?.data || response;
+
+      if (updated?.imageUrl) {
+        localStorage.setItem("image_users", updated.imageUrl);
+        localStorage.setItem("image_creators", updated.imageUrl);
+      }
+
+      setToastMessage("Profil berhasil diupdate!");
+      setToastType("success");
+      setShowToast(true);
+
+      try {
+        await refreshUser?.();
+      } catch (err) {
+        console.warn("refreshUser failed:", err);
+      }
+
+      setTimeout(() => router.push(`/creator/${id}`), 1500);
+    } catch (error) {
+      console.error("Error during patch request:", error);
+      showError(
+        error?.data?.message ||
+          error?.message ||
+          "Terjadi kesalahan saat update profil",
+      );
     }
   };
 
-  useEffect(() => {
-    return () => {
-      if (profilePicturePreview) URL.revokeObjectURL(profilePicturePreview);
-      if (bannerProfilePicturePreview)
-        URL.revokeObjectURL(bannerProfilePicturePreview);
-    };
-  }, [profilePicturePreview, bannerProfilePicturePreview]);
-
+  /*[--- RENDER ---]*/
   return (
     <>
+      {/* ===== IMAGE CROPPER MODAL ===== */}
       {showCropper && cropSource && (
         <ImageCropperModal
           image={cropSource}
-          aspectRatio={getCropAspect()}
+          aspectRatio={cropTarget === "banner" ? 16 / 9 : 1}
           cropShape={cropTarget === "banner" ? "rect" : "round"}
           onCropComplete={handleCropComplete}
           onCancel={handleCropCancel}
@@ -334,56 +325,49 @@ export default function CreatorSettingsPage() {
           }
         />
       )}
+
       <main className="mx-2 my-2 flex flex-col text-white lg:mx-6 lg:mb-10 lg:h-fit">
-        {/* Back Menu */}
         <BackButton />
 
-        {/* Settings Form */}
         <div className="flex w-full flex-col px-2">
-          {/* form */}
           <form
             onSubmit={handleSubmit}
             className="flex flex-col gap-4 lg:gap-0"
           >
             <div className="flex flex-col gap-2">
+              {/* ===== IMAGES ROW ===== */}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {/* Profile Picture */}
                 <div className="flex items-center gap-4">
-                  <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 md:text-base lg:text-xl">
+                  <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 lg:text-xl">
                     Profile Picture
                     <span className="align-super text-[12px] text-red-700">
-                      {" *"}
+                      {" "}
+                      *
                     </span>
                   </h3>
                   <label
                     className="relative h-16 w-16 cursor-pointer lg:h-24 lg:w-24"
-                    onClick={() => {
-                      setShowProfileModal(true);
-                      console.log("open modal");
-                    }}
+                    onClick={() => setShowProfileModal(true)}
                   >
-                    <div className="group relative h-16 w-16 cursor-pointer overflow-hidden rounded-full lg:h-24 lg:w-24">
-                      {profilePictureUrl &&
-                      profilePictureUrl !== "null" &&
-                      profilePictureUrl !== "" &&
-                      profilePicturePreview === null ? (
-                        <Image
-                          src={profilePictureUrl}
-                          alt="profile"
-                          fill
-                          className="h-full w-full rounded-full bg-white object-cover"
-                        />
-                      ) : (
-                        <Image
-                          src={profilePicturePreview || logoUsersComment}
-                          alt="profile"
-                          fill
-                          className="h-full w-full rounded-full bg-white object-cover"
-                        />
-                      )}
+                    <div className="group relative h-16 w-16 overflow-hidden rounded-full lg:h-24 lg:w-24">
+                      <Image
+                        src={
+                          profilePicturePreview ||
+                          (profilePictureUrl &&
+                          profilePictureUrl !== "null" &&
+                          profilePictureUrl !== ""
+                            ? profilePictureUrl
+                            : logoUsersComment)
+                        }
+                        alt="profile"
+                        fill
+                        className="h-full w-full rounded-full bg-white object-cover"
+                      />
                       <div className="absolute right-0 bottom-0 left-0 flex h-[28%] items-center justify-center bg-black/40">
                         <Image
                           src={IconsCameraAdd}
-                          alt="camera icon"
+                          alt="camera"
                           width={16}
                           height={16}
                           className="scale-110 object-contain"
@@ -392,83 +376,79 @@ export default function CreatorSettingsPage() {
                     </div>
                   </label>
                 </div>
+
+                {/* Banner */}
                 <div className="flex items-center gap-4">
-                  <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 md:text-base lg:text-xl">
+                  <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 lg:text-xl">
                     Banner Profile IMG
                   </h3>
                   <div className="relative flex-1 overflow-hidden rounded-xl">
                     <label className="relative block h-full w-full cursor-pointer lg:max-h-42 lg:max-w-[70%]">
-                      {bannerProfileUrl &&
-                      bannerProfileUrl !== "null" &&
-                      bannerProfileUrl !== "" &&
-                      bannerProfilePicturePreview === null ? (
-                        <Image
-                          src={bannerProfileUrl}
-                          alt="profile"
-                          width={1080}
-                          height={200}
-                          className="aspect-auto h-full w-full object-cover object-center"
-                        />
-                      ) : (
-                        <Image
-                          src={bannerProfilePicturePreview || BannerCreator}
-                          alt="banner"
-                          width={1080}
-                          height={200}
-                          className="aspect-auto h-full w-full object-cover object-center"
-                        />
-                      )}
-
+                      <Image
+                        src={
+                          bannerProfilePicturePreview ||
+                          (bannerProfileUrl &&
+                          bannerProfileUrl !== "null" &&
+                          bannerProfileUrl !== ""
+                            ? bannerProfileUrl
+                            : BannerCreator)
+                        }
+                        alt="banner"
+                        width={1080}
+                        height={200}
+                        className="aspect-auto h-full w-full object-cover object-center"
+                      />
                       <div className="absolute top-1/2 right-0 left-0 flex h-[28%] -translate-y-1/2 items-center justify-center gap-2 bg-black/40">
                         <Image
                           src={IconsGalery}
-                          alt="camera icon"
+                          alt="upload"
                           width={24}
                           height={24}
                           className="object-contain"
                         />
                         <p className="font-bold text-white">Upload</p>
                       </div>
-
                       <input
                         type="file"
                         accept="image/*"
-                        className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
                         id="banner-profile-picture"
+                        className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
                         onChange={(e) => handleFileUpload(e)}
                       />
                     </label>
                   </div>
                 </div>
               </div>
+
+              {/* ===== PROFILE NAME + USERNAME ===== */}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="flex items-center gap-4">
-                  <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 md:text-base lg:text-xl">
+                  <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 lg:text-xl">
                     Profile Name
                     <span className="align-super text-[12px] text-red-700">
-                      {" *"}
+                      {" "}
+                      *
                     </span>
                   </h3>
                   <div className="flex-1">
                     <input
                       type="text"
                       className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                      onChange={(e) => {
-                        let value = e.target.value;
-                        // cuma huruf dan spasi
-                        value = value.replace(/[^a-zA-Z\s]/g, "");
-                        // maksimal 40 karakter
-                        value = value.slice(0, 40);
-
-                        setProfileName(value);
-                      }}
                       value={profileName}
                       placeholder="Masukan Profile Name"
                       maxLength={40}
                       required
+                      onChange={(e) =>
+                        setProfileName(
+                          e.target.value
+                            .replace(/[^a-zA-Z\s]/g, "")
+                            .slice(0, 40),
+                        )
+                      }
                     />
                   </div>
                 </div>
+
                 <div className="group relative flex items-center gap-4">
                   <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 lg:text-xl">
                     Username<span className="text-red-700"> *</span>
@@ -482,34 +462,26 @@ export default function CreatorSettingsPage() {
                     <input
                       type="text"
                       className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-gray-400"
-                      onChange={(e) => {
-                        // Ambil value
-                        let value = e.target.value;
-
-                        // Hanya izinkan huruf a-z (besar & kecil)
-                        value = value.replace(/[^a-zA-Z]/g, "");
-
-                        // maksimal 40 karakter
-                        value = value.slice(0, 40);
-
-                        // Update state
-                        setUsername(value);
-                      }}
                       value={username}
                       placeholder="Masukan username"
                       disabled={!canChangeUsername}
                       maxLength={40}
                       required
+                      onChange={(e) =>
+                        setUsername(
+                          e.target.value.replace(/[^a-zA-Z]/g, "").slice(0, 40),
+                        )
+                      }
                     />
                   </div>
                 </div>
               </div>
-              {/* bio */}
+
+              {/* ===== BIO ===== */}
               <div className="flex items-start gap-4">
                 <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 lg:text-xl">
                   Bio
                 </h3>
-
                 <div className="flex-1">
                   <textarea
                     className="w-full resize-none overflow-hidden rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
@@ -519,22 +491,22 @@ export default function CreatorSettingsPage() {
                     rows={1}
                     onChange={(e) => {
                       const el = e.target;
-
-                      // reset height kalo kosong
                       el.style.height = "auto";
                       el.style.height = el.scrollHeight + "px";
-
                       setBio(el.value);
                     }}
                   />
                 </div>
               </div>
+
+              {/* ===== EMAIL + PHONE ===== */}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="flex items-center gap-4">
-                  <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 md:text-base lg:text-xl">
+                  <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 lg:text-xl">
                     Email
                     <span className="align-super text-[12px] text-red-700">
-                      {" *"}
+                      {" "}
+                      *
                     </span>
                   </h3>
                   <div className="flex-1">
@@ -552,36 +524,33 @@ export default function CreatorSettingsPage() {
                     />
                   </div>
                 </div>
+
                 <div className="flex items-center gap-4">
-                  <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 md:text-base lg:text-xl">
+                  <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 lg:text-xl">
                     Phone
                     <span className="align-super text-[12px] text-red-700">
-                      {" *"}
+                      {" "}
+                      *
                     </span>
                   </h3>
                   <div className="flex-1">
                     <input
                       type="tel"
                       className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                      onChange={(e) => {
-                        // gaboleh angka
-                        const value = e.target.value.replace(/\D/g, "");
-                        setPhone(value);
-                        // otomatis 0 didepan
-                        if (value.length > 0 && value[0] !== "0") {
-                          setPhone("0" + value);
-                        } else {
-                          setPhone(value);
-                        }
-                      }}
                       value={phone}
                       placeholder="Masukan Nomor Telepon"
                       maxLength={12}
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, "");
+                        setPhone(
+                          digits.length > 0 && digits[0] !== "0"
+                            ? "0" + digits
+                            : digits,
+                        );
+                      }}
                       onBlur={() => {
                         if (phone.length < 10 || phone.length > 12) {
-                          setToastMessage("Nomor telepon harus 10–12 digit");
-                          setToastType("failed");
-                          setShowToast(true);
+                          showError("Nomor telepon harus 10–12 digit");
                         }
                       }}
                     />
@@ -589,56 +558,49 @@ export default function CreatorSettingsPage() {
                 </div>
               </div>
 
+              {/* ===== DATE OF BIRTH + GENDER ===== */}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-4">
-                    <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 lg:text-xl">
-                      Date Of Birth
-                    </h3>
-                    <div className="flex-1">
-                      <input
-                        type="date"
-                        max={new Date().toISOString().split("T")[0]}
-                        className="w-full appearance-none rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1 text-white"
-                        onChange={(e) => setDateOfBirth(e.target.value)}
-                        value={dateOfBirth || ""}
-                      />
-                    </div>
-                  </div>
-                </div>
                 <div className="flex items-center gap-4">
-                  <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 md:text-base lg:text-xl">
-                    Gender
+                  <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 lg:text-xl">
+                    Date Of Birth
                   </h3>
                   <div className="flex-1">
-                    <div className="flex items-center gap-6 text-white">
-                      <label className="flex cursor-pointer items-center gap-1">
+                    <input
+                      type="date"
+                      max={new Date().toISOString().split("T")[0]}
+                      className="w-full appearance-none rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1 text-white"
+                      value={dateOfBirth || ""}
+                      onChange={(e) => setDateOfBirth(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 lg:text-xl">
+                    Gender
+                  </h3>
+                  <div className="flex items-center gap-6 text-white">
+                    {["Male", "Female"].map((g) => (
+                      <label
+                        key={g}
+                        className="flex cursor-pointer items-center gap-1"
+                      >
                         <input
                           type="radio"
                           name="gender"
-                          value="Male"
+                          value={g}
                           className="accent-green-500"
-                          checked={gender === "Male"}
+                          checked={gender === g}
                           onChange={(e) => setGender(e.target.value)}
                         />
-                        <span>Male</span>
+                        <span>{g}</span>
                       </label>
-                      <label className="flex cursor-pointer items-center gap-1">
-                        <input
-                          type="radio"
-                          name="gender"
-                          value="Female"
-                          className="accent-green-500"
-                          checked={gender === "Female"}
-                          onChange={(e) => setGender(e.target.value)}
-                        />
-                        <span>Female</span>
-                      </label>
-                    </div>
+                    ))}
                   </div>
                 </div>
               </div>
-              {/* Country & Social Links */}
+
+              {/* ===== REGION ===== */}
               <div className="flex items-center gap-4">
                 <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 lg:text-xl">
                   Country / Region
@@ -646,124 +608,68 @@ export default function CreatorSettingsPage() {
                 <div className="flex-1">
                   <select
                     className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1 text-white"
-                    onChange={(e) => setRegion(e.target.value)}
                     value={region}
+                    onChange={(e) => setRegion(e.target.value)}
                   >
                     <option className="bg-[#222222] text-white" value="">
                       Pilih Region
                     </option>
-                    <option
-                      className="bg-[#222222] text-white"
-                      value="Indonesia"
-                    >
-                      Indonesia
-                    </option>
-                    <option
-                      className="bg-[#222222] text-white"
-                      value="Malaysia"
-                    >
-                      Malaysia
-                    </option>
-                    <option
-                      className="bg-[#222222] text-white"
-                      value="Thailand"
-                    >
-                      Thailand
-                    </option>
-                    <option className="bg-[#222222] text-white" value="Vietnam">
-                      Vietnam
-                    </option>
-                    <option
-                      className="bg-[#222222] text-white"
-                      value="Philippines"
-                    >
-                      Philippines
-                    </option>
+                    {REGIONS.map((r) => (
+                      <option
+                        key={r}
+                        className="bg-[#222222] text-white"
+                        value={r}
+                      >
+                        {r}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
-                <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 md:text-base lg:text-xl">
-                  Instagram Link
-                </h3>
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                    placeholder="https://www.instagram.com/profilename"
-                    value={instagramUrl || ""}
-                    onChange={(e) => setInstagramUrl(e.target.value.trim())}
-                  />
+              {/* ===== SOCIAL LINKS ===== */}
+              {SOCIAL_LINKS.map(({ key, label, placeholder }) => (
+                <div key={key} className="flex items-center gap-4">
+                  <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 lg:text-xl">
+                    {label} Link
+                  </h3>
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
+                      placeholder={placeholder}
+                      value={socialUrls[key] || ""}
+                      onChange={(e) =>
+                        setSocialUrls((prev) => ({
+                          ...prev,
+                          [key]: e.target.value.trim(),
+                        }))
+                      }
+                    />
+                  </div>
                 </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 md:text-base lg:text-xl">
-                  Tiktok Link
-                </h3>
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                    placeholder="https://www.tiktok.com/@profilename"
-                    value={tiktokUrl || ""}
-                    onChange={(e) => setTiktokUrl(e.target.value.trim())}
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 md:text-base lg:text-xl">
-                  Twitter/X Link
-                </h3>
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                    placeholder="https://www.x.com/profilename"
-                    value={twitterUrl || ""}
-                    onChange={(e) => setTwitterUrl(e.target.value.trim())}
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <h3 className="w-40 text-base font-semibold text-[#979797] md:w-56 md:text-base lg:text-xl">
-                  Facebook Link
-                </h3>
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    className="w-full rounded-md border border-[#F5F5F540] bg-[#2222224D] px-2 py-1"
-                    placeholder="https://www.facebook.com/profilename"
-                    value={facebookUrl || ""}
-                    onChange={(e) => setFacebookUrl(e.target.value.trim())}
-                  />
-                </div>
-              </div>
+              ))}
             </div>
 
-            {/* button */}
+            {/* ===== SUBMIT ===== */}
             <button
-              className="mt-1 flex cursor-pointer justify-center gap-2 rounded-lg border border-[#F5F5F559] bg-[#0E5BA8] py-2 font-bold text-white hover:bg-[#0E5BA8]/80 lg:mt-8"
               type="submit"
+              className="mt-1 flex cursor-pointer justify-center gap-2 rounded-lg border border-[#F5F5F559] bg-[#0E5BA8] py-2 font-bold text-white hover:bg-[#0E5BA8]/80 lg:mt-8"
             >
-              <span className="flex">
-                <Image
-                  priority
-                  className="aspect-auto"
-                  height={16}
-                  width={16}
-                  alt="icon-save-changes"
-                  src={IconsSaveChanges}
-                />
-              </span>
-              <p>{isLoading ? "Saving..." : "Save Changes"}</p>
+              <Image
+                priority
+                className="aspect-auto"
+                height={16}
+                width={16}
+                alt="icon-save-changes"
+                src={IconsSaveChanges}
+              />
+              <p>{isUpdating ? "Saving..." : "Save Changes"}</p>
             </button>
           </form>
         </div>
 
+        {/* ===== PROFILE MODAL ===== */}
         <ProfileModal
           isShow={showProfileModal}
           setIsShow={setShowProfileModal}
@@ -777,12 +683,13 @@ export default function CreatorSettingsPage() {
           onIconSelect={(iconImage, iconUrl) => {
             setSelectedIconUrl(iconUrl);
             setProfilePicturePreview(iconImage);
-            setProfilePictureUrl(null); // reset file kalau pilih icon
+            setProfilePictureUrl(null);
             setShowProfileModal(false);
           }}
         />
       </main>
 
+      {/* ===== TOAST ===== */}
       {showToast && (
         <Toast
           message={toastMessage}
@@ -791,7 +698,8 @@ export default function CreatorSettingsPage() {
         />
       )}
 
-      {(isLoading || isUpdateCreatorLoading) && <LoadingOverlay />}
+      {/* ===== LOADING OVERLAY ===== */}
+      {(isLoadingGet || isUpdating) && <LoadingOverlay />}
     </>
   );
 }

@@ -6,13 +6,11 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import axios from "axios";
 import Link from "next/link";
 import PropTypes from "prop-types";
 import DOMPurify from "dompurify";
 
 /*[--- HOOKS IMPORT ---]*/
-import { BACKEND_URL } from "@/lib/constants/backendUrl";
 import { useGetEpisodeEbookByIdQuery } from "@/hooks/api/contentSliceAPI";
 import { useGetCommentByEpisodeEbookQuery } from "@/hooks/api/commentSliceAPI";
 
@@ -30,6 +28,10 @@ import AudioEbookButton from "@/components/AudioEbookButton/page";
 import EbookModal from "@/components/Modal/EbookModal";
 import CommentModalEbook from "@/components/CommentModalEbook/CommentModalEbook";
 import iconCommentComic from "@@/icons/icon-comment-comic.svg";
+import {
+  useUpdateEpisodeViewsMutation,
+  useGetReadProgressQuery,
+} from "@/hooks/api/episodeEbookSliceAPI";
 
 const HEADER_HEIGHT = 64;
 const BOTTOM_BAR_OPEN = 176;
@@ -38,39 +40,40 @@ const BOTTOM_BAR_COLLAPSED = 56;
 export default function ReadEbookPage({ params }) {
   const { id } = params;
   const epubReaderRef = useRef(null);
+
+  /*[--- UI STATE ---]*/
   const [showSkeleton, setShowSkeleton] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isBottomBarOpen, setIsBottomBarOpen] = useState(true);
+  const [isCommentVisible, setIsCommentVisible] = useState(false);
+  const [isReaderLoading, setIsReaderLoading] = useState(false);
+  const [isModalTutorialOpen, setIsModalTutorialOpen] = useState(false);
+
+  /*[--- EBOOK METADATA ---]*/
   const [ebookTitle, setEbookTitle] = useState("");
   const [ebookId, setEbookId] = useState("");
   const [creatorNotes, setCreatorNotes] = useState("");
   const [ebookUrl, setEbookUrl] = useState(null);
+  const [audioEbookUrl, setAudioEbookUrl] = useState(null);
+
+  /*[--- READER SETTINGS ---]*/
   const [colorTheme, setColorTheme] = useState("dark");
   const [lineHeight, setLineHeight] = useState("normal");
   const [textAlign, setTextAlign] = useState("justify");
   const [fontFamily, setFontFamily] = useState("inter");
   const [readingMode, setReadingMode] = useState("page");
+  const [baseFontSize, setBaseFontSize] = useState(14);
+  const [fontSizeFactor, setFontSizeFactor] = useState(1.0);
+
+  /*[--- PROGRESS STATE ---]*/
   const [progress, setProgress] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [baseFontSize, setBaseFontSize] = useState(14);
-
-  const { data, isLoading, error } = useGetEpisodeEbookByIdQuery(id);
-  const { data: commentData, isLoading: isLoadingGetComment } =
-    useGetCommentByEpisodeEbookQuery(id);
-
-  const [isCommentVisible, setIsCommentVisible] = useState(false);
-  const [createLog] = useCreateLogMutation();
-  const [fontSizeFactor, setFontSizeFactor] = useState(1.0);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [audioEbookUrl, setAudioEbookUrl] = useState(null);
-  const [isBottomBarOpen, setIsBottomBarOpen] = useState(true);
-  const [isReaderLoading, setIsReaderLoading] = useState(false);
-  const [isModalTutorialOpen, setIsModalTutorialOpen] = useState(false);
-
   const [progressLoaded, setProgressLoaded] = useState(false);
   const [savedPage, setSavedPage] = useState(1);
   const [savedCfi, setSavedCfi] = useState(null);
 
-  // FIX: key untuk force remount EpubReader saat progressLoaded pertama kali true
+  /*[--- READER KEY (force remount) ---]*/
   const [readerKey, setReaderKey] = useState(0);
 
   const hasUpdatedViewsRef = useRef(false);
@@ -79,6 +82,20 @@ export default function ReadEbookPage({ params }) {
   const isReadingModeChangeRef = useRef(false);
   const progressLoadedFirstTimeRef = useRef(false);
 
+  const { data, isLoading, error } = useGetEpisodeEbookByIdQuery(id);
+
+  const { data: progressData, isLoading: isLoadingProgress } =
+    useGetReadProgressQuery(id, {
+      skip: !id || !ebookUrl,
+    });
+
+  const { data: commentData, isLoading: isLoadingGetComment } =
+    useGetCommentByEpisodeEbookQuery(id);
+
+  const [createLog] = useCreateLogMutation();
+  const [updateViews] = useUpdateEpisodeViewsMutation();
+
+  /*[--- MEMOIZED DATA ---]*/
   const episodeEbookData = useMemo(() => data?.data?.data || {}, [data]);
   const episodeEbookNextId = useMemo(
     () => data?.data?.nextEpisode?.id || null,
@@ -110,10 +127,17 @@ export default function ReadEbookPage({ params }) {
   const getBaseFontSize = () => {
     if (typeof window === "undefined") return 14;
     const width = window.innerWidth;
-    if (width < 768) return 12; // mobile
-    if (width < 1024) return 13; // tablet
-    return 14; // laptop
+    if (width < 768) return 12;
+    if (width < 1024) return 13;
+    return 14;
   };
+
+  const getActiveButtonClass = (isActive) =>
+    isActive
+      ? colorTheme === "dark"
+        ? "bg-[#515151]"
+        : "bg-[#333333] text-white"
+      : "bg-[#626262]/50";
 
   useEffect(() => {
     if (progressLoaded && !progressLoadedFirstTimeRef.current) {
@@ -136,7 +160,6 @@ export default function ReadEbookPage({ params }) {
     }
   }, [ebookUrl, progressLoaded]);
 
-  // ─── Log setelah 2 menit ─────────────────────────────────────────────────────
   useEffect(() => {
     if (!id) return;
     const timer = setTimeout(
@@ -161,7 +184,7 @@ export default function ReadEbookPage({ params }) {
     try {
       if (!hasUpdatedViewsRef.current && id) {
         try {
-          await axios.patch(`${BACKEND_URL}/episode/${id}/views`);
+          await updateViews(id);
           hasUpdatedViewsRef.current = true;
         } catch (viewErr) {
           console.warn("Warning: View count update failed", viewErr);
@@ -179,117 +202,25 @@ export default function ReadEbookPage({ params }) {
       setEbookUrl(episodeEbookData.ebookUrl);
       setAudioEbookUrl(episodeEbookData.audioUrl);
 
-      let existing = [];
       try {
+        let existing = [];
         const raw = localStorage.getItem("last_seen_content");
         existing = raw ? JSON.parse(raw) : [];
+        const isAlreadyExist = existing.find(
+          (item) => item.id === ebookData.id,
+        );
+        if (!isAlreadyExist) {
+          const newContent = { ...episodeEbookData.ebooks, type: "ebook" };
+          const updated = [newContent, ...existing].slice(0, 10);
+          localStorage.setItem("last_seen_content", JSON.stringify(updated));
+        }
       } catch {
-        existing = [];
-      }
-      const isAlreadyExist = existing.find((item) => item.id === ebookData.id);
-      if (!isAlreadyExist) {
-        const newContent = { ...episodeEbookData.ebooks, type: "ebook" };
-        const updated = [newContent, ...existing].slice(0, 10);
-        localStorage.setItem("last_seen_content", JSON.stringify(updated));
+        // Silent fail for localStorage
       }
     } catch (err) {
       console.error("Error fetching data:", err);
     }
-  }, [id, ebookData, episodeEbookData]);
-
-  // fetch progress dari db
-  useEffect(() => {
-    if (!id || !ebookUrl) return;
-
-    setProgressLoaded(false);
-    progressLoadedFirstTimeRef.current = false;
-
-    const fetchProgress = async () => {
-      const url = `${BACKEND_URL}/readProgress?episodeEbookId=${id}`;
-      const token =
-        typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
-      try {
-        const res = await fetch(url, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        const json = await res.json();
-
-        if (json.items?.length) {
-          const dbPage = json.items[0].page ?? 0;
-          const dbCfi = json.items[0].cfiString || null;
-          const restoredPage = dbPage + 1;
-
-          console.log(
-            "[EBOOK] Restore progress → page:",
-            restoredPage,
-            "| cfi:",
-            dbCfi,
-          );
-
-          setSavedPage(restoredPage);
-          setSavedCfi(dbCfi);
-          setCurrentPage(restoredPage);
-        } else {
-          console.log("[EBOOK] Belum ada progress, mulai dari halaman 1");
-          setSavedPage(1);
-          setSavedCfi(null);
-
-          if (episodeEbookData?.readProgress == null) {
-            setIsModalTutorialOpen(true);
-          }
-        }
-      } catch (err) {
-        console.error("[EBOOK] fetchProgress error:", err);
-        setSavedPage(1);
-        setSavedCfi(null);
-      } finally {
-        requestAnimationFrame(() => {
-          setProgressLoaded(true);
-        });
-      }
-    };
-
-    fetchProgress();
-  }, [id, ebookUrl]);
-
-  const handleFontSizeChange = (delta) => {
-    if (epubReaderRef.current) epubReaderRef.current.changeFontSize(delta);
-  };
-
-  const handleThemeChange = useCallback((theme) => setColorTheme(theme), []);
-  const handleLineHeightChange = useCallback(
-    (height) => setLineHeight(height),
-    [],
-  );
-  const handleAlignmentChange = useCallback((align) => setTextAlign(align), []);
-  const handleFontFamilyChange = useCallback(
-    (family) => setFontFamily(family),
-    [],
-  );
-  const handleReadingModeChange = useCallback(
-    (mode) => setReadingMode(mode),
-    [],
-  );
-
-  const handleProgressChange = useCallback(
-    (progressData) => {
-      setProgress(progressData.progress);
-      setCurrentPage(progressData.currentPage);
-      setTotalPages(progressData.totalPages);
-      if (readingMode === "scroll" && typeof window !== "undefined") {
-        scrollPositionRef.current = window.scrollY;
-      }
-    },
-    [readingMode],
-  );
-
-  const getActiveButtonClass = (isActive) =>
-    isActive
-      ? colorTheme === "dark"
-        ? "bg-[#515151]"
-        : "bg-[#333333] text-white"
-      : "bg-[#626262]/50";
+  }, [id, ebookData, episodeEbookData, updateViews]);
 
   useEffect(() => {
     if (data && !isLoading) getData();
@@ -297,6 +228,43 @@ export default function ReadEbookPage({ params }) {
       window.location.href = "/checkout/purchase/ebooks/x/" + id;
     }
   }, [data, isLoading, error, id, getData]);
+
+  /*[--- EFFECT: restore read progress from RTK Query ---]*/
+  useEffect(() => {
+    if (!id || !ebookUrl || isLoadingProgress) return;
+
+    setProgressLoaded(false);
+    progressLoadedFirstTimeRef.current = false;
+
+    const items = progressData?.items ?? [];
+
+    if (items.length > 0) {
+      const dbPage = items[0].page ?? 0;
+      const dbCfi = items[0].cfiString || null;
+      const restoredPage = dbPage + 1;
+
+      console.log(
+        "[EBOOK] Restore progress → page:",
+        restoredPage,
+        "| cfi:",
+        dbCfi,
+      );
+
+      setSavedPage(restoredPage);
+      setSavedCfi(dbCfi);
+      setCurrentPage(restoredPage);
+    } else {
+      console.log("[EBOOK] Belum ada progress, mulai dari halaman 1");
+      setSavedPage(1);
+      setSavedCfi(null);
+
+      if (episodeEbookData?.readProgress == null) {
+        setIsModalTutorialOpen(true);
+      }
+    }
+
+    requestAnimationFrame(() => setProgressLoaded(true));
+  }, [id, ebookUrl, progressData, isLoadingProgress, episodeEbookData]);
 
   useEffect(() => {
     if (!id || readingMode === readingModeBeforeChangeRef.current) return;
@@ -308,14 +276,13 @@ export default function ReadEbookPage({ params }) {
           scrollPositionRef.current.toString(),
         );
       } catch {
-        // Silent fail for sessionStorage
+        // Silent fail
       }
     }
 
     readingModeBeforeChangeRef.current = readingMode;
     isReadingModeChangeRef.current = true;
 
-    // Restore scroll position after mode change
     setTimeout(() => {
       try {
         const savedScroll = sessionStorage.getItem(
@@ -362,15 +329,15 @@ export default function ReadEbookPage({ params }) {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [progressLoaded, ebookUrl]);
 
+  /*[--- EFFECT: trigger resize on window focus ---]*/
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const handleFocus = () => {
-      window.dispatchEvent(new Event("resize"));
-    };
+    const handleFocus = () => window.dispatchEvent(new Event("resize"));
     window.addEventListener("focus", handleFocus);
     return () => window.removeEventListener("focus", handleFocus);
   }, []);
 
+  /*[--- EFFECT: block copy / devtools ---]*/
   useEffect(() => {
     const preventDefault = (e) => {
       e.preventDefault();
@@ -399,6 +366,37 @@ export default function ReadEbookPage({ params }) {
       document.removeEventListener("keydown", blockKeys, true);
     };
   }, []);
+
+  /*[--- READER SETTING HANDLERS ---]*/
+  const handleFontSizeChange = (delta) => {
+    if (epubReaderRef.current) epubReaderRef.current.changeFontSize(delta);
+  };
+  const handleThemeChange = useCallback((theme) => setColorTheme(theme), []);
+  const handleLineHeightChange = useCallback(
+    (height) => setLineHeight(height),
+    [],
+  );
+  const handleAlignmentChange = useCallback((align) => setTextAlign(align), []);
+  const handleFontFamilyChange = useCallback(
+    (family) => setFontFamily(family),
+    [],
+  );
+  const handleReadingModeChange = useCallback(
+    (mode) => setReadingMode(mode),
+    [],
+  );
+
+  const handleProgressChange = useCallback(
+    (progressData) => {
+      setProgress(progressData.progress);
+      setCurrentPage(progressData.currentPage);
+      setTotalPages(progressData.totalPages);
+      if (readingMode === "scroll" && typeof window !== "undefined") {
+        scrollPositionRef.current = window.scrollY;
+      }
+    },
+    [readingMode],
+  );
 
   if (showSkeleton) return <DetailPageLoadingSkeleton />;
 
@@ -430,8 +428,11 @@ export default function ReadEbookPage({ params }) {
       style={{ userSelect: "none", WebkitUserSelect: "none" }}
     >
       <main className="flex flex-col">
+        {/* ===== HEADER ===== */}
         <div
-          className={`${colorTheme === "dark" ? "text-white" : "text-[#222222]"} fixed z-40 mt-0 flex w-full flex-row items-center justify-start gap-2 px-4 py-2 text-2xl font-semibold backdrop-blur md:px-20`}
+          className={`${
+            colorTheme === "dark" ? "text-white" : "text-[#222222]"
+          } fixed z-40 mt-0 flex w-full flex-row items-center justify-start gap-2 px-4 py-2 text-2xl font-semibold backdrop-blur md:px-20`}
         >
           <BackButton isDark={colorTheme === "dark"} />
           <h4 className="zeinFont [display:-webkit-box] w-full overflow-hidden text-center text-xl font-extrabold text-ellipsis [-webkit-box-orient:vertical] [-webkit-line-clamp:1] md:text-2xl">
@@ -444,7 +445,9 @@ export default function ReadEbookPage({ params }) {
           </h4>
           <Icon
             icon="solar:menu-dots-bold-duotone"
-            className={`z-50 h-10 w-10 cursor-pointer text-3xl ${colorTheme === "dark" ? "text-white" : "text-black"}`}
+            className={`z-50 h-10 w-10 cursor-pointer text-3xl ${
+              colorTheme === "dark" ? "text-white" : "text-black"
+            }`}
             onClick={() => setMobileMenuOpen((prev) => !prev)}
           />
         </div>
@@ -461,11 +464,13 @@ export default function ReadEbookPage({ params }) {
             >
               <Icon
                 icon="solar:close-circle-bold-duotone"
-                className={`h-8 w-8 cursor-pointer self-end text-3xl ${colorTheme === "dark" ? "text-white" : "text-black"}`}
+                className={`h-8 w-8 cursor-pointer self-end text-3xl ${
+                  colorTheme === "dark" ? "text-white" : "text-black"
+                }`}
                 onClick={() => setMobileMenuOpen(false)}
               />
 
-              {/* Font Size Controller */}
+              {/* Font Size */}
               <div className="flex flex-col gap-4">
                 <div className="flex flex-row gap-2">
                   <Icon icon="solar:text-bold" className="h-5 w-5" />
@@ -476,26 +481,32 @@ export default function ReadEbookPage({ params }) {
                 <div className="flex flex-row items-center justify-between gap-2">
                   <button
                     onClick={() => handleFontSizeChange(-0.1)}
-                    className={`${colorTheme === "dark" ? "bg-[#333333]" : "bg-[#878787]"} rounded-lg p-3 transition-opacity hover:opacity-70`}
+                    className={`${
+                      colorTheme === "dark" ? "bg-[#333333]" : "bg-[#878787]"
+                    } rounded-lg p-3 transition-opacity hover:opacity-70`}
                   >
                     <Icon icon="mynaui:minus" className="h-6 w-6" />
                   </button>
                   <div
-                    className={`${colorTheme === "dark" ? "bg-[#333333]" : "bg-[#878787]"} montserratFont flex flex-row items-center gap-2 rounded-lg px-8 py-3 font-medium`}
+                    className={`${
+                      colorTheme === "dark" ? "bg-[#333333]" : "bg-[#878787]"
+                    } montserratFont flex flex-row items-center gap-2 rounded-lg px-8 py-3 font-medium`}
                   >
                     <Icon icon="solar:text-bold" className="h-5 w-5" />
                     <p>{Math.round(baseFontSize * fontSizeFactor)}px</p>
                   </div>
                   <button
                     onClick={() => handleFontSizeChange(0.1)}
-                    className={`${colorTheme === "dark" ? "bg-[#333333]" : "bg-[#878787]"} rounded-lg p-3 transition-opacity hover:opacity-70`}
+                    className={`${
+                      colorTheme === "dark" ? "bg-[#333333]" : "bg-[#878787]"
+                    } rounded-lg p-3 transition-opacity hover:opacity-70`}
                   >
                     <Icon icon="mynaui:plus" className="h-6 w-6" />
                   </button>
                 </div>
               </div>
 
-              {/* Theme Toggle */}
+              {/* Theme */}
               <div className="flex flex-col gap-4">
                 <div className="flex flex-row gap-2">
                   <Icon icon="solar:sun-bold" className="h-5 w-5" />
@@ -506,7 +517,9 @@ export default function ReadEbookPage({ params }) {
                     <button
                       key={t}
                       onClick={() => handleThemeChange(t)}
-                      className={`${getActiveButtonClass(colorTheme === t)} rounded-lg py-2 transition-opacity hover:opacity-70`}
+                      className={`${getActiveButtonClass(
+                        colorTheme === t,
+                      )} rounded-lg py-2 transition-opacity hover:opacity-70`}
                     >
                       {t.charAt(0).toUpperCase() + t.slice(1)}
                     </button>
@@ -527,7 +540,9 @@ export default function ReadEbookPage({ params }) {
                     <button
                       key={h}
                       onClick={() => handleLineHeightChange(h)}
-                      className={`${getActiveButtonClass(lineHeight === h)} rounded-lg py-2 transition-opacity hover:opacity-70`}
+                      className={`${getActiveButtonClass(
+                        lineHeight === h,
+                      )} rounded-lg py-2 transition-opacity hover:opacity-70`}
                     >
                       {h.charAt(0).toUpperCase() + h.slice(1)}
                     </button>
@@ -549,13 +564,17 @@ export default function ReadEbookPage({ params }) {
                 <div className="montserratFont grid grid-cols-2 items-center justify-between gap-2 text-sm">
                   <button
                     onClick={() => handleAlignmentChange("left")}
-                    className={`${getActiveButtonClass(textAlign === "left")} flex items-center justify-center gap-2 rounded-lg py-2 transition-opacity hover:opacity-70`}
+                    className={`${getActiveButtonClass(
+                      textAlign === "left",
+                    )} flex items-center justify-center gap-2 rounded-lg py-2 transition-opacity hover:opacity-70`}
                   >
                     <Icon icon="solar:list-outline" className="h-5 w-5" /> Left
                   </button>
                   <button
                     onClick={() => handleAlignmentChange("justify")}
-                    className={`${getActiveButtonClass(textAlign === "justify")} flex items-center justify-center gap-2 rounded-lg py-2 transition-opacity hover:opacity-70`}
+                    className={`${getActiveButtonClass(
+                      textAlign === "justify",
+                    )} flex items-center justify-center gap-2 rounded-lg py-2 transition-opacity hover:opacity-70`}
                   >
                     <Icon
                       icon="solar:hamburger-menu-outline"
@@ -566,7 +585,6 @@ export default function ReadEbookPage({ params }) {
                 </div>
               </div>
 
-              {/* Tipe Font */}
               <div className="flex flex-col gap-4">
                 <div className="flex flex-row gap-2">
                   <Icon icon="solar:text-bold" className="h-5 w-5" />
@@ -596,7 +614,9 @@ export default function ReadEbookPage({ params }) {
                     <button
                       key={key}
                       onClick={() => handleFontFamilyChange(key)}
-                      className={`${getActiveButtonClass(fontFamily === key)} ${cls} rounded-lg py-2 transition-opacity hover:opacity-70`}
+                      className={`${getActiveButtonClass(
+                        fontFamily === key,
+                      )} ${cls} rounded-lg py-2 transition-opacity hover:opacity-70`}
                     >
                       {label}
                     </button>
@@ -604,7 +624,6 @@ export default function ReadEbookPage({ params }) {
                 </div>
               </div>
 
-              {/* Mode Baca */}
               <div className="flex flex-col gap-4">
                 <div className="flex flex-row gap-2">
                   <Icon
@@ -618,13 +637,17 @@ export default function ReadEbookPage({ params }) {
                 <div className="montserratFont grid grid-cols-2 items-center justify-between gap-2 text-sm">
                   <button
                     onClick={() => handleReadingModeChange("scroll")}
-                    className={`${getActiveButtonClass(readingMode === "scroll")} flex items-center justify-center gap-2 rounded-lg py-2 transition-opacity hover:opacity-70`}
+                    className={`${getActiveButtonClass(
+                      readingMode === "scroll",
+                    )} flex items-center justify-center gap-2 rounded-lg py-2 transition-opacity hover:opacity-70`}
                   >
                     <Icon icon="lucide:scroll" className="h-5 w-5" /> Scroll
                   </button>
                   <button
                     onClick={() => handleReadingModeChange("page")}
-                    className={`${getActiveButtonClass(readingMode === "page")} flex items-center justify-center gap-2 rounded-lg py-2 transition-opacity hover:opacity-70`}
+                    className={`${getActiveButtonClass(
+                      readingMode === "page",
+                    )} flex items-center justify-center gap-2 rounded-lg py-2 transition-opacity hover:opacity-70`}
                   >
                     <Icon
                       icon="solar:notebook-minimalistic-linear"
@@ -635,10 +658,11 @@ export default function ReadEbookPage({ params }) {
                 </div>
               </div>
 
-              {/* Laporkan */}
               <Link
                 href={`/report/episode_ebook/${id}`}
-                className={`flex flex-row items-center gap-2 transition-opacity hover:opacity-70 ${colorTheme === "dark" ? "text-white" : "text-black"}`}
+                className={`flex flex-row items-center gap-2 transition-opacity hover:opacity-70 ${
+                  colorTheme === "dark" ? "text-white" : "text-black"
+                }`}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <Icon icon="solar:flag-2-linear" className="h-6 w-6" />
@@ -655,18 +679,22 @@ export default function ReadEbookPage({ params }) {
           />
         )}
 
-        {/* ===== EPUB READER ===== */}
         <div
-          className={`relative mt-16 flex shadow-md shadow-black ${readingMode === "scroll" ? "w-full" : "w-max"} mx-auto max-w-[210mm] flex-col ${colorTheme === "dark" ? "text-white" : "text-[#222222]"}`}
+          className={`relative mt-16 flex shadow-md shadow-black ${
+            readingMode === "scroll" ? "w-full" : "w-max"
+          } mx-auto max-w-[210mm] flex-col ${
+            colorTheme === "dark" ? "text-white" : "text-[#222222]"
+          }`}
         >
           <div className="flex flex-col justify-center">
             <div
-              className={`relative z-20 flex h-fit w-full touch-pan-y flex-col select-none ${colorTheme === "dark" ? "text-white" : "text-[#222222]"}`}
+              className={`relative z-20 flex h-fit w-full touch-pan-y flex-col select-none ${
+                colorTheme === "dark" ? "text-white" : "text-[#222222]"
+              }`}
               style={{ isolation: "isolate" }}
               onContextMenu={(e) => e.preventDefault()}
               onDragStart={(e) => e.preventDefault()}
             >
-              {/* Loading sementara menunggu progress dari DB */}
               {ebookUrl && !progressLoaded && (
                 <LoadingOverlay message="Memuat posisi baca…" />
               )}
@@ -699,20 +727,31 @@ export default function ReadEbookPage({ params }) {
 
         {isReaderLoading && <LoadingOverlay message="Rendering reader…" />}
 
-        {/* Catatan Kreator */}
         <section
-          className={`relative flex w-screen flex-col px-4 pt-5 pb-40 ${colorTheme === "dark" ? "text-white" : "text-[#222222]"} md:mt-4 md:px-15`}
+          className={`relative flex w-screen flex-col px-4 pt-5 pb-40 ${
+            colorTheme === "dark" ? "text-white" : "text-[#222222]"
+          } md:mt-4 md:px-15`}
         >
           <div
-            className={`w-full rounded-xl p-4 ${colorTheme === "dark" ? "bg-[#2f2f2f] text-white" : "bg-[#DEDEDE] text-[#222222]"}`}
+            className={`w-full rounded-xl p-4 ${
+              colorTheme === "dark"
+                ? "bg-[#2f2f2f] text-white"
+                : "bg-[#DEDEDE] text-[#222222]"
+            }`}
           >
             <h4
-              className={`${colorTheme === "dark" ? "text-white/70" : "text-black/60"} font-bold`}
+              className={`${
+                colorTheme === "dark" ? "text-white/70" : "text-black/60"
+              } font-bold`}
             >
               Catatan Kreator
             </h4>
             <div
-              className={`prose max-w-none ${colorTheme === "dark" ? "prose-invert text-white" : "text-[#222222]"}`}
+              className={`prose max-w-none ${
+                colorTheme === "dark"
+                  ? "prose-invert text-white"
+                  : "text-[#222222]"
+              }`}
               dangerouslySetInnerHTML={{
                 __html: DOMPurify.sanitize(creatorNotes || ""),
               }}
@@ -744,7 +783,6 @@ export default function ReadEbookPage({ params }) {
             </div>
           )}
 
-          {/* Navigation Bar with Progress (collapsible) */}
           <div className="pointer-events-auto fixed right-0 bottom-0 left-0 z-40 flex flex-col items-center justify-center gap-2 bg-[#393939] transition-all">
             {isBottomBarOpen ? (
               <>
@@ -779,7 +817,11 @@ export default function ReadEbookPage({ params }) {
                           ? `/ebooks/read/${episodeEbookPrevId}`
                           : "#"
                       }
-                      className={`flex h-10 w-full items-center justify-center rounded-lg bg-black/50 text-white shadow-xl backdrop-blur-sm transition-all md:h-12 ${episodeEbookPrevId ? "cursor-pointer hover:bg-black/80" : "pointer-events-none cursor-not-allowed opacity-50"}`}
+                      className={`flex h-10 w-full items-center justify-center rounded-lg bg-black/50 text-white shadow-xl backdrop-blur-sm transition-all md:h-12 ${
+                        episodeEbookPrevId
+                          ? "cursor-pointer hover:bg-black/80"
+                          : "pointer-events-none cursor-not-allowed opacity-50"
+                      }`}
                       aria-disabled={!episodeEbookPrevId}
                       tabIndex={episodeEbookPrevId ? 0 : -1}
                     >
@@ -795,7 +837,11 @@ export default function ReadEbookPage({ params }) {
                           ? `/ebooks/read/${episodeEbookNextId}`
                           : "#"
                       }
-                      className={`flex h-10 w-full items-center justify-center rounded-lg bg-black/50 text-white shadow-xl backdrop-blur-sm transition-all md:h-12 ${episodeEbookNextId ? "cursor-pointer hover:bg-black/80" : "pointer-events-none cursor-not-allowed opacity-50"}`}
+                      className={`flex h-10 w-full items-center justify-center rounded-lg bg-black/50 text-white shadow-xl backdrop-blur-sm transition-all md:h-12 ${
+                        episodeEbookNextId
+                          ? "cursor-pointer hover:bg-black/80"
+                          : "pointer-events-none cursor-not-allowed opacity-50"
+                      }`}
                       aria-disabled={!episodeEbookNextId}
                       tabIndex={episodeEbookNextId ? 0 : -1}
                     >
@@ -896,6 +942,7 @@ export default function ReadEbookPage({ params }) {
             </div>
           </div>
         </EbookModal>
+
         <CommentModalEbook
           episodeId={id}
           isCommentVisible={isCommentVisible}
