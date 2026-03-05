@@ -158,13 +158,16 @@ export default function BannerPromoSlider() {
 
       if (bannersRef.current.length > 1) {
         const nextIndex = (index + 1) % bannersRef.current.length;
-        applyColor(dominantColorsRef.current[nextIndex] ?? BLACK);
+
+        // Reset state dulu sebelum pindah slide
+        setShowVideo(false);
+        if (imageTimerRef.current) clearTimeout(imageTimerRef.current);
+
         setTimeout(() => {
-          if (index !== activeIndexRef.current) return;
-          splideRef.current?.splide.go("+1");
+          // Jangan pakai guard di sini — langsung go
+          splideRef.current?.splide.go(nextIndex); // ← pakai index absolut, bukan "+1"
         }, 500);
       } else {
-        // Balik ke gambar: warna dan showVideo berubah bersamaan
         applyColor(dominantColorsRef.current[index] ?? BLACK);
         setShowVideo(false);
 
