@@ -14,7 +14,7 @@ import PropTypes from "prop-types";
 import PodcastPlayback from "@/components/PodcastPlayer/PodcastPlayback";
 import PodcastMiniPlayer from "@/components/PodcastPlayer/PodcastMiniPlayer";
 import { useGetPodcastByIdQuery } from "@/hooks/api/podcastSliceAPI";
-import { BACKEND_URL } from "@/lib/constants/backendUrl";
+import { useGetProgressWatchQuery } from "@/hooks/api/progressWatchAPI";
 
 const STORAGE_KEY = "podcast_player_state";
 const SPEED_OPTIONS = [0.5, 1, 1.5, 2];
@@ -65,6 +65,11 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
   const [speed, setSpeed] = useState(DEFAULT_SPEED);
   const [speedDirection, setSpeedDirection] = useState(1);
   const [initialTime, setInitialTime] = useState(0);
+
+  const { data } = useGetProgressWatchQuery({
+    contentId: episodeData?.Id,
+    contentType: "EPISODE_PODCAST",
+  });
 
   // Hydrate from storage once
   useEffect(() => {
@@ -195,20 +200,10 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
     setIsOpen(true);
 
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(
-        `${BACKEND_URL}/watchProgress?contentId=${episode.Id}&contentType=EPISODE_PODCAST`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            ...(token && { Authorization: `Bearer ${token}` }),
-          },
-        },
-      );
-      const json = await res.json();
-      const seconds = json?.data?.isCompleted
+      const seconds = data?.data?.isCompleted
         ? 0
-        : (json?.data?.progressSeconds ?? 0);
+        : (data?.data?.progressSeconds ?? 0);
+
       setInitialTime(seconds);
     } catch (err) {
       console.warn("Failed to fetch watch progress", err);
