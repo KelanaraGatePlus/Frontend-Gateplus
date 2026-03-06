@@ -7,6 +7,8 @@ export default function PaymentMethodSelector({
   onMethodChange,
   showError = false,
   basePrice = 0,
+  variant = "default",
+  showHeader = true,
 }) {
   const activePaymentMethods = Object.entries(paymentMethods)
     .filter(([, method]) => method.isActive)
@@ -32,6 +34,8 @@ export default function PaymentMethodSelector({
     ...activePaymentMethods.filter((item) => !topThreeCheapestKeys.has(item.key)),
   ];
 
+  const isTopUpModalVariant = variant === "topup-modal";
+
   // Auto-select the cheapest method on mount or when basePrice changes
   useEffect(() => {
     if (!selectedPaymentMethod && cheapestMethodKey) {
@@ -40,10 +44,12 @@ export default function PaymentMethodSelector({
   }, [basePrice, cheapestMethodKey, selectedPaymentMethod, onMethodChange]);
 
   return (
-    <div className="flex flex-col gap-2 md:px-8">
-      <div className="bg-[#2222224D] p-4 rounded-md">
-        <p className="font-bold">Pilih Metode Pembayaran</p>
-      </div>
+    <div className={`flex flex-col gap-2 ${isTopUpModalVariant ? "" : "md:px-8"}`}>
+      {showHeader && (
+        <div className="bg-[#2222224D] p-4 rounded-md">
+          <p className="font-bold">Pilih Metode Pembayaran</p>
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
         {prioritizedPaymentMethods
           .map(({ key, method, fee }) => {
@@ -55,9 +61,15 @@ export default function PaymentMethodSelector({
                 onClick={() =>
                   onMethodChange(prev => (prev === key ? null : key))
                 }
-                className={`md:py-4 px-2 py-2 flex relative flex-row items-center gap-2 md:px-4 drop-shadow-md drop-shadow-[#00000040] rounded-md font-semibold transition hover:cursor-pointer ${isSelected
-                  ? "bg-[#0075e9]"
-                  : "bg-[#686868] hover:bg-[#686868]"
+                className={`flex relative flex-row items-center gap-2 font-semibold transition hover:cursor-pointer ${isTopUpModalVariant
+                  ? `${isSelected
+                    ? "border-[#2B8CF4] bg-[#1F6DB8]"
+                    : "border-[#F5F5F526] bg-linear-to-br from-[#2A2A2ACC] to-[#1F1F1FCC] hover:bg-[#FFFFFF10]"
+                  } rounded-xl border px-4 py-3`
+                  : `${isSelected
+                    ? "bg-[#0075e9]"
+                    : "bg-[#686868] hover:bg-[#686868]"
+                  } md:py-4 px-2 py-2 md:px-4 drop-shadow-md drop-shadow-[#00000040] rounded-md`
                   }`}
               >
                 {isCheapest && (
@@ -65,7 +77,7 @@ export default function PaymentMethodSelector({
                     Termurah
                   </div>
                 )}
-                <div className="w-10 h-8 md:w-12 md:h-12 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-8 md:w-12 md:h-12 flex items-center justify-center shrink-0">
                   <img
                     src={method.logo ? method.logo.src : ""}
                     alt={method.display_name}
@@ -97,4 +109,6 @@ PaymentMethodSelector.propTypes = {
   onMethodChange: PropTypes.func.isRequired,
   showError: PropTypes.bool,
   basePrice: PropTypes.number,
+  variant: PropTypes.oneOf(["default", "topup-modal"]),
+  showHeader: PropTypes.bool,
 };

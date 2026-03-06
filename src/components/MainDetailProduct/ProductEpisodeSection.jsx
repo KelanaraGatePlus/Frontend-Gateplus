@@ -181,6 +181,10 @@ export default function ProductEpisodeSection({
               const isLoaded = imageStatus[item.id] === "loaded";
               const hasError = imageStatus[item.id] === "error";
               const episodeNumber = totalEpisodes - index;
+              const isFreeEpisode = item.price == "Free" || item.price == 0;
+              const isLockedEpisode =
+                !isOwner && !isSubscribe && item.price != 0 && !item.isPurchased;
+              const canAccessEpisode = !isLockedEpisode || isFreeEpisode;
 
               // Adjust font size based on digit count
               const getFontSizeClass = (episodeNumber) => {
@@ -199,10 +203,7 @@ export default function ProductEpisodeSection({
                   ref={index + 1 == totalEpisodes ? lastEpisodeRef : null}
                   key={index}
                   onClick={
-                    isOwner ||
-                      item.isPurchased ||
-                      item.price == "Free" ||
-                      isSubscribe
+                    canAccessEpisode
                       ? () => {
                         window.location.href = `${parentPath}/${item.id}`;
                       }
@@ -251,9 +252,7 @@ export default function ProductEpisodeSection({
                         />
                       )}
 
-                      {!isOwner &&
-                        !item.isPurchased &&
-                        !(item.price == "Free" && !isSubscribe && !item.price == 0) && (
+                      {isLockedEpisode && !isFreeEpisode && (
                           <div className="absolute top-0 left-0 flex h-full w-full items-center justify-center bg-[#F5F5F533] backdrop-blur-xs transition-all duration-300 ease-in-out">
                             <Icon
                               icon={"solar:lock-keyhole-minimalistic-linear"}
@@ -286,9 +285,7 @@ export default function ProductEpisodeSection({
                       </div>
 
                       {/* Lock */}
-                      {!isOwner &&
-                        !item.isPurchased &&
-                        !(item.price == "Free" && !isSubscribe && !item.price == 0) && (
+                      {isLockedEpisode && !isFreeEpisode && (
                           <div className="zeinFont flex h-full w-max flex-col items-end justify-between">
                             <div className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-[#967074] bg-[#63282e] p-1 md:p-2">
                               <Icon
@@ -307,8 +304,7 @@ export default function ProductEpisodeSection({
                         )}
 
                       {/* Open */}
-                      {(isOwner || item.isPurchased || item.price == "Free" || item.price == 0 || isSubscribe) &&
-                        !item.isWatched && (
+                      {canAccessEpisode && !item.isWatched && (
                           <div className="flex w-max items-center justify-center gap-2 rounded-lg border-2 border-[#F5F5F559] bg-[#1FC16B4D] p-1 md:p-2">
                             <Icon
                               icon={"solar:notebook-minimalistic-linear"}
@@ -319,10 +315,7 @@ export default function ProductEpisodeSection({
                         )}
 
                       {/* Already Read */}
-                      {item.isWatched &&
-                        (isOwner ||
-                          item.isPurchased ||
-                          item.price == "Free" || isSubscribe || item.price == 0) && (
+                      {item.isWatched && canAccessEpisode && (
                           <Link
                             href={`/report/${productType == "ebook" ? "episode_ebook" : productType == "comic" ? "episode_comic" : productType == "movie" ? "episode_movie" : "episode_series"}/${item.id}`}
                             onClick={(e) => e.stopPropagation()}
@@ -360,17 +353,16 @@ export default function ProductEpisodeSection({
             className={`relative flex w-full flex-col gap-3 py-5 text-white ${containerClassname}`}
           >
             {episodes.map((item) => {
-              const canAccess =
-                isOwner ||
-                item.isPurchased ||
-                item.price === "Free" ||
-                isSubscribe;
+              const isFreeEpisode = item.price === "Free" || item.price == 0;
+              const isLockedEpisode =
+                !isOwner && !isSubscribe && item.price != 0 && !item.isPurchased;
+              const canAccessEpisode = !isLockedEpisode || isFreeEpisode;
 
               return (
                 <button
                   key={item.id}
                   onClick={
-                    canAccess
+                    canAccessEpisode
                       ? () => handlePlayWithPodcast(item)
                       : () => handlePayment(item.id, item.price)
                   }
@@ -391,7 +383,7 @@ export default function ProductEpisodeSection({
                       />
 
                       {/* Overlay lock */}
-                      {!canAccess && (
+                      {isLockedEpisode && !isFreeEpisode && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm">
                           <Icon
                             icon="solar:lock-keyhole-minimalistic-linear"
@@ -401,7 +393,7 @@ export default function ProductEpisodeSection({
                       )}
 
                       {/* Overlay play */}
-                      {canAccess && (
+                      {canAccessEpisode && (
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 transition group-hover:opacity-100">
                           <Icon
                             icon="solar:play-circle-bold"
@@ -434,7 +426,7 @@ export default function ProductEpisodeSection({
                         </div>
                         {/* Right Action */}
                         <div className="flex items-center gap-3">
-                          {!canAccess && (
+                          {isLockedEpisode && !isFreeEpisode && (
                             <div className="zeinFont flex h-full flex-col items-end justify-between gap-4">
                               <div className="flex items-center gap-2 rounded-lg border-2 border-[#967074] bg-[#63282e] px-2 py-1">
                                 <Icon icon="solar:lock-keyhole-minimalistic-linear" />
@@ -448,7 +440,7 @@ export default function ProductEpisodeSection({
                               </p>
                             </div>
                           )}
-                          {canAccess && !item.isWatched && (
+                          {canAccessEpisode && !item.isWatched && (
                             <div className="flex flex-row items-center justify-center gap-2 rounded-lg border-2 border-[#F5F5F559] bg-[#1FC16B4D] px-3 py-1">
                               <Icon
                                 icon={"solar:notebook-minimalistic-linear"}

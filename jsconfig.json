@@ -3,6 +3,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@@/logo/*": ["./public/images/logo/*"],
+      "@@/GateplusCoin/*": ["./public/images/GateplusCoin/*"],
       "@@/icons/*": ["./public/images/icons/*"],
       "@@/profileIcons/*": ["./public/images/ProfileIcon/*"],
       "@@/poster/*": ["./public/images/poster/*"],

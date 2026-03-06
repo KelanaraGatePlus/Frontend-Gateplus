@@ -1,7 +1,13 @@
 // hooks/useMidtransPayment.js
 import { useEffect, useState } from "react";
-import { BACKEND_URL, NEXT_MIDTRANS_URL } from "@/lib/constants/backendUrl";
-import { useAuth } from "@/components/Context/AuthContext";
+import { NEXT_MIDTRANS_URL } from "@/lib/constants/backendUrl";
+import {
+    useCheckPaymentStatusMutation,
+    useCreateCoinPaymentMutation,
+    useCreateOrderPaymentMutation,
+    useCreateSubscriptionPaymentMutation,
+    useCreateTipPaymentMutation,
+} from "@/hooks/api/paymentSliceAPI";
 
 const MIDTRANS_URL = NEXT_MIDTRANS_URL || "https://app.sandbox.midtrans.com/snap/snap.js";
 
@@ -88,7 +94,7 @@ const getStatusColor = (status) => {
 const openQrisImagePopup = ({
     url,
     orderId = null,
-    token = null,
+    onCheckStatus,
     onClose = () => { },
     onSuccess = () => { },
     onFailed = () => { },
@@ -296,7 +302,7 @@ const openQrisImagePopup = ({
     };
 
     const checkLatestStatus = async (isManualCheck = false) => {
-        if (!orderId || !token || isClosed || isCheckingStatus) return;
+        if (!orderId || !onCheckStatus || isClosed || isCheckingStatus) return;
 
         isCheckingStatus = true;
         checkStatusBtn.disabled = true;
@@ -304,15 +310,7 @@ const openQrisImagePopup = ({
         checkStatusBtn.innerText = "Mengecek...";
 
         try {
-            const statusRes = await fetch(`${BACKEND_URL}/api/payment/status/${orderId}`, {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            });
-
-            const statusJson = await statusRes.json();
+            const statusJson = await onCheckStatus(orderId);
             const latestStatus = (statusJson?.data?.status || "PENDING").toUpperCase();
             const checkedAt = new Date().toLocaleTimeString("id-ID", { hour12: false });
 
@@ -369,7 +367,7 @@ const openQrisImagePopup = ({
     overlay.appendChild(card);
     document.body.appendChild(overlay);
 
-    if (orderId && token) {
+    if (orderId && onCheckStatus) {
         checkLatestStatus();
         statusIntervalId = setInterval(() => {
             checkLatestStatus();
@@ -383,13 +381,9 @@ const openQrisImagePopup = ({
 export const usePayment = (paymentType = "ORDER") => {
     const [snapReady, setSnapReady] = useState(false);
     const [isPaying, setIsPaying] = useState(false);
-    const { user } = useAuth();
-
-    // Tentukan endpoint
-    const paymentURL =
-        paymentType === "ORDER"
-            ? `${BACKEND_URL}/api/payment/create`
-            : `${BACKEND_URL}/api/payment/create-subscription`;
+    const [createOrderPayment] = useCreateOrderPaymentMutation();
+    const [createSubscriptionPayment] = useCreateSubscriptionPaymentMutation();
+    const [checkPaymentStatus] = useCheckPaymentStatusMutation();
 
     // Load Snap.js
     useEffect(() => {
@@ -411,22 +405,15 @@ export const usePayment = (paymentType = "ORDER") => {
         if (isPaying) return;
         setIsPaying(true);
 
-        const body =
+        const payload =
             paymentType === "ORDER"
-                ? JSON.stringify({ episodeId, contentType, tip, voucherCode, paymentMethod })
-                : JSON.stringify({ contentId, contentType, tip, voucherCode, paymentMethod });
+                ? { episodeId, contentType, tip, voucherCode, paymentMethod }
+                : { contentId, contentType, tip, voucherCode, paymentMethod };
 
         try {
-            const res = await fetch(paymentURL, {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${user.token}`,
-                    "Content-Type": "application/json",
-                },
-                body,
-            });
-
-            const data = await res.json();
+            const data = paymentType === "ORDER"
+                ? await createOrderPayment(payload).unwrap()
+                : await createSubscriptionPayment(payload).unwrap();
 
             // Promo Free
             if (data.isPromoFree) {
@@ -457,7 +444,7 @@ export const usePayment = (paymentType = "ORDER") => {
                 openQrisImagePopup({
                     url: qrisImageUrl,
                     orderId: data.orderId || null,
-                    token: user?.token || null,
+                    onCheckStatus: async (currentOrderId) => checkPaymentStatus(currentOrderId).unwrap(),
                     onClose: () => {
                         setIsPaying(false);
                         callbacks.onClose?.();
@@ -513,13 +500,121 @@ export const usePayment = (paymentType = "ORDER") => {
 };
 
 // =======================================================================
+//    HOOK COIN PAYMENT
+// =======================================================================
+export const useCoinPayment = () => {
+    const [snapReady, setSnapReady] = useState(false);
+    const [isPaying, setIsPaying] = useState(false);
+    const [createCoinPayment] = useCreateCoinPaymentMutation();
+    const [checkPaymentStatus] = useCheckPaymentStatusMutation();
+
+    useEffect(() => {
+        if (window.snap) {
+            setSnapReady(true);
+            return;
+        }
+
+        const script = document.createElement("script");
+        script.src = MIDTRANS_URL;
+        script.async = true;
+        script.onload = () => setSnapReady(true);
+        document.body.appendChild(script);
+    }, []);
+
+    const payCoin = async ({ coinPackageId, paymentMethod }, callbacks = {}) => {
+        if (isPaying) return;
+        setIsPaying(true);
+
+        try {
+            const data = await createCoinPayment({ coinPackageId, paymentMethod }).unwrap();
+
+            if (data?.provider === "xendit") {
+                openXenditPopup(data?.snapUrl, () => {
+                    setIsPaying(false);
+                    callbacks.onSuccess?.(data);
+                });
+                return;
+            }
+
+            if (data?.paymentMethod === "qris") {
+                const qrisImageUrl = getQrisImageUrl(data);
+
+                if (!qrisImageUrl) {
+                    setIsPaying(false);
+                    callbacks.onError?.(new Error("QRIS image tidak tersedia"));
+                    return;
+                }
+
+                openQrisImagePopup({
+                    url: qrisImageUrl,
+                    orderId: data?.orderId || null,
+                    onCheckStatus: async (currentOrderId) => checkPaymentStatus(currentOrderId).unwrap(),
+                    onClose: () => {
+                        setIsPaying(false);
+                        callbacks.onClose?.();
+                    },
+                    onSuccess: (result) => {
+                        setIsPaying(false);
+                        callbacks.onSuccess?.(result);
+                    },
+                    onFailed: (result) => {
+                        setIsPaying(false);
+                        callbacks.onError?.(result);
+                    },
+                    onPending: (result) => {
+                        callbacks.onPending?.(result);
+                    },
+                });
+                return;
+            }
+
+            if (!snapReady || !window.snap) {
+                setIsPaying(false);
+                callbacks.onError?.(new Error("Midtrans Snap belum siap"));
+                return;
+            }
+
+            if (!data?.snapToken) {
+                setIsPaying(false);
+                callbacks.onError?.(new Error("Snap token tidak tersedia"));
+                return;
+            }
+
+            window.snap.pay(data.snapToken, {
+                onSuccess: (result) => {
+                    setIsPaying(false);
+                    callbacks.onSuccess?.(result);
+                },
+                onPending: (result) => {
+                    setIsPaying(false);
+                    callbacks.onPending?.(result);
+                },
+                onError: (error) => {
+                    setIsPaying(false);
+                    callbacks.onError?.(error);
+                },
+                onClose: () => {
+                    setIsPaying(false);
+                    callbacks.onClose?.();
+                },
+            });
+        } catch (err) {
+            setIsPaying(false);
+            callbacks.onError?.(err);
+        }
+    };
+
+    return { payCoin, snapReady, isPaying };
+};
+
+// =======================================================================
 //    HOOK TIP PAYMENT
 // =======================================================================
 export const useTipPayment = () => {
     const [snapReady, setSnapReady] = useState(false);
     const [isPaying, setIsPaying] = useState(false);
-    const { user } = useAuth();
-    const midtransURL = `${BACKEND_URL}/api/payment/create-tip`;
+    const [createTipPayment] = useCreateTipPaymentMutation();
+    const [checkPaymentStatus] = useCheckPaymentStatusMutation();
 
     useEffect(() => {
         if (window.snap) {
@@ -538,16 +633,7 @@ export const useTipPayment = () => {
         setIsPaying(true);
 
         try {
-            const res = await fetch(midtransURL, {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${user.token}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ creatorId, amount, paymentMethod }),
-            });
-
-            const data = await res.json();
+            const data = await createTipPayment({ creatorId, amount, paymentMethod }).unwrap();
 
             // XENDIT
             if (data.provider === "xendit") {
@@ -570,7 +656,7 @@ export const useTipPayment = () => {
                 openQrisImagePopup({
                     url: qrisImageUrl,
                     orderId: data.orderId || null,
-                    token: user?.token || null,
+                    onCheckStatus: async (currentOrderId) => checkPaymentStatus(currentOrderId).unwrap(),
                     onClose: () => {
                         setIsPaying(false);
                     },
@@ -625,7 +711,7 @@ export const useTipPayment = () => {
 export const useDisplayPayment = () => {
     const [snapReady, setSnapReady] = useState(false);
     const [isPaying, setIsPaying] = useState(false);
-    const { user } = useAuth();
+    const [checkPaymentStatus] = useCheckPaymentStatusMutation();
 
     // Load Snap.js
     useEffect(() => {
@@ -670,7 +756,7 @@ export const useDisplayPayment = () => {
                 openQrisImagePopup({
                     url: resolvedQrisImageUrl,
                     orderId: orderId || null,
-                    token: user?.token || null,
+                    onCheckStatus: async (currentOrderId) => checkPaymentStatus(currentOrderId).unwrap(),
                     onClose: () => {
                         setIsPaying(false);
                         callbacks.onClose?.();
