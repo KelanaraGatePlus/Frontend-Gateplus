@@ -445,7 +445,7 @@ export default function UserSettingsPage() {
       )}
 
       {/* ===== LOADING OVERLAY ===== */}
-      {(isLoadingGet || isUpdating) && <LoadingOverlay />}
+      {isUpdating && <LoadingOverlay />}
 
       {/* ===== PROFILE MODAL ===== */}
       <ProfileModal
