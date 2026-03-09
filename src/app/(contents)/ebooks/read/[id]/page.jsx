@@ -43,7 +43,7 @@ export default function ReadEbookPage({ params }) {
   const [lineHeight, setLineHeight] = useState("normal");
   const [textAlign, setTextAlign] = useState("justify");
   const [fontFamily, setFontFamily] = useState("inter");
-  const [readingMode, setReadingMode] = useState("scroll");
+  const [readingMode, setReadingMode] = useState("page");
   const [progress, setProgress] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [cfiString, setCfiString] = useState(null);
