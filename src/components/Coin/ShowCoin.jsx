@@ -18,31 +18,84 @@ export default function ShowCoin({ balance, withPayment = true }) {
     const [isCounting, setIsCounting] = React.useState(false);
     const [impactKey, setImpactKey] = React.useState(0);
     const balanceRef = React.useRef(Number(balance) || 0);
+    const balancePropRef = React.useRef(Number(balance) || 0);
+    const previousBalancePropRef = React.useRef(Number(balance) || 0);
+    const isCountingRef = React.useRef(false);
     const animationFrameRef = React.useRef(null);
     const animationRunIdRef = React.useRef(0);
+    const delayedSyncTimeoutRef = React.useRef(null);
+    const pendingSyncBalanceRef = React.useRef(null);
+
+    const clearDelayedSync = React.useCallback(() => {
+        if (delayedSyncTimeoutRef.current) {
+            clearTimeout(delayedSyncTimeoutRef.current);
+            delayedSyncTimeoutRef.current = null;
+        }
+    }, []);
 
     React.useEffect(() => {
         const nextBalance = Number(balance) || 0;
-        setDisplayBalance(nextBalance);
-        balanceRef.current = nextBalance;
-    }, [balance]);
+        previousBalancePropRef.current = balancePropRef.current;
+        balancePropRef.current = nextBalance;
+
+        if (isCountingRef.current) return;
+
+        const currentDisplay = balanceRef.current;
+        const isIncrease = nextBalance > currentDisplay;
+
+        if (isIncrease) {
+            // Hold optimistic prop update; coin-arrived event will drive the visible count-up.
+            pendingSyncBalanceRef.current = nextBalance;
+            clearDelayedSync();
+            delayedSyncTimeoutRef.current = setTimeout(() => {
+                const pendingBalance = pendingSyncBalanceRef.current;
+                if (pendingBalance !== null && !isCountingRef.current) {
+                    setDisplayBalance(pendingBalance);
+                    balanceRef.current = pendingBalance;
+                }
+                pendingSyncBalanceRef.current = null;
+                delayedSyncTimeoutRef.current = null;
+            }, 4000);
+            return;
+        }
+
+        pendingSyncBalanceRef.current = null;
+        clearDelayedSync();
+        {
+            setDisplayBalance(nextBalance);
+            balanceRef.current = nextBalance;
+        }
+    }, [balance, clearDelayedSync]);
 
     React.useEffect(() => {
         const animateBalanceIncrease = (amount) => {
             const increaseAmount = Number(amount) || 0;
             if (increaseAmount <= 0) return;
 
+            const currentPropBalance = balancePropRef.current;
+            const previousPropBalance = previousBalancePropRef.current;
+            const propDelta = currentPropBalance - previousPropBalance;
+
+            clearDelayedSync();
+            pendingSyncBalanceRef.current = null;
+
+            // If upstream state already includes the top-up, animate to latest prop from current display.
+            const hasPropAlreadyIncludedIncrease = propDelta >= increaseAmount;
+            const startValue = balanceRef.current;
+            const endValue = hasPropAlreadyIncludedIncrease
+                ? currentPropBalance
+                : startValue + increaseAmount;
+
             const runId = animationRunIdRef.current + 1;
             animationRunIdRef.current = runId;
             setIsCounting(true);
+            isCountingRef.current = true;
             setIsLogoGlowing(true);
 
             if (animationFrameRef.current) {
                 cancelAnimationFrame(animationFrameRef.current);
             }
 
-            const startValue = balanceRef.current;
-            const endValue = startValue + increaseAmount;
             const duration = 900;
             let startTs = null;
 
@@ -60,11 +113,13 @@ export default function ShowCoin({ balance, withPayment = true }) {
                 if (progress < 1) {
                     animationFrameRef.current = requestAnimationFrame(step);
                 } else {
-                    balanceRef.current = endValue;
-                    setDisplayBalance(endValue);
+                    const finalValue = Math.max(endValue, balancePropRef.current);
+                    balanceRef.current = finalValue;
+                    setDisplayBalance(finalValue);
                     animationFrameRef.current = null;
                     if (animationRunIdRef.current === runId) {
                         setIsCounting(false);
+                        isCountingRef.current = false;
                         setIsLogoGlowing(false);
                     }
                 }
@@ -83,13 +138,15 @@ export default function ShowCoin({ balance, withPayment = true }) {
 
         return () => {
             window.removeEventListener(COIN_ARRIVED_EVENT, handleCoinArrived);
+            clearDelayedSync();
             if (animationFrameRef.current) {
                 cancelAnimationFrame(animationFrameRef.current);
             }
             setIsCounting(false);
+            isCountingRef.current = false;
             setIsLogoGlowing(false);
         };
-    }, []);
+    }, [clearDelayedSync]);
 
     return (
         <>
