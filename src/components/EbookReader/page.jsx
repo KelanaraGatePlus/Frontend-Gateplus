@@ -241,6 +241,17 @@ const EpubReader = forwardRef(
           "-webkit-user-select": "none !important",
           "user-select": "none !important",
         },
+        p: { color: `${themeColors.text} !important` },
+        span: { color: `${themeColors.text} !important` },
+        div: { color: `${themeColors.text} !important` },
+        li: { color: `${themeColors.text} !important` },
+        h1: { color: `${themeColors.text} !important` },
+        h2: { color: `${themeColors.text} !important` },
+        h3: { color: `${themeColors.text} !important` },
+        h4: { color: `${themeColors.text} !important` },
+        h5: { color: `${themeColors.text} !important` },
+        h6: { color: `${themeColors.text} !important` },
+        a: { color: `${themeColors.text} !important` },
         img: {
           width: "auto !important",
           maxWidth: "100% !important",
@@ -396,6 +407,9 @@ const EpubReader = forwardRef(
       });
 
       renditionRef.current = rendition;
+
+      // Apply theme before first display to avoid initial black text flash.
+      applyTheme(colorTheme, lineHeight, textAlign);
 
       book.ready.then(() => {
         const firstRealContent = book.spine.items.find(
@@ -608,7 +622,16 @@ const EpubReader = forwardRef(
           console.warn("onLoadingChange gagal dipanggil.");
         }
       };
-    }, [epubUrl, readingMode, updateScrollProgress, onProgressChange]);
+    }, [
+      epubUrl,
+      readingMode,
+      updateScrollProgress,
+      onProgressChange,
+      applyTheme,
+      colorTheme,
+      lineHeight,
+      textAlign,
+    ]);
 
     // Resize rendition when bottom bar visibility/height changes
     useEffect(() => {

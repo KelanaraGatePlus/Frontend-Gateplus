@@ -625,7 +625,6 @@ export default function ReadEbookPage({ params }) {
             icon={"solar:menu-dots-bold-duotone"}
             className={`z-10 h-10 w-10 text-3xl ${colorTheme === "dark" ? "text-white" : "text-black"}`}
             onClick={() => {
-              setMobileMenuOpen(!mobileMenuOpen);
               sendLogToServer("OPEN_MENU", currentPage);
               handleToggleMobileMenu();
             }}
@@ -643,7 +642,6 @@ export default function ReadEbookPage({ params }) {
                 icon={"solar:close-circle-bold-duotone"}
                 className={`h-8 w-8 self-end text-3xl ${colorTheme === "dark" ? "text-white" : "text-black"}`}
                 onClick={() => {
-                  setMobileMenuOpen(!mobileMenuOpen);
                   sendLogToServer("CLOSE_MENU", currentPage);
                   handleToggleMobileMenu();
                 }}
@@ -873,7 +871,10 @@ export default function ReadEbookPage({ params }) {
         {mobileMenuOpen && (
           <div
             className="fixed inset-0 z-10 md:hidden"
-            onClick={() => setMobileMenuOpen(false)}
+            onClick={() => {
+              setMobileMenuOpen(false);
+              sendLogToServer("CLOSE_MENU", currentPage);
+            }}
           />
         )}
 
