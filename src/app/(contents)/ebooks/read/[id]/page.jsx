@@ -43,7 +43,7 @@ export default function ReadEbookPage({ params }) {
   const [lineHeight, setLineHeight] = useState("normal");
   const [textAlign, setTextAlign] = useState("justify");
   const [fontFamily, setFontFamily] = useState("inter");
-  const [readingMode, setReadingMode] = useState("page");
+  const [readingMode, setReadingMode] = useState("scroll");
   const [progress, setProgress] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [cfiString, setCfiString] = useState(null);
@@ -62,7 +62,8 @@ export default function ReadEbookPage({ params }) {
   const [isReaderLoading, setIsReaderLoading] = useState(false);
   const [isModalTutorialOpen, setIsModalTutorialOpen] = useState(false);
   const hasUpdatedViewsRef = useRef(false);
-  const readingModeBeforeChangeRef = useRef("page");
+  const readingModeBeforeChangeRef = useRef(readingMode);
+  const hasInitializedReadingModeRef = useRef(false);
   const scrollPositionRef = useRef(0);
   const isReadingModeChangeRef = useRef(false);
   const lastCfiRef = useRef(null);
@@ -314,10 +315,12 @@ export default function ReadEbookPage({ params }) {
   // Handler untuk mengubah reading mode (Memoized - tidak re-create setiap render)
   const handleReadingModeChange = useCallback(
     (mode) => {
+      if (mode === readingMode) return;
+      setIsReaderLoading(true);
       setReadingMode(mode);
       sendLogToServer("READING_MODE_CHANGE", currentPage, { newMode: mode });
     },
-    [currentPage, sendLogToServer],
+    [readingMode, currentPage, sendLogToServer],
   );
 
   // update prev
@@ -466,6 +469,13 @@ export default function ReadEbookPage({ params }) {
 
   // Handle reading mode change - preserve reading position
   useEffect(() => {
+    // Skip first render: prevent false-positive mode change on initial mount.
+    if (!hasInitializedReadingModeRef.current) {
+      hasInitializedReadingModeRef.current = true;
+      readingModeBeforeChangeRef.current = readingMode;
+      return;
+    }
+
     if (!id || readingMode === readingModeBeforeChangeRef.current) return;
 
     // Save scroll position before switching modes

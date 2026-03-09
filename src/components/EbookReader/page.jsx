@@ -65,6 +65,7 @@ const EpubReader = forwardRef(
     const pageStatsRef = useRef({ current: 1, total: 1 });
     const pageNumbersInjectedRef = useRef(false);
     const injectPageNumbersTimeoutRef = useRef(null);
+    const loadingCycleRef = useRef(0);
 
     const injectPageNumbers = useCallback(() => {
       // Hanya jalankan di mode scroll dan pastikan rendition sudah siap
@@ -76,11 +77,13 @@ const EpubReader = forwardRef(
       const doc = viewerRef.current?.querySelector("iframe")?.contentDocument;
       if (!doc) return;
 
+      const body = doc.body;
+      if (!body) return;
+
       // 1. Bersihkan marker lama agar tidak terjadi penumpukan elemen
       doc.querySelectorAll(".virtual-page-marker").forEach(el => el.remove());
-
-      const body = doc.body;
       const viewerWidth = viewerRef.current.offsetWidth;
+      if (!viewerWidth) return;
 
       // Hitung dimensi berdasarkan rasio A4 (297/210)
       const pageHeight = viewerWidth * (297 / 210);
@@ -123,7 +126,7 @@ const EpubReader = forwardRef(
           return (rect.top + docOffset) > targetY;
         });
 
-        if (closestElement) {
+        if (closestElement?.parentNode) {
           closestElement.parentNode.insertBefore(marker, closestElement);
         } else {
           body.appendChild(marker);
@@ -382,6 +385,17 @@ const EpubReader = forwardRef(
     useEffect(() => {
       if (!epubUrl || !viewerRef.current) return;
 
+      loadingCycleRef.current += 1;
+      const loadingCycle = loadingCycleRef.current;
+      const stopLoading = () => {
+        if (loadingCycleRef.current !== loadingCycle) return;
+        try {
+          onLoadingChange?.(false);
+        } catch {
+          console.warn("onLoadingChange gagal dipanggil.");
+        }
+      };
+
       // Notify parent that rendering is starting
       try { onLoadingChange?.(true); } catch {
         console.warn("onLoadingChange gagal dipanggil.");
@@ -415,14 +429,18 @@ const EpubReader = forwardRef(
         const firstRealContent = book.spine.items.find(
           (item) => !/toc|nav|cover|contents/i.test(item.href)
         );
-        rendition.display(cfiPosition || firstRealContent?.href);
+        rendition
+          .display(cfiPosition || firstRealContent?.href)
+          .catch((err) => {
+            console.error("Gagal render EPUB content:", err);
+            stopLoading();
+          });
         // Set initial font size only once on init; later changes use changeFontSize()
         rendition.themes.fontSize(`${initialFontSizeFactor}rem`);
 
         rendition.on("rendered", () => {
           const doc = viewerRef.current?.querySelector("iframe")?.contentDocument;
-
-          onLoadingChange?.(false);
+          stopLoading();
 
           // Berikan jeda 2 detik agar posisi scroll awal (restoration) stabil dulu
           if (injectPageNumbersTimeoutRef.current) {
@@ -430,7 +448,11 @@ const EpubReader = forwardRef(
           }
           injectPageNumbersTimeoutRef.current = setTimeout(() => {
             if (readingMode === "scroll") {
-              injectPageNumbers();
+              try {
+                injectPageNumbers();
+              } catch (err) {
+                console.error("Gagal inject page markers:", err);
+              }
             }
           }, 2000);
 
@@ -441,9 +463,7 @@ const EpubReader = forwardRef(
           stripTOCAndContentLabels(doc);
 
           // Notify parent that initial render is complete
-          try { onLoadingChange?.(false); } catch {
-            console.warn("onLoadingChange gagal dipanggil.");
-          }
+          stopLoading();
           // Initial navigation for scroll mode: jump to provided currentPage
           if (readingMode === "scroll") {
             const target = Math.max(1, Number(currentPage) || 1);
@@ -557,6 +577,9 @@ const EpubReader = forwardRef(
             }
           }
         });
+      }).catch((err) => {
+        console.error("Gagal inisialisasi EPUB:", err);
+        stopLoading();
       });
 
       if (readingMode === "scroll") {
@@ -618,9 +641,7 @@ const EpubReader = forwardRef(
         if (injectPageNumbersTimeoutRef.current) {
           clearTimeout(injectPageNumbersTimeoutRef.current);
         }
-        try { onLoadingChange?.(false); } catch {
-          console.warn("onLoadingChange gagal dipanggil.");
-        }
+        stopLoading();
       };
     }, [
       epubUrl,
@@ -665,7 +686,11 @@ const EpubReader = forwardRef(
         pageNumbersInjectedRef.current = false;
         if (injectPageNumbersTimeoutRef.current) clearTimeout(injectPageNumbersTimeoutRef.current);
         injectPageNumbersTimeoutRef.current = setTimeout(() => {
-          injectPageNumbers();
+          try {
+            injectPageNumbers();
+          } catch (err) {
+            console.error("Gagal inject page markers setelah theme berubah:", err);
+          }
         }, 1000);
       }
     }, [colorTheme, lineHeight, textAlign, fontFamily, readingMode, applyTheme, injectPageNumbers]);
@@ -684,7 +709,11 @@ const EpubReader = forwardRef(
         
         if (injectPageNumbersTimeoutRef.current) clearTimeout(injectPageNumbersTimeoutRef.current);
         injectPageNumbersTimeoutRef.current = setTimeout(() => {
-          injectPageNumbers();
+          try {
+            injectPageNumbers();
+          } catch (err) {
+            console.error("Gagal inject page markers setelah ubah font:", err);
+          }
         }, 1500);
       }
     };
