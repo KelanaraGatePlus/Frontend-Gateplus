@@ -442,7 +442,7 @@ export default function NavbarContent({ openCreateContentModal, openRedeemVouche
       <nav
         className={`
           fixed z-30 w-full
-          transition-all duration-500 ease-out py-2
+          transition-all duration-500 ease-out md:py-2 
           ${isMenuBarsOpen ? "rounded-b-2xl" : ""}
           ${isScrolled
             ? "shadow-[0_1px_0_rgba(255,255,255,0.04),0_8px_32px_rgba(0,0,0,0.45)]"

@@ -20,6 +20,9 @@ import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
 import { DEFAULT_AVATAR } from "@/lib/defaults";
 import ExpandView from "../PodcastPlayer/ExpandView";
 import RichTextDisplay from "@/components/RichTextDisplay/page";
+import UnlockContentModal from "@/components/Modal/UnlockContentModal";
+import { useGetMeQuery } from "@/hooks/api/userSliceAPI";
+import GateplusCoin from "@@/GateplusCoin/coinLogo.svg";
 
 export default function ProductEpisodeSection({
   productType,
@@ -48,6 +51,11 @@ export default function ProductEpisodeSection({
     speed,
   } = usePodcastPlayer();
   const [isCommentVisible, setIsCommentVisible] = useState(false);
+  const [isUnlockModalOpen, setIsUnlockModalOpen] = useState(false);
+  const [unlockTargetEpisode, setUnlockTargetEpisode] = useState(null);
+  const [onUnlockSuccessAction, setOnUnlockSuccessAction] = useState(null);
+
+  const { data: userData } = useGetMeQuery();
 
   // audio controller integration (moved to hook)
   const { currentTime, duration, handleSeekEvent, togglePlay } =
@@ -121,6 +129,46 @@ export default function ProductEpisodeSection({
       ...item,
       savedProgress: progressValue,
     });
+  };
+
+  const resolveContentType = (type) => {
+    if (type === "ebook") return "EBOOK";
+    if (type === "comic") return "COMIC";
+    if (type === "series") return "SERIES";
+    if (type === "podcast") return "PODCAST";
+    return "EBOOK";
+  };
+
+  const openUnlockModal = ({ episode, onSuccess }) => {
+    setUnlockTargetEpisode(episode);
+    setOnUnlockSuccessAction(() => onSuccess);
+    setIsUnlockModalOpen(true);
+  };
+
+  const handleCloseUnlockModal = () => {
+    setIsUnlockModalOpen(false);
+    setUnlockTargetEpisode(null);
+    setOnUnlockSuccessAction(null);
+  };
+
+  const handleUnlockSuccess = async () => {
+    if (unlockTargetEpisode?.id) {
+      setEpisodes((prevEpisodes) =>
+        prevEpisodes.map((episode) =>
+          episode.id === unlockTargetEpisode.id
+            ? { ...episode, isPurchased: true }
+            : episode,
+        ),
+      );
+    }
+
+    await handleLoadAllEpisodes(false);
+
+    if (typeof onUnlockSuccessAction === "function") {
+      onUnlockSuccessAction();
+    }
+
+    handleCloseUnlockModal();
   };
 
   if (showSkeleton) return <ProductEpisodeSkeleton />;
@@ -208,7 +256,10 @@ export default function ProductEpisodeSection({
                         window.location.href = `${parentPath}/${item.id}`;
                       }
                       : () => {
-                        handlePayment(item.id, item.price, "EBOOK");
+                        openUnlockModal({
+                          episode: item,
+                          onSuccess: null,
+                        });
                       }
                   }
                 >
@@ -253,13 +304,13 @@ export default function ProductEpisodeSection({
                       )}
 
                       {isLockedEpisode && !isFreeEpisode && (
-                          <div className="absolute top-0 left-0 flex h-full w-full items-center justify-center bg-[#F5F5F533] backdrop-blur-xs transition-all duration-300 ease-in-out">
-                            <Icon
-                              icon={"solar:lock-keyhole-minimalistic-linear"}
-                              className="h-4 w-4 text-red-600 md:h-8 md:w-8"
-                            />
-                          </div>
-                        )}
+                        <div className="absolute top-0 left-0 flex h-full w-full items-center justify-center bg-[#F5F5F533] backdrop-blur-xs transition-all duration-300 ease-in-out">
+                          <Icon
+                            icon={"solar:lock-keyhole-minimalistic-linear"}
+                            className="h-4 w-4 text-red-600 md:h-8 md:w-8"
+                          />
+                        </div>
+                      )}
                     </div>
 
                     {/* Book Info */}
@@ -286,47 +337,47 @@ export default function ProductEpisodeSection({
 
                       {/* Lock */}
                       {isLockedEpisode && !isFreeEpisode && (
-                          <div className="zeinFont flex h-full w-max flex-col items-end justify-between">
-                            <div className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-[#967074] bg-[#63282e] p-1 md:p-2">
-                              <Icon
-                                icon={"solar:lock-keyhole-minimalistic-linear"}
-                                className="h-4 w-4"
-                              />
-                              <p className="zeinFont font-bold">Terkunci</p>
-                            </div>
-                            <p className="font-bold">
-                              Rp{" "}
-                              {item.price == "Free"
-                                ? "0"
-                                : item.price.toLocaleString("id-ID")}
-                            </p>
+                        <div className="zeinFont flex h-full w-max flex-col items-end justify-between">
+                          <div className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-[#967074] bg-[#63282e] p-1 md:p-2">
+                            <Icon
+                              icon={"solar:lock-keyhole-minimalistic-linear"}
+                              className="h-4 w-4"
+                            />
+                            <p className="zeinFont font-bold">Terkunci</p>
                           </div>
-                        )}
+                          <p className="font-bold flex flex-row items-center gap-1.5 justify-center">
+                            <img src={GateplusCoin.src} alt="Gateplus Coin" className="h-5 w-5" />
+                            {item.price == "Free"
+                              ? "0"
+                              : item.price.toLocaleString("id-ID")}
+                          </p>
+                        </div>
+                      )}
 
                       {/* Open */}
                       {canAccessEpisode && !item.isWatched && (
-                          <div className="flex w-max items-center justify-center gap-2 rounded-lg border-2 border-[#F5F5F559] bg-[#1FC16B4D] p-1 md:p-2">
-                            <Icon
-                              icon={"solar:notebook-minimalistic-linear"}
-                              className="h-4 w-4 rounded-md"
-                            />
-                            <p className="zeinFont font-bold">Baca</p>
-                          </div>
-                        )}
+                        <div className="flex w-max items-center justify-center gap-2 rounded-lg border-2 border-[#F5F5F559] bg-[#1FC16B4D] p-1 md:p-2">
+                          <Icon
+                            icon={"solar:notebook-minimalistic-linear"}
+                            className="h-4 w-4 rounded-md"
+                          />
+                          <p className="zeinFont font-bold">Baca</p>
+                        </div>
+                      )}
 
                       {/* Already Read */}
                       {item.isWatched && canAccessEpisode && (
-                          <Link
-                            href={`/report/${productType == "ebook" ? "episode_ebook" : productType == "comic" ? "episode_comic" : productType == "movie" ? "episode_movie" : "episode_series"}/${item.id}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="z-20 h-6 w-6 cursor-pointer p-1 transition-transform duration-150 active:scale-90 md:p-2"
-                          >
-                            <Icon
-                              className="h-8 w-8 rotate-90"
-                              icon={"solar:menu-dots-line-duotone"}
-                            />
-                          </Link>
-                        )}
+                        <Link
+                          href={`/report/${productType == "ebook" ? "episode_ebook" : productType == "comic" ? "episode_comic" : productType == "movie" ? "episode_movie" : "episode_series"}/${item.id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="z-20 h-6 w-6 cursor-pointer p-1 transition-transform duration-150 active:scale-90 md:p-2"
+                        >
+                          <Icon
+                            className="h-8 w-8 rotate-90"
+                            icon={"solar:menu-dots-line-duotone"}
+                          />
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </button>
@@ -342,6 +393,20 @@ export default function ProductEpisodeSection({
         ) : (
           <EpisodeUnAvailable />
         )}
+
+        <UnlockContentModal
+          isOpen={isUnlockModalOpen}
+          onClose={handleCloseUnlockModal}
+          title=""
+          subtitle={`${unlockTargetEpisode?.title || "Episode"}`}
+          basePrice={unlockTargetEpisode?.price || 0}
+          userBalance={userData?.Session?.UserWallet?.balance ?? 0}
+          episodeId={unlockTargetEpisode?.id}
+          contentId={productId}
+          contentType={resolveContentType(productType)}
+          tip={null}
+          onPaymentSuccess={handleUnlockSuccess}
+        />
       </>
     );
     /*[--- PODCAST ---]*/
@@ -364,7 +429,11 @@ export default function ProductEpisodeSection({
                   onClick={
                     canAccessEpisode
                       ? () => handlePlayWithPodcast(item)
-                      : () => handlePayment(item.id, item.price)
+                      : () =>
+                        openUnlockModal({
+                          episode: item,
+                          onSuccess: null,
+                        })
                   }
                   className="flex flex-col justify-between"
                 >
@@ -433,7 +502,7 @@ export default function ProductEpisodeSection({
                                 <p className="font-bold">Terkunci</p>
                               </div>
                               <p className="font-bold">
-                                Rp{" "}
+                                <img src={GateplusCoin.src} alt="Gateplus Coin" className="h-4 w-4" />
                                 {item.price === "Free"
                                   ? "0"
                                   : item.price.toLocaleString("id-ID")}
@@ -564,6 +633,20 @@ export default function ProductEpisodeSection({
         ) : (
           <EpisodeUnAvailable />
         )}
+
+        <UnlockContentModal
+          isOpen={isUnlockModalOpen}
+          onClose={handleCloseUnlockModal}
+          title=""
+          subtitle={`${unlockTargetEpisode?.title || "Episode"}`}
+          basePrice={unlockTargetEpisode?.price || 0}
+          userBalance={userData?.Session?.UserWallet?.balance ?? 0}
+          episodeId={unlockTargetEpisode?.id}
+          contentId={productId}
+          contentType={resolveContentType(productType)}
+          tip={null}
+          onPaymentSuccess={handleUnlockSuccess}
+        />
       </>
     );
   }

@@ -19,11 +19,13 @@ import CarouselTemplate from "@/components/Carousel/carouselTemplate";
 import LoadingOverlay from "@/components/LoadingOverlay/page";
 import CompleteProfileModal from "@/components/Modal/CompleteProfileModal";
 import UnderAgeModal from "@/components/Modal/UnderAgeModal";
+import UnlockContentModal from "@/components/Modal/UnlockContentModal";
 
 import { useGetMovieByIdQuery } from "@/hooks/api/movieSliceAPI";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { useAddLastSeenMutation } from "@/hooks/api/lastSeenSliceAPI";
 import { useGetCommentByMovieQuery } from "@/hooks/api/commentSliceAPI";
+import { useGetMeQuery } from "@/hooks/api/userSliceAPI";
 import { useLikeContent } from "@/lib/features/useLikeContent";
 import { useDislikeContent } from "@/lib/features/useDislikeContent";
 import { useSaveContent } from "@/lib/features/useSaveContent";
@@ -75,8 +77,11 @@ function PlayingMoviePage({ params }) {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState("success");
+  const [isUnlockModalOpen, setIsUnlockModalOpen] = useState(false);
   const progressRef = useRef(0);
   const [resumeSeconds, setResumeSeconds] = useState(0);
+
+  const { data: userData } = useGetMeQuery();
 
   const { data: commentData, isLoading: isLoadingGetComment } =
     useGetCommentByMovieQuery(id, { skip: !id });
@@ -287,8 +292,8 @@ function PlayingMoviePage({ params }) {
     }
   }, [showToast]);
 
-  const handleSubscribe = () => {
-    window.location.href = `/checkout/subscribe/movie/${movieData.id}`;
+  const handleOpenBuyModal = () => {
+    setIsUnlockModalOpen(true);
   };
 
   if (!isHydrated || isLoading || !data || !isReady) return <LoadingOverlay />;
@@ -296,7 +301,7 @@ function PlayingMoviePage({ params }) {
   const hasAccess =
     movieData?.isOwner ||
     movieData?.isSubscribed ||
-    movieData?.price === "Free";
+    movieData?.price === 0;
 
   const isAgeAllowed = !isBlurredMovie();
   const canPlay = hasAccess && isAgeAllowed;
@@ -344,7 +349,7 @@ function PlayingMoviePage({ params }) {
             <div className="mt-2 flex gap-6">
               <button
                 onClick={() => {
-                  if (!hasAccess) handleSubscribe();
+                  if (!hasAccess) handleOpenBuyModal();
                   else window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
                 className="w-48 rounded-3xl bg-[#0076E999] px-12 py-3 font-bold"
@@ -438,13 +443,13 @@ function PlayingMoviePage({ params }) {
                   Genre :{" "}
                   {Array.isArray(movieData?.categories)
                     ? movieData.categories
-                        .map(
-                          (cat) => cat.category?.tittle || cat.category?.title,
-                        )
-                        .filter(Boolean)
-                        .join(", ")
+                      .map(
+                        (cat) => cat.category?.tittle || cat.category?.title,
+                      )
+                      .filter(Boolean)
+                      .join(", ")
                     : movieData?.categories?.tittle ||
-                      movieData?.categories?.title}
+                    movieData?.categories?.title}
                 </p>
                 <p>Tahun Rilis : {movieData.releaseYear}</p>
                 <p>Bahasa : {movieData.language}</p>
@@ -505,6 +510,27 @@ function PlayingMoviePage({ params }) {
           onClose={() => setShowToast(false)}
         />
       )}
+
+      <UnlockContentModal
+        isOpen={isUnlockModalOpen}
+        onClose={() => {
+          setIsUnlockModalOpen(false);
+        }}
+        onPaymentSuccess={() => {
+          refetch();
+          setIsUnlockModalOpen(false);
+        }}
+        onGetVouchers={() => {
+          window.location.href = "/profile";
+        }}
+        title=""
+        subtitle={`${movieData?.title || "Konten"}`}
+        basePrice={movieData?.price === "Free" ? 0 : Number(movieData?.price) || 0}
+        userBalance={userData?.Session?.UserWallet?.balance ?? 0}
+        episodeId={id}
+        contentId={movieData?.id}
+        contentType="MOVIE"
+      />
     </div>
   );
 }

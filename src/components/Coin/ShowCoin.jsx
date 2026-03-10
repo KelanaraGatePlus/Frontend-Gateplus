@@ -68,23 +68,16 @@ export default function ShowCoin({ balance, withPayment = true }) {
     }, [balance, clearDelayedSync]);
 
     React.useEffect(() => {
-        const animateBalanceIncrease = (amount) => {
-            const increaseAmount = Number(amount) || 0;
-            if (increaseAmount <= 0) return;
+        const animateBalanceTo = (targetValue) => {
+            const nextTarget = Number(targetValue);
+            if (!Number.isFinite(nextTarget)) return;
 
-            const currentPropBalance = balancePropRef.current;
-            const previousPropBalance = previousBalancePropRef.current;
-            const propDelta = currentPropBalance - previousPropBalance;
+            const startValue = balanceRef.current;
+            if (nextTarget === startValue) return;
 
             clearDelayedSync();
             pendingSyncBalanceRef.current = null;
-
-            // If upstream state already includes the top-up, animate to latest prop from current display.
-            const hasPropAlreadyIncludedIncrease = propDelta >= increaseAmount;
-            const startValue = balanceRef.current;
-            const endValue = hasPropAlreadyIncludedIncrease
-                ? currentPropBalance
-                : startValue + increaseAmount;
+            const endValue = nextTarget;
 
             const runId = animationRunIdRef.current + 1;
             animationRunIdRef.current = runId;
@@ -96,7 +89,8 @@ export default function ShowCoin({ balance, withPayment = true }) {
                 cancelAnimationFrame(animationFrameRef.current);
             }
 
-            const duration = 900;
+            const distance = Math.abs(endValue - startValue);
+            const duration = Math.min(1400, Math.max(550, 500 + distance * 12));
             let startTs = null;
 
             const step = (timestamp) => {
@@ -113,7 +107,7 @@ export default function ShowCoin({ balance, withPayment = true }) {
                 if (progress < 1) {
                     animationFrameRef.current = requestAnimationFrame(step);
                 } else {
-                    const finalValue = Math.max(endValue, balancePropRef.current);
+                    const finalValue = endValue;
                     balanceRef.current = finalValue;
                     setDisplayBalance(finalValue);
                     animationFrameRef.current = null;
@@ -129,9 +123,22 @@ export default function ShowCoin({ balance, withPayment = true }) {
         };
 
         const handleCoinArrived = (event) => {
-            const amount = event?.detail?.addedCoins;
+            const detail = event?.detail || {};
+            const targetBalance = Number(
+                detail?.targetBalance ?? detail?.balanceAfterTransaction,
+            );
+            const amount = Number(detail?.addedCoins);
+
             setImpactKey((prev) => prev + 1);
-            animateBalanceIncrease(amount);
+
+            if (Number.isFinite(targetBalance)) {
+                animateBalanceTo(targetBalance);
+                return;
+            }
+
+            if (Number.isFinite(amount) && amount !== 0) {
+                animateBalanceTo(balanceRef.current + amount);
+            }
         };
 
         window.addEventListener(COIN_ARRIVED_EVENT, handleCoinArrived);
@@ -151,7 +158,7 @@ export default function ShowCoin({ balance, withPayment = true }) {
     return (
         <>
             <motion.div
-                className={`flex items-center justify-center gap-2 w-max h-full border bg-[#F5F5F5]/6 delay-100 backdrop-blur-sm rounded-full px-2 py-2 transition-colors duration-200 ${isCounting
+                className={`flex items-center justify-center gap-2 w-max h-full border bg-[#F5F5F5]/6 text-white delay-100 backdrop-blur-sm rounded-full px-2 py-2 transition-colors duration-200 ${isCounting
                     ? "border-[#FFB000AA]"
                     : "border-[#F5F5F51A]"
                     }`}

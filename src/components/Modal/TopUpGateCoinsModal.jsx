@@ -13,6 +13,8 @@ import { useGetCoinPackagesQuery } from "@/hooks/api/coinPackageAPI";
 import { useCoinPayment } from "@/hooks/api/paymentAPI";
 import PaymentSuccessModal from "@/components/Modal/PaymentSuccessModal";
 import { useCheckPaymentStatusMutation } from "@/hooks/api/paymentSliceAPI";
+import { countAdminFee } from "@/lib/constants/paymentMethod";
+import { fee } from "@/lib/constants/fee";
 
 const DEFAULT_PACKAGES = [
     { id: "10k", amount: 10000, price: 10000, bonus: 0 },
@@ -149,6 +151,12 @@ export default function TopUpGateCoinsModal({
     const isSelectionInvalid = !selectedPackage || !selectedPaymentMethod;
     const isDisabled = isSelectionInvalid || isPaying;
     const totalCoins = (selectedPackage?.amount || 0) + (selectedPackage?.bonus || 0);
+    const paymentAmount = selectedPackage?.price || 0;
+    const transferFee = selectedPaymentMethodId
+        ? countAdminFee(paymentAmount, selectedPaymentMethodId) || 0
+        : 0;
+    const systemFee = paymentAmount > 0 ? fee.serviceFee || 0 : 0;
+    const totalPayable = paymentAmount + transferFee + systemFee;
 
     const getLatestPaymentResult = async (result) => {
         const orderId = resolveOrderId(result);
@@ -334,30 +342,49 @@ export default function TopUpGateCoinsModal({
                                     </div>
 
                                     <div className="rounded-xl border border-[#F5F5F526] bg-[#1E293980] p-4 montserratFont">
-                                        <div className="space-y-3 text-sm text-[#C6C6C6]">
-                                            <div className="flex items-center justify-between gap-3 pb-2">
+                                        <div className="gap-2 flex flex-col text-sm text-[#C6C6C6]">
+                                            <div className="flex items-center justify-between pb-2">
                                                 <span>Package</span>
                                                 <span className="flex items-center gap-1.5 text-base font-semibold text-white">
-                                                    <Image src={coinLogo} alt="Coin" width={14} height={14} className="h-3.5 w-3.5" />
-                                                    {formatCoin(selectedPackage?.amount || 0)} Coins
+                                                    <Image src={coinLogo} alt="Coin" width={20} height={20} />
+                                                    {formatCoin(selectedPackage?.amount || 0)} Coins <span className="font-semibold text-[#05DF72] text-xs">
+                                                        +{formatCoin(selectedPackage?.bonus || 0)} Coins
+                                                    </span>
                                                 </span>
                                             </div>
-
-                                            <div className="flex items-center justify-between gap-3 pb-2">
-                                                <span>Bonus</span>
-                                                <span className="font-semibold text-[#05DF72]">
-                                                    +{formatCoin(selectedPackage?.bonus || 0)} Coins
-                                                </span>
-                                            </div>
-
-                                            <div className="flex items-center justify-between gap-3 pb-2">
-                                                <span>Total Coins</span>
-                                                <span className="text-lg font-bold text-[#F0B100]">{formatCoin(totalCoins)}</span>
-                                            </div>
-
-                                            <div className="flex items-center justify-between gap-3">
+                                            <div className="flex items-center justify-between pb-2">
                                                 <span>Payment Amount</span>
-                                                <span className="text-base font-semibold text-white">{formatRupiah(selectedPackage?.price || 0)}</span>
+                                                <span className="text-base font-semibold text-white">{formatRupiah(paymentAmount)}</span>
+                                            </div>
+
+                                            <hr />
+
+                                            <div className="flex items-center justify-between">
+                                                <span>Total Coins</span>
+                                                <div className="flex flex-row gap-1 items-center">
+                                                    <Image src={coinLogo} alt="Coin" width={20} height={20} />
+                                                    <span className="text-lg font-bold text-[#F0B100]">{formatCoin(totalCoins)}</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center justify-between">
+                                                <span>Discount</span>
+                                                <span className="text-xs font-semibold text-red-600">-{formatRupiah(0)}</span>
+                                            </div>
+
+                                            <div className="flex items-center justify-between">
+                                                <span>Transfer Fee</span>
+                                                <span className="text-xs font-semibold text-[#979797]">{formatRupiah(transferFee)}</span>
+                                            </div>
+
+                                            <div className="flex items-center justify-between pb-2 border-b border-[#F5F5F526]">
+                                                <span>System Fee</span>
+                                                <span className="text-xs font-semibold text-[#979797]">{formatRupiah(systemFee)}</span>
+                                            </div>
+
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-white">Total Payment</span>
+                                                <span className="text-lg font-bold text-white">{formatRupiah(totalPayable)}</span>
                                             </div>
                                         </div>
                                     </div>

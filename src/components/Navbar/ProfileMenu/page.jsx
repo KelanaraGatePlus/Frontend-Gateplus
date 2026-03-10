@@ -104,17 +104,17 @@ export default function ProfileMenu({
       {/* Dropdown Profile */}
       {isProfileMenuOpen && (
         <div
-          className="montserratFont custom-scrollbar absolute top-11 right-0 flex max-h-[85vh] w-70 flex-col gap-3 overflow-y-auto rounded-lg bg-[#0395BC] px-3 py-4 transition-all duration-300 ease-in-out lg:top-16"
+          className="montserratFont custom-scrollbar absolute top-11 right-0 flex max-h-[85vh] w-70 flex-col gap-3 overflow-y-auto rounded-lg bg-[#0395BC] text-white px-3 py-4 transition-all duration-300 ease-in-out lg:top-16"
           onClick={(e) => {
             e.stopPropagation();
           }}
         >
           <ul className="flex flex-col gap-1">
             <div className="flex flex-col items-center w-full gap-2 bg-linear-to-br from-[#979797CC] to-[#EC7F29CC] rounded-xl p-3">
-              <h1 className="montserratFont font-medium text-lg">GateCoins Balance</h1>
+              <h1 className="montserratFont font-medium text-lg text-white">GateCoins Balance</h1>
               <ShowCoin balance={userBalance} withPayment={false} />
               <div className="flex flex-row gap-2 w-full justify-between">
-                <Link href="/top-up" className="rounded-lg bg-[#F07F26] h-full px-9 shadow-[0px_2px_4px_-2px_rgba(0,0,0,0.10)] shadow-md col-span-3 py-2 flex items-center justify-center gap-1.5 font-bold text-xs montserratFont transition-all hover:outline hover:outline-[#F5F5F5] delay-100 hover:bg-[#ff6f00]">
+                <Link href="/top-up" className="rounded-lg bg-[#F07F26] text-white h-full px-9 shadow-[0px_2px_4px_-2px_rgba(0,0,0,0.10)] shadow-md col-span-3 py-2 flex items-center justify-center gap-1.5 font-bold text-xs montserratFont transition-all hover:outline hover:outline-[#F5F5F5] delay-100 hover:bg-[#ff6f00]">
                   <Icon
                     icon={'ph:plus-bold'}
                     width={16}
@@ -323,7 +323,7 @@ export default function ProfileMenu({
               </Link>
             </div>
           )}
-          <Link href="/education" className="w-full bg-[#04475E] rounded-full py-2.5 flex gap-1 items-center justify-center font-bold zeinFont hover:bg-[#023444] hover:outline hover:outline-white transition-all">
+          <Link href="/education" className="w-full bg-[#04475E] text-white rounded-full py-2.5 flex gap-1 items-center justify-center font-bold zeinFont hover:bg-[#023444] hover:outline hover:outline-white transition-all">
             <Icon
               icon={'solar:square-academic-cap-bold'}
               width={24}
