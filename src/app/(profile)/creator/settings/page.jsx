@@ -136,7 +136,7 @@ export default function CreatorSettingsPage() {
   /*[--- EFFECT: populate form from API ---]*/
   useEffect(() => {
     if (!creatorData) return;
-    const d = creatorData?.data?.data?.data;
+    const d = creatorData?.data?.data;
     if (!d) return;
 
     setProfilePictureUrl(normalize(d.imageUrl));
@@ -303,8 +303,8 @@ export default function CreatorSettingsPage() {
       console.error("Error during patch request:", error);
       showError(
         error?.data?.message ||
-          error?.message ||
-          "Terjadi kesalahan saat update profil",
+        error?.message ||
+        "Terjadi kesalahan saat update profil",
       );
     }
   };
@@ -355,8 +355,8 @@ export default function CreatorSettingsPage() {
                         src={
                           profilePicturePreview ||
                           (profilePictureUrl &&
-                          profilePictureUrl !== "null" &&
-                          profilePictureUrl !== ""
+                            profilePictureUrl !== "null" &&
+                            profilePictureUrl !== ""
                             ? profilePictureUrl
                             : logoUsersComment)
                         }
@@ -388,8 +388,8 @@ export default function CreatorSettingsPage() {
                         src={
                           bannerProfilePicturePreview ||
                           (bannerProfileUrl &&
-                          bannerProfileUrl !== "null" &&
-                          bannerProfileUrl !== ""
+                            bannerProfileUrl !== "null" &&
+                            bannerProfileUrl !== ""
                             ? bannerProfileUrl
                             : BannerCreator)
                         }
