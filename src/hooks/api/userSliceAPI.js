@@ -88,9 +88,13 @@ export const userAPI = createApi({
         method: "POST",
         body: {
           resetPasswordToken,
-          newPassword
+          newPassword,
         },
       }),
+    }),
+    getUserById: builder.query({
+      query: (id) => `/users/${id}`,
+      providesTags: ["usersAPI"],
     }),
   }),
 });
@@ -108,4 +112,5 @@ export const {
   useGetUserPurchasedContentQuery,
   useResetPasswordRequestMutation,
   useResetPasswordMutation,
+  useGetUserByIdQuery,
 } = userAPI;

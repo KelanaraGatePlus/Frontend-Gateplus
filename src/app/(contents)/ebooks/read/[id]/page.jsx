@@ -62,7 +62,8 @@ export default function ReadEbookPage({ params }) {
   const [isReaderLoading, setIsReaderLoading] = useState(false);
   const [isModalTutorialOpen, setIsModalTutorialOpen] = useState(false);
   const hasUpdatedViewsRef = useRef(false);
-  const readingModeBeforeChangeRef = useRef("page");
+  const readingModeBeforeChangeRef = useRef(readingMode);
+  const hasInitializedReadingModeRef = useRef(false);
   const scrollPositionRef = useRef(0);
   const isReadingModeChangeRef = useRef(false);
   const lastCfiRef = useRef(null);
@@ -314,10 +315,12 @@ export default function ReadEbookPage({ params }) {
   // Handler untuk mengubah reading mode (Memoized - tidak re-create setiap render)
   const handleReadingModeChange = useCallback(
     (mode) => {
+      if (mode === readingMode) return;
+      setIsReaderLoading(true);
       setReadingMode(mode);
       sendLogToServer("READING_MODE_CHANGE", currentPage, { newMode: mode });
     },
-    [currentPage, sendLogToServer],
+    [readingMode, currentPage, sendLogToServer],
   );
 
   // update prev
@@ -466,6 +469,13 @@ export default function ReadEbookPage({ params }) {
 
   // Handle reading mode change - preserve reading position
   useEffect(() => {
+    // Skip first render: prevent false-positive mode change on initial mount.
+    if (!hasInitializedReadingModeRef.current) {
+      hasInitializedReadingModeRef.current = true;
+      readingModeBeforeChangeRef.current = readingMode;
+      return;
+    }
+
     if (!id || readingMode === readingModeBeforeChangeRef.current) return;
 
     // Save scroll position before switching modes
@@ -625,7 +635,6 @@ export default function ReadEbookPage({ params }) {
             icon={"solar:menu-dots-bold-duotone"}
             className={`z-10 h-10 w-10 text-3xl ${colorTheme === "dark" ? "text-white" : "text-black"}`}
             onClick={() => {
-              setMobileMenuOpen(!mobileMenuOpen);
               sendLogToServer("OPEN_MENU", currentPage);
               handleToggleMobileMenu();
             }}
@@ -643,7 +652,6 @@ export default function ReadEbookPage({ params }) {
                 icon={"solar:close-circle-bold-duotone"}
                 className={`h-8 w-8 self-end text-3xl ${colorTheme === "dark" ? "text-white" : "text-black"}`}
                 onClick={() => {
-                  setMobileMenuOpen(!mobileMenuOpen);
                   sendLogToServer("CLOSE_MENU", currentPage);
                   handleToggleMobileMenu();
                 }}
@@ -873,7 +881,10 @@ export default function ReadEbookPage({ params }) {
         {mobileMenuOpen && (
           <div
             className="fixed inset-0 z-10 md:hidden"
-            onClick={() => setMobileMenuOpen(false)}
+            onClick={() => {
+              setMobileMenuOpen(false);
+              sendLogToServer("CLOSE_MENU", currentPage);
+            }}
           />
         )}
 

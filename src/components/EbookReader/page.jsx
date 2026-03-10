@@ -16,10 +16,7 @@ import React from "react";
 
 const FONT_FAMILIES = {
   montserrat: { class: "montserratFont", value: '"Montserrat", sans-serif' },
-  openDyslexic: {
-    class: "openDyslexicFont",
-    value: '"OpenDyslexic", sans-serif',
-  },
+  openDyslexic: { class: "openDyslexicFont", value: '"OpenDyslexic", sans-serif' },
   merriweather: { class: "merriweatherFont", value: '"Merriweather", serif' },
   inter: { class: "interFont", value: '"Inter", sans-serif' },
 };
@@ -29,7 +26,7 @@ const TEXT_ALIGNS = { left: "left", justify: "justify" };
 const COLOR_THEMES = {
   dark: { bg: "#222222", text: "#F5F5F5" },
   sepia: { bg: "#E8DFC8", text: "#4A3F2C" },
-  light: { bg: "#F5F5F5", text: "#1A1A1A" },
+  light: { bg: "#F5F5F5", text: "#1A1A1A" }
 };
 
 const EpubReader = forwardRef(
@@ -50,9 +47,8 @@ const EpubReader = forwardRef(
       currentPage = 1,
       cfiPosition = null,
       bottomBarHeight = 176,
-      topBarHeight = 64,
     },
-    ref,
+    ref
   ) => {
     const viewerRef = useRef(null);
     const renditionRef = useRef(null);
@@ -69,24 +65,11 @@ const EpubReader = forwardRef(
     const pageStatsRef = useRef({ current: 1, total: 1 });
     const pageNumbersInjectedRef = useRef(false);
     const injectPageNumbersTimeoutRef = useRef(null);
-    const initialPageRef = useRef(currentPage);
-    const initialCfiRef = useRef(cfiPosition);
-
-    const getUsablePageHeight = useCallback(() => {
-      if (typeof window === "undefined") return 560;
-      const top = Number(topBarHeight || 0);
-      const bottom = Number(bottomBarHeight || 176);
-      return Math.max(0, window.innerHeight - top - bottom);
-    }, [topBarHeight, bottomBarHeight]);
+    const loadingCycleRef = useRef(0);
 
     const injectPageNumbers = useCallback(() => {
       // Hanya jalankan di mode scroll dan pastikan rendition sudah siap
-      if (
-        readingMode !== "scroll" ||
-        !renditionRef.current ||
-        !viewerRef.current
-      )
-        return;
+      if (readingMode !== "scroll" || !renditionRef.current || !viewerRef.current) return;
 
       // Guard: Cegah multiple injections
       if (pageNumbersInjectedRef.current) return;
@@ -94,11 +77,13 @@ const EpubReader = forwardRef(
       const doc = viewerRef.current?.querySelector("iframe")?.contentDocument;
       if (!doc) return;
 
-      // 1. Bersihkan marker lama agar tidak terjadi penumpukan elemen
-      doc.querySelectorAll(".virtual-page-marker").forEach((el) => el.remove());
-
       const body = doc.body;
+      if (!body) return;
+
+      // 1. Bersihkan marker lama agar tidak terjadi penumpukan elemen
+      doc.querySelectorAll(".virtual-page-marker").forEach(el => el.remove());
       const viewerWidth = viewerRef.current.offsetWidth;
+      if (!viewerWidth) return;
 
       // Hitung dimensi berdasarkan rasio A4 (297/210)
       const pageHeight = viewerWidth * (297 / 210);
@@ -107,9 +92,7 @@ const EpubReader = forwardRef(
       const textColor = COLOR_THEMES[colorTheme]?.text || "#000000";
 
       // Ambil semua elemen paragraf/div sebagai target penempatan
-      const elements = Array.from(
-        body.querySelectorAll("p, div, h1, h2, h3, img, section"),
-      );
+      const elements = Array.from(body.querySelectorAll("p, div, h1, h2, h3, img, section"));
       const docOffset = doc.defaultView?.pageYOffset || 0;
 
       for (let i = 1; i <= totalPages; i++) {
@@ -138,12 +121,12 @@ const EpubReader = forwardRef(
         const targetY = i * pageHeight;
 
         // Cari elemen yang tepat untuk disisipkan marker di bawahnya
-        const closestElement = elements.find((el) => {
+        const closestElement = elements.find(el => {
           const rect = el.getBoundingClientRect();
-          return rect.top + docOffset > targetY;
+          return (rect.top + docOffset) > targetY;
         });
 
-        if (closestElement) {
+        if (closestElement?.parentNode) {
           closestElement.parentNode.insertBefore(marker, closestElement);
         } else {
           body.appendChild(marker);
@@ -173,35 +156,23 @@ const EpubReader = forwardRef(
       // Harus pilih salah satu id agar lolos schema refine
       if (hasEbook === hasComic) return;
 
-      const pageZeroBased = Math.max(
-        0,
-        (pageStatsRef.current.current || 1) - 1,
-      );
-      const isFinish = pageStatsRef.current.total
-        ? pageStatsRef.current.current >= pageStatsRef.current.total
-        : false;
+      const pageZeroBased = Math.max(0, (pageStatsRef.current.current || 1) - 1);
+      const isFinish = pageStatsRef.current.total ? pageStatsRef.current.current >= pageStatsRef.current.total : false;
 
       // Debounce agar tidak spam request saat user scroll cepat
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
       debounceTimerRef.current = setTimeout(() => {
         const body = {
           page: pageZeroBased,
-          totalPages: pageStatsRef.current.total || 1,
           isFinish: isFinish || undefined,
           episodeEbookId: hasEbook ? episodeEbookId : undefined,
           episodeComicId: hasComic ? episodeComicId : undefined,
           // Catat CFI hanya untuk mode halaman (paginated)
-          cfiString:
-            readingMode === "page"
-              ? lastCfiRef.current || undefined
-              : undefined,
+          cfiString: readingMode === "page" ? (lastCfiRef.current || undefined) : undefined,
         };
         try {
           // Trigger RTK Query mutation; ignore result for fire-and-forget
-          // Tambah sementara di EpubReader, ganti applyReadProgress(body) dengan:
-          console.log("Sending readProgress:", JSON.stringify(body));
-          const result = applyReadProgress(body);
-          console.log("readProgress result:", result);
+          applyReadProgress(body);
         } catch (e) {
           console.error("Gagal mengirim progress baca:", e);
         }
@@ -210,106 +181,89 @@ const EpubReader = forwardRef(
       return () => {
         if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
       };
-    }, [
-      pageStats.current,
-      pageStats.total,
-      episodeEbookId,
-      episodeComicId,
-      applyReadProgress,
-      readingMode,
-    ]);
+    }, [pageStats.current, pageStats.total, episodeEbookId, episodeComicId, applyReadProgress, readingMode]);
 
     const getFontFamily = useCallback(() => {
       const fam = FONT_FAMILIES[fontFamily];
       return fam ? fam.value : FONT_FAMILIES.inter.value;
     }, [fontFamily]);
 
-    if (!initialNavDoneRef.current) {
-      initialPageRef.current = currentPage;
-      initialCfiRef.current = cfiPosition;
-    }
-
     const updateScrollProgress = useCallback(() => {
       if (readingMode !== "scroll" || !viewerRef.current) return;
 
       const container = viewerRef.current;
-      const scrollTop =
-        window.scrollY || document.documentElement.scrollTop || 0;
+      const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
       const scrollHeight = document.documentElement.scrollHeight || 0;
       const clientHeight = window.innerHeight || 0;
 
       const virtualPageHeight = container.offsetWidth * (297 / 210);
 
-      const currentVirtualPage = Math.ceil(
-        (scrollTop + clientHeight) / virtualPageHeight,
-      );
+      const currentVirtualPage = Math.ceil((scrollTop + clientHeight) / virtualPageHeight);
       const totalVirtualPages = Math.ceil(scrollHeight / virtualPageHeight);
 
       const current = Math.max(1, currentVirtualPage);
       const total = Math.max(1, totalVirtualPages);
 
       // Only update state if page number actually changed (prevent unnecessary re-renders)
-      if (
-        pageStatsRef.current.current !== current ||
-        pageStatsRef.current.total !== total
-      ) {
+      if (pageStatsRef.current.current !== current || pageStatsRef.current.total !== total) {
         pageStatsRef.current = { current, total };
         setPageStats({ current, total });
       }
 
-      const progressRatio =
-        scrollHeight > 0
-          ? Math.min(1, (scrollTop + clientHeight) / scrollHeight)
-          : 0;
+      const progressRatio = scrollHeight > 0 ? Math.min(1, (scrollTop + clientHeight) / scrollHeight) : 0;
       const progressPercent = Math.round(progressRatio * 100);
-      onProgressChange?.({
-        progress: progressPercent,
-        currentPage: current,
-        totalPages: total,
-      });
+      onProgressChange?.({ progress: progressPercent, currentPage: current, totalPages: total });
 
       // Store scroll position to prevent reset
       lastScrollPositionRef.current = scrollTop;
     }, [readingMode, onProgressChange]);
 
-    const applyTheme = useCallback(
-      (theme = colorTheme, lh = lineHeight, align = textAlign) => {
-        if (!renditionRef.current) return;
+    const applyTheme = useCallback((theme = colorTheme, lh = lineHeight, align = textAlign) => {
+      if (!renditionRef.current) return;
 
-        const themeColors = COLOR_THEMES[theme] || COLOR_THEMES.dark;
+      const themeColors = COLOR_THEMES[theme] || COLOR_THEMES.dark;
 
-        renditionRef.current.themes.register("custom-theme", {
-          body: {
-            background: `${themeColors.bg} !important`,
-            color: `${themeColors.text} !important`,
-            "font-family": `${getFontFamily()} !important`,
-            "line-height": `${LINE_HEIGHTS[lh] || LINE_HEIGHTS.normal} !important`,
-            "text-align": `${TEXT_ALIGNS[align] || TEXT_ALIGNS.justify} !important`,
-            "-webkit-user-select": "none !important",
-            "user-select": "none !important",
-            padding: "40px 30px !important",
-            "box-sizing": "border-box !important",
-            "max-width": "100% !important",
-            "word-break": "break-word !important",
-            "overflow-wrap": "anywhere !important",
-            height: readingMode === "page" ? "auto" : "auto !important",
-          },
-          html: {
-            height: readingMode === "page" ? "100%" : "auto !important",
-            "-webkit-user-select": "none !important",
-            "user-select": "none !important",
-          },
-          img: {
-            width: "auto !important",
-            maxWidth: "100% !important",
-            height: "auto !important",
-          },
-        });
+      renditionRef.current.themes.register("custom-theme", {
+        body: {
+          background: `${themeColors.bg} !important`,
+          color: `${themeColors.text} !important`,
+          "font-family": `${getFontFamily()} !important`,
+          "line-height": `${LINE_HEIGHTS[lh] || LINE_HEIGHTS.normal} !important`,
+          "text-align": `${TEXT_ALIGNS[align] || TEXT_ALIGNS.justify} !important`,
+          "-webkit-user-select": "none !important",
+          "user-select": "none !important",
+          padding: "40px 30px !important",
+          "box-sizing": "border-box !important",
+          "max-width": "100% !important",
+          "word-break": "break-word !important",
+          "overflow-wrap": "anywhere !important",
+          height: readingMode === "page" ? "auto" : "auto !important",
+        },
+        html: {
+          height: readingMode === "page" ? "100%" : "auto !important",
+          "-webkit-user-select": "none !important",
+          "user-select": "none !important",
+        },
+        p: { color: `${themeColors.text} !important` },
+        span: { color: `${themeColors.text} !important` },
+        div: { color: `${themeColors.text} !important` },
+        li: { color: `${themeColors.text} !important` },
+        h1: { color: `${themeColors.text} !important` },
+        h2: { color: `${themeColors.text} !important` },
+        h3: { color: `${themeColors.text} !important` },
+        h4: { color: `${themeColors.text} !important` },
+        h5: { color: `${themeColors.text} !important` },
+        h6: { color: `${themeColors.text} !important` },
+        a: { color: `${themeColors.text} !important` },
+        img: {
+          width: "auto !important",
+          maxWidth: "100% !important",
+          height: "auto !important",
+        }
+      });
 
-        renditionRef.current.themes.select("custom-theme");
-      },
-      [colorTheme, lineHeight, textAlign, readingMode, getFontFamily],
-    );
+      renditionRef.current.themes.select("custom-theme");
+    }, [colorTheme, lineHeight, textAlign, readingMode, getFontFamily]);
 
     // Protect iframe document: block copy, right-click, and devtools keys
     const protectIframeDocument = useCallback((doc) => {
@@ -321,10 +275,7 @@ const EpubReader = forwardRef(
         style.textContent = `html, body { -webkit-user-select: none !important; user-select: none !important; }`;
         doc.head.appendChild(style);
       }
-      const prevent = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      };
+      const prevent = (e) => { e.preventDefault(); e.stopPropagation(); };
       const blockKeys = (e) => {
         const key = (e.key || "").toUpperCase();
         const ctrl = e.ctrlKey || e.metaKey;
@@ -358,11 +309,11 @@ const EpubReader = forwardRef(
       };
       ensureLink(
         "gf-montserrat",
-        "https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap",
+        "https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
       );
       ensureLink(
         "gf-inter-merri",
-        "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&display=swap",
+        "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&display=swap"
       );
     }, []);
 
@@ -372,13 +323,13 @@ const EpubReader = forwardRef(
 
       // Remove typical TOC containers
       const tocSelectors = [
-        "#toc",
-        ".toc",
+        '#toc',
+        '.toc',
         'nav[role="doc-toc"]',
         'nav[epub\\:type="toc"]',
-        "nav.toc",
-        "section.toc",
-        "div.toc",
+        'nav.toc',
+        'section.toc',
+        'div.toc',
       ];
       tocSelectors.forEach((sel) => {
         doc.querySelectorAll(sel).forEach((el) => el.remove());
@@ -386,80 +337,67 @@ const EpubReader = forwardRef(
 
       // Remove headings or paragraphs that are exactly these labels (case-insensitive)
       const labels = new Set([
-        "table of contents",
-        "contents",
-        "daftar isi",
-        "content",
+        'table of contents',
+        'contents',
+        'daftar isi', // Indonesian common label
+        'content',
       ]);
-      const textNodesSelectors = ["h1", "h2", "h3", "h4", "p"];
-      doc.querySelectorAll(textNodesSelectors.join(",")).forEach((el) => {
-        const text = (el.textContent || "").trim().toLowerCase();
+      const textNodesSelectors = ['h1', 'h2', 'h3', 'h4', 'p'];
+      doc.querySelectorAll(textNodesSelectors.join(',')).forEach((el) => {
+        const text = (el.textContent || '').trim().toLowerCase();
         if (labels.has(text)) {
           el.remove();
         }
       });
 
       // Some EPUBs place TOC lists without explicit toc classes; try heuristic
+      // If a list immediately follows a removed heading, it will be left orphaned; prune large nav-like lists near top
       const body = doc.body;
-      const topLists = Array.from(body.querySelectorAll("ol, ul")).filter(
-        (lst) => {
-          const rect = lst.getBoundingClientRect();
-          return (
-            rect.top < (doc.defaultView?.innerHeight || 800) * 0.3 &&
-            lst.querySelector("a")
-          );
-        },
-      );
+      const topLists = Array.from(body.querySelectorAll('ol, ul')).filter((lst) => {
+        const rect = lst.getBoundingClientRect();
+        return rect.top < (doc.defaultView?.innerHeight || 800) * 0.3 && lst.querySelector('a');
+      });
       topLists.forEach((lst) => {
         // If list has many anchors and short text items, likely a TOC
-        const items = Array.from(lst.querySelectorAll("li"));
-        const anchorCount = Array.from(lst.querySelectorAll("a")).length;
-        if (
-          items.length >= 5 &&
-          anchorCount >= Math.max(5, Math.floor(items.length * 0.6))
-        ) {
+        const items = Array.from(lst.querySelectorAll('li'));
+        const anchorCount = Array.from(lst.querySelectorAll('a')).length;
+        if (items.length >= 5 && anchorCount >= Math.max(5, Math.floor(items.length * 0.6))) {
           lst.remove();
         }
       });
     }, []);
 
     // Ensure OpenDyslexic font-face is available in the iframe document
-    const injectOpenDyslexicFace = useCallback(
-      (doc) => {
-        if (!doc || fontFamily !== "openDyslexic") return;
-        if (doc.getElementById("open-dyslexic-face")) return;
-        const style = doc.createElement("style");
-        style.id = "open-dyslexic-face";
-        style.textContent = `
+    const injectOpenDyslexicFace = useCallback((doc) => {
+      if (!doc || fontFamily !== "openDyslexic") return;
+      if (doc.getElementById("open-dyslexic-face")) return;
+      const style = doc.createElement("style");
+      style.id = "open-dyslexic-face";
+      style.textContent = `
         @font-face { font-family: 'OpenDyslexic'; src: url('/fonts/OpenDyslexic-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
         @font-face { font-family: 'OpenDyslexic'; src: url('/fonts/OpenDyslexic-Italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
         @font-face { font-family: 'OpenDyslexic'; src: url('/fonts/OpenDyslexic-Bold.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
         @font-face { font-family: 'OpenDyslexic'; src: url('/fonts/OpenDyslexic-BoldItalic.woff2') format('woff2'); font-weight: 700; font-style: italic; font-display: swap; }
       `;
-        doc.head.appendChild(style);
-      },
-      [fontFamily],
-    );
-
-    // validasi CFI
-    const isValidCfi = useCallback((cfi, book) => {
-      if (!cfi || !book || !book.locations) return false;
-      try {
-        book.locations.percentageFromCfi(cfi);
-        return true;
-      } catch (err) {
-        console.warn("CFI validation failed:", cfi, err);
-        return false;
-      }
-    }, []);
+      doc.head.appendChild(style);
+    }, [fontFamily]);
 
     useEffect(() => {
       if (!epubUrl || !viewerRef.current) return;
 
+      loadingCycleRef.current += 1;
+      const loadingCycle = loadingCycleRef.current;
+      const stopLoading = () => {
+        if (loadingCycleRef.current !== loadingCycle) return;
+        try {
+          onLoadingChange?.(false);
+        } catch {
+          console.warn("onLoadingChange gagal dipanggil.");
+        }
+      };
+
       // Notify parent that rendering is starting
-      try {
-        onLoadingChange?.(true);
-      } catch {
+      try { onLoadingChange?.(true); } catch {
         console.warn("onLoadingChange gagal dipanggil.");
       }
 
@@ -471,10 +409,7 @@ const EpubReader = forwardRef(
       const vh = typeof window !== "undefined" ? window.innerHeight : 800;
       const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
       const usableHeightInit = Math.max(0, vh - (bottomBarHeight || 176));
-      const widthPxInit = Math.min(
-        Math.round((usableHeightInit * 210) / 297),
-        vw,
-      );
+      const widthPxInit = Math.min(Math.round(usableHeightInit * 210 / 297), vw);
 
       const rendition = book.renderTo(viewerRef.current, {
         width: isPageMode ? widthPxInit : "100%",
@@ -486,44 +421,52 @@ const EpubReader = forwardRef(
       });
 
       renditionRef.current = rendition;
+
+      // Apply theme before first display to avoid initial black text flash.
+      applyTheme(colorTheme, lineHeight, textAlign);
+
       book.ready.then(() => {
-        const initialPage = initialPageRef.current;
-
         const firstRealContent = book.spine.items.find(
-          (item) => !/toc|nav|cover|contents/i.test(item.href),
+          (item) => !/toc|nav|cover|contents/i.test(item.href)
         );
-
-        rendition.display(firstRealContent?.href);
+        rendition
+          .display(cfiPosition || firstRealContent?.href)
+          .catch((err) => {
+            console.error("Gagal render EPUB content:", err);
+            stopLoading();
+          });
+        // Set initial font size only once on init; later changes use changeFontSize()
         rendition.themes.fontSize(`${initialFontSizeFactor}rem`);
 
         rendition.on("rendered", () => {
-          const doc =
-            viewerRef.current?.querySelector("iframe")?.contentDocument;
+          const doc = viewerRef.current?.querySelector("iframe")?.contentDocument;
+          stopLoading();
 
-          onLoadingChange?.(false);
-
+          // Berikan jeda 2 detik agar posisi scroll awal (restoration) stabil dulu
           if (injectPageNumbersTimeoutRef.current) {
             clearTimeout(injectPageNumbersTimeoutRef.current);
           }
           injectPageNumbersTimeoutRef.current = setTimeout(() => {
             if (readingMode === "scroll") {
-              injectPageNumbers();
+              try {
+                injectPageNumbers();
+              } catch (err) {
+                console.error("Gagal inject page markers:", err);
+              }
             }
           }, 2000);
 
           protectIframeDocument(doc);
           injectGoogleFonts(doc);
           injectOpenDyslexicFace(doc);
+          // Remove default TOC and common content labels
           stripTOCAndContentLabels(doc);
 
-          try {
-            onLoadingChange?.(false);
-          } catch {
-            console.warn("onLoadingChange gagal dipanggil.");
-          }
+          // Notify parent that initial render is complete
+          stopLoading();
           // Initial navigation for scroll mode: jump to provided currentPage
           if (readingMode === "scroll") {
-            const target = Math.max(1, Number(initialPage) || 1);
+            const target = Math.max(1, Number(currentPage) || 1);
             if (!initialNavDoneRef.current && target > 1) {
               setTimeout(() => {
                 const container = viewerRef.current;
@@ -542,181 +485,154 @@ const EpubReader = forwardRef(
           }
         });
 
-        // Generate locations untuk kalkulasi persentase yang akurat
-        book.locations
-          .generate(1000)
-          .then(() => {
-            locationsReadyRef.current = true;
-            console.log("✓ Locations generated successfully");
+        // Generate locations to enable accurate percentage calculation
+        book.locations.generate(1000).then(() => {
+          locationsReadyRef.current = true;
+          const loc = rendition.currentLocation?.();
+          if (isPageMode && loc) {
+            const displayed = loc.start?.displayed;
+            if (displayed) {
+              const current = displayed.page;
+              const total = displayed.total;
+              pageStatsRef.current = { current, total };
+              setPageStats({ current, total });
+            }
+            const cfi = loc.start?.cfi;
+            const pct = cfi ? book.locations.percentageFromCfi(cfi) : undefined;
+            const currentLocal = displayed?.page ?? pageStatsRef.current.current;
+            const totalLocal = displayed?.total ?? pageStatsRef.current.total;
+            const progressPercent = typeof pct === "number"
+              ? Math.round(pct * 100)
+              : (totalLocal > 0 ? Math.round((currentLocal / totalLocal) * 100) : 0);
+            onProgressChange?.({ progress: progressPercent, currentPage: currentLocal, totalPages: totalLocal });
 
-            // JANGAN akses currentLocation di sini - terlalu awal
-            // Hanya set flag bahwa locations siap
-
-            // Initial navigation untuk page mode - DELAY untuk beri waktu render
-            if (isPageMode && !initialNavDoneRef.current) {
-              setTimeout(() => {
-                const target = Math.max(1, Number(initialPage) || 1);
-
-                if (target > 1 && initialCfiRef.current) {
-                  // Coba gunakan CFI hanya jika ada
+            // Initial navigation for paginated mode using percentage -> CFI when available
+            const target = Math.max(1, Number(currentPage) || 1);
+            if (isPageMode && !initialNavDoneRef.current && target > 1) {
+              const totalPagesLocal = totalLocal || pageStatsRef.current.total || 0;
+              if (totalPagesLocal > 0) {
+                const targetPct = Math.min(1, Math.max(0, (target - 1) / totalPagesLocal));
+                const locs = book.locations;
+                let targetCfi;
+                if (locs && typeof locs.cfiFromPercentage === "function") {
                   try {
-                    if (isValidCfi(initialCfiRef.current, book)) {
-                      renditionRef.current?.display(initialCfiRef.current);
-                      console.log("✓ Navigated to CFI:", initialCfiRef.current);
-                    } else {
-                      // CFI invalid, gunakan percentage
-                      const totalPages = book.spine.length || 1;
-                      const targetPct = Math.min(
-                        1,
-                        Math.max(0, (target - 1) / totalPages),
-                      );
-                      const targetCfi =
-                        book.locations.cfiFromPercentage?.(targetPct);
-                      if (targetCfi) {
-                        renditionRef.current?.display(targetCfi);
-                        console.log("✓ Navigated to percentage:", targetPct);
-                      }
-                    }
-                  } catch (err) {
-                    console.warn(
-                      "CFI navigation failed, staying at first page:",
-                      err,
-                    );
+                    targetCfi = locs.cfiFromPercentage(targetPct);
+                  } catch {
+                    // Silent fail; fallback to stepping
+                    console.warn("Gagal mendapatkan CFI dari persentase, menggunakan fallback stepping.");
                   }
                 }
-
-                initialNavDoneRef.current = true;
-                readyToLogRef.current = true;
-              }, 800); // DELAY lebih lama agar page sudah fully rendered
-            } else {
-              initialNavDoneRef.current = true;
-              readyToLogRef.current = true;
-            }
-          })
-          .catch((err) => {
-            console.error("❌ Locations generation failed:", err);
-            locationsReadyRef.current = false;
-
-            // FALLBACK: Tetap bisa baca meski locations fail
-            if (isPageMode && !initialNavDoneRef.current) {
-              const target = Math.max(1, Number(initialPage) || 1);
-
-              if (target > 1) {
-                setTimeout(() => {
-                  try {
-                    if (
-                      initialCfiRef.current &&
-                      isValidCfi(initialCfiRef.current, book)
-                    ) {
-                      renditionRef.current?.display(initialCfiRef.current);
-                    } else {
-                      // Stepping fallback
-                      let count = 0;
-                      const step = () => {
-                        if (count >= target - 1) return;
-                        renditionRef.current?.next();
-                        count += 1;
-                        setTimeout(step, 100);
-                      };
-                      step();
-                    }
-                  } catch (err) {
-                    console.warn("Fallback navigation failed:", err);
-                  }
+                if (targetCfi) {
+                  renditionRef.current?.display(targetCfi);
                   initialNavDoneRef.current = true;
                   readyToLogRef.current = true;
-                }, 500);
-              } else {
-                initialNavDoneRef.current = true;
-                readyToLogRef.current = true;
+                } else {
+                  // Fallback: step next multiple times to approximate target page
+                  const hops = Math.max(0, target - (displayed?.page || 1));
+                  if (hops > 0) {
+                    let count = 0;
+                    const step = () => {
+                      if (count >= hops) { initialNavDoneRef.current = true; readyToLogRef.current = true; return; }
+                      renditionRef.current?.next();
+                      count += 1;
+                      setTimeout(step, 60);
+                    };
+                    setTimeout(step, 100);
+                  }
+                }
               }
-            } else {
-              initialNavDoneRef.current = true;
-              readyToLogRef.current = true;
+            } else if (!readyToLogRef.current) {
+              // No special nav; mark ready after first locations calc
+              setTimeout(() => { readyToLogRef.current = true; }, 400);
             }
-          });
-
-        if (readingMode === "scroll") {
-          window.addEventListener("scroll", updateScrollProgress);
-          setTimeout(updateScrollProgress, 1000);
-          if (lastScrollPositionRef.current > 0) {
-            setTimeout(() => {
-              window.scrollTo({
-                top: lastScrollPositionRef.current,
-                behavior: "auto",
-              });
-            }, 500);
           }
-        }
+        }).catch(() => {
+          // Fallback: emit based on displayed pages if locations fail
+          const loc = rendition.currentLocation?.();
+          const displayed = loc?.start?.displayed;
+          if (isPageMode && displayed) {
+            const current = displayed.page;
+            const total = displayed.total;
+            pageStatsRef.current = { current, total };
+            setPageStats({ current, total });
+            const progressPercent = total > 0 ? Math.round((current / total) * 100) : 0;
+            onProgressChange?.({ progress: progressPercent, currentPage: current, totalPages: total });
 
-        rendition.on("relocated", (location) => {
-          if (isPageMode) {
-            const displayed = location.start?.displayed;
-            let currentLocal = pageStatsRef.current.current;
-            let totalLocal = pageStatsRef.current.total;
-
-            if (displayed) {
-              currentLocal = displayed.page;
-              totalLocal = displayed.total;
-              pageStatsRef.current = {
-                current: currentLocal,
-                total: totalLocal,
-              };
-              setPageStats({ current: currentLocal, total: totalLocal });
-            }
-
-            // Catat CFI saat pindah halaman
-            let cfi = location.start?.cfi || location?.end?.cfi;
-            if (cfi) {
-              try {
-                lastCfiRef.current = cfi;
-                console.log("CFI saved:", cfi.substring(0, 50) + "...");
-              } catch (err) {
-                console.warn("CFI save skipped:", err);
+            // Fallback initial navigation in paginated mode if needed
+            const target = Math.max(1, Number(currentPage) || 1);
+            if (isPageMode && !initialNavDoneRef.current && target > 1) {
+              const hops = Math.max(0, target - (displayed?.page || 1));
+              if (hops > 0) {
+                let count = 0;
+                const step = () => {
+                  if (count >= hops) { initialNavDoneRef.current = true; readyToLogRef.current = true; return; }
+                  renditionRef.current?.next();
+                  count += 1;
+                  setTimeout(step, 60);
+                };
+                setTimeout(step, 100);
               }
-            }
-
-            // hitung progress
-            let progressPercent = 0;
-            if (locationsReadyRef.current && cfi) {
-              try {
-                const pct = book.locations.percentageFromCfi(cfi);
-                if (typeof pct === "number")
-                  progressPercent = Math.round(pct * 100);
-              } catch {
-                console.warn("Percentage calculation skipped");
-                progressPercent =
-                  totalLocal > 0
-                    ? Math.round((currentLocal / totalLocal) * 100)
-                    : 0;
-              }
-            } else {
-              progressPercent =
-                totalLocal > 0
-                  ? Math.round((currentLocal / totalLocal) * 100)
-                  : 0;
-            }
-
-            onProgressChange?.({
-              progress: progressPercent,
-              currentPage: currentLocal,
-              totalPages: totalLocal,
-            });
-
-            if (!readyToLogRef.current) {
-              readyToLogRef.current = true;
-            }
-          } else {
-            onProgressChange?.({
-              progress: undefined,
-              currentPage: pageStatsRef.current.current,
-              totalPages: pageStatsRef.current.total,
-            });
-            if (!readyToLogRef.current) {
-              readyToLogRef.current = true;
+            } else if (!readyToLogRef.current) {
+              setTimeout(() => { readyToLogRef.current = true; }, 400);
             }
           }
         });
+      }).catch((err) => {
+        console.error("Gagal inisialisasi EPUB:", err);
+        stopLoading();
+      });
+
+      if (readingMode === "scroll") {
+        window.addEventListener("scroll", updateScrollProgress);
+        setTimeout(updateScrollProgress, 1000);
+        // Restore scroll position if component re-renders
+        if (lastScrollPositionRef.current > 0) {
+          setTimeout(() => {
+            window.scrollTo({ top: lastScrollPositionRef.current, behavior: "auto" });
+          }, 500);
+        }
+      }
+
+      rendition.on("relocated", (location) => {
+        if (isPageMode) {
+          const displayed = location.start?.displayed;
+          let currentLocal = pageStatsRef.current.current;
+          let totalLocal = pageStatsRef.current.total;
+          if (displayed) {
+            currentLocal = displayed.page;
+            totalLocal = displayed.total;
+            pageStatsRef.current = { current: currentLocal, total: totalLocal };
+            setPageStats({ current: currentLocal, total: totalLocal });
+          }
+
+          // Catat CFI saat pindah halaman (paginated mode)
+          const cfi = location.start?.cfi || location?.end?.cfi;
+          if (cfi) {
+            lastCfiRef.current = cfi;
+            // Optional logging sesuai permintaan: cfiString dan page
+            console.log("CFI String:", cfi, "Halaman:", currentLocal);
+          }
+
+          // Prefer locations-based percentage for accuracy
+          let progressPercent = 0;
+          if (locationsReadyRef.current) {
+            const pct = (cfi ? book.locations.percentageFromCfi(cfi) : undefined);
+            if (typeof pct === "number") progressPercent = Math.round(pct * 100);
+          }
+          if (!progressPercent) {
+            progressPercent = totalLocal > 0 ? Math.round((currentLocal / totalLocal) * 100) : 0;
+          }
+          onProgressChange?.({ progress: progressPercent, currentPage: currentLocal, totalPages: totalLocal });
+          if (!readyToLogRef.current) {
+            readyToLogRef.current = true;
+          }
+        } else {
+          // In scroll mode, relocated may fire on internal anchors; re-emit last stats as payload
+          onProgressChange?.({ progress: undefined, currentPage: pageStatsRef.current.current, totalPages: pageStatsRef.current.total });
+          if (!readyToLogRef.current) {
+            readyToLogRef.current = true;
+          }
+        }
       });
 
       return () => {
@@ -725,20 +641,17 @@ const EpubReader = forwardRef(
         if (injectPageNumbersTimeoutRef.current) {
           clearTimeout(injectPageNumbersTimeoutRef.current);
         }
-        try {
-          onLoadingChange?.(false);
-        } catch {
-          console.warn("onLoadingChange gagal dipanggil.");
-        }
+        stopLoading();
       };
     }, [
       epubUrl,
       readingMode,
       updateScrollProgress,
       onProgressChange,
-      isValidCfi,
-      getUsablePageHeight,
-      bottomBarHeight
+      applyTheme,
+      colorTheme,
+      lineHeight,
+      textAlign,
     ]);
 
     // Resize rendition when bottom bar visibility/height changes
@@ -749,7 +662,7 @@ const EpubReader = forwardRef(
       if (!rendition || !container) return;
 
       if (readingMode === "page") {
-        const usableHeight = getUsablePageHeight();
+        const usableHeight = Math.max(0, window.innerHeight - (bottomBarHeight || 176));
         const widthPx = Math.min(Math.round(usableHeight * 210 / 297), window.innerWidth);
         // Sync container style to avoid width mismatch
         container.style.height = `${usableHeight}px`;
@@ -762,30 +675,25 @@ const EpubReader = forwardRef(
           console.warn("rendition.resize gagal dipanggil:", e);
         }
       }
-    }, [bottomBarHeight, topBarHeight, readingMode, getUsablePageHeight]);
+    }, [bottomBarHeight, readingMode]);
 
     useEffect(() => {
       if (!renditionRef.current) return;
       applyTheme();
-
+      
       // Reset dan inject ulang page numbers jika theme berubah di scroll mode
       if (readingMode === "scroll" && pageNumbersInjectedRef.current) {
         pageNumbersInjectedRef.current = false;
-        if (injectPageNumbersTimeoutRef.current)
-          clearTimeout(injectPageNumbersTimeoutRef.current);
+        if (injectPageNumbersTimeoutRef.current) clearTimeout(injectPageNumbersTimeoutRef.current);
         injectPageNumbersTimeoutRef.current = setTimeout(() => {
-          injectPageNumbers();
+          try {
+            injectPageNumbers();
+          } catch (err) {
+            console.error("Gagal inject page markers setelah theme berubah:", err);
+          }
         }, 1000);
       }
-    }, [
-      colorTheme,
-      lineHeight,
-      textAlign,
-      fontFamily,
-      readingMode,
-      applyTheme,
-      injectPageNumbers,
-    ]);
+    }, [colorTheme, lineHeight, textAlign, fontFamily, readingMode, applyTheme, injectPageNumbers]);
 
     const changeFontSize = (delta) => {
       const next = Math.max(0.8, Math.min(1.5, fontSizeFactor + delta));
@@ -793,16 +701,19 @@ const EpubReader = forwardRef(
       renditionRef.current?.themes.fontSize(`${next}rem`);
       onFontSizeChange?.(next);
 
-      // PENTING: Berikan jeda cukup lama (1.5 detik)
+      // PENTING: Berikan jeda cukup lama (1.5 detik) 
       // agar rendition.resize internal epubjs selesai menghitung ulang layout
       if (readingMode === "scroll") {
         // Reset flag agar bisa inject ulang dengan layout baru
         pageNumbersInjectedRef.current = false;
-
-        if (injectPageNumbersTimeoutRef.current)
-          clearTimeout(injectPageNumbersTimeoutRef.current);
+        
+        if (injectPageNumbersTimeoutRef.current) clearTimeout(injectPageNumbersTimeoutRef.current);
         injectPageNumbersTimeoutRef.current = setTimeout(() => {
-          injectPageNumbers();
+          try {
+            injectPageNumbers();
+          } catch (err) {
+            console.error("Gagal inject page markers setelah ubah font:", err);
+          }
         }, 1500);
       }
     };
@@ -816,15 +727,15 @@ const EpubReader = forwardRef(
     return (
       <Scrollama offset={0.2}>
         <Step data={1}>
-          <div className="relative flex min-h-screen w-full flex-col items-center bg-transparent">
+          <div className="relative w-full flex flex-col items-center bg-transparent min-h-screen">
             <div
               ref={viewerRef}
-              className="epub-viewport mx-auto shadow-2xl"
+              className="mx-auto epub-viewport shadow-2xl"
               style={{
-                height: readingMode === "page" ? `calc(100dvh - ${topBarHeight + bottomBarHeight}px)` : "auto",
-                minHeight: readingMode === "page" ? `calc(100dvh - ${topBarHeight + bottomBarHeight}px)` : "100vh",
+                height: readingMode === "page" ? `calc(100vh - ${bottomBarHeight}px)` : "auto",
+                minHeight: readingMode === "page" ? `calc(100vh - ${bottomBarHeight}px)` : "100vh",
                 width: readingMode === "page"
-                  ? `min(calc((100dvh - ${topBarHeight + bottomBarHeight}px) * 210 / 297), 100vw)`
+                  ? `min(calc((100vh - ${bottomBarHeight}px) * 210 / 297), 100vw)`
                   : "100%",
                 maxWidth: readingMode === "page" ? "100vw" : "800px",
                 backgroundColor: COLOR_THEMES[colorTheme]?.bg,
@@ -834,7 +745,7 @@ const EpubReader = forwardRef(
         </Step>
       </Scrollama>
     );
-  },
+  }
 );
 
 EpubReader.displayName = "EpubReader";
