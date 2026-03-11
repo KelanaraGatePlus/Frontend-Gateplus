@@ -5,9 +5,10 @@ import PropTypes from "prop-types";
 import { createPortal } from "react-dom";
 import { Icon } from "@iconify/react";
 import GateplusCoin from "@@/GateplusCoin/coinLogo.svg";
-import { useGetDiscountByVoucherDiscountCodeMutation } from "@/hooks/api/discountVoucherAPI";
+import { useGetDiscountByVoucherDiscountCodeMutation, useGetAllValidDiscountVouchersQuery } from "@/hooks/api/discountVoucherAPI";
 import { usePayWithCoinMutation, useSubscribeWithCoinMutation } from "@/hooks/api/paymentSliceAPI";
 import TopUpGateCoinsModal from "@/components/Modal/TopUpGateCoinsModal";
+import VoucherHubModal from "./VoucherHubModal";
 
 const COIN_ARRIVED_EVENT = "gateplus:coin-arrived";
 
@@ -38,9 +39,21 @@ export default function UnlockContentModal({
     const [voucherMessage, setVoucherMessage] = useState("");
     const [voucherMessageType, setVoucherMessageType] = useState("neutral");
     const [isTopUpModalOpen, setIsTopUpModalOpen] = useState(false);
+    const [openVoucherHub, setOpenVoucherHub] = useState(false);
     const [getDiscount] = useGetDiscountByVoucherDiscountCodeMutation();
     const [payWithCoin] = usePayWithCoinMutation();
     const [subscribeWithCoin] = useSubscribeWithCoinMutation();
+
+    const paymentTypeByAction = actionType === "SUBSCRIBE" ? "SUBSCRIPTION" : "TRANSACTION";
+    const { data: validVouchers } = useGetAllValidDiscountVouchersQuery(
+        {
+            contentId: contentId,
+            contentType: contentType,
+            paymentType: paymentTypeByAction,
+        }
+    );
+
+    console.log("Valid vouchers for this content/payment type:", validVouchers);
 
     useEffect(() => {
         setMounted(true);
@@ -192,14 +205,14 @@ export default function UnlockContentModal({
                     <div className="mb-4">
                         <div className="mb-2 flex items-center justify-between">
                             <p className="text-sm font-medium text-white/95">Apply Voucher</p>
-                            {/* <button
+                            <button
                                 type="button"
-                                className="inline-flex items-center gap-1 text-sm font-medium text-[#26B6FF] hover:text-[#5bc7ff]"
-                                onClick={onGetVouchers}
+                                className="inline-flex items-center gap-1 text-xs font-medium text-[#26B6FF] hover:text-[#5bc7ff]"
+                                onClick={() => setOpenVoucherHub(true)}
                             >
                                 <Icon icon="solar:ticket-sale-bold" className="h-4 w-4" />
                                 Get Vouchers
-                            </button> */}
+                            </button>
                         </div>
 
                         <div className="flex items-center gap-2">
@@ -289,6 +302,20 @@ export default function UnlockContentModal({
                 }}
                 balance={normalizedBalance}
             />
+
+            {openVoucherHub && (
+                <VoucherHubModal
+                    isOpen={openVoucherHub}
+                    availableVouchers={validVouchers?.data || validVouchers || []}
+                    redeemedVouchers={[]}
+                    coinBalance={normalizedBalance}
+                    onClose={() => setOpenVoucherHub(false)}
+                    onUseVoucher={(voucher) => {
+                        setVoucherCode(voucher.code);
+                        setOpenVoucherHub(false);
+                    }}
+                />
+            )}
         </div>,
         document.body,
     );

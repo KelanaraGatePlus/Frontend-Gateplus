@@ -24,9 +24,17 @@ export const discountVoucherAPI = createApi({
             }),
             invalidatesTags: ["discountVoucher"],
         }),
+        getAllValidDiscountVouchers: builder.query({
+            query: ({ contentId, contentType, paymentType }) => ({
+                url: "/discountVoucher/valid?" + new URLSearchParams({ contentId, contentType, paymentType }),
+                method: "GET",
+            }),
+            providesTags: ["discountVoucher"],
+        }),
     }),
 });
 
 export const {
     useGetDiscountByVoucherDiscountCodeMutation,
+    useGetAllValidDiscountVouchersQuery
 } = discountVoucherAPI;
