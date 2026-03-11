@@ -18,9 +18,11 @@ import LoadingOverlay from "@/components/LoadingOverlay/page";
 import CompleteProfileModal from "@/components/Modal/CompleteProfileModal";
 import UnderAgeModal from "@/components/Modal/UnderAgeModal";
 import DefaultShareButton from "@/components/ShareButton/DefaultShareButton";
+import UnlockContentModal from "@/components/Modal/UnlockContentModal";
 
 import { useGetSeriesByIdQuery } from "@/hooks/api/seriesSliceAPI";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
+import { useGetMeQuery } from "@/hooks/api/userSliceAPI";
 import { useLikeContent } from "@/lib/features/useLikeContent";
 import { useDislikeContent } from "@/lib/features/useDislikeContent";
 import { useSaveContent } from "@/lib/features/useSaveContent";
@@ -43,7 +45,7 @@ function DetailSeriesPage({ params }) {
     }
   }, []);
 
-  const { data, isLoading } = useGetSeriesByIdQuery(
+  const { data, isLoading, refetch } = useGetSeriesByIdQuery(
     {
       id,
       withEpisodes: false,
@@ -54,6 +56,8 @@ function DetailSeriesPage({ params }) {
   );
 
   const [loading, setLoading] = useState(false);
+  const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false);
+  const [isSubscribedState, setIsSubscribedState] = useState(false);
 
   const [isLiked, setIsLiked] = useState(false);
   const [idLiked, setIdLiked] = useState(null);
@@ -68,6 +72,7 @@ function DetailSeriesPage({ params }) {
   const [toastType, setToastType] = useState("success"); // success / failed
 
   const seriesData = data?.data?.data || {};
+  const { data: userData } = useGetMeQuery();
   const seriesSlug = slugifyTitle(seriesData?.title);
   const seriesSharePath = seriesSlug ? `/series/${seriesSlug}` : undefined;
   const episode_series = (seriesData?.episodes?.episodes || [])
@@ -103,6 +108,7 @@ function DetailSeriesPage({ params }) {
       setIdDisliked(seriesData?.isDisliked?.id || null);
       setIsSaved(seriesData.isSaved || false);
       setIdSaved(seriesData?.isSaved?.id || null);
+      setIsSubscribedState(Boolean(seriesData?.isSubscribed));
     }
   }, [seriesData]);
 
@@ -200,10 +206,14 @@ function DetailSeriesPage({ params }) {
     setLoading(false);
   };
 
-  const handleSubscribe = async (contentId) => {
-    setLoading(true);
-    window.location.href = `/checkout/subscribe/series/${contentId}`;
-    setLoading(false);
+  const canOpenSubscribeModal =
+    !seriesData?.isOwner &&
+    !isSubscribedState &&
+    Boolean(seriesData?.canSubscribe);
+
+  const handleOpenSubscribeModal = () => {
+    if (!canOpenSubscribeModal) return;
+    setIsSubscribeModalOpen(true);
   };
 
   if (!isHydrated || isLoading || !data || !isReady) {
@@ -251,12 +261,16 @@ function DetailSeriesPage({ params }) {
 
             <div className="flex gap-6">
               <button
-                disabled={seriesData?.isOwner || seriesData?.isSubscribed}
+                disabled={
+                  seriesData?.isOwner ||
+                  isSubscribedState ||
+                  !seriesData?.canSubscribe
+                }
                 onClick={
                   seriesData?.isOwner
                     ? null
-                    : !seriesData?.isSubscribed && seriesData?.canSubscribe
-                      ? () => handleSubscribe(seriesData?.id)
+                    : !isSubscribedState && seriesData?.canSubscribe
+                      ? handleOpenSubscribeModal
                       : null
                 }
                 className="w-max rounded-3xl bg-[#0076E999] px-12 py-3 font-bold text-white hover:cursor-pointer disabled:bg-[#9CA3AF]"
@@ -265,8 +279,8 @@ function DetailSeriesPage({ params }) {
                   ? "Series ini adalah karya mu"
                   : !seriesData?.canSubscribe
                     ? "Buy Episode To Watch"
-                    : seriesData?.isSubscribed
-                      ? "Watch"
+                    : isSubscribedState
+                      ? "Subscribed"
                       : "Subscribe"}
               </button>
               <div className="flex gap-2">
@@ -370,11 +384,30 @@ function DetailSeriesPage({ params }) {
           productType="series"
           productEpisodes={episode_series}
           isLoading={loading}
-          isSubscribe={seriesData?.isSubscribed}
+          isSubscribe={isSubscribedState}
           handlePayment={handleBuy}
           productId={seriesData?.id}
           isOwner={seriesData?.isOwner}
           itemClassname="px-4 md:px-15"
+        />
+
+        <UnlockContentModal
+          isOpen={isSubscribeModalOpen}
+          onClose={() => setIsSubscribeModalOpen(false)}
+          title=""
+          subtitle={seriesData?.title || "Series"}
+          basePrice={Number(seriesData?.subscriptionPrice) || 0}
+          userBalance={userData?.Session?.UserWallet?.balance ?? 0}
+          contentId={seriesData?.id}
+          contentType="SERIES"
+          actionType="SUBSCRIBE"
+          onPaymentSuccess={() => {
+            setIsSubscribedState(true);
+            setToastType("success");
+            setToastMessage("Subscription series berhasil diaktifkan.");
+            setShowToast(true);
+            refetch();
+          }}
         />
 
         <section className="my-10 flex flex-col gap-5">

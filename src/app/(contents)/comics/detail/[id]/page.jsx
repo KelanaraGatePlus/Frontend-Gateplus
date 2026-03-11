@@ -82,11 +82,6 @@ export default function DetailComicPage({ params }) {
     window.location.href = `/checkout/purchase/comics/${id}/${episodeId}`;
   };
 
-  const handleSubscribe = async (contentId) => {
-    setLoading(true);
-    window.location.href = `/checkout/subscribe/comics/${contentId}`;
-  };
-
   useEffect(() => {
     setIsHydrated(true); 
   }, []);
@@ -103,7 +98,6 @@ export default function DetailComicPage({ params }) {
         productEpisode={episode_comics}
         isLoading={isLoading}
         handlePayment={handleBuy}
-        handleSubscribe={handleSubscribe}
         topContentData={topContent}
         recomendationData={recommendedContent}
         isBlurred={isBlurred}

@@ -27,6 +27,8 @@ import iconSaveSolid from "@@/logo/logoDetailFilm/saved-icons.svg";
 import DefaultShareButton from "../ShareButton/DefaultShareButton";
 import CreatorCard from "./CreatorCard";
 import { useGetUserId } from "@/lib/features/useGetUserId";
+import UnlockContentModal from "@/components/Modal/UnlockContentModal";
+import { useGetMeQuery } from "@/hooks/api/userSliceAPI";
 
 export default function ProductDetailSection({
   productType,
@@ -51,7 +53,6 @@ export default function ProductDetailSection({
   idDislikedProduct,
   idSavedProduct,
   isLoading,
-  handleSubscribe,
   canSubscribe,
   subscriptionPrice,
   isSubscribe = false,
@@ -72,6 +73,8 @@ export default function ProductDetailSection({
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState("success");
+  const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false);
+  const [isSubscribedState, setIsSubscribedState] = useState(isSubscribe);
   const fieldKey = {
     ebook: "ebookId",
     comic: "comicsId",
@@ -80,6 +83,7 @@ export default function ProductDetailSection({
   const { toggleLike } = useLikeContent();
   const { toggleDislike } = useDislikeContent();
   const { toggleSave } = useSaveContent();
+  const { data: userData } = useGetMeQuery();
 
   useEffect(() => {
     setIsLiked(productIsLiked);
@@ -90,8 +94,23 @@ export default function ProductDetailSection({
     setIsSaved(productIsSaved);
     setIdSaved(idSavedProduct);
     setTotalSubs(creatorTotalSubscriber);
+    setIsSubscribedState(isSubscribe);
     console.log("tes id like", idLiked);
-  }, [productIsLiked, productTotalLikes]);
+  }, [productIsLiked, productTotalLikes, isSubscribe]);
+
+  const subscribeContentTypeMap = {
+    ebook: "EBOOK",
+    comic: "COMIC",
+    podcast: "PODCAST",
+    series: "SERIES",
+  };
+
+  const canOpenSubscribeModal = canSubscribe && !isSubscribedState && !isOwner;
+
+  const handleOpenSubscribeModal = () => {
+    if (!canOpenSubscribeModal) return;
+    setIsSubscribeModalOpen(true);
+  };
 
   const handleToggleDislike = () => {
     if (isLiked) {
@@ -234,15 +253,13 @@ export default function ProductDetailSection({
                   {(productType === "ebook" || productType === "comic") &&
                     canSubscribe && (
                       <button
-                        onClick={() =>
-                          handleSubscribe(productID, subscriptionPrice)
-                        }
-                        disabled={isSubscribe || isOwner}
-                        className={`w-full cursor-pointer rounded-3xl px-8 py-3 text-sm font-bold text-white md:w-auto md:px-10 md:text-[16px] ${isSubscribe || isOwner ? "cursor-not-allowed bg-gray-400" : "bg-[#0076E999] hover:bg-[#0076E999]/80"}`}
+                        onClick={handleOpenSubscribeModal}
+                        disabled={isSubscribedState || isOwner || !canSubscribe}
+                        className={`w-full cursor-pointer rounded-3xl px-8 py-3 text-sm font-bold text-white md:w-auto md:px-10 md:text-[16px] ${isSubscribedState || isOwner || !canSubscribe ? "cursor-not-allowed bg-gray-400" : "bg-[#0076E999] hover:bg-[#0076E999]/80"}`}
                       >
                         {isOwner
                           ? "Ini adalah konten milikmu"
-                          : isSubscribe
+                          : isSubscribedState
                             ? "Subscribed"
                             : "Subscribe"}
                       </button>
@@ -250,19 +267,13 @@ export default function ProductDetailSection({
 
                   {productType === "podcast" && canSubscribe ? (
                     <button
-                      onClick={() =>
-                        handleSubscribe(
-                          creatorDetail.id,
-                          productID,
-                          subscriptionPrice,
-                        )
-                      }
-                      disabled={isSubscribe || isOwner}
-                      className={`w-full cursor-pointer rounded-3xl px-8 py-3 text-xs font-bold text-white md:w-auto md:px-10 ${isSubscribe || isOwner ? "cursor-not-allowed bg-gray-400" : "bg-[#0076E999] hover:bg-[#0076E999]/80"}`}
+                      onClick={handleOpenSubscribeModal}
+                      disabled={isSubscribedState || isOwner || !canSubscribe}
+                      className={`w-full cursor-pointer rounded-3xl px-8 py-3 text-xs font-bold text-white md:w-auto md:px-10 ${isSubscribedState || isOwner || !canSubscribe ? "cursor-not-allowed bg-gray-400" : "bg-[#0076E999] hover:bg-[#0076E999]/80"}`}
                     >
                       {isOwner
                         ? "Ini adalah konten milikmu"
-                        : isSubscribe
+                        : isSubscribedState
                           ? "Subscribed"
                           : "Subscribe"}
                     </button>
@@ -396,6 +407,24 @@ export default function ProductDetailSection({
           onClose={() => setShowToast(false)}
         />
       )}
+
+      <UnlockContentModal
+        isOpen={isSubscribeModalOpen}
+        onClose={() => setIsSubscribeModalOpen(false)}
+        title=""
+        subtitle={productTitle}
+        basePrice={Number(subscriptionPrice) || 0}
+        userBalance={userData?.Session?.UserWallet?.balance ?? 0}
+        contentId={productID}
+        contentType={subscribeContentTypeMap[productType] || "EBOOK"}
+        actionType="SUBSCRIBE"
+        onPaymentSuccess={() => {
+          setIsSubscribedState(true);
+          setToastType("success");
+          setToastMessage("Subscription berhasil diaktifkan.");
+          setShowToast(true);
+        }}
+      />
     </>
   );
 }
@@ -423,7 +452,6 @@ ProductDetailSection.propTypes = {
   idDislikedProduct: PropTypes.any,
   idSavedProduct: PropTypes.any,
   isLoading: PropTypes.bool,
-  handleSubscribe: PropTypes.func,
   canSubscribe: PropTypes.bool,
   subscriptionPrice: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   isSubscribe: PropTypes.bool,

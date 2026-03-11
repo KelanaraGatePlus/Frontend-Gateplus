@@ -64,6 +64,14 @@ export const paymentAPI = createApi({
             }),
             invalidatesTags: ["paymentAPI"],
         }),
+        subscribeWithCoin: builder.mutation({
+            query: (payload) => ({
+                url: "/api/payment/subscribeWithCoin",
+                method: "POST",
+                body: payload,
+            }),
+            invalidatesTags: ["paymentAPI"],
+        }),
     }),
 });
 
@@ -74,4 +82,5 @@ export const {
     useCreateTipPaymentMutation,
     useCheckPaymentStatusMutation,
     usePayWithCoinMutation,
+    useSubscribeWithCoinMutation,
 } = paymentAPI;

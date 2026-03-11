@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 import { Icon } from "@iconify/react";
 import GateplusCoin from "@@/GateplusCoin/coinLogo.svg";
 import { useGetDiscountByVoucherDiscountCodeMutation } from "@/hooks/api/discountVoucherAPI";
-import { usePayWithCoinMutation } from "@/hooks/api/paymentSliceAPI";
+import { usePayWithCoinMutation, useSubscribeWithCoinMutation } from "@/hooks/api/paymentSliceAPI";
 import TopUpGateCoinsModal from "@/components/Modal/TopUpGateCoinsModal";
 
 const COIN_ARRIVED_EVENT = "gateplus:coin-arrived";
@@ -27,6 +27,7 @@ export default function UnlockContentModal({
     contentId,
     contentType,
     tip,
+    actionType,
     onPaymentSuccess,
 }) {
     const [mounted, setMounted] = useState(false);
@@ -39,6 +40,7 @@ export default function UnlockContentModal({
     const [isTopUpModalOpen, setIsTopUpModalOpen] = useState(false);
     const [getDiscount] = useGetDiscountByVoucherDiscountCodeMutation();
     const [payWithCoin] = usePayWithCoinMutation();
+    const [subscribeWithCoin] = useSubscribeWithCoinMutation();
 
     useEffect(() => {
         setMounted(true);
@@ -92,15 +94,18 @@ export default function UnlockContentModal({
         }
     };
 
+    const isSubscribeAction = actionType === "SUBSCRIBE";
+
     const handleUnlock = async () => {
-        if (!episodeId || !contentType || isInsufficient) return;
+        if (!contentType || isInsufficient) return;
+        if (isSubscribeAction && !contentId) return;
+        if (!isSubscribeAction && !episodeId) return;
 
         setIsUnlocking(true);
         const trimmedCode = voucherCode.trim();
-        const payload = {
-            episodeId,
-            contentType,
-        };
+        const payload = isSubscribeAction
+            ? { contentId, contentType }
+            : { episodeId, contentType };
 
         if (tip !== undefined && tip !== null && tip !== "") {
             payload.tip = tip;
@@ -111,7 +116,9 @@ export default function UnlockContentModal({
         }
 
         try {
-            const paymentResult = await payWithCoin(payload).unwrap();
+            const paymentResult = isSubscribeAction
+                ? await subscribeWithCoin(payload).unwrap()
+                : await payWithCoin(payload).unwrap();
             const latestBalance = Number(
                 paymentResult?.balanceAfterTransaction ??
                 paymentResult?.data?.balanceAfterTransaction,
@@ -132,7 +139,11 @@ export default function UnlockContentModal({
                 );
             }
 
-            setVoucherMessage("Pembayaran berhasil. Konten berhasil dibuka.");
+            setVoucherMessage(
+                isSubscribeAction
+                    ? "Pembayaran berhasil. Subscription aktif."
+                    : "Pembayaran berhasil. Konten berhasil dibuka.",
+            );
             setVoucherMessageType("success");
             onPaymentSuccess?.();
             onClose?.();
@@ -172,6 +183,9 @@ export default function UnlockContentModal({
                             <span className="block text-[14px] leading-5 sm:text-[15px]">{title}</span>
                         </h2>
                         <p className="mt-1 text-lg leading-none font-semibold text-white sm:text-2xl">Unlock Premium Content</p>
+                        <p className="mt-1 text-lg leading-none font-semibold text-white sm:text-2xl">
+                            {isSubscribeAction ? "Subscribe Premium Content" : "Unlock Premium Content"}
+                        </p>
                         <p className="mt-2 text-sm text-white/65 sm:text-base">{subtitle}</p>
                     </div>
 
@@ -262,7 +276,7 @@ export default function UnlockContentModal({
                             className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#1E73BE] text-lg font-semibold text-white transition hover:bg-[#2888da] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             <Icon icon={isInsufficient ? "solar:wallet-money-bold" : "solar:lock-keyhole-unlocked-bold"} className="h-5 w-5" />
-                            {isInsufficient ? "Top Up" : isUnlocking ? "Processing..." : "Unlock"}
+                            {isInsufficient ? "Top Up" : isUnlocking ? "Processing..." : isSubscribeAction ? "Subscribe" : "Unlock"}
                         </button>
                     </div>
                 </div>
@@ -292,6 +306,7 @@ UnlockContentModal.propTypes = {
     contentId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     contentType: PropTypes.string,
     tip: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    actionType: PropTypes.oneOf(["UNLOCK", "SUBSCRIBE"]),
     onPaymentSuccess: PropTypes.func,
 };
 
@@ -305,5 +320,6 @@ UnlockContentModal.defaultProps = {
     contentId: null,
     contentType: "MOVIE",
     tip: null,
+    actionType: "UNLOCK",
     onPaymentSuccess: undefined,
 };

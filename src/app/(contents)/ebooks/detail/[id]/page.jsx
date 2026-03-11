@@ -72,11 +72,6 @@ export default function DetailEbookPage({ params }) {
     window.location.href = `/checkout/purchase/ebooks/${id}/${episodeId}`;
   };
 
-  const handleSubscribe = async (contentId) => {
-    setLoading(true);
-    window.location.href = `/checkout/subscribe/ebooks/${contentId}`;
-  };
-
   if (isLoading || !data || !isReady) {
     return <LoadingOverlay />;
   }
@@ -89,7 +84,6 @@ export default function DetailEbookPage({ params }) {
         productEpisode={episode_ebooks}
         isLoading={isLoading}
         handlePayment={handleBuy}
-        handleSubscribe={handleSubscribe}
         topContentData={data?.topContent || []}
         recomendationData={data?.recommendation || []}
         isBlurred={isBlurred}

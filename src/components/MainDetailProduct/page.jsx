@@ -15,7 +15,6 @@ export default function MainTemplateLayout({
   currentlyPlaying,
   handlePlayPodcast,
   handlePayment,
-  handleSubscribe,
   topContentData,
   recomendationData,
   refreshTrigger,
@@ -89,7 +88,6 @@ export default function MainTemplateLayout({
         canSubscribe={productDetail?.canSubscribe}
         subscriptionPrice={productDetail?.subscriptionPrice}
         isLoading={isLoading}
-        handleSubscribe={handleSubscribe}
         isSubscribe={productDetail?.isSubscribe && productDetail?.canSubscribe}
         isOwner={productDetail?.isOwner || false}
         refreshTrigger={refreshTrigger}
@@ -143,7 +141,6 @@ MainTemplateLayout.propTypes = {
   currentlyPlaying: PropTypes.object,
   handlePlayPodcast: PropTypes.func,
   handlePayment: PropTypes.func,
-  handleSubscribe: PropTypes.func,
   topContentData: PropTypes.array.isRequired,
   recomendationData: PropTypes.array.isRequired,
   refreshTrigger: PropTypes.any,
