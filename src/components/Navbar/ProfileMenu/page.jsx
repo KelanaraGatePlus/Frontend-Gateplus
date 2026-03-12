@@ -19,6 +19,7 @@ import { useAuth } from "@/components/Context/AuthContext";
 import { TicketIcon } from "lucide-react";
 import ShowCoin from "@/components/Coin/ShowCoin";
 import { Icon } from "@iconify/react";
+import PurchaseHistoryModal from "@/components/Modal/PurchaseHistoryModal";
 
 export default function ProfileMenu({
   creatorId,
@@ -36,6 +37,7 @@ export default function ProfileMenu({
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isDashboardMenuOpen, setIsDashboardMenuOpen] = useState(false);
   const [isUploadContentMenuOpen, setIsUploadContentMenuOpen] = useState(false);
+  const [showPurchaseHistory, setShowPurchaseHistory] = useState(false);
   const linkHref =
     isCreator ? `/creator/${creatorId}` : `/user/${userId}`;
   const { logout } = useAuth();
@@ -123,14 +125,16 @@ export default function ProfileMenu({
                   />
                   <span>Top Up</span>
                 </Link>
-                <Link href={'/'} className="bg-[#F5F5F50D] h-full rounded-md border border-[#F5F5F51A] w-max p-2 hover:bg-[#f5f5f556] transition-all">
+                <button onClick={() => {
+                  setShowPurchaseHistory(true);
+                }} className="bg-[#F5F5F50D] h-full rounded-md border border-[#F5F5F51A] w-max p-2 hover:bg-[#f5f5f556] transition-all">
                   <Icon
                     icon={'humbleicons:history'}
                     width={16}
                     height={16}
                     className="text-white"
                   />
-                </Link>
+                </button>
                 <Link href={'/'} className="bg-[#F5F5F50D] h-full rounded-md border border-[#F5F5F51A] w-max p-2 hover:bg-[#f5f5f556] transition-all">
                   <Icon
                     icon={'iconamoon:arrow-right-1-bold'}
@@ -339,6 +343,7 @@ export default function ProfileMenu({
           </button>
         </div>
       )}
+      {showPurchaseHistory && <PurchaseHistoryModal isOpen={showPurchaseHistory} onClose={() => setShowPurchaseHistory(false)} />}
     </div>
   );
 }

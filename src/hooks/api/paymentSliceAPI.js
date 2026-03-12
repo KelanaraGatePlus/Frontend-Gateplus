@@ -72,6 +72,13 @@ export const paymentAPI = createApi({
             }),
             invalidatesTags: ["paymentAPI"],
         }),
+        paymentHistory: builder.query({
+            query: ({ page = 1, limit = 10 }) => ({
+                url: `/api/payment/history?page=${page}&limit=${limit}`,
+                method: "GET",
+            }),
+            providesTags: ["paymentAPI"],
+        }),
     }),
 });
 
@@ -83,4 +90,5 @@ export const {
     useCheckPaymentStatusMutation,
     usePayWithCoinMutation,
     useSubscribeWithCoinMutation,
+    usePaymentHistoryQuery,
 } = paymentAPI;
