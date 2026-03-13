@@ -15,8 +15,10 @@ import { useGetCommentByEpisodeComicQuery } from "@/hooks/api/commentSliceAPI";
 import { useCreateLogMutation } from "@/hooks/api/logSliceAPI";
 import { useApplyReadProgressMutation } from "@/hooks/api/readProgressAPI";
 import { BACKEND_URL } from "@/lib/constants/backendUrl";
+import { useRouter } from "next/navigation";
 
 export default function ReadComicPage({ params }) {
+  const router = useRouter();
   const { id } = params;
   const device = useDeviceType();
 
@@ -292,7 +294,11 @@ export default function ReadComicPage({ params }) {
     <div className="relative flex min-h-screen flex-col bg-[#222222]">
       {/* Header */}
       <div className="fixed top-0 right-0 left-0 z-10 flex h-[60px] items-center gap-2 bg-[#222]/80 px-4 py-2 text-2xl font-semibold text-white backdrop-blur">
-        <BackButton />
+        <BackButton
+          onClick={() =>
+            router.push(`/comics/detail/${comicSingleData?.comics?.id}`)
+          }
+        />
         <h4 className="zeinFont line-clamp-1 w-full text-left text-xl font-extrabold md:text-2xl">
           <Link href="/">{title}</Link>
         </h4>

@@ -23,7 +23,8 @@ export const ebookApi = createApi({
       keepUnusedDataFor: 5,
     }),
     getEbookById: builder.query({
-      query: ({ id, withEpisodes = false }) => `/ebooks/${id}?withEpisodes=${withEpisodes}`,
+      query: ({ id, withEpisodes = false }) =>
+        `/ebooks/${id}?withEpisodes=${withEpisodes}`,
       providesTags: ["ebook"],
     }),
     getEpisodeEbookById: builder.query({
@@ -49,7 +50,10 @@ export const ebookApi = createApi({
       invalidatesTags: ["ebook"],
     }),
     getEbooksHomeData: builder.query({
-      query: (category) => category ? `/ebooks/highlights?category=${category}` : "/ebooks/highlights",
+      query: (category) =>
+        category
+          ? `/ebooks/highlights?category=${category}`
+          : "/ebooks/highlights",
       providesTags: ["ebook"],
     }),
     getEbookPerContentAnalytics: builder.query({

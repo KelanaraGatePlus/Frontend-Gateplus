@@ -30,8 +30,10 @@ import EbookModal from "@/components/Modal/EbookModal";
 import CommentModalEbook from "@/components/CommentModalEbook/CommentModalEbook";
 import iconCommentComic from "@@/icons/icon-comment-comic.svg";
 import { useApplyReadProgressMutation } from "@/hooks/api/readProgressAPI";
+import { useRouter } from "next/navigation";
 
 export default function ReadEbookPage({ params }) {
+  const router = useRouter();
   const { id } = params;
   const epubReaderRef = useRef(null);
   const [showSkeleton, setShowSkeleton] = useState(true);
@@ -110,11 +112,12 @@ export default function ReadEbookPage({ params }) {
       const pageZeroBased = Math.max(0, page - 1);
       applyReadProgress({
         page: pageZeroBased,
+        totalPages: totalPages,
         episodeEbookId: id,
         cfiString: lastCfiRef.current || undefined,
       });
     },
-    [id, applyReadProgress],
+    [id, totalPages, applyReadProgress],
   );
 
   const mapLogTypeForBackend = (action) => {
@@ -226,7 +229,11 @@ export default function ReadEbookPage({ params }) {
         sendLogToServer("TUTORIAL_SHOWN");
       }
 
-      // Update last_seen_content untuk history bukan progress
+      // FIX: Update last_seen_content menggunakan ebookData.id (bukan episodeId)
+      // agar konsisten dengan yang backend simpan di LastSeenContent
+      const parentEbookId = ebookData?.id;
+      if (!parentEbookId) return;
+
       let existing = [];
       try {
         const raw = localStorage.getItem(LAST_SEEN_CONTENT_KEY);
@@ -237,7 +244,7 @@ export default function ReadEbookPage({ params }) {
       const isAlreadyExist = existing.find((item) => item.id === ebookData.id);
       if (!isAlreadyExist) {
         const newContent = {
-          id: ebookData?.id,
+          id: parentEbookId, // ← konsisten pakai ebookId (bukan episodeId)
           title: ebookData?.title,
           type: "ebook",
           progress: episodeEbookData?.readProgress?.progress || 0,
@@ -359,12 +366,12 @@ export default function ReadEbookPage({ params }) {
   const handleProgressChange = useCallback(
     (progressData) => {
       // memastikan progress 0-1
-      const progress =
+      const calculateProgress =
         progressData.progress ??
         (progressData.totalPages
           ? progressData.currentPage / progressData.totalPages
           : 0);
-      setProgress(progress); // untuk progress bar
+      setProgress(calculateProgress); // untuk progress bar
       setCurrentPage(progressData.currentPage);
       setTotalPages(progressData.totalPages);
 
@@ -577,6 +584,14 @@ export default function ReadEbookPage({ params }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const referrer = document.referrer;
+    if (referrer && !referrer.includes("/read/")) {
+      sessionStorage.setItem("back_from_read", referrer);
+    }
+  }, []);
+
   // save progress ketika keluar halaman
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -620,7 +635,18 @@ export default function ReadEbookPage({ params }) {
         <div
           className={`${colorTheme == "dark" ? "text-white" : "text-[#222222]"} fixed z-40 mt-0 flex w-full flex-row items-center justify-start gap-2 px-4 py-2 text-2xl font-semibold backdrop-blur md:px-20`}
         >
-          <BackButton isDark={colorTheme === "dark"} />
+          <BackButton
+            isDark={colorTheme === "dark"}
+            onClick={() => {
+              // hapus halaman read dari history, ganti dengan detail
+              window.history.replaceState(
+                null,
+                "",
+                `/ebooks/detail/${ebookId}`,
+              );
+              router.push(`/ebooks/detail/${ebookId}`);
+            }}
+          />
           <h4
             className={`zeinFont [display:-webkit-box] w-full overflow-hidden text-center text-xl font-extrabold text-ellipsis [-webkit-box-orient:vertical] [-webkit-line-clamp:1] md:text-2xl`}
           >

@@ -63,7 +63,7 @@ export const episodeEbookSliceAPI = createApi({
     }),
 
     // Update Read Progress
-    updateReadProgress: builder.mutation({
+    updateEpisodeViews: builder.mutation({
       query: (id) => ({
         url: `episode/${id}/views`,
         method: "PATCH",

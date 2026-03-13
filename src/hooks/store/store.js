@@ -41,6 +41,7 @@ import { notificationAPI } from "../api/notificationSliceAPI";
 import { reportCommentAPI } from "../api/reportCommentAPI";
 import { lastSeenSliceAPI } from "../api/lastSeenSliceAPI";
 import { bannerSliceAPI } from "../api/bannerSliceAPI";
+import { followedEpisodeSliceAPI } from "../api/followedSliceAPI";
 
 const rootReducer = combineReducers({
   [ebookApi.reducerPath]: ebookApi.reducer,
@@ -82,6 +83,7 @@ const rootReducer = combineReducers({
   [reportCommentAPI.reducerPath]: reportCommentAPI.reducer,
   [lastSeenSliceAPI.reducerPath]: lastSeenSliceAPI.reducer,
   [bannerSliceAPI.reducerPath]: bannerSliceAPI.reducer,
+  [followedEpisodeSliceAPI.reducerPath]: followedEpisodeSliceAPI.reducer, // ✅ NEW
 });
 
 export const store = configureStore({
@@ -137,6 +139,7 @@ export const store = configureStore({
       reportCommentAPI.middleware,
       lastSeenSliceAPI.middleware,
       bannerSliceAPI.middleware,
+      followedEpisodeSliceAPI.middleware,
     ),
 });
 

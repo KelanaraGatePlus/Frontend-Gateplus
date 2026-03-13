@@ -4,14 +4,24 @@ import IconsArrowLeftDark from "@@/icons/icons-dashboard/icons-arrow-left.svg";
 import IconsArrowLeftLight from "@@/icons/icons-dashboard/icons-arrow-left-light.svg";
 import Image from "next/legacy/image";
 import { useRouter } from "next/navigation";
+import PropTypes from "prop-types";
 
-// eslint-disable-next-line react/prop-types
-export default function BackButton({ isDark = true, onClick = null }) {
+export default function BackButton({
+  isDark = true,
+  onClick = null,
+  href = null,
+}) {
   const router = useRouter();
+
+  const handleClick = () => {
+    if (onClick) return onClick();
+    if (href) return router.push(href);
+    router.back();
+  };
 
   return (
     <button
-      onClick={onClick ? onClick : () => router.back()}
+      onClick={handleClick}
       className={`mt-1.5 w-fit cursor-pointer rounded-full p-1 ${isDark ? "hover:bg-white/30" : "hover:bg-black/10"}`}
     >
       <p
@@ -36,3 +46,9 @@ export default function BackButton({ isDark = true, onClick = null }) {
     </button>
   );
 }
+
+BackButton.propTypes = {
+  isDark: PropTypes.bool,
+  onClick: PropTypes.func,
+  href: PropTypes.string,
+};

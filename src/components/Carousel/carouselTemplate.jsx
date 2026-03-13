@@ -138,7 +138,18 @@ export default function CarouselTemplate({
             <section
               className={`flex flex-col ${isOnCreatorProfile ? "my-3 md:my-0" : "my-3 md:my-5"}`}
             >
-              <Carousel>
+              <Carousel
+                opts={{
+                  align: "start",
+                  containScroll: "trimSnaps",
+                  dragFree: false,
+                  breakpoints: {
+                    "(max-width: 768px)": {
+                      containScroll: "keepSnaps",
+                    },
+                  },
+                }}
+              >
                 <p className="zeinFont mb-1 px-4 text-2xl font-extrabold text-white md:mb-2 md:px-0 md:text-3xl lg:text-4xl xl:text-[40px]">
                   {label}
                 </p>
@@ -178,8 +189,8 @@ export default function CarouselTemplate({
                                 <p
                                   className={`zeinFont translate-y-[10%] leading-[0.7] font-extrabold text-[#1297DC] ${
                                     rank >= 10
-                                      ? "translate-x-[12%] text-[170px] sm:text-[180px] md:translate-x-[16%] md:text-[190px] lg:text-[200px]"
-                                      : "translate-x-[30%] text-[220px] sm:text-[230px] md:translate-x-[40%] md:text-[240px] lg:text-[250px]"
+                                      ? "translate-x-[12%] text-[170px] tracking-[-0.15em] sm:text-[180px] md:translate-x-[16%] md:text-[190px] lg:text-[250px]"
+                                      : "translate-x-[50%] text-[220px] sm:text-[230px] md:translate-x-[42%] md:text-[240px] lg:text-[250px]"
                                   }`}
                                   style={{
                                     filter:

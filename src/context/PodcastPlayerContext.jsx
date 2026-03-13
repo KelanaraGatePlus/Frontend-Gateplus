@@ -65,11 +65,15 @@ export function PodcastPlayerProvider({ children, disablePlayer = false }) {
   const [speed, setSpeed] = useState(DEFAULT_SPEED);
   const [speedDirection, setSpeedDirection] = useState(1);
   const [initialTime, setInitialTime] = useState(0);
+  const [episodePodcastData] = useState();
 
-  const { data } = useGetProgressWatchQuery({
-    contentId: episodeData?.Id,
-    contentType: "EPISODE_PODCAST",
-  });
+  const { data } = useGetProgressWatchQuery(
+    {
+      contentId: episodeData?.Id,
+      contentType: "EPISODE_PODCAST",
+    },
+    { skip: !episodePodcastData?.id },
+  );
 
   // Hydrate from storage once
   useEffect(() => {
