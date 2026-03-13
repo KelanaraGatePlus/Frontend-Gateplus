@@ -29,10 +29,10 @@ export default function CommentComponent({
     // ⬇️ DECODE TOKEN DARI LOCALSTORAGE
     const getCurrentUserId = () => {
         if (typeof window === 'undefined') return null;
-        
+
         const token = localStorage.getItem('token');
         if (!token) return null;
-        
+
         try {
             const base64Url = token.split('.')[1];
             const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -42,7 +42,7 @@ export default function CommentComponent({
                     .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
                     .join('')
             );
-            
+
             const decoded = JSON.parse(jsonPayload);
             return decoded.id || decoded.userId || decoded.sub || null;
         } catch (error) {
@@ -50,9 +50,9 @@ export default function CommentComponent({
             return null;
         }
     };
-    
+
     const currentUserId = getCurrentUserId();
-    
+
     const [isCommentFieldHide, setIsCommentFieldHide] = useState(false);
     const [isReplyFieldHide, setIsReplyFieldHide] = useState(true);
     const [openReplies, setOpenReplies] = useState({});
@@ -112,35 +112,21 @@ export default function CommentComponent({
                 </div>
 
                 <div className="flex">
-                    {!isCommentFieldHide &&
-                        <CommentForm
-                            contentType={contentType}
-                            episodeEbookId={contentType === "EBOOK" ? episodeId : null}
-                            episodeComicsId={contentType === "COMIC" ? episodeId : null}
-                            podcastId={contentType === "PODCAST" ? episodeId : null}
-                            episodeSeriesId={contentType === "SERIES" ? episodeId : null}
-                            movieId={contentType === "MOVIE" ? episodeId : null}
-                            episodePodcastId={contentType === "EPISODE_PODCAST" ? episodeId : null}
-                            educationId={contentType === "EDUCATION" ? episodeId : null}
-                            withReward={withReward}
-                        />
-                    }
-
-                    {!isReplyFieldHide && replyToCommentData && (
-                        <ReplyCommentForm
-                            isDark={isDark}
-                            ref={replyInputRef}
-                            commentId={replyToCommentData.id}
-                            imageUrl={replyToCommentData.user.imageUrl ? replyToCommentData.user.imageUrl : profilePictureDefault}
-                            profileName={replyToCommentData.user.profileName ? replyToCommentData.user.profileName : replyToCommentData.user.username}
-                            isAuthor={replyToCommentData.user?.creator}
-                            withReward={withReward}
-                        />
-                    )}
+                    <CommentForm
+                        contentType={contentType}
+                        episodeEbookId={contentType === "EBOOK" ? episodeId : null}
+                        episodeComicsId={contentType === "COMIC" ? episodeId : null}
+                        podcastId={contentType === "PODCAST" ? episodeId : null}
+                        episodeSeriesId={contentType === "SERIES" ? episodeId : null}
+                        movieId={contentType === "MOVIE" ? episodeId : null}
+                        episodePodcastId={contentType === "EPISODE_PODCAST" ? episodeId : null}
+                        educationId={contentType === "EDUCATION" ? episodeId : null}
+                        withReward={withReward}
+                    />
                 </div>
             </div>
 
-            <div className={`mb-10 flex flex-col  ${isMobile ? "" : "custom-scrollbar overflow-x-hidden"}`}>
+            <div className={`mb-10 flex flex-col gap-2  ${isMobile ? "" : "custom-scrollbar overflow-x-hidden"}`}>
                 {isLoadingGetComment ? (
                     <p className="text-center text-gray-400 italic">Sedang memuat data...</p>
                 ) : (
@@ -162,7 +148,7 @@ export default function CommentComponent({
                                         );
 
                                     return (
-                                        <div key={comment.id} className="flex flex-col rounded-lg bg-transparent py-4">
+                                        <div key={comment.id} className="flex flex-col rounded-lg bg-[#393939]">
                                             <CommentItem
                                                 commentId={comment.id}
                                                 user={comment.user}
@@ -175,28 +161,45 @@ export default function CommentComponent({
                                                 currentUserId={currentUserId}
                                             />
 
+                                            {!isReplyFieldHide && replyToCommentData?.id === comment.id && (
+                                                <div className="mt-2 px-4">
+                                                    <ReplyCommentForm
+                                                        isDark={isDark}
+                                                        ref={replyInputRef}
+                                                        commentId={comment.id}
+                                                        onCloseModal={() => {
+                                                            setIsReplyFieldHide(true)
+                                                        }}
+                                                    />
+                                                </div>
+                                            )}
+
                                             {/* Reply Comment */}
-                                            {openReplies[comment.id] && comment.ReplyComment.map((reply) => (
-                                                <CommentItem
-                                                    key={reply.id}
-                                                    commentId={reply.id}
-                                                    user={reply.user}
-                                                    isAuthor={isAuthor}
-                                                    createdAt={reply.createdAt}
-                                                    isDark={isDark}
-                                                    message={reply.message}
-                                                    repliedToName={comment.user.profileName
-                                                        ? comment.user.profileName
-                                                        : comment.user.username}
-                                                    isIndented
-                                                    currentUserId={currentUserId}
-                                                />
-                                            ))}
+                                            <div className="flex flex-col gap-2 px-4">
+                                                {openReplies[comment.id] && comment.ReplyComment.map((reply) => (
+                                                    <div className="bg-[#515151] border border-[#F5F5F51A] rounded-md">
+                                                        <CommentItem
+                                                            key={reply.id}
+                                                            commentId={reply.id}
+                                                            user={reply.user}
+                                                            isAuthor={isAuthor}
+                                                            createdAt={reply.createdAt}
+                                                            isDark={isDark}
+                                                            message={reply.message}
+                                                            repliedToName={comment.user.profileName
+                                                                ? comment.user.profileName
+                                                                : comment.user.username}
+                                                            isIndented
+                                                            currentUserId={currentUserId}
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
 
                                             {/* Tombol untuk toggle reply. Hanya muncul jika ada balasan. */}
                                             {comment.ReplyComment && comment.ReplyComment.length > 0 && (
                                                 <div
-                                                    className="flex flex-row gap-1 items-center cursor-pointer mt-4 ml-1"
+                                                    className="flex flex-row gap-1 px-4 items-center cursor-pointer mb-4"
                                                     onClick={() => handleToggleReplies(comment.id)}
                                                 >
                                                     <Image

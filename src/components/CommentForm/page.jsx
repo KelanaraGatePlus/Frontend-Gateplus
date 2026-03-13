@@ -10,15 +10,13 @@ import { createCommentSchema } from "@/lib/schemas/createCommentSchema";
 
 /*[--- API HOOKS & FEATURES ---]*/
 import { useCreateCommentMutation } from "@/hooks/api/commentSliceAPI";
-import { useDisplayPayment } from "@/hooks/api/paymentAPI";
 import { Icon } from "@iconify/react";
 import CommentDonationForm from "./CommentDonationForm";
 import DonationLabel from "./DonationLabel";
-import TipPaymentModal from "./TipPaymentModal";
 import { useGetUserId } from "@/lib/features/useGetUserId";
 import Link from "next/link";
 
-const pickFirst = (...values) => values.find((value) => value !== undefined && value !== null && value !== "") ?? null;
+const COIN_ARRIVED_EVENT = "gateplus:coin-arrived";
 
 export default function CommentForm({
   contentType,
@@ -33,10 +31,8 @@ export default function CommentForm({
 }) {
   const userId = useGetUserId();
   const [createComment, { isLoading }] = useCreateCommentMutation();
-  const { display } = useDisplayPayment();
   const [tipValue, setTipValue] = React.useState(null);
   const [withTip, setWithTip] = React.useState(false);
-  const [showTipPaymentModal, setShowTipPaymentModal] = React.useState(false);
 
   const {
     register,
@@ -50,18 +46,10 @@ export default function CommentForm({
       message: "",
       contentType: contentType || "",
       tipAmount: tipValue || null,
-      paymentMethod: "bri_va",
     },
   });
 
-  const submitComment = async (data, options = {}) => {
-    const { paymentMethod, skipTipModal = false } = options;
-
-    // If there's a tip, always show modal first unless skipped
-    if (withTip && Number(tipValue) > 0 && !skipTipModal) {
-      setShowTipPaymentModal(true);
-      return;
-    }
+  const submitComment = async (data) => {
 
     // Determine which id to send based on contentType or available ids
     const typeKeyMap = {
@@ -96,116 +84,64 @@ export default function CommentForm({
       message: data.message,
       contentType,
       ...(withTip && Number(tipValue) > 0 ? { tipAmount: Number(tipValue) } : {}),
-      ...(paymentMethod ? { paymentMethod } : {}),
       ...(chosen ? { [chosen.key]: chosen.value } : {}),
     };
 
     try {
       const result = await createComment(payload).unwrap();
-      const paymentData = result?.data || {};
-      const snapToken = pickFirst(paymentData.snapToken, paymentData.token, paymentData.snap_token, paymentData?.snap?.token);
-      const snapUrl = pickFirst(
-        paymentData.snapUrl,
-        paymentData.redirectUrl,
-        paymentData.redirect_url,
-        paymentData?.actions?.[0]?.url
-      );
-      const paymentMethodResponse = String(
-        pickFirst(paymentData.paymentMethod, paymentData.payment_method, paymentMethod, "")
-      ).toLowerCase();
-      const qrisImageUrl = pickFirst(
-        paymentData.qrisImageUrl,
-        paymentData.qrisUrl,
-        paymentData.qrCodeUrl,
-        paymentData.qrUrl
-      );
 
-      // Jika ada snapToken/snapUrl di response, tampilkan payment
-      if (snapToken || snapUrl || (paymentMethodResponse === "qris" && qrisImageUrl)) {
-        await display(
-          {
-            snapToken,
-            snapUrl,
-            orderId: paymentData.orderId || null,
-            provider: paymentData.provider || "midtrans",
-            paymentMethod: paymentMethodResponse || null,
-            qrisImageUrl,
-          },
-          {
-            onSuccess: (paymentResult) => {
-              console.log("Pembayaran berhasil:", paymentResult);
-              reset();
-              setTipValue(null);
-              setWithTip(false);
-              setShowTipPaymentModal(false);
+      const paymentData = result?.data || {};
+      const paymentType = String(paymentData?.paymentType || "").toUpperCase();
+      const balanceAfterTransaction = Number(paymentData?.balanceAfterTransaction);
+      const amount = Number(paymentData?.amount);
+
+      if (
+        typeof window !== "undefined" &&
+        paymentType === "COIN" &&
+        Number.isFinite(balanceAfterTransaction)
+      ) {
+        window.dispatchEvent(
+          new CustomEvent(COIN_ARRIVED_EVENT, {
+            detail: {
+              addedCoins: Number.isFinite(amount) && amount > 0 ? -Math.abs(amount) : 0,
+              targetBalance: balanceAfterTransaction,
             },
-            onPending: (paymentResult) => {
-              console.log("Pembayaran pending:", paymentResult);
-              alert("Pembayaran masih dalam proses.");
-            },
-            onError: (paymentError) => {
-              console.error("Pembayaran gagal:", paymentError);
-              alert("Pembayaran gagal. Silakan coba lagi.");
-              setShowTipPaymentModal(false);
-            },
-            onClose: () => {
-              console.log("Payment dialog ditutup");
-              // Tetap reset form meskipun user close
-              reset();
-              setTipValue(null);
-              setWithTip(false);
-              setShowTipPaymentModal(false);
-            },
-          }
+          })
         );
-      } else {
-        // Jika tidak ada payment (comment tanpa tip atau tip gratis)
-        reset();
-        setTipValue(null);
-        setWithTip(false);
-        setShowTipPaymentModal(false);
       }
+
+      reset();
+      setTipValue(null);
+      setWithTip(false);
     } catch (err) {
       console.error("Error creating comment:", err);
       alert("Gagal mengirim komentar. Silakan coba lagi.");
-      setShowTipPaymentModal(false);
     }
   };
 
   const onSubmit = (data) => submitComment(data);
 
-  const handleTipPaymentConfirm = (paymentMethod) => {
-    setShowTipPaymentModal(false);
-
-    setTimeout(() => {
-      handleSubmit((data) =>
-        submitComment(data, { paymentMethod, skipTipModal: true })
-      )();
-    }, 0);
-  };
-
 
   return (
     <section className={`flex w-full flex-col pb-3 text-white`}>
       <div className="flex w-full">
-        <form className="flex w-full flex-col gap-2.5" onSubmit={handleSubmit(onSubmit)} >
+        <form className="flex w-full flex-col gap-2.5 p-4 bg-[#393939] border border-[#F5F5F5]/10 rounded-xl" onSubmit={handleSubmit(onSubmit)} >
+          {withTip && tipValue && (
+            <div className="w-fit">
+              <DonationLabel label={tipValue} />
+            </div>
+          )}
           <div
             className={`
               ${errors.message ? "border-red-500" : "border-[#F5F5F540]"} 
-              flex min-h-[128px] flex-col gap-2 w-full rounded-md border p-3 text-sm text-white transition-all duration-300 bg-[#F5F5F54D]
+              flex min-h-[128px] flex-col gap-2 w-full rounded-md border p-3 text-sm text-white transition-all duration-300 bg-[#F5F5F50D]
               focus-within:border-[#2563eb]
             `}
           >
-            {withTip && tipValue && (
-              <div className="w-fit">
-                <DonationLabel label={tipValue} />
-              </div>
-            )}
-
             <textarea
               {...register("message")}
               id="comment"
-              placeholder="Tell us about you, maxs 150 character."
+              placeholder="Tulis komentar anda... (maksimal 150 karakter)"
               rows={1}
               className="w-full flex-1 montserratFont bg-transparent outline-none border-none resize-none p-0 placeholder:text-[#979797] focus:ring-0 overflow-hidden"
               onInput={(e) => {
@@ -229,24 +165,29 @@ export default function CommentForm({
               name="comment-donation"
             />
           )}
-          {userId && <div className={` ${withTip ? "flex" : "grid"} grid-cols-5 gap-2 montserratFont`}>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`${isLoading ? "cursor-not-allowed opacity-60 bg-gray-600" : "bg-[#0E5BA8]"} flex w-full ${withTip ? "w-full" : "col-span-3"} cursor-pointer items-center justify-center rounded-md border-2 border-[#F5F5F559] py-2 text-sm font-bold text-white`}
-            >
-              {isLoading ? "Loading..." : "Kirim Komentar"}
-            </button>
+          {userId && <div className={` ${withTip ? "flex" : "flex flex-row"} justify-end gap-2 montserratFont`}>
             {withReward && (
               <div
                 onClick={() => setWithTip(!withTip)}
                 disabled={isLoading}
-                className={`${isLoading ? "cursor-not-allowed opacity-60 bg-gray-600" : "bg-[#0E5BA8]"} flex ${withTip ? "w-max p-2" : "col-span-2"} gap-1 cursor-pointer items-center justify-center rounded-md border-2 border-[#F5F5F559] py-2 text-sm font-bold text-white`}
+                className={`${isLoading ? "cursor-not-allowed opacity-60 bg-gray-600" : "bg-[#C9610E]"} flex ${withTip ? "w-max p-2" : "col-span-2"} gap-1 cursor-pointer items-center justify-center rounded-md py-2.5 px-4 text-sm font-bold text-white shadow-md`}
               >
-                <Icon icon={"solar:crown-bold-duotone"} className="text-[#F07F26] w-6 h-6" />
+                <Icon icon={"solar:crown-bold-duotone"} className="text-[#F5F5F5] w-6 h-6" />
                 {!withTip ? (isLoading ? "Loading..." : "Reward") : null}
               </div>
             )}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className={`${isLoading ? "cursor-not-allowed opacity-60 bg-gray-600" : "bg-[#156EB7]"} flex gap-2 w-max py-2.5 px-4 ${withTip ? "w-full" : "col-span-3"} cursor-pointer items-center justify-center rounded-md py-2 text-sm font-bold text-white shadow-md`}
+            >
+              <Icon
+                width={16}
+                height={16}
+                icon={'lucide:send'}
+              />
+              {isLoading ? "Loading..." : "Kirim Komentar"}
+            </button>
           </div>}
           {!userId && (
             <div className={` ${withTip ? "flex" : "grid"} grid-cols-1 gap-2 montserratFont`}>
@@ -264,17 +205,6 @@ export default function CommentForm({
           )}
         </form>
       </div>
-
-      {/* Tip Payment Modal */}
-      <TipPaymentModal
-        isOpen={showTipPaymentModal}
-        onClose={() => {
-          setShowTipPaymentModal(false);
-        }}
-        tipAmount={tipValue}
-        onConfirm={handleTipPaymentConfirm}
-        isLoading={isLoading}
-      />
     </section>
   );
 }

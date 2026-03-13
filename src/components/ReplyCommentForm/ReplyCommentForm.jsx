@@ -6,10 +6,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useReplyCommentMutation } from "@/hooks/api/commentSliceAPI";
 import Image from "next/image";
+import { Icon } from "@iconify/react";
 import { replyCommentSchema } from "@/lib/schemas/replyCommentSchema";
 
 const ReplyCommentForm = forwardRef(function ReplyCommentForm(props, ref) {
-    const { commentId, imageUrl, profileName, isAuthor, isDark } = props;
+    const { commentId, onCloseModal } = props;
 
     const [createReplyComment, { isLoading, error }] = useReplyCommentMutation();
     const {
@@ -36,6 +37,7 @@ const ReplyCommentForm = forwardRef(function ReplyCommentForm(props, ref) {
 
         try {
             await createReplyComment(payload).unwrap();
+            onCloseModal(); 
             reset();
         } catch (err) {
             console.error("Error creating reply:", err);
@@ -43,72 +45,67 @@ const ReplyCommentForm = forwardRef(function ReplyCommentForm(props, ref) {
     };
 
     return (
-        <section className={`flex w-full flex-col pb-3 text-white`}>
-            <div
-                className={`flex flex-col gap-4 rounded-lg bg-transparent py-4`}
-                key={commentId}
-            >
-                <div className="flex flex-row items-center justify-between">
-                    <div className="flex flex-row items-start gap-2">
-                        <p className="text-[#1DBDF5] text-xs">reply</p>
-                        <figure>
-                            <Image
-                                priority
-                                className="h-10 w-10 rounded-full bg-blue-300 object-cover object-center"
-                                src={
-                                    imageUrl
-                                }
-                                alt="logo-usercomment"
-                                width={40}
-                                height={40}
-                            />
-                        </figure>
-
-                        <div className="self-center">
-                            <h5 className={`text-xs font-medium ${isDark ? "text-white" : "text-black"}`}>
-                                {
-                                    profileName
-                                }{" "}
-                                {isAuthor && "(Author)"}
-                            </h5>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <section key={commentId} className={`flex w-full flex-col pb-3 text-white`}>
             <div className="flex w-full">
-                <form className="flex w-full flex-col gap-2.5" onSubmit={handleSubmit(onSubmit)}>
-                    <textarea
-                        // [MODIFIKASI 2] Gunakan callback ref untuk menggabungkan keduanya
-                        ref={(node) => {
-                            rhfRef(node); // Berikan ref ke react-hook-form
-                            if (ref) {
-                                // Berikan ref ke parent component (untuk .focus())
-                                ref.current = node;
-                            }
-                        }}
-                        name="comment"
-                        id="comment"
-                        placeholder="Tulis balasan Anda..."
-                        className={`${errors.message ? "border-red-500" : "border-[#F5F5F540]"} h-32 w-full rounded-md border p-2 text-sm text-white transition-colors duration-300 placeholder:text-sm placeholder:font-bold placeholder:text-[#979797] bg-[#F5F5F54D]`}
-                        // [MODIFIKASI 3] Gunakan sisa properti dari 'register' di sini
-                        {...rest}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
-                                e.preventDefault();
-                                handleSubmit(onSubmit)();
-                            }
-                        }}
-                        required
-                    />
-                    {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>}
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className={`${isLoading ? "cursor-not-allowed opacity-60 bg-gray-600" : "bg-[#0E5BA8]"} flex w-full cursor-pointer items-center justify-center rounded-md border-2 border-[#F5F5F540] py-2 text-sm font-bold text-white`}
+                <form
+                    className="flex w-full flex-col gap-2.5 rounded-xl border border-[#F5F5F5]/10 bg-[#393939] p-4"
+                    onSubmit={handleSubmit(onSubmit)}
+                >
+                    <div
+                        className={`${errors.message ? "border-red-500" : "border-[#F5F5F540]"} flex min-h-[128px] w-full flex-col gap-2 rounded-md border bg-[#F5F5F50D] p-3 text-sm text-white transition-all duration-300 focus-within:border-[#2563eb]`}
                     >
-                        {isLoading ? "Mengirim..." : "Kirim Balasan"}
-                    </button>
-                    {error && <p className="text-red-500 text-sm mt-1">{error.data?.message || "Gagal mengirim balasan"}</p>}
+                        <textarea
+                            // [MODIFIKASI 2] Gunakan callback ref untuk menggabungkan keduanya
+                            ref={(node) => {
+                                rhfRef(node); // Berikan ref ke react-hook-form
+                                if (typeof ref === "function") {
+                                    ref(node);
+                                } else if (ref) {
+                                    // Berikan ref ke parent component (untuk .focus())
+                                    ref.current = node;
+                                }
+                            }}
+                            name="comment"
+                            id="reply-comment"
+                            placeholder="Tulis balasan anda... (maksimal 150 karakter)"
+                            rows={1}
+                            className="montserratFont h-auto w-full flex-1 resize-none border-none bg-transparent p-0 text-white outline-none placeholder:text-[#979797] focus:ring-0"
+                            // [MODIFIKASI 3] Gunakan sisa properti dari 'register' di sini
+                            {...rest}
+                            onInput={(e) => {
+                                const target = e.target;
+                                target.style.height = "auto";
+                                target.style.height = `${target.scrollHeight}px`;
+                            }}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleSubmit(onSubmit)();
+                                }
+                            }}
+                            required
+                        />
+                    </div>
+                    {errors.message && <p className="mt-1 text-sm text-red-500">{errors.message.message}</p>}
+                    <div className="w-full flex justify-end gap-2">
+                        <button
+                            onClick={onCloseModal}
+                            disabled={isLoading}
+                            className={`${isLoading ? "cursor-not-allowed bg-gray-600 opacity-60" : "bg-red-600"} flex w-max cursor-pointer items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-bold text-white shadow-md`}
+                        >
+                            <Icon width={16} height={16} icon={"akar-icons:cross"} />
+                            {isLoading ? "Loading..." : "Tutup"}
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className={`${isLoading ? "cursor-not-allowed bg-gray-600 opacity-60" : "bg-[#156EB7]"} flex w-max cursor-pointer items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-bold text-white shadow-md`}
+                        >
+                            <Icon width={16} height={16} icon={"lucide:send"} />
+                            {isLoading ? "Loading..." : "Kirim Balasan"}
+                        </button>
+                    </div>
+                    {error && <p className="mt-1 text-sm text-red-500">{error.data?.message || "Gagal mengirim balasan"}</p>}
                 </form>
             </div>
         </section>
@@ -117,10 +114,7 @@ const ReplyCommentForm = forwardRef(function ReplyCommentForm(props, ref) {
 
 ReplyCommentForm.propTypes = {
     commentId: propTypes.string.isRequired,
-    imageUrl: propTypes.string,
-    profileName: propTypes.string,
-    isAuthor: propTypes.bool,
-    isDark: propTypes.bool,
+    onClose: propTypes.func.isRequired,
 };
 
 export default ReplyCommentForm;
